@@ -1,0 +1,75 @@
+// Copyright (c) 2018-2021 The MobileCoin Foundation
+
+// Consensus service peer-facing data types and service descriptors.
+
+syntax = "proto3";
+import "google/protobuf/empty.proto";
+import "attest.proto";
+import "blockchain.proto";
+import "consensus_common.proto";
+
+package consensus_peer;
+
+service ConsensusPeerAPI {
+    /// This API call is made with an encrypted payload for the enclave,
+    /// indicating a new value to be acted upon.
+    rpc PeerTxPropose(attest.Message) returns (consensus_common.ProposeTxResponse);
+
+    /// Feed a consensus message into the node.
+    rpc SendConsensusMsg (ConsensusMsg) returns (ConsensusMsgResponse) {}
+
+    /// Get the latest SCP message the node has issued, if any.
+    rpc GetLatestMsg (google.protobuf.Empty) returns (GetLatestMsgResponse) {}
+
+    /// Get the (encypted) transactions with the given hashes.
+    /// The hashes are sent in the AAD data.
+    rpc GetTxs(GetTxsRequest) returns (GetTxsResponse);
+}
+
+message ConsensusMsg {
+    // ResponderId this message is coming from.
+    string from_responder_id = 1;
+
+    // Serialized peers::ConsensusMsg.
+    bytes payload = 2;
+}
+
+enum ConsensusMsgResult {
+    Ok = 0;
+    UnknownPeer = 10;
+}
+
+/// Response from a ConsensusMsg RPC call.
+message ConsensusMsgResponse {
+    /// Result.
+    ConsensusMsgResult result = 1;
+}
+
+message GetLatestMsgResponse {
+    // Serialized consensus_service::ConsensusMsg<V>.
+    // Optional (may be empty if the node hasn't issued a message yet).
+    bytes payload = 1;
+}
+
+/// Payload for a GetTxs call.
+message GetTxsRequest {
+    /// Channel ID.
+    bytes channel_id = 1;
+
+    /// List of tx hashes to fetch.
+    repeated bytes tx_hashes = 2;
+}
+
+/// Response from a GetTxs call.
+message GetTxsResponse { oneof payload {
+    /// Call succeeded, encrypted Tx data was returned.
+    attest.Message success = 1;
+
+    /// Failed due to tx hashes not in cache.
+    /// (protobuf prohibits using the `repeated` marker inside `oneof`)
+    TxHashesNotInCache tx_hashes_not_in_cache = 2;
+} }
+
+message TxHashesNotInCache {
+    repeated bytes tx_hashes = 1;
+}

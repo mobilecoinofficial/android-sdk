@@ -1,0 +1,47 @@
+apply plugin: 'maven-publish'
+
+version '1.0.1-pre1'
+group 'com.mobilecoin'
+
+Properties properties = new Properties()
+try {
+    properties.load(project.rootProject.file('local.properties').newDataInputStream())
+} catch (Exception ignored) { }
+
+publishing {
+    publications {
+        Production(MavenPublication) {
+            artifact("$buildDir/outputs/aar/android-sdk-release.aar")
+            groupId
+            artifactId 'android-sdk'
+            version this.version
+
+            pom.withXml {
+                def dependenciesNode = asNode().appendNode('dependencies')
+                configurations.implementation.allDependencies.each {
+                    // Ensure dependencies such as fileTree are not included in the pom.
+                    if (it.name != 'unspecified') {
+                        def dependencyNode = dependenciesNode.appendNode('dependency')
+                        dependencyNode.appendNode('groupId', it.group)
+                        dependencyNode.appendNode('artifactId', it.name)
+                        dependencyNode.appendNode('version', it.version)
+                    }
+                }
+            }
+        }
+    }
+    repositories {
+        maven {
+            name = "cloudsmith"
+            url = "https://maven.cloudsmith.io/mobilecoin/mobilecoin/"
+            def releasesRepoUrl = "https://maven.cloudsmith.io/mobilecoin/mobilecoin/"
+            def snapshotsRepoUrl = "https://maven.cloudsmith.io/mobilecoin/mobilecoin/"
+            url = version.endsWith('SNAPSHOT') ? snapshotsRepoUrl : releasesRepoUrl
+            credentials {
+                username = properties.getProperty("maven.user")
+                password = properties.getProperty("maven.apikey")
+            }
+        }
+    }
+}
+

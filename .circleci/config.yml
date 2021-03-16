@@ -1,0 +1,30 @@
+version: 2.1
+
+jobs:
+  test:
+    machine:
+      image: ubuntu-2004:202010-01
+    steps:
+      - checkout
+      - run:
+          name: Store Google Service Account
+          command: echo $GCLOUD_SERVICE_KEY > service-key.json
+      
+      - run:
+          name: Provide test credentials
+          command: sed -i 's/REPLACE_TEST_USER_STRING/'"$TEST_USER"'/g' android-sdk/src/androidTest/java/com/mobilecoin/lib/Environment.java && sed -i 's/REPLACE_TEST_PASSWORD_STRING/'"$TEST_PASSWORD"'/g' android-sdk/src/androidTest/java/com/mobilecoin/lib/Environment.java
+
+      - run: make setup
+      - run: make build
+      - run: make tests
+
+      - store_artifacts:
+          path: android-sdk/build/reports
+          destination: reports
+
+workflows:
+  version: 2
+
+  run-tests:
+    jobs:
+      - test
