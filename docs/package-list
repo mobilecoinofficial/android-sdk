@@ -1,0 +1,5 @@
+com.mobilecoin.lib
+com.mobilecoin.lib.exceptions
+com.mobilecoin.lib.log
+com.mobilecoin.lib.uri
+com.mobilecoin.lib.util
