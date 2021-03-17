@@ -23,6 +23,7 @@ import com.mobilecoin.lib.exceptions.NetworkException;
 import com.mobilecoin.lib.exceptions.SerializationException;
 import com.mobilecoin.lib.exceptions.TransactionBuilderException;
 import com.mobilecoin.lib.log.Logger;
+import com.mobilecoin.lib.uri.FogUri;
 
 import org.junit.Assert;
 import org.junit.Rule;
@@ -215,7 +216,6 @@ public class MobileCoinClientTest {
             // success
         }
     }
-
 
 
     @Test
@@ -569,5 +569,52 @@ public class MobileCoinClientTest {
             senderClient.shutdown();
             recipientClient.shutdown();
         }
+    }
+
+    // send a transaction to a non-fog public address
+    // verify the validity of the sent TxOut by view key scanning
+    @Test
+    public void test_send_to_address_without_fog() throws InvalidUriException,
+            InsufficientFundsException, NetworkException, InvalidFogResponse,
+            AttestationException, FogReportException, TransactionBuilderException,
+            FragmentedAccountException, FeeRejectedException, InterruptedException,
+            InvalidTransactionException, TimeoutException {
+        AccountKey recipientAccount = TestKeysManager.getNextAccountKey();
+        // remove fog info from the public address
+        PublicAddress addressWithFog = recipientAccount.getPublicAddress();
+        PublicAddress recipient = new PublicAddress(
+                addressWithFog.getViewKey(),
+                addressWithFog.getSpendKey()
+        );
+        // send a transaction
+        BigInteger amount = BigInteger.valueOf(1234);
+        MobileCoinClient mobileCoinClient = Environment.makeFreshMobileCoinClient();
+        BigInteger fee = mobileCoinClient.estimateTotalFee(amount);
+        PendingTransaction pendingTransaction = mobileCoinClient.prepareTransaction(recipient,
+                amount, fee);
+        mobileCoinClient.submitTransaction(pendingTransaction.getTransaction());
+        Transaction.Status txStatus = waitForTransactionStatus(mobileCoinClient,
+                pendingTransaction.getTransaction());
+        Receipt txReceipt = pendingTransaction.getReceipt();
+
+        UnsignedLong txBlockIndex = txStatus.getBlockIndex();
+        FogBlockClient blockClient = new FogBlockClient(new FogUri(Environment.FOG_URI),
+                ClientConfig.defaultConfig().fogLedger);
+        blockClient.setAuthorization(TEST_USERNAME, TEST_PASSWORD);
+        List<OwnedTxOut> txOuts = blockClient.scanForTxOutsInBlockRange(
+                new BlockRange(
+                        txBlockIndex,
+                        txBlockIndex.add(UnsignedLong.ONE)),
+                recipientAccount);
+
+        // find our txOut
+        boolean foundSentTxOut = false;
+        for (OwnedTxOut ownedTxOut : txOuts) {
+            if (ownedTxOut.getPublicKey().equals(txReceipt.getPublicKey())) {
+                foundSentTxOut = true;
+                break;
+            }
+        }
+        Assert.assertTrue(foundSentTxOut);
     }
 }

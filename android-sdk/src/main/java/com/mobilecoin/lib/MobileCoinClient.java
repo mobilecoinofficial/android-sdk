@@ -242,18 +242,20 @@ public class MobileCoinClient {
                 .add(UnsignedLong.fromLongBits(DEFAULT_NEW_TX_BLOCK_ATTEMPTS));
         HashSet<FogUri> reportUris = new HashSet<>();
         try {
-            reportUris.add(new FogUri(recipient.getFogUri()));
+            if (recipient.hasFogInfo()) {
+                reportUris.add(new FogUri(recipient.getFogUri()));
+            }
             reportUris.add(new FogUri(getAccountKey().getFogReportUri()));
         } catch (InvalidUriException exception) {
-            FogReportException reportException = new FogReportException("Invalid Fog Report Uri " +
-                    "in the public address");
+            FogReportException reportException = new FogReportException("Invalid Fog Report " +
+                    "Uri in the public address");
             Util.logException(TAG, reportException);
             throw reportException;
         }
-        FogReportResponses responses = fogReportsManager.fetchReports(reportUris,
+        FogReportResponses fogReportResponses = fogReportsManager.fetchReports(reportUris,
                 tombstoneBlockIndex, clientConfig.report);
-        FogResolver fogResolver = new FogResolver(responses, clientConfig.report.getVerifier());
-
+        FogResolver fogResolver = new FogResolver(fogReportResponses,
+                clientConfig.report.getVerifier());
         TransactionBuilder txBuilder = new TransactionBuilder(fogResolver);
         BigInteger totalAmount = BigInteger.valueOf(0);
         List<Ring> rings = getRingsForUTXOs(
