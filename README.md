@@ -91,6 +91,7 @@ The project uses a dockerized gradle build system with the main targets wrapped 
 
 Run `make TARGET` to execute any of the above targets.
 
+Note: To build android native bindings (libmobilecoin.so), clone [Fog](https://github.com/mobilecoinfoundation/fog.git) and run **make** in the android-bindings directory.
 
 ## Running Tests
 
