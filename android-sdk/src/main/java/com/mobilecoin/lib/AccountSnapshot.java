@@ -6,9 +6,14 @@ import androidx.annotation.NonNull;
 
 import com.mobilecoin.lib.exceptions.AmountDecoderException;
 import com.mobilecoin.lib.exceptions.AttestationException;
+import com.mobilecoin.lib.exceptions.FeeRejectedException;
+import com.mobilecoin.lib.exceptions.FogReportException;
+import com.mobilecoin.lib.exceptions.FragmentedAccountException;
 import com.mobilecoin.lib.exceptions.InsufficientFundsException;
+import com.mobilecoin.lib.exceptions.InvalidFogResponse;
 import com.mobilecoin.lib.exceptions.InvalidReceiptException;
 import com.mobilecoin.lib.exceptions.NetworkException;
+import com.mobilecoin.lib.exceptions.TransactionBuilderException;
 import com.mobilecoin.lib.log.Logger;
 
 import java.math.BigInteger;
@@ -69,7 +74,7 @@ public class AccountSnapshot {
     /**
      * Check the status of the transaction receipt. Recipient's key is required to decode
      * verification data, hence only the recipient of the transaction can verify receipts. Sender
-     * should use {@link MobileCoinClient#getTransactionStatus(Transaction transaction)}
+     * should use {@link MobileCoinClient#getTransactionStatus}
      *
      * @param receipt provided by the transaction sender to the recipient
      * @return {@link Receipt.Status}
@@ -109,15 +114,14 @@ public class AccountSnapshot {
     /**
      * Check the status of the transaction. Sender's key is required to decode verification data,
      * hence only the sender of the transaction can verify it's status. Recipients should use {@link
-     * MobileCoinClient#getReceiptStatus} )}
+     * AccountSnapshot#getReceiptStatus} )}
      *
-     * @param transaction obtained from {@link MobileCoinClient#prepareTransaction(PublicAddress
-     *                    recipient, BigInteger amount, BigInteger fee)}
+     * @param transaction obtained from {@link MobileCoinClient#prepareTransaction}
      * @return {@link Transaction.Status}
      */
     @NonNull
     public Transaction.Status getTransactionStatus(@NonNull Transaction transaction)
-            throws AttestationException, NetworkException {
+            throws NetworkException {
         Logger.i(TAG, "Checking transaction status");
         HashMap<Integer, Boolean> keyMapping = new HashMap<>();
         for (KeyImage keyImage : transaction.getKeyImages()) {
@@ -181,5 +185,49 @@ public class AccountSnapshot {
         } catch (InsufficientFundsException ignored) {
             return BigInteger.ZERO;
         }
+    }
+
+    /**
+     * @param recipient {@link PublicAddress} of the recipient
+     * @param amount    transaction amount
+     * @param fee       transaction fee (see {@link MobileCoinClient#estimateTotalFee})
+     * @return {@link PendingTransaction} which encapsulates the {@link Transaction} and {@link
+     * Receipt} objects
+     */
+    @NonNull
+    public PendingTransaction prepareTransaction(
+            @NonNull final PublicAddress recipient,
+            @NonNull final BigInteger amount,
+            @NonNull final BigInteger fee
+    ) throws InsufficientFundsException, FragmentedAccountException, FeeRejectedException,
+            InvalidFogResponse, AttestationException, NetworkException,
+            TransactionBuilderException, FogReportException {
+        Logger.i(TAG, "PrepareTransaction call", null,
+                "recipient:", recipient,
+                "amount:", amount,
+                "fee:", fee);
+        Set<OwnedTxOut> unspent = txOuts.stream().filter(p -> !p.isSpent(getBlockIndex()))
+                .collect(Collectors.toCollection(HashSet::new));
+        BigInteger finalAmount = amount.add(fee);
+        BigInteger totalAvailable = unspent.stream()
+                .map(OwnedTxOut::getValue)
+                .reduce(BigInteger.ZERO, BigInteger::add);
+        if (totalAvailable.compareTo(finalAmount) < 0) {
+            throw new InsufficientFundsException();
+        }
+        // the custom fee is provided, no need to calculate a new fee
+        UTXOSelector.Selection<OwnedTxOut> selection = UTXOSelector.selectInputsForAmount(unspent,
+                finalAmount,
+                BigInteger.ZERO,
+                BigInteger.ZERO,
+                BigInteger.ZERO,
+                0
+        );
+        return mobileCoinClient.prepareTransaction(
+                recipient,
+                amount,
+                selection.txOuts,
+                fee
+        );
     }
 }

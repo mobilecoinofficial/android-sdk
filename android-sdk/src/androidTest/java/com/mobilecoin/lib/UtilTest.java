@@ -8,8 +8,8 @@ import androidx.test.ext.junit.runners.AndroidJUnit4;
 import com.mobilecoin.lib.exceptions.AttestationException;
 import com.mobilecoin.lib.exceptions.InvalidFogResponse;
 import com.mobilecoin.lib.exceptions.InvalidReceiptException;
-import com.mobilecoin.lib.exceptions.InvalidTransactionException;
 import com.mobilecoin.lib.exceptions.NetworkException;
+import com.mobilecoin.lib.log.Logger;
 
 import org.junit.Assert;
 import org.junit.Rule;
@@ -88,14 +88,14 @@ public class UtilTest {
     static Transaction.Status waitForTransactionStatus(
             @NonNull MobileCoinClient mobileCoinClient,
             @NonNull Transaction tx) throws TimeoutException, InterruptedException,
-            NetworkException, InvalidFogResponse, AttestationException,
-            InvalidTransactionException {
+            NetworkException, InvalidFogResponse, AttestationException {
         int txQueryTries = 0;
         Transaction.Status status;
         do {
             if (txQueryTries++ == STATUS_MAX_RETRIES) {
                 throw new TimeoutException();
             }
+            Logger.i(TAG, "Waiting 1 second for the transaction status");
             Thread.sleep(STATUS_CHECK_DELAY_MS);
             status = mobileCoinClient.getTransactionStatus(tx);
             Assert.assertTrue(status.getBlockIndex().compareTo(UnsignedLong.ZERO) > 0);

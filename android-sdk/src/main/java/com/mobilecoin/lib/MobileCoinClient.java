@@ -23,6 +23,8 @@ import com.mobilecoin.lib.log.LogAdapter;
 import com.mobilecoin.lib.log.Logger;
 import com.mobilecoin.lib.uri.ConsensusUri;
 import com.mobilecoin.lib.uri.FogUri;
+import com.mobilecoin.lib.util.Result;
+import com.mobilecoin.lib.util.Task;
 
 import java.math.BigInteger;
 import java.util.ArrayList;
@@ -32,6 +34,10 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Random;
 import java.util.Set;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.concurrent.TimeoutException;
 import java.util.stream.Collectors;
 
@@ -225,7 +231,7 @@ public class MobileCoinClient {
     }
 
     @NonNull
-    protected PendingTransaction prepareTransaction(
+    PendingTransaction prepareTransaction(
             @NonNull final PublicAddress recipient,
             @NonNull final BigInteger amount,
             @NonNull final List<OwnedTxOut> txOuts,
@@ -252,16 +258,80 @@ public class MobileCoinClient {
             Util.logException(TAG, reportException);
             throw reportException;
         }
-        FogReportResponses fogReportResponses = fogReportsManager.fetchReports(reportUris,
-                tombstoneBlockIndex, clientConfig.report);
+        // fetch reports and rings in parallel
+        long startTime = System.currentTimeMillis();
+        Task<FogReportResponses, Exception> fetchReportsTask =
+                new Task<FogReportResponses, Exception>() {
+                    @Override
+                    public FogReportResponses execute() throws Exception {
+                        return fogReportsManager.fetchReports(reportUris,
+                                tombstoneBlockIndex, clientConfig.report);
+                    }
+                };
+
+        Task<List<Ring>, Exception> fetchRingsTask = new Task<List<Ring>, Exception>() {
+            @Override
+            public List<Ring> execute() throws Exception {
+                return getRingsForUTXOs(
+                        txOuts,
+                        getTxOutStore().getLedgerTotalTxCount()
+                );
+            }
+        };
+
+        // allocate two worker threads for the two tasks
+        ExecutorService fixedExecutorService =
+                Executors.newFixedThreadPool(2);
+
+        Future<Result<FogReportResponses, Exception>> fogReportResponsesFuture =
+                fixedExecutorService.submit(fetchReportsTask);
+
+        Future<Result<List<Ring>, Exception>> ringsListFuture =
+                fixedExecutorService.submit(fetchRingsTask);
+
+        // signal the executor to shutdown when the tasks are complete
+        // this is not a blocking call
+        fixedExecutorService.shutdown();
+
+        List<Ring> rings;
+        FogReportResponses fogReportResponses;
+        try {
+            Result<List<Ring>, Exception> ringsResult = ringsListFuture.get();
+            if (ringsResult.isErr()) {
+                // isError indicated that the error is non-null
+                throw Objects.requireNonNull(ringsResult.getError());
+            } else if (ringsResult.isOk()) {
+                rings = Objects.requireNonNull(ringsResult.getValue());
+            } else {
+                throw new InvalidFogResponse("Unable to retrieve Rings");
+            }
+            Result<FogReportResponses, Exception> reportsResult = fogReportResponsesFuture.get();
+            if (reportsResult.isErr()) {
+                // isError indicated that the error is non-null
+                throw Objects.requireNonNull(reportsResult.getError());
+            } else if (reportsResult.isOk()) {
+                fogReportResponses = Objects.requireNonNull(reportsResult.getValue());
+            } else {
+                throw new InvalidFogResponse("Unable to retrieve Fog Reports");
+            }
+        } catch (FogReportException | InvalidFogResponse | AttestationException | NetworkException exception) {
+            Util.logException(TAG, exception);
+            throw exception;
+        } catch (InterruptedException | ExecutionException exception) {
+            NetworkException networkException =
+                    new NetworkException(504, "Timeout fetching fog reports", exception);
+            Util.logException(TAG, networkException);
+            throw networkException;
+        } catch (Exception exception) {
+            Logger.wtf(TAG, "Bug: Unexpected exception", exception);
+            throw new IllegalStateException(exception);
+        }
+        long endTime = System.currentTimeMillis();
+        Logger.d(TAG, "Report + Rings fetch time: " + (endTime - startTime) + "ms");
         FogResolver fogResolver = new FogResolver(fogReportResponses,
                 clientConfig.report.getVerifier());
         TransactionBuilder txBuilder = new TransactionBuilder(fogResolver);
         BigInteger totalAmount = BigInteger.valueOf(0);
-        List<Ring> rings = getRingsForUTXOs(
-                txOuts,
-                getTxOutStore().getLedgerTotalTxCount()
-        );
         for (Ring ring : rings) {
             OwnedTxOut utxo = ring.utxo;
             totalAmount = totalAmount.add(utxo.getValue());
@@ -313,8 +383,7 @@ public class MobileCoinClient {
      * Submit transaction to the consensus service
      *
      * @param transaction a valid transaction object to submit (see
-     *                    {@link MobileCoinClient#prepareTransaction(PublicAddress
-     *                    recipient, BigInteger amount, BigInteger fee)}}
+     *                    {@link MobileCoinClient#prepareTransaction}}
      */
     public void submitTransaction(@NonNull Transaction transaction)
             throws InvalidTransactionException, NetworkException, AttestationException {
@@ -335,7 +404,7 @@ public class MobileCoinClient {
     /**
      * Check the status of the transaction receipt. Recipient's key is required to decode
      * verification data, hence only the recipient of the transaction can verify receipts. Sender
-     * should use {@link MobileCoinClient#getTransactionStatus(Transaction transaction)}
+     * should use {@link MobileCoinClient#getTransactionStatus}
      *
      * @param receipt provided by the transaction sender to the recipient
      * @return {@link Receipt.Status}
@@ -351,18 +420,54 @@ public class MobileCoinClient {
     /**
      * Check the status of the transaction. Sender's key is required to decode verification data,
      * hence only the sender of the transaction can verify it's status. Recipients should use {@link
-     * MobileCoinClient#getReceiptStatus(Receipt receipt} )}
+     * MobileCoinClient#getReceiptStatus}
      *
-     * @param transaction obtained from {@link MobileCoinClient#prepareTransaction(PublicAddress
-     *                    recipient, BigInteger amount, BigInteger fee)}
+     * @param transaction obtained from {@link MobileCoinClient#prepareTransaction}
      * @return {@link Transaction.Status}
      */
     @NonNull
     public Transaction.Status getTransactionStatus(@NonNull Transaction transaction)
-            throws InvalidFogResponse, InvalidTransactionException, AttestationException,
+            throws InvalidFogResponse, AttestationException,
             NetworkException {
         Logger.i(TAG, "GetTransactionStatus call");
-        return getAccountSnapshot().getTransactionStatus(transaction);
+        Ledger.CheckKeyImagesResponse keyImagesResponse =
+                ledgerClient.checkKeyImages(transaction.getKeyImages());
+        getTxOutStore().updateTxOutsSpentState(keyImagesResponse);
+        UnsignedLong ledgerBlockIndex =
+                UnsignedLong.fromLongBits(keyImagesResponse.getNumBlocks()).sub(UnsignedLong.ONE);
+        List<Ledger.KeyImageResult> keyImageResults = keyImagesResponse.getResultsList();
+        boolean txHasUnspentKeyImages = false;
+        for (Ledger.KeyImageResult keyImageResult : keyImageResults) {
+            if (keyImageResult.getKeyImageResultCode() != Ledger.KeyImageResultCode.Spent_VALUE) {
+                txHasUnspentKeyImages = true;
+                break;
+            }
+        }
+        if (!txHasUnspentKeyImages) {
+            Set<RistrettoPublic> outputPublicKeys = transaction.getOutputPublicKeys();
+            Ledger.TxOutResponse response =
+                    untrustedClient.fetchTxOuts(outputPublicKeys);
+            List<Ledger.TxOutResult> results = response.getResultsList();
+            boolean allTxOutsFound = true;
+            UnsignedLong outputBlockIndex = UnsignedLong.ZERO;
+            for (Ledger.TxOutResult txOutResult : results) {
+                if (txOutResult.getResultCode() != Ledger.TxOutResultCode.Found) {
+                    allTxOutsFound = false;
+                    break;
+                } else {
+                    UnsignedLong txOutBlockIndex =
+                            UnsignedLong.fromLongBits(txOutResult.getBlockIndex());
+                    if (outputBlockIndex.compareTo(txOutBlockIndex) < 0) {
+                        outputBlockIndex = txOutBlockIndex;
+                    }
+                }
+            }
+            if (allTxOutsFound) {
+                return Transaction.Status.ACCEPTED.atBlock(outputBlockIndex);
+            }
+            return Transaction.Status.FAILED.atBlock(ledgerBlockIndex);
+        }
+        return Transaction.Status.UNKNOWN.atBlock(ledgerBlockIndex);
     }
 
     /**
@@ -493,7 +598,7 @@ public class MobileCoinClient {
     }
 
     @NonNull
-    protected TxOutStore getTxOutStore() {
+    TxOutStore getTxOutStore() {
         return txOutStore;
     }
 
@@ -508,7 +613,7 @@ public class MobileCoinClient {
                 ledgerClient,
                 blockClient
         );
-        return getTxOutStore().getUnspentTXOs();
+        return getTxOutStore().getUnspentTxOuts();
     }
 
     /**
@@ -517,27 +622,14 @@ public class MobileCoinClient {
     @NonNull
     public AccountActivity getAccountActivity() throws NetworkException, InvalidFogResponse,
             AttestationException {
-        Set<OwnedTxOut> txOuts = getAccountTxOuts();
+        txOutStore.refresh(viewClient, ledgerClient, blockClient);
+        Set<OwnedTxOut> txOuts = txOutStore.getSyncedTxOuts();
         return new AccountActivity(txOuts,
                 getTxOutStore().getCurrentBlockIndex().add(UnsignedLong.ONE));
     }
 
-    /**
-     * Retrieve the list of account's TxOuts
-     */
     @NonNull
-    Set<OwnedTxOut> getAccountTxOuts() throws InvalidFogResponse, NetworkException,
-            AttestationException {
-        getTxOutStore().refresh(
-                viewClient,
-                ledgerClient,
-                blockClient
-        );
-        return getTxOutStore().getSyncedTxOuts();
-    }
-
-    @NonNull
-    protected List<Ring> getRingsForUTXOs(
+    List<Ring> getRingsForUTXOs(
             @NonNull List<OwnedTxOut> utxos,
             @NonNull UnsignedLong numTxOutsInLedger
     ) throws InvalidFogResponse, NetworkException, AttestationException {

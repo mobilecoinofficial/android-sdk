@@ -26,6 +26,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.Stack;
@@ -119,7 +120,7 @@ class TxOutStore implements Serializable {
     }
 
     @NonNull
-    Set<OwnedTxOut> getUnspentTXOs() {
+    Set<OwnedTxOut> getUnspentTxOuts() {
         return getSyncedTxOuts().stream().filter(p -> !p.isSpent(getCurrentBlockIndex()))
                 .collect(Collectors.toCollection(HashSet::new));
     }
@@ -169,7 +170,7 @@ class TxOutStore implements Serializable {
             throw new InvalidFogResponse("Invalid KexRng", exception);
         }
         // update the spent status of the TxOuts
-        checkKeyImages(ledgerClient);
+        updateKeyImages(ledgerClient);
     }
 
     /**
@@ -178,7 +179,7 @@ class TxOutStore implements Serializable {
      * @return list of the skipped block ranges to scan manually
      */
     @NonNull
-    protected synchronized Set<BlockRange> updateRNGsAndTxOuts(
+    synchronized Set<BlockRange> updateRNGsAndTxOuts(
             @NonNull AttestedViewClient viewClient,
             @NonNull FogQueryScalingStrategy scalingStrategy)
             throws InvalidFogResponse, NetworkException, AttestationException, KexRngException {
@@ -203,7 +204,7 @@ class TxOutStore implements Serializable {
                 }
                 View.QueryResponse result = viewClient.request(searchKeys);
                 viewBlockIndex = UnsignedLong.fromLongBits(
-                        result.getLastKnownBlockCount())
+                        result.getHighestProcessedBlockCount())
                         .sub(UnsignedLong.ONE);
                 for (FogCommon.BlockRange fogRange : result.getMissedBlockRangesList()) {
                     BlockRange range = new BlockRange(fogRange);
@@ -289,23 +290,8 @@ class TxOutStore implements Serializable {
         return missedRanges;
     }
 
-    protected void checkKeyImages(@NonNull AttestedLedgerClient ledgerClient)
-            throws InvalidFogResponse, NetworkException, AttestationException {
-        Logger.i(TAG, "Checking unspent TXOs key images");
-
-        // get all unspent TxOuts regardless of the spent block index
-        // todo: add block index parameter to getUnspentTxOuts
-        HashSet<OwnedTxOut> txOuts = new HashSet<>();
-        for (FogSeed seed : seeds.values()) {
-            for (OwnedTxOut txo : seed.getTxOuts()) {
-                if (!txo.isSpent(UnsignedLong.MAX_VALUE)) {
-                    txOuts.add(txo);
-                }
-            }
-        }
-
-        Ledger.CheckKeyImagesResponse response = ledgerClient.checkUtxoKeyImages(txOuts);
-        for (Ledger.KeyImageResult result : response.getResultsList()) {
+    void updateTxOutsSpentState(Ledger.CheckKeyImagesResponse keyImagesResponse) throws InvalidFogResponse {
+        for (Ledger.KeyImageResult result : keyImagesResponse.getResultsList()) {
             if (result.getKeyImageResultCode() == Ledger.KeyImageResultCode.NotSpent_VALUE) {
                 continue;
             }
@@ -329,13 +315,21 @@ class TxOutStore implements Serializable {
             );
             Logger.d(TAG, String.format(Locale.US,
                     "TxOut has been marked spent in block %s",
-                    utxo.getSpentBlockIndex().toString())
+                    Objects.requireNonNull(utxo.getSpentBlockIndex()).toString())
             );
         }
         synchronized (this) {
-            ledgerTotalTxCount = UnsignedLong.fromLongBits(response.getGlobalTxoCount());
-            ledgerBlockIndex = UnsignedLong.fromLongBits(response.getNumBlocks() - 1);
+            ledgerTotalTxCount = UnsignedLong.fromLongBits(keyImagesResponse.getGlobalTxoCount());
+            ledgerBlockIndex = UnsignedLong.fromLongBits(keyImagesResponse.getNumBlocks() - 1);
         }
+    }
+
+    void updateKeyImages(@NonNull AttestedLedgerClient ledgerClient)
+            throws InvalidFogResponse, NetworkException, AttestationException {
+        Logger.i(TAG, "Checking unspent TXOs key images");
+        Set<OwnedTxOut> txOuts = getUnspentTxOuts();
+        Ledger.CheckKeyImagesResponse response = ledgerClient.checkUtxoKeyImages(txOuts);
+        updateTxOutsSpentState(response);
     }
 
     /**
@@ -343,8 +337,8 @@ class TxOutStore implements Serializable {
      * get manually and do view-key scanning against.
      */
     @NonNull
-    protected synchronized Set<OwnedTxOut> fetchFogMisses(@NonNull Set<BlockRange> missedRanges,
-                                                          @NonNull FogBlockClient blockClient)
+    synchronized Set<OwnedTxOut> fetchFogMisses(@NonNull Set<BlockRange> missedRanges,
+                                                @NonNull FogBlockClient blockClient)
             throws NetworkException {
         HashSet<OwnedTxOut> recovered = new HashSet<>();
         for (BlockRange missedRange : missedRanges) {
@@ -356,7 +350,7 @@ class TxOutStore implements Serializable {
     }
 
     @Nullable
-    protected OwnedTxOut getUtxoByKeyImage(@NonNull byte[] keyImage) {
+    OwnedTxOut getUtxoByKeyImage(@NonNull byte[] keyImage) {
         int keyImageHashCode = Arrays.hashCode(keyImage);
         Set<OwnedTxOut> syncedTXOs = getSyncedTxOuts();
         for (OwnedTxOut utxo : syncedTXOs) {

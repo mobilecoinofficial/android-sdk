@@ -15,6 +15,7 @@ import java.util.Set;
 
 import fog_ledger.FogUntrustedTxOutApiGrpc;
 import fog_ledger.Ledger;
+import io.grpc.ManagedChannel;
 import io.grpc.StatusRuntimeException;
 
 /**
@@ -42,12 +43,18 @@ class FogUntrustedClient extends AnyClient {
      * Fetch TxOuts by their public keys
      */
     @NonNull
-    Ledger.TxOutResponse fetchTxOuts(@NonNull Set<RistrettoPublic> publicKeys) throws NetworkException,
-            AttestationException {
+    Ledger.TxOutResponse fetchTxOuts(@NonNull Set<RistrettoPublic> publicKeys) throws NetworkException {
         Logger.i(TAG, "Fetching TxOuts via untrusted fog API", null,
                 "public keys number:", publicKeys.size());
+        ManagedChannel managedChannel;
+        try {
+            managedChannel = getManagedChannel();
+        } catch (AttestationException exception) {
+            throw new IllegalStateException("BUG: Untrusted service cannot throw attestation " +
+                    "exception");
+        }
         FogUntrustedTxOutApiGrpc.FogUntrustedTxOutApiBlockingStub fogClient =
-                getAPIManager().getFogUntrustedTxOutApiBlockingStub(getManagedChannel());
+                getAPIManager().getFogUntrustedTxOutApiBlockingStub(managedChannel);
         Ledger.TxOutRequest.Builder requestBuilder = Ledger.TxOutRequest.newBuilder();
         for (RistrettoPublic publicKey : publicKeys) {
             requestBuilder.addTxOutPubkeys(publicKey.toProtoBufObject());
@@ -64,7 +71,7 @@ class FogUntrustedClient extends AnyClient {
                 });
         try {
             return networkingCall.run();
-        } catch (AttestationException | NetworkException | RuntimeException exception) {
+        } catch (NetworkException | RuntimeException exception) {
             throw exception;
         } catch (Exception exception) {
             throw new IllegalStateException("BUG: unreachable code");
