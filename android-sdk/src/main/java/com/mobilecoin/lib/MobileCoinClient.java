@@ -249,7 +249,7 @@ public class MobileCoinClient {
         HashSet<FogUri> reportUris = new HashSet<>();
         try {
             if (recipient.hasFogInfo()) {
-                reportUris.add(new FogUri(recipient.getFogUri()));
+                reportUris.add(new FogUri(recipient.getFogReportUri()));
             }
             reportUris.add(new FogUri(getAccountKey().getFogReportUri()));
         } catch (InvalidUriException exception) {

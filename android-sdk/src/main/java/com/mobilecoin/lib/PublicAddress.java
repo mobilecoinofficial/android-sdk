@@ -12,6 +12,7 @@ import com.google.protobuf.InvalidProtocolBufferException;
 import com.mobilecoin.api.MobileCoinAPI;
 import com.mobilecoin.lib.exceptions.SerializationException;
 import com.mobilecoin.lib.log.Logger;
+import com.mobilecoin.lib.util.Hex;
 
 import java.util.Arrays;
 import java.util.Objects;
@@ -21,9 +22,11 @@ import java.util.Objects;
  */
 public class PublicAddress extends Native {
     private static final String TAG = PublicAddress.class.getName();
-    private RistrettoPublic viewKey;
-    private RistrettoPublic spendKey;
-
+    private final RistrettoPublic viewKey;
+    private final RistrettoPublic spendKey;
+    private final Uri fogUri;
+    private final String fogReportId;
+    private final byte[] fogAuthoritySig;
     /**
      * Constructs new {@link PublicAddress} instance
      *
@@ -42,6 +45,9 @@ public class PublicAddress extends Native {
         Logger.i(TAG, "Creating Public Address from view/spend public keys");
         this.viewKey = viewKey;
         this.spendKey = spendKey;
+        this.fogUri = fogUri;
+        this.fogAuthoritySig = fogAuthoritySig;
+        this.fogReportId = fogReportId;
         try {
             init_jni_with_fog(
                     viewKey,
@@ -73,6 +79,9 @@ public class PublicAddress extends Native {
         Logger.i(TAG, "Creating Public Address from view/spend public keys");
         this.viewKey = viewKey;
         this.spendKey = spendKey;
+        fogUri = null;
+        fogReportId = null;
+        fogAuthoritySig = null;
         try {
             init_jni(
                     viewKey,
@@ -89,6 +98,19 @@ public class PublicAddress extends Native {
 
     private PublicAddress(long existingRustObj) {
         rustObj = existingRustObj;
+        viewKey = RistrettoPublic.fromJNI(get_view_key());
+        spendKey = RistrettoPublic.fromJNI(get_spend_key());
+        String fogUriString = get_fog_uri();
+        if (fogUriString != null) {
+            fogUri = Uri.parse(fogUriString);
+        } else {
+            fogUri = null;
+        }
+        String fogReportId = get_report_id();
+        this.fogReportId = (fogReportId == null)
+                ? ""
+                : fogReportId;
+        fogAuthoritySig = get_fog_authority_sig();
     }
 
     /**
@@ -166,8 +188,8 @@ public class PublicAddress extends Native {
         if (getFogReportId() != null) {
             addressBuilder.setFogReportId(getFogReportId());
         }
-        if (getFogUri() != null) {
-            addressBuilder.setFogReportUrl(getFogUri().toString());
+        if (getFogReportUri() != null) {
+            addressBuilder.setFogReportUrl(getFogReportUri().toString());
         }
         addressBuilder.setViewPublicKey(getViewKey().toProtoBufObject());
         addressBuilder.setSpendPublicKey(getSpendKey().toProtoBufObject());
@@ -178,11 +200,7 @@ public class PublicAddress extends Native {
      * @return view public key
      */
     @NonNull
-    public synchronized RistrettoPublic getViewKey() {
-        if (null == viewKey) {
-            long rustObj = get_view_key();
-            viewKey = RistrettoPublic.fromJNI(rustObj);
-        }
+    public RistrettoPublic getViewKey() {
         return viewKey;
     }
 
@@ -190,41 +208,39 @@ public class PublicAddress extends Native {
      * @return spend public key
      */
     @NonNull
-    public synchronized RistrettoPublic getSpendKey() {
-        if (null == spendKey) {
-            long rustObj = get_spend_key();
-            spendKey = RistrettoPublic.fromJNI(rustObj);
-        }
+    public RistrettoPublic getSpendKey() {
         return spendKey;
     }
 
+    /**
+     * @return fog authority signature
+     */
     @Nullable
     public byte[] getFogAuthoritySig() {
-        return get_fog_authority_sig();
-    }
-
-    @Nullable
-    public String getFogReportId() {
-        return get_report_id();
+        return fogAuthoritySig;
     }
 
     /**
-     * @return user's fog service Uri
+     * @return fog report id
      */
     @Nullable
-    public Uri getFogUri() {
-        String fogUriString = get_fog_uri();
-        if (fogUriString != null) {
-            return Uri.parse(fogUriString);
-        }
-        return null;
+    public String getFogReportId() {
+        return fogReportId;
+    }
+
+    /**
+     * @return fog report uri
+     */
+    @Nullable
+    public Uri getFogReportUri() {
+        return fogUri;
     }
 
     /**
      * @return true if this public address has fog info, false otherwise
      */
     public boolean hasFogInfo() {
-        return (getFogUri() != null &&
+        return (getFogReportUri() != null &&
                 getFogAuthoritySig() != null &&
                 getFogReportId() != null
         );
@@ -238,15 +254,30 @@ public class PublicAddress extends Native {
         return getViewKey().equals(that.getViewKey()) &&
                 getSpendKey().equals(that.getSpendKey()) &&
                 Arrays.equals(getFogAuthoritySig(), that.getFogAuthoritySig()) &&
-                Objects.equals(getFogUri(), that.getFogUri()) &&
+                Objects.equals(getFogReportUri(), that.getFogReportUri()) &&
                 Objects.equals(getFogReportId(), that.getFogReportId());
     }
 
     @Override
     public int hashCode() {
-        int result = Objects.hash(getFogReportId(), viewKey, spendKey, getFogUri());
+        int result = Objects.hash(getFogReportId(), viewKey, spendKey, getFogReportUri());
         result = 31 * result + Arrays.hashCode(getFogAuthoritySig());
         return result;
+    }
+
+    @NonNull
+    @Override
+    public String toString() {
+        String fogAuthoritySignString = (fogAuthoritySig == null)
+                ? "(null)"
+                : Hex.toString(fogAuthoritySig);
+        return "PublicAddress{" +
+                "viewKey=" + viewKey.toString() +
+                ", spendKey=" + spendKey.toString() +
+                ", fogUri=" + fogUri +
+                ", fogReportId=" + fogReportId +
+                ", fogAuthoritySig=" + fogAuthoritySignString +
+                '}';
     }
 
     private native void init_jni_with_fog(
