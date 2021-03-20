@@ -68,11 +68,13 @@ public class AccountSnapshotTest {
                 fee
         );
         mobileCoinClient.submitTransaction(pendingTransaction.getTransaction());
-        waitForTransactionStatus(mobileCoinClient,
+        Transaction.Status status = waitForTransactionStatus(mobileCoinClient,
                 pendingTransaction.getTransaction());
 
-        AccountSnapshot snapshotAfter =
-                mobileCoinClient.getAccountSnapshot();
+        AccountSnapshot snapshotAfter;
+        do {
+            snapshotAfter = mobileCoinClient.getAccountSnapshot();
+        } while (snapshotAfter.getBlockIndex().compareTo(status.getBlockIndex()) < 0);
 
         Transaction.Status statusBefore =
                 snapshotBefore.getTransactionStatus(pendingTransaction.getTransaction());

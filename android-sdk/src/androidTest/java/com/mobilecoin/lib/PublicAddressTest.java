@@ -181,7 +181,7 @@ public class PublicAddressTest {
                 fogReportId
         );
         if (!address.getViewKey().equals(key1) || !address.getSpendKey().equals(key2) ||
-                !address.getFogUri().equals(Environment.FOG_URI)) {
+                !address.getFogReportUri().equals(Environment.FOG_URI)) {
             Assert.fail("Getters must return valid keys");
         }
     }
