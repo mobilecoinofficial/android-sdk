@@ -39,7 +39,7 @@ class AttestedViewClient extends AttestedClient {
     /**
      * Creates and initializes an instance of {@link AttestedViewClient}
      *
-     * @param uri      an address of the service
+     * @param uri           an address of the service
      * @param serviceConfig service configuration passed to MobileCoinClient
      */
     AttestedViewClient(@NonNull FogUri uri, @NonNull ClientConfig.Service serviceConfig) {
@@ -130,21 +130,14 @@ class AttestedViewClient extends AttestedClient {
                 Util.logException(TAG, invalidFogResponse);
                 throw invalidFogResponse;
             } catch (StatusRuntimeException exception) {
-                if (exception.getStatus().getCode() == Status.Code.INTERNAL) {
-                    AttestationException attestationException =
-                            new AttestationException(exception.getStatus().getDescription(),
-                                    exception);
-                    Util.logException(TAG, attestationException);
-                    attestReset();
-                    throw attestationException;
-                }
-                Logger.w(TAG, "Fog request() query has failed", exception);
+                attestReset();
                 throw new NetworkException(exception);
             }
         });
         try {
             return networkingCall.run();
         } catch (InvalidFogResponse | AttestationException | NetworkException | RuntimeException exception) {
+            Util.logException(TAG, exception);
             throw exception;
         } catch (Exception exception) {
             throw new IllegalStateException("BUG: unreachable code");

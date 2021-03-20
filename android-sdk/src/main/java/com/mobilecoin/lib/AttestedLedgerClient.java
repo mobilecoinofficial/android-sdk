@@ -123,22 +123,17 @@ class AttestedLedgerClient extends AttestedClient {
                         Attest.Message response = decryptMessage(responseMessage);
                         return Ledger.GetOutputsResponse.parseFrom(response.getData());
                     } catch (StatusRuntimeException exception) {
-                        if (exception.getStatus().getCode() == Status.Code.INTERNAL) {
-                            attestReset();
-                            throw new AttestationException(exception.getStatus().getDescription(),
-                                    exception);
-                        }
+                        attestReset();
                         throw new NetworkException(exception);
                     } catch (InvalidProtocolBufferException exception) {
-                        InvalidFogResponse invalidFogResponse = new InvalidFogResponse(
-                                "GetOutputsResponse contains invalid data", exception);
-                        Util.logException(TAG, invalidFogResponse);
-                        throw invalidFogResponse;
+                        throw new InvalidFogResponse("GetOutputsResponse contains invalid data",
+                                exception);
                     }
                 });
         try {
             return networkingCall.run();
         } catch (InvalidFogResponse | AttestationException | NetworkException | RuntimeException exception) {
+            Util.logException(TAG, exception);
             throw exception;
         } catch (Exception exception) {
             throw new IllegalStateException("BUG: unreachable code");
@@ -176,26 +171,17 @@ class AttestedLedgerClient extends AttestedClient {
                         Attest.Message response = decryptMessage(encryptedResponse);
                         return Ledger.CheckKeyImagesResponse.parseFrom(response.getData().toByteArray());
                     } catch (InvalidProtocolBufferException exception) {
-                        InvalidFogResponse invalidFogResponse = new InvalidFogResponse(
+                        throw new InvalidFogResponse(
                                 "CheckKeyImagesResponse contains invalid data", exception);
-                        Util.logException(TAG, invalidFogResponse);
-                        throw invalidFogResponse;
                     } catch (StatusRuntimeException exception) {
-                        if (exception.getStatus().getCode() == Status.Code.INTERNAL) {
-                            attestReset();
-                            AttestationException attestationException =
-                                    new AttestationException(exception.getStatus().getDescription(),
-                                            exception);
-                            Util.logException(TAG, attestationException);
-                            throw attestationException;
-                        }
-                        Logger.w(TAG, "Unable to check key images", exception);
+                        attestReset();
                         throw new NetworkException(exception);
                     }
                 });
         try {
             return networkingCall.run();
         } catch (InvalidFogResponse | AttestationException | NetworkException | RuntimeException exception) {
+            Util.logException(TAG, exception);
             throw exception;
         } catch (Exception exception) {
             throw new IllegalStateException("BUG: unreachable code");
