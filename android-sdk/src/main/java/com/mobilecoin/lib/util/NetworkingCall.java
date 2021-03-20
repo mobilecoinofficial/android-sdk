@@ -46,7 +46,7 @@ public class NetworkingCall<T> {
 
     public static class DefaultRetryPolicy extends RetryPolicy {
         DefaultRetryPolicy() {
-            statusCodes = new int[]{403};
+            statusCodes = new int[]{403, 500};
             retryCount = 1;
         }
     }

@@ -100,15 +100,7 @@ class AttestedConsensusClient extends AttestedClient {
                             try {
                                 return blockingRequest.clientTxPropose(encryptedRequest);
                             } catch (StatusRuntimeException exception) {
-                                if (exception.getStatus().getCode() == Status.Code.INTERNAL) {
-                                    AttestationException attestationException =
-                                            new AttestationException(exception.getStatus().getDescription(), exception);
-                                    Util.logException(TAG, attestationException);
-                                    attestReset();
-                                    throw attestationException;
-                                }
-                                Logger.w(TAG, "Unable to post transaction with consensus",
-                                        exception);
+                                attestReset();
                                 throw new NetworkException(exception);
                             }
                         }
@@ -116,6 +108,7 @@ class AttestedConsensusClient extends AttestedClient {
         try {
             return networkingCall.run();
         } catch (AttestationException | NetworkException | RuntimeException exception) {
+            Util.logException(TAG, exception);
             throw exception;
         } catch (Exception exception) {
             throw new IllegalStateException("BUG: unreachable code");

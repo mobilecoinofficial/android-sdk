@@ -144,7 +144,6 @@ public class OwnedTxOut implements Serializable {
 
     @NonNull
     UnsignedLong getTxOutGlobalIndex() {
-        Logger.i(TAG, "Getting txOutGlobalIndex", null, txOutGlobalIndex);
         return txOutGlobalIndex;
     }
 
@@ -152,7 +151,6 @@ public class OwnedTxOut implements Serializable {
         if (keyImageHash == 0) {
             keyImageHash = Arrays.hashCode(keyImage);
         }
-        Logger.d(TAG, "Getting KeyImageHashCode", null, keyImageHash);
         return keyImageHash;
     }
 
