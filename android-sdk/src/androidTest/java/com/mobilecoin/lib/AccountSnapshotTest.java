@@ -49,6 +49,12 @@ public class AccountSnapshotTest {
         waitForTransactionStatus(mobileCoinClient, pendingTransaction.getTransaction());
         Balance balanceAfter = snapshot.getBalance();
         Assert.assertEquals(balanceBefore, balanceAfter);
+
+        // snapshot balance consistency
+        AccountSnapshot oldSnapshot =
+                mobileCoinClient.getAccountSnapshot(balanceBefore.getBlockIndex());
+        Assert.assertNotNull(oldSnapshot);
+        Assert.assertEquals(balanceBefore, oldSnapshot.getBalance());
     }
 
     @Test
