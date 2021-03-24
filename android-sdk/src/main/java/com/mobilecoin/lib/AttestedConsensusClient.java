@@ -70,9 +70,12 @@ class AttestedConsensusClient extends AttestedClient {
             Attest.AuthMessage response = blockingRequest.auth(authMessage);
             attestFinish(response.getData().toByteArray(), getServiceConfig().getVerifier());
         } catch (StatusRuntimeException exception) {
+            attestReset();
             if (exception.getStatus().getCode() == Status.Code.INTERNAL) {
-                attestReset();
-                throw new AttestationException(exception.getStatus().getDescription(), exception);
+                AttestationException attestationException =
+                        new AttestationException(exception.getStatus().getDescription(), exception);
+                Util.logException(TAG, attestationException);
+                throw attestationException;
             }
             NetworkException networkException = new NetworkException(exception);
             Util.logException(TAG, networkException);
