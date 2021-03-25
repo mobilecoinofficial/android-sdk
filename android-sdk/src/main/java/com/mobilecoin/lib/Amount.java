@@ -133,7 +133,7 @@ class Amount extends Native {
     );
 
     private native void init_jni(
-            byte[] commitment,
+            @NonNull byte[] commitment,
             long maskedValue
     );
 

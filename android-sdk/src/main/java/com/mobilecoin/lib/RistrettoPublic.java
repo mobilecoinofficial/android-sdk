@@ -15,9 +15,12 @@ import java.io.Serializable;
 import java.util.Arrays;
 
 /**
- * Encapsulates native public key bytes
+ * <pre>
+ * A RistrettoPublic key
+ *
+ * MobileCoin public addresses consist of two RistrettoPublic keys: view & spend
+ * </pre>
  */
-
 public class RistrettoPublic extends Native implements Serializable {
     public static final int PUBLIC_KEY_SIZE = 32;
     private static final long serialVersionUID = 1L;
@@ -54,9 +57,9 @@ public class RistrettoPublic extends Native implements Serializable {
     }
 
     /**
-     * Directly set the underlying key buffer.
+     * Create RistrettoPublic key instance from the key bytes.
      *
-     * @param bytes a raw key buffer. Must conform to a valid key format.
+     * @param bytes a key bytes buffer. Must conform to a valid key format.
      * @return initialized {@link RistrettoPublic} instance
      */
     @NonNull

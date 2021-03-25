@@ -45,7 +45,12 @@ import consensus_common.ConsensusCommon;
 import fog_ledger.Ledger;
 
 /**
- * High level client for MobileCoin blockchain
+ * <pre>
+ * The {@link MobileCoinClient} class is a high-level Fog-enabled client to access MobileCoin
+ * blockchain.
+ *
+ * Fog-enabled {@link AccountKey} is required to use {@code MobileCoinClient}.
+ * </pre>
  */
 public class MobileCoinClient {
     public enum FeeLevel {

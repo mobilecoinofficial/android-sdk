@@ -19,6 +19,9 @@ import java.util.concurrent.TimeUnit;
 
 import fog_view.View;
 
+/**
+ * A transaction output that belongs to a {@link AccountKey}
+ */
 public class OwnedTxOut implements Serializable {
     private final static String TAG = OwnedTxOut.class.getName();
 
@@ -91,6 +94,9 @@ public class OwnedTxOut implements Serializable {
         }
     }
 
+    /**
+     * Returns the decoded value of the TxOut
+     */
     @NonNull
     public BigInteger getValue() {
         return value;
@@ -136,7 +142,9 @@ public class OwnedTxOut implements Serializable {
             @NonNull UnsignedLong spentBlockIndex,
             @Nullable Date spentBlockTimestamp
     ) {
-        Logger.i(TAG, "Setting spent");
+        Logger.i(TAG, "Setting spent status", null,
+                "spentBlockIndex:", spentBlockIndex,
+                "spentBlockTimeStamp:", spentBlockTimestamp);
         this.isSpent = true;
         this.spentBlockIndex = spentBlockIndex;
         this.spentBlockTimestamp = spentBlockTimestamp;

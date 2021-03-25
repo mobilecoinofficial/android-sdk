@@ -21,10 +21,7 @@ import java.util.Arrays;
 import java.util.Objects;
 
 /**
- * Represents an abstraction of user keys
- *
- * @author MobileCoin
- * @version %I%, %G%
+ * The {@code AccountKey} class represents an abstraction of view & spent private keys
  */
 public class AccountKey extends Native {
     private final static String TAG = AccountKey.class.getName();
@@ -101,7 +98,7 @@ public class AccountKey extends Native {
     ) {
         this.fogReportId = fogReportId;
         this.fogAuthoritySpki = fogAuthoritySpki;
-        Logger.i(TAG, "Create a new AccountKey from view/spend keys",
+        Logger.i(TAG, "Create a new AccountKey from rootEntropy",
                 null,
                 "fogReportUri:", fogReportUri,
                 "fogReportId:", fogReportId,
@@ -211,8 +208,9 @@ public class AccountKey extends Native {
     }
 
     /**
-     * Derives the nth root entropy from a {@param mnemonic}
-     * This is then passed to the AccountKey.fromRootEntropy method.
+     * Derives the nth root entropy from a {@code mnemonic}
+     * Obtained {@code rootEntropy} can be used to generate an {@code AccountKey} using
+     * {@link AccountKey#fromRootEntropy} method.
      */
     public static byte[] deriveAccountRootEntropy(String mnemonic, int accountIndex) throws BadMnemonicException {
         Logger.i(TAG, "Derive root entropy from mnemonic",
@@ -280,8 +278,6 @@ public class AccountKey extends Native {
     }
 
     /**
-     * URI scheme is prepended if it does not exist
-     *
      * @return instance of account's fog uri
      */
     @NonNull
