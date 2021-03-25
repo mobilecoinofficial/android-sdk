@@ -2,8 +2,6 @@
 
 package com.mobilecoin.lib;
 
-import androidx.annotation.NonNull;
-
 import com.mobilecoin.lib.exceptions.AttestationException;
 import com.mobilecoin.lib.exceptions.FeeRejectedException;
 import com.mobilecoin.lib.exceptions.FogReportException;
@@ -21,6 +19,8 @@ import org.junit.Test;
 
 import java.math.BigInteger;
 import java.util.concurrent.TimeoutException;
+
+import static com.mobilecoin.lib.UtilTest.waitForTransactionStatus;
 
 public class AccountSnapshotTest {
     private static final int STATUS_CHECK_DELAY_MS = 1000;
@@ -135,25 +135,4 @@ public class AccountSnapshotTest {
                 mobileCoinClient.getAccountSnapshot(UnsignedLong.MAX_VALUE.sub(UnsignedLong.ONE));
         Assert.assertNull(snapshot);
     }
-
-    Transaction.Status waitForTransactionStatus(
-            @NonNull MobileCoinClient mobileCoinClient,
-            @NonNull Transaction tx) throws TimeoutException, InterruptedException,
-            NetworkException, InvalidFogResponse, AttestationException,
-            InvalidTransactionException {
-        int txQueryTries = 0;
-        Transaction.Status status;
-        do {
-            if (txQueryTries++ == STATUS_MAX_RETRIES) {
-                throw new TimeoutException();
-            }
-            Thread.sleep(STATUS_CHECK_DELAY_MS);
-            status = mobileCoinClient.getTransactionStatus(tx);
-            Assert.assertTrue(status.getBlockIndex().compareTo(UnsignedLong.ZERO) > 0);
-            // receipt status will change to FAILED if the current block index becomes
-            // higher than transaction maximum heights
-        } while (status == Transaction.Status.UNKNOWN);
-        return status;
-    }
-
 }
