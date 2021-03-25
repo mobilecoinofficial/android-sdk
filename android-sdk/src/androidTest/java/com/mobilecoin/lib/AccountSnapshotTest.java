@@ -58,6 +58,30 @@ public class AccountSnapshotTest {
     }
 
     @Test
+    public void test_snapshot_prep() throws NetworkException, InvalidFogResponse,
+            AttestationException, InsufficientFundsException, FogReportException,
+            TransactionBuilderException, FragmentedAccountException, FeeRejectedException,
+            InvalidTransactionException, TimeoutException, InterruptedException,
+            InvalidUriException {
+
+        MobileCoinClient mobileCoinClient = Environment.makeFreshMobileCoinClient();
+        AccountSnapshot snapshot = mobileCoinClient.getAccountSnapshot();
+        Balance balanceBefore = snapshot.getBalance();
+        BigInteger amount = BigInteger.valueOf(100);
+        BigInteger fee = snapshot.estimateTotalFee(amount);
+        PendingTransaction pendingTransaction = snapshot.prepareTransaction(
+                TestKeysManager.getNextAccountKey().getPublicAddress(),
+                amount,
+                fee
+        );
+        mobileCoinClient.submitTransaction(pendingTransaction.getTransaction());
+        waitForTransactionStatus(mobileCoinClient, pendingTransaction.getTransaction());
+        // make sure the snapshot didn't change
+        Balance balanceAfter = snapshot.getBalance();
+        Assert.assertEquals(balanceBefore, balanceAfter);
+    }
+
+    @Test
     public void test_tx_status() throws NetworkException, InvalidFogResponse, AttestationException,
             InsufficientFundsException, FogReportException, TransactionBuilderException,
             FragmentedAccountException, FeeRejectedException, InvalidTransactionException,
