@@ -48,6 +48,9 @@ public class AccountSnapshot {
         return blockIndex;
     }
 
+    /**
+     * @return account activity in the current snapshot
+     */
     @NonNull
     public AccountActivity getAccountActivity() {
         return new AccountActivity(txOuts, blockIndex.add(UnsignedLong.ONE));

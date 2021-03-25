@@ -9,7 +9,7 @@ import com.mobilecoin.lib.log.Logger;
 import java.math.BigInteger;
 
 /**
- * Represents account balance in picoMob for a specific block height
+ * The {@code Balance} class represents the account balance
  */
 public class Balance {
     private final static String TAG = Balance.class.getName();
@@ -24,12 +24,18 @@ public class Balance {
         this.atBlock = atBlock;
     }
 
+    /**
+     * Returns the balance amount in pico MOBs
+     */
     @NonNull
     public BigInteger getAmountPicoMob() {
         Logger.i(TAG, "Getting balance amount");
         return amountPicoMob;
     }
 
+    /**
+     * Returns the block index at which this balance was current
+     */
     @NonNull
     public UnsignedLong getBlockIndex() {
         Logger.i(TAG, "Getting block index");

@@ -9,7 +9,13 @@ import com.mobilecoin.lib.log.Logger;
 import java.util.Set;
 
 /**
- * Provide information about the account activity
+ * <pre>
+ * The {@code AccountActivity} class provides a low-level info about the account activity.
+ *
+ * The activity is comprised from the individual TxOuts that the account has received and spent.
+ * Each TxOut contains the information about the block indexes and the timestamps when it was
+ * received and spent (if it was spent).
+ * </pre>
  */
 public class AccountActivity {
     private final static String TAG = AccountActivity.class.getName();
@@ -36,7 +42,7 @@ public class AccountActivity {
 
     /**
      * @return all account TxOuts at the particular block count, see
-     * {@link AccountActivity#getBlockCount()}
+     * {@link AccountActivity#getBlockCount}
      */
     @NonNull
     public Set<OwnedTxOut> getAllTxOuts() {

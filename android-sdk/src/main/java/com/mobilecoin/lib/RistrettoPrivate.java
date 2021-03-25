@@ -13,8 +13,11 @@ import java.security.SecureRandom;
 import java.util.Arrays;
 
 /**
- * Encapsulates the abstraction of a native PrivateKey and provides a JNI link to control the native
- * counterpart.
+ * <pre>
+ * A RistrettoPrivate key
+ *
+ * MobileCoin accounts consist of two RistrettoPrivate keys: view & spend
+ * </pre>
  */
 public class RistrettoPrivate extends Native {
     private RistrettoPrivate(long existingRustObj) {
@@ -37,9 +40,9 @@ public class RistrettoPrivate extends Native {
     }
 
     /**
-     * Directly set the underlying key buffer.
+     * Create a RistrettoPrivate key instance from the key bytes
      *
-     * @param bytes a raw key buffer. Must conform to a valid key format.
+     * @param bytes a key buffer. Must conform to a valid key format.
      * @return initialized {@link RistrettoPrivate} instance
      */
     @NonNull

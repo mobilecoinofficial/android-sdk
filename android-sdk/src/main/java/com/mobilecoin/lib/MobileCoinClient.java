@@ -45,7 +45,12 @@ import consensus_common.ConsensusCommon;
 import fog_ledger.Ledger;
 
 /**
- * High level client for MobileCoin blockchain
+ * <pre>
+ * The {@link MobileCoinClient} class is a high-level Fog-enabled client to access MobileCoin
+ * blockchain.
+ *
+ * Fog-enabled {@link AccountKey} is required to use {@code MobileCoinClient}.
+ * </pre>
  */
 public class MobileCoinClient {
     public enum FeeLevel {
@@ -158,13 +163,13 @@ public class MobileCoinClient {
                 && blockIndex.compareTo(storeIndex) > 0) {
             return null;
         }
-        Set<OwnedTxOut> txOuts = txOutStore.getSyncedTxOuts().stream()
-                .filter(txOut -> txOut.getReceivedBlockIndex().compareTo(blockIndex) <= 0)
-                .collect(Collectors.toSet());
-
         final UnsignedLong finalBlockIndex = (storeIndex.compareTo(blockIndex) > 0)
                 ? blockIndex
                 : storeIndex;
+        Set<OwnedTxOut> txOuts = txOutStore.getSyncedTxOuts().stream()
+                .filter(txOut -> txOut.getReceivedBlockIndex().compareTo(finalBlockIndex) <= 0)
+                .collect(Collectors.toSet());
+
         return new AccountSnapshot(this, txOuts, finalBlockIndex);
     }
 
