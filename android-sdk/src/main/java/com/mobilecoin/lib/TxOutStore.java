@@ -320,7 +320,8 @@ class TxOutStore implements Serializable {
         }
         synchronized (this) {
             ledgerTotalTxCount = UnsignedLong.fromLongBits(keyImagesResponse.getGlobalTxoCount());
-            ledgerBlockIndex = UnsignedLong.fromLongBits(keyImagesResponse.getNumBlocks() - 1);
+            ledgerBlockIndex = UnsignedLong.fromLongBits(keyImagesResponse.getNumBlocks())
+                    .sub(UnsignedLong.ONE);
         }
     }
 
