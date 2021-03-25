@@ -27,6 +27,7 @@ public class PublicAddress extends Native {
     private final Uri fogUri;
     private final String fogReportId;
     private final byte[] fogAuthoritySig;
+
     /**
      * Constructs new {@link PublicAddress} instance
      *
@@ -138,10 +139,14 @@ public class PublicAddress extends Native {
     static PublicAddress fromProtoBufObject(@NonNull MobileCoinAPI.PublicAddress address)
             throws SerializationException {
         String fogUrl = address.getFogReportUrl();
-        Uri fogUri = (fogUrl != null)
+        Uri fogUri = (fogUrl != null && !fogUrl.isEmpty())
                 ? Uri.parse(fogUrl)
                 : null;
-        byte[] fogAuthoritySig = address.getFogAuthoritySig().toByteArray();
+        ByteString fogAuthoritySigString = address.getFogAuthoritySig();
+        byte[] fogAuthoritySig =
+                (fogAuthoritySigString != null && fogAuthoritySigString.size() > 0)
+                        ? fogAuthoritySigString.toByteArray()
+                        : null;
         String fogReportId = address.getFogReportId();
         // check non-null requirement for optional fields
         boolean hasFog = (fogUri != null && fogAuthoritySig != null && fogReportId != null);
