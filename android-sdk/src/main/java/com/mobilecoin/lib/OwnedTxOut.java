@@ -48,7 +48,6 @@ public class OwnedTxOut implements Serializable {
             @NonNull View.TxOutRecord txOutRecord,
             @NonNull AccountKey accountKey
     ) {
-        Logger.i(TAG, "Initializing OwnedTxOut");
         try {
             txOutGlobalIndex = UnsignedLong.fromLongBits(txOutRecord.getTxOutGlobalIndex());
             long longTimestampSeconds = txOutRecord.getTimestamp();

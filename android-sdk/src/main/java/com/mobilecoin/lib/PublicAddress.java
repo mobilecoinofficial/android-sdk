@@ -43,7 +43,6 @@ public class PublicAddress extends Native {
             @NonNull byte[] fogAuthoritySig,
             @NonNull String fogReportId
     ) {
-        Logger.i(TAG, "Creating Public Address from view/spend public keys");
         this.viewKey = viewKey;
         this.spendKey = spendKey;
         this.fogUri = fogUri;
