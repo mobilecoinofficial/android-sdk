@@ -36,10 +36,11 @@ public class BalanceTransferTest {
         AccountKey testKey = TestKeysManager.getNextAccountKey();
         // make sure the account is fragmented
         int TEST_FRAGMENTS = UTXOSelector.MAX_INPUTS + 1;
+        TestFogConfig fogConfig = Environment.getTestFogConfig();
         MobileCoinClient mobileCoinClient = Environment.makeFreshMobileCoinClient(testKey);
-        AccountKey accountKey = AccountKey.createNew(Environment.FOG_URI,
-                Environment.fogReportId,
-                Environment.fogAuthoritySpki
+        AccountKey accountKey = AccountKey.createNew(fogConfig.getFogUri(),
+                fogConfig.getFogReportId(),
+                fogConfig.getFogAuthoritySpki()
         );
         MobileCoinClient balanceAccount = Environment.makeFreshMobileCoinClient(accountKey);
         BigInteger amount = MobileCoinClient.TX_FEE.multiply(BigInteger.TEN);

@@ -99,10 +99,11 @@ public class PrintableWrapperTest {
     @Test
     public void test_transfer_payload() throws SerializationException {
         byte[] rootEntropy = TestKeysManager.getNextRootEntropy();
+        TestFogConfig fogConfig = Environment.getTestFogConfig();
         AccountKey accountKey = AccountKey.fromRootEntropy(rootEntropy,
-                Environment.FOG_URI,
-                Environment.fogReportId,
-                Environment.fogAuthoritySpki
+                fogConfig.getFogUri(),
+                fogConfig.getFogReportId(),
+                fogConfig.getFogAuthoritySpki()
         );
         RistrettoPublic publicKey = accountKey.getViewKey().getPublicKey();
         TransferPayload transferPayload = new TransferPayload(rootEntropy,

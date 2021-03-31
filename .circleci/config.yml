@@ -12,7 +12,7 @@ jobs:
       
       - run:
           name: Provide test credentials
-          command: sed -i 's/REPLACE_TEST_USER_STRING/'"$TEST_USER"'/g' android-sdk/src/androidTest/java/com/mobilecoin/lib/Environment.java && sed -i 's/REPLACE_TEST_PASSWORD_STRING/'"$TEST_PASSWORD"'/g' android-sdk/src/androidTest/java/com/mobilecoin/lib/Environment.java
+          command: sed -i 's/REPLACE_TEST_DEV_USER_STRING/'"$TEST_USER"'/g' android-sdk/src/androidTest/java/com/mobilecoin/lib/TestFogConfig.java && sed -i 's/REPLACE_TEST_DEV_PASSWORD_STRING/'"$TEST_PASSWORD"'/g' android-sdk/src/androidTest/java/com/mobilecoin/lib/TestFogConfig.java
 
       - run: make setup
       - run: make build

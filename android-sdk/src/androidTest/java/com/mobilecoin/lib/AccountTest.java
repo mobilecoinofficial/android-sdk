@@ -11,6 +11,7 @@ import org.junit.Test;
 import java.util.Arrays;
 
 public class AccountTest {
+    private final TestFogConfig fogConfig = Environment.getTestFogConfig();
 
     private static final byte[] viewPublicKeyBytes = {
             (byte) 120, (byte) 144, (byte) 28, (byte) 17, (byte) 131, (byte) 78, (byte) 132,
@@ -65,9 +66,9 @@ public class AccountTest {
 
     @Test
     public void test_serialize() throws SerializationException, InvalidUriException {
-        AccountKey accountKey1 = AccountKey.createNew(Environment.FOG_URI,
-                Environment.fogReportId,
-                Environment.fogAuthoritySpki
+        AccountKey accountKey1 = AccountKey.createNew(fogConfig.getFogUri(),
+                fogConfig.getFogReportId(),
+                fogConfig.getFogAuthoritySpki()
         );
         byte[] serialized = accountKey1.toByteArray();
         AccountKey accountKey2 = AccountKey.fromBytes(serialized);
@@ -114,9 +115,9 @@ public class AccountTest {
                 (byte) 0
         );
         AccountKey accountKey = AccountKey.fromRootEntropy(rootEntropy,
-                Environment.FOG_URI,
-                Environment.fogReportId,
-                Environment.fogAuthoritySpki
+                fogConfig.getFogUri(),
+                fogConfig.getFogReportId(),
+                fogConfig.getFogAuthoritySpki()
         );
 
         RistrettoPrivate restoredViewKey = RistrettoPrivate.fromBytes(viewPrivateKeyBytes);

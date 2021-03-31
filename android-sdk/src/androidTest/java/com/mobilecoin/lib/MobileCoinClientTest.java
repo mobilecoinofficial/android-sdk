@@ -38,8 +38,6 @@ import java.util.Set;
 import java.util.concurrent.TimeoutException;
 import java.util.stream.Collectors;
 
-import static com.mobilecoin.lib.Environment.TEST_PASSWORD;
-import static com.mobilecoin.lib.Environment.TEST_USERNAME;
 import static com.mobilecoin.lib.UtilTest.waitForReceiptStatus;
 import static com.mobilecoin.lib.UtilTest.waitForTransactionStatus;
 
@@ -52,6 +50,8 @@ import static com.mobilecoin.lib.UtilTest.waitForTransactionStatus;
 @RunWith(AndroidJUnit4.class)
 public class MobileCoinClientTest {
     private static final String TAG = MobileCoinClient.class.toString();
+    private static final String wrongTrustRootBase64 = "MIIDdzCCAl" +
+            "+gAwIBAgIEAgAAuTANBgkqhkiG9w0BAQUFADBaMQswCQYDVQQGEwJJRTESMBAGA1UEChMJQmFsdGltb3JlMRMwEQYDVQQLEwpDeWJlclRydXN0MSIwIAYDVQQDExlCYWx0aW1vcmUgQ3liZXJUcnVzdCBSb290MB4XDTAwMDUxMjE4NDYwMFoXDTI1MDUxMjIzNTkwMFowWjELMAkGA1UEBhMCSUUxEjAQBgNVBAoTCUJhbHRpbW9yZTETMBEGA1UECxMKQ3liZXJUcnVzdDEiMCAGA1UEAxMZQmFsdGltb3JlIEN5YmVyVHJ1c3QgUm9vdDCCASIwDQYJKoZIhvcNAQEBBQADggEPADCCAQoCggEBAKMEuyKrmD1X6CZymrV51Cni4eiVgLGw41uOKymaZN+hXe2wCQVt2yguzmKiYv60iNoS6zjrIZ3AQSsBUnuId9Mcj8e6uYi1agnnc+gRQKfRzMpijS3ljwumUNKoUMMo6vWrJYeKmpYcqWe4PwzV9/lSEy/CG9VwcPCPwBLKBsua4dnKM3p31vjsufFoREJIE9LAwqSuXmD+tqYF/LTdB1kC1FkYmGP1pWPgkAx9XbIGevOF6uvUA65ehD5f/xXtabz5OTZydc93Uk3zyZAsuT3lySNTPx8kmCFcB5kpvcY67Oduhjprl3RjM71oGDHweI12v/yejl0qhqdNkNwnGjkCAwEAAaNFMEMwHQYDVR0OBBYEFOWdWTCCR1jMrPoIVDaGezq1BE3wMBIGA1UdEwEB/wQIMAYBAf8CAQMwDgYDVR0PAQH/BAQDAgEGMA0GCSqGSIb3DQEBBQUAA4IBAQCFDF2O5G9RaEIFoN27TyclhAO992T9Ldcw46QQF+vaKSm2eT929hkTI7gQCvlYpNRhcL0EYWoSihfVCr3FvDB81ukMJY2GQE/szKN+OMY3EU/t3WgxjkzSswF07r51XgdIGn9w/xZchMB5hbgF/X++ZRGjD8ACtPhSNzkE1akxehi/oCr0Epn3o0WC4zxe9Z2etciefC7IpJ5OCBRLbf1wbWsaY71k5h+3zvDyny67G7fyUIhzksLi4xaNmjICq44Y3ekQEe5+NauQrz4wlHrQMz2nZQ/1/I6eYs9HRCwBXbsdtTLSR9I4LtD+gdwyah617jzV/OeBHRnDJELqYzmp";
 
     @Rule
     public GrantPermissionRule mRuntimePermissionRule =
@@ -170,18 +170,19 @@ public class MobileCoinClientTest {
     @Test
     public void test_attestation_must_fail() throws NetworkException, InvalidFogResponse,
             InvalidUriException {
-        ClientConfig clientConfig = ClientConfig.defaultConfig();
+        TestFogConfig fogConfig = Environment.getTestFogConfig();
+        ClientConfig clientConfig = fogConfig.getClientConfig();
         // change fog verifier to make balance call fail
         clientConfig.fogView = clientConfig.consensus;
         MobileCoinClient mobileCoinClient = new MobileCoinClient(
                 TestKeysManager.getNextAccountKey(),
-                Environment.FOG_URI,
-                Environment.CONSENSUS_URI,
+                fogConfig.getFogUri(),
+                fogConfig.getConsensusUri(),
                 clientConfig
         );
         mobileCoinClient.setAuthorization(
-                TEST_USERNAME,
-                TEST_PASSWORD
+                fogConfig.getUsername(),
+                fogConfig.getPassword()
         );
         try {
             mobileCoinClient.getBalance();
@@ -194,20 +195,21 @@ public class MobileCoinClientTest {
     @Test
     public void test_bad_trust_root_must_fail() throws InvalidFogResponse,
             InvalidUriException, AttestationException {
-        ClientConfig clientConfig = ClientConfig.defaultConfig();
+        TestFogConfig fogConfig = Environment.getTestFogConfig();
+        ClientConfig clientConfig = fogConfig.getClientConfig();
         // change fog verifier to make balance call fail
-        byte[] certificateBytes = Base64.decode(Environment.wrongTrustRootBase64, Base64.DEFAULT);
+        byte[] certificateBytes = Base64.decode(wrongTrustRootBase64, Base64.DEFAULT);
         Set<X509Certificate> certs = Util.makeCertificatesFromData(certificateBytes);
         clientConfig.fogView.withTrustRoots(certs);
         MobileCoinClient mobileCoinClient = new MobileCoinClient(
                 TestKeysManager.getNextAccountKey(),
-                Environment.FOG_URI,
-                Environment.CONSENSUS_URI,
+                fogConfig.getFogUri(),
+                fogConfig.getConsensusUri(),
                 clientConfig
         );
         mobileCoinClient.setAuthorization(
-                TEST_USERNAME,
-                TEST_PASSWORD
+                fogConfig.getUsername(),
+                fogConfig.getPassword()
         );
         try {
             mobileCoinClient.getBalance();
@@ -378,11 +380,12 @@ public class MobileCoinClientTest {
         AccountKey coinSourceKey = TestKeysManager.getNextAccountKey();
         MobileCoinClient coinSourceClient = Environment.makeFreshMobileCoinClient(coinSourceKey);
 
+        TestFogConfig fogConfig = Environment.getTestFogConfig();
         // 1. Create a new fragmented account
         AccountKey fragmentedAccount = AccountKey.createNew(
-                Environment.FOG_URI,
-                Environment.fogReportId,
-                Environment.fogAuthoritySpki
+                fogConfig.getFogUri(),
+                fogConfig.getFogReportId(),
+                fogConfig.getFogAuthoritySpki()
         );
 
         MobileCoinClient fragmentedClient =
@@ -579,6 +582,7 @@ public class MobileCoinClientTest {
             AttestationException, FogReportException, TransactionBuilderException,
             FragmentedAccountException, FeeRejectedException, InterruptedException,
             InvalidTransactionException, TimeoutException {
+        TestFogConfig fogConfig = Environment.getTestFogConfig();
         AccountKey recipientAccount = TestKeysManager.getNextAccountKey();
         // remove fog info from the public address
         PublicAddress addressWithFog = recipientAccount.getPublicAddress();
@@ -598,9 +602,9 @@ public class MobileCoinClientTest {
         Receipt txReceipt = pendingTransaction.getReceipt();
 
         UnsignedLong txBlockIndex = txStatus.getBlockIndex();
-        FogBlockClient blockClient = new FogBlockClient(new FogUri(Environment.FOG_URI),
+        FogBlockClient blockClient = new FogBlockClient(new FogUri(fogConfig.getFogUri()),
                 ClientConfig.defaultConfig().fogLedger);
-        blockClient.setAuthorization(TEST_USERNAME, TEST_PASSWORD);
+        blockClient.setAuthorization(fogConfig.getUsername(), fogConfig.getPassword());
         List<OwnedTxOut> txOuts = blockClient.scanForTxOutsInBlockRange(
                 new BlockRange(
                         txBlockIndex,
