@@ -27,10 +27,14 @@ public class AccountKey extends Native {
     private final static String TAG = AccountKey.class.getName();
     private static final int MOBILECOIN_COIN_TYPE = 866;
 
-    private String fogReportId;
-    private byte[] fogAuthoritySpki;
-    private RistrettoPrivate subAddressViewKey;
-    private RistrettoPrivate subAddressSpendKey;
+    private final Uri fogReportUri;
+    private final String fogReportId;
+    private final byte[] fogAuthoritySpki;
+    private final RistrettoPrivate subAddressViewKey;
+    private final RistrettoPrivate subAddressSpendKey;
+    private final RistrettoPrivate viewKey;
+    private final RistrettoPrivate spendKey;
+    private final PublicAddress publicAddress;
 
     /**
      * Package private AccountKey constructor for Ristretto private keys with fog info
@@ -59,14 +63,21 @@ public class AccountKey extends Native {
 
         FogUri fogUriWrapper = new FogUri(fogReportUri);
         try {
-            this.fogReportId = fogReportId;
-            this.fogAuthoritySpki = fogAuthoritySpki;
             init_jni(viewKey,
                     spendKey,
                     fogUriWrapper.toString(),
                     fogAuthoritySpki,
                     fogReportId
             );
+            // normalize fog report Uri
+            this.fogReportUri = new FogUri(fogReportUri).getUri();
+            this.fogReportId = fogReportId;
+            this.fogAuthoritySpki = fogAuthoritySpki;
+            this.viewKey = viewKey;
+            this.spendKey = spendKey;
+            this.subAddressViewKey = RistrettoPrivate.fromJNI(get_default_subaddress_view_key());
+            this.subAddressSpendKey = RistrettoPrivate.fromJNI(get_default_subaddress_spend_key());
+            this.publicAddress = PublicAddress.fromJNI(get_public_address());
             Logger.i(TAG, "AccountKey created from view/spend keys");
         } catch (Exception ex) {
             IllegalArgumentException illegalArgumentException =
@@ -96,8 +107,6 @@ public class AccountKey extends Native {
             @NonNull String fogReportId,
             @NonNull byte[] fogAuthoritySpki
     ) {
-        this.fogReportId = fogReportId;
-        this.fogAuthoritySpki = fogAuthoritySpki;
         Logger.i(TAG, "Create a new AccountKey from rootEntropy",
                 null,
                 "fogReportUri:", fogReportUri,
@@ -109,6 +118,14 @@ public class AccountKey extends Native {
                     fogAuthoritySpki,
                     fogReportId
             );
+            this.fogReportUri = fogReportUri;
+            this.fogReportId = fogReportId;
+            this.fogAuthoritySpki = fogAuthoritySpki;
+            this.viewKey = RistrettoPrivate.fromJNI(get_view_key());
+            this.spendKey = RistrettoPrivate.fromJNI(get_spend_key());
+            this.subAddressViewKey = RistrettoPrivate.fromJNI(get_default_subaddress_view_key());
+            this.subAddressSpendKey = RistrettoPrivate.fromJNI(get_default_subaddress_spend_key());
+            this.publicAddress = PublicAddress.fromJNI(get_public_address());
             Logger.i(TAG, "AccountKey created from the root entropy");
         } catch (Exception ex) {
             IllegalArgumentException illegalArgumentException =
@@ -264,8 +281,7 @@ public class AccountKey extends Native {
      */
     @NonNull
     RistrettoPrivate getViewKey() {
-        long rustObj = get_view_key();
-        return RistrettoPrivate.fromJNI(rustObj);
+        return viewKey;
     }
 
     /**
@@ -273,8 +289,7 @@ public class AccountKey extends Native {
      */
     @NonNull
     RistrettoPrivate getSpendKey() {
-        long rustObj = get_spend_key();
-        return RistrettoPrivate.fromJNI(rustObj);
+        return spendKey;
     }
 
     /**
@@ -282,13 +297,7 @@ public class AccountKey extends Native {
      */
     @NonNull
     public Uri getFogReportUri() {
-        String fogReportUriString = getFogUriString();
-        try {
-            FogUri fogUri = new FogUri(fogReportUriString);
-            return fogUri.getUri();
-        } catch (InvalidUriException ignored) {
-            throw new IllegalStateException("BUG: fog report uri cannot be invalid");
-        }
+        return fogReportUri;
     }
 
     /**
@@ -296,19 +305,14 @@ public class AccountKey extends Native {
      */
     @NonNull
     public PublicAddress getPublicAddress() {
-        long rustObj = get_public_address();
-        return PublicAddress.fromJNI(rustObj);
+        return publicAddress;
     }
 
     /**
      * @return account's default subaddress private spend key as {@link RistrettoPrivate}
      */
     @NonNull
-    synchronized RistrettoPrivate getSubAddressSpendKey() {
-        if (null == subAddressSpendKey) {
-            long rustObj = get_default_subaddress_spend_key();
-            subAddressSpendKey = RistrettoPrivate.fromJNI(rustObj);
-        }
+    RistrettoPrivate getSubAddressSpendKey() {
         return subAddressSpendKey;
     }
 
@@ -316,11 +320,7 @@ public class AccountKey extends Native {
      * @return account's default subaddress private view key as {@link RistrettoPrivate}
      */
     @NonNull
-    synchronized RistrettoPrivate getSubAddressViewKey() {
-        if (null == subAddressViewKey) {
-            long rustObj = get_default_subaddress_view_key();
-            subAddressViewKey = RistrettoPrivate.fromJNI(rustObj);
-        }
+    RistrettoPrivate getSubAddressViewKey() {
         return subAddressViewKey;
     }
 
@@ -328,10 +328,7 @@ public class AccountKey extends Native {
      * @return fog authority fingerprint signature
      */
     @NonNull
-    public synchronized byte[] getFogAuthoritySpki() {
-        if (null == fogAuthoritySpki) {
-            fogAuthoritySpki = get_fog_authority_fingerprint();
-        }
+    public byte[] getFogAuthoritySpki() {
         return fogAuthoritySpki;
     }
 
@@ -339,10 +336,7 @@ public class AccountKey extends Native {
      * @return fog report id
      */
     @NonNull
-    public synchronized String getFogReportId() {
-        if (null == fogReportId) {
-            fogReportId = get_report_id();
-        }
+    public String getFogReportId() {
         return fogReportId;
     }
 
@@ -367,17 +361,21 @@ public class AccountKey extends Native {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         AccountKey that = (AccountKey) o;
-        return getFogReportId().equals(that.getFogReportId()) &&
-                getFogReportUri().equals(that.getFogReportUri()) &&
+        return fogReportId.equals(that.fogReportId) &&
+                fogReportUri.equals(that.fogReportUri) &&
                 Arrays.equals(fogAuthoritySpki, that.fogAuthoritySpki) &&
-                getSubAddressViewKey().equals(that.getSubAddressViewKey()) &&
-                getSubAddressSpendKey().equals(that.getSubAddressSpendKey());
+                viewKey.equals(that.viewKey) &&
+                spendKey.equals(that.spendKey) &&
+                subAddressViewKey.equals(that.subAddressViewKey) &&
+                subAddressSpendKey.equals(that.subAddressSpendKey);
     }
 
     @Override
     public int hashCode() {
-        int result = Objects.hash(getFogReportId(), getSubAddressViewKey(),
-                getSubAddressSpendKey());
+        int result = Objects.hash(fogReportId, fogReportUri,
+                viewKey, spendKey,
+                subAddressViewKey, subAddressSpendKey
+        );
         result = 31 * result + Arrays.hashCode(fogAuthoritySpki);
         return result;
     }

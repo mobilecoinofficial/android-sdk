@@ -48,7 +48,7 @@ class FogBlockClient extends AnyClient {
      * @param accountKey for TxOuts decoding
      */
     @NonNull
-    public synchronized List<OwnedTxOut> scanForTxOutsInBlockRange(
+    public List<OwnedTxOut> scanForTxOutsInBlockRange(
             @NonNull BlockRange range, @NonNull AccountKey accountKey
     ) throws NetworkException {
         Logger.i(TAG, "Scanning the ledger for TxOuts");
@@ -77,7 +77,7 @@ class FogBlockClient extends AnyClient {
      * Fetch TxOutRecords from the block range
      */
     @NonNull
-    public synchronized List<View.TxOutRecord> fetchTxRecordsInBlockRange(@NonNull BlockRange range)
+    public List<View.TxOutRecord> fetchTxRecordsInBlockRange(@NonNull BlockRange range)
             throws NetworkException {
         Logger.i(TAG, "Fetching TxOuts via Block API", null,
                 "range:", range);

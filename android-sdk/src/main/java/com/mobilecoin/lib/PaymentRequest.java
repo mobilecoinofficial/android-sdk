@@ -12,9 +12,9 @@ import java.util.Objects;
 
 public class PaymentRequest {
     private final static String TAG = PaymentRequest.class.getName();
-    PublicAddress publicAddress;
-    UnsignedLong value;
-    String memo;
+    private final PublicAddress publicAddress;
+    private final UnsignedLong value;
+    private final String memo;
 
     public PaymentRequest(
             @NonNull PublicAddress publicAddress,
