@@ -26,7 +26,6 @@ class Amount extends Native {
      * @param maskedValue {@code masked_value = value XOR_8 Blake2B(value_mask || shared_secret)}
      */
     Amount(@NonNull byte[] commitment, long maskedValue) throws AmountDecoderException {
-        Logger.i(TAG, "Creating new Amount object");
         protoBufAmount = MobileCoinAPI.Amount.newBuilder()
                 .setCommitment(MobileCoinAPI.CompressedRistretto.newBuilder()
                         .setData(ByteString.copyFrom(commitment)).build())
@@ -65,7 +64,6 @@ class Amount extends Native {
      */
     @NonNull
     MobileCoinAPI.Amount toProtoBufObject() {
-        Logger.i(TAG, "Serializing amount");
         return protoBufAmount;
     }
 
@@ -76,7 +74,6 @@ class Amount extends Native {
      */
     @NonNull
     byte[] getCommitment() {
-        Logger.i(TAG, "Getting commitment for amount");
         return protoBufAmount.getCommitment().getData().toByteArray();
     }
 
@@ -86,7 +83,6 @@ class Amount extends Native {
      * @return {@code masked_value = value XOR_8 Blake2B(value_mask || shared_secret)}
      */
     long getMaskedValue() {
-        Logger.i(TAG, "Getting masked value for amount");
         return protoBufAmount.getMaskedValue();
     }
 

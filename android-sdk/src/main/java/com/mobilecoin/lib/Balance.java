@@ -4,8 +4,6 @@ package com.mobilecoin.lib;
 
 import androidx.annotation.NonNull;
 
-import com.mobilecoin.lib.log.Logger;
-
 import java.math.BigInteger;
 
 /**
@@ -29,7 +27,6 @@ public class Balance {
      */
     @NonNull
     public BigInteger getAmountPicoMob() {
-        Logger.i(TAG, "Getting balance amount");
         return amountPicoMob;
     }
 
@@ -38,7 +35,6 @@ public class Balance {
      */
     @NonNull
     public UnsignedLong getBlockIndex() {
-        Logger.i(TAG, "Getting block index");
         return atBlock;
     }
 

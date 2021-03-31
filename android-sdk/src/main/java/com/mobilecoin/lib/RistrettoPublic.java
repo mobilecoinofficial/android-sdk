@@ -24,7 +24,7 @@ import java.util.Arrays;
 public class RistrettoPublic extends Native implements Serializable {
     public static final int PUBLIC_KEY_SIZE = 32;
     private static final long serialVersionUID = 1L;
-    private MobileCoinAPI.CompressedRistretto protoBuf;
+    private MobileCoinAPI.CompressedRistretto compressedRistretto;
 
     private RistrettoPublic(long existingRustObj) {
         rustObj = existingRustObj;
@@ -33,27 +33,27 @@ public class RistrettoPublic extends Native implements Serializable {
             MobileCoinAPI.CompressedRistretto.Builder builder =
                     MobileCoinAPI.CompressedRistretto.newBuilder();
             builder.setData(ByteString.copyFrom(keyBytes));
-            protoBuf = builder.build();
+            compressedRistretto = builder.build();
         } catch (Exception ex) {
             throw new IllegalStateException("BUG: unable to get key bytes from the native code",
                     ex);
         }
     }
 
-    private RistrettoPublic(@NonNull MobileCoinAPI.CompressedRistretto keyBuf)
+    private RistrettoPublic(@NonNull MobileCoinAPI.CompressedRistretto compressedRistretto)
             throws SerializationException {
-        protoBuf = keyBuf;
+        this.compressedRistretto = compressedRistretto;
         try {
-            init_jni(protoBuf.getData().toByteArray());
+            init_jni(this.compressedRistretto.getData().toByteArray());
         } catch (Exception ex) {
             throw new SerializationException(ex.getLocalizedMessage());
         }
     }
 
     @NonNull
-    static RistrettoPublic fromProtoBufObject(@NonNull MobileCoinAPI.CompressedRistretto keyBuf)
+    static RistrettoPublic fromProtoBufObject(@NonNull MobileCoinAPI.CompressedRistretto compressedRistretto)
             throws SerializationException {
-        return new RistrettoPublic(keyBuf);
+        return new RistrettoPublic(compressedRistretto);
     }
 
     /**
@@ -64,10 +64,10 @@ public class RistrettoPublic extends Native implements Serializable {
      */
     @NonNull
     public static RistrettoPublic fromBytes(@NonNull byte[] bytes) throws SerializationException {
-        MobileCoinAPI.CompressedRistretto protoBuf =
+        MobileCoinAPI.CompressedRistretto compressedRistretto =
                 MobileCoinAPI.CompressedRistretto.newBuilder().setData(ByteString.copyFrom(bytes))
                         .build();
-        return RistrettoPublic.fromProtoBufObject(protoBuf);
+        return RistrettoPublic.fromProtoBufObject(compressedRistretto);
     }
 
     /**
@@ -81,7 +81,7 @@ public class RistrettoPublic extends Native implements Serializable {
 
     @NonNull
     MobileCoinAPI.CompressedRistretto toProtoBufObject() {
-        return protoBuf;
+        return compressedRistretto;
     }
 
     /**
@@ -91,12 +91,12 @@ public class RistrettoPublic extends Native implements Serializable {
      */
     @NonNull
     public byte[] getKeyBytes() {
-        return protoBuf.getData().toByteArray();
+        return compressedRistretto.getData().toByteArray();
     }
 
     @Override
     public int hashCode() {
-        return Arrays.hashCode(protoBuf.getData().toByteArray());
+        return Arrays.hashCode(compressedRistretto.getData().toByteArray());
     }
 
     @Override
@@ -104,11 +104,12 @@ public class RistrettoPublic extends Native implements Serializable {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         RistrettoPublic that = (RistrettoPublic) o;
-        return protoBuf.equals(that.protoBuf);
+        return Arrays.equals(compressedRistretto.getData().toByteArray(),
+                that.compressedRistretto.getData().toByteArray());
     }
 
     private void writeObject(ObjectOutputStream out) throws IOException {
-        out.write(protoBuf.getData().toByteArray());
+        out.write(compressedRistretto.getData().toByteArray());
     }
 
     private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException {
@@ -118,7 +119,7 @@ public class RistrettoPublic extends Native implements Serializable {
             throw new IOException("Invalid public key size in the serialized data");
         }
         try {
-            protoBuf = MobileCoinAPI.CompressedRistretto.newBuilder()
+            compressedRistretto = MobileCoinAPI.CompressedRistretto.newBuilder()
                     .setData(ByteString.copyFrom(keyBytes)).build();
         } catch (Exception e) {
             throw new IOException("Unable to create a public key from the serialized data", e);

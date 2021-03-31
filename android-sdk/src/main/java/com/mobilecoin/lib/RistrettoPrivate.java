@@ -20,8 +20,11 @@ import java.util.Arrays;
  * </pre>
  */
 public class RistrettoPrivate extends Native {
+    private final byte[] keyBytes;
+
     private RistrettoPrivate(long existingRustObj) {
         rustObj = existingRustObj;
+        keyBytes = getKeyBytes();
     }
 
     private RistrettoPrivate(
@@ -34,6 +37,7 @@ public class RistrettoPrivate extends Native {
             } else if (type == PayloadType.SEED_BYTES) {
                 init_jni_seed(bytes);
             }
+            keyBytes = getKeyBytes();
         } catch (Exception ex) {
             throw new SerializationException(ex.getLocalizedMessage(), ex);
         }
@@ -149,7 +153,7 @@ public class RistrettoPrivate extends Native {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         RistrettoPrivate that = (RistrettoPrivate) o;
-        return Arrays.equals(this.getKeyBytes(), that.getKeyBytes());
+        return Arrays.equals(this.keyBytes, that.keyBytes);
     }
 
     @Override

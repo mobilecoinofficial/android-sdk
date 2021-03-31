@@ -123,9 +123,9 @@ public final class Logger {
     }
 
     public enum Level {
-        INFO,
         VERBOSE,
         DEBUG,
+        INFO,
         WARNING,
         ERROR,
         WTF

@@ -19,7 +19,6 @@ class TxOut extends Native {
     private final RistrettoPublic pubKey;
 
     private TxOut(@NonNull byte[] serializedBytes) throws SerializationException {
-        Logger.i(TAG, "Initializing from serialized bytes");
         try {
             init_from_protobuf_bytes(serializedBytes);
             protoBufTxOut = MobileCoinAPI.TxOut.parseFrom(serializedBytes);
@@ -72,19 +71,16 @@ class TxOut extends Native {
      */
     @NonNull
     public static TxOut fromBytes(@NonNull byte[] serializedBytes) throws SerializationException {
-        Logger.i(TAG, "Deserializing from bytes");
         return new TxOut(serializedBytes);
     }
 
     @NonNull
     static TxOut fromProtoBufObject(@NonNull MobileCoinAPI.TxOut txOut) throws SerializationException {
-        Logger.i(TAG, "Deserializing from protobuf");
         return new TxOut(txOut);
     }
 
     @NonNull
     public Amount getAmount() {
-        Logger.i(TAG, "Getting amount");
         try {
             return Amount.fromProtoBufObject(protoBufTxOut.getAmount());
         } catch (AmountDecoderException exception) {
@@ -100,7 +96,6 @@ class TxOut extends Native {
      */
     @NonNull
     public byte[] toByteArray() throws SerializationException {
-        Logger.i(TAG, "Serializing to byte array");
         try {
             return encode();
         } catch (Exception ex) {
@@ -110,7 +105,6 @@ class TxOut extends Native {
 
     @NonNull
     MobileCoinAPI.TxOut toProtoBufObject() {
-        Logger.i(TAG, "Serializing to protobuf");
         return protoBufTxOut;
     }
 
@@ -138,13 +132,11 @@ class TxOut extends Native {
 
     @NonNull
     byte[] computeKeyImage(AccountKey accountKey) {
-        Logger.i(TAG, "Computing key image");
         return compute_key_image(accountKey);
     }
 
     @NonNull
     RistrettoPublic getPubKey() {
-        Logger.i(TAG, "Getting pubkey", null, pubKey);
         return pubKey;
     }
 

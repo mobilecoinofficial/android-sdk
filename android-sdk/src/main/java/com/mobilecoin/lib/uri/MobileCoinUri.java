@@ -70,7 +70,7 @@ public class MobileCoinUri {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         MobileCoinUri that = (MobileCoinUri) o;
-        return getUri().equals(that.getUri());
+        return uri.equals(that.uri);
     }
 
     @Override
