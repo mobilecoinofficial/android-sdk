@@ -13,10 +13,11 @@ class TestKeysManager {
     }
 
     static AccountKey getNextAccountKey() {
+        TestFogConfig fogConfig = Environment.getTestFogConfig();
         return AccountKey.fromRootEntropy(getNextRootEntropy(),
-                Environment.FOG_URI,
-                Environment.fogReportId,
-                Environment.fogAuthoritySpki
+                fogConfig.getFogUri(),
+                fogConfig.getFogReportId(),
+                fogConfig.getFogAuthoritySpki()
         );
     }
 

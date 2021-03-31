@@ -29,26 +29,25 @@ import java.util.List;
 
 import fog_view.View;
 
-import static com.mobilecoin.lib.Environment.TEST_PASSWORD;
-import static com.mobilecoin.lib.Environment.TEST_USERNAME;
-
 @RunWith(AndroidJUnit4.class)
 public class LedgerTest {
     private static final String TAG = MobileCoinClient.class.toString();
+    private final TestFogConfig fogConfig = Environment.getTestFogConfig();
 
     @Rule
     public ExpectedException thrown = ExpectedException.none();
 
     @Test
-    public void fetch_block_records_test() throws NetworkException, AttestationException, InvalidUriException {
-        FogBlockClient blockClient= new FogBlockClient(
-                new FogUri(Environment.FOG_URI),
-                ClientConfig.devConfig().fogLedger
+    public void fetch_block_records_test() throws NetworkException, AttestationException,
+            InvalidUriException {
+        FogBlockClient blockClient = new FogBlockClient(
+                new FogUri(fogConfig.getFogUri()),
+                fogConfig.getClientConfig().fogLedger
         );
 
         blockClient.setAuthorization(
-                TEST_USERNAME,
-                TEST_PASSWORD
+                fogConfig.getUsername(),
+                fogConfig.getPassword()
         );
         // avoid block #0, it is very large and will take much longer to process
         List<View.TxOutRecord> records =
@@ -72,7 +71,8 @@ public class LedgerTest {
             InvalidFogResponse,
             TransactionBuilderException,
             FeeRejectedException,
-            InvalidTransactionException, InterruptedException, FogReportException, InvalidReceiptException, InvalidUriException {
+            InvalidTransactionException, InterruptedException, FogReportException,
+            InvalidReceiptException, InvalidUriException {
 
         MobileCoinClient senderClient = Environment.makeFreshMobileCoinClient();
         MobileCoinClient recipientClient = Environment.makeFreshMobileCoinClient();
@@ -109,18 +109,18 @@ public class LedgerTest {
         } while (receiptStatus == Receipt.Status.UNKNOWN);
 
         FogBlockClient blockClient = new FogBlockClient(
-                new FogUri(Environment.FOG_URI),
-                ClientConfig.devConfig().fogLedger
+                new FogUri(fogConfig.getFogUri()),
+                fogConfig.getClientConfig().fogLedger
         );
 
         blockClient.setAuthorization(
-                TEST_USERNAME,
-                TEST_PASSWORD
+                fogConfig.getUsername(),
+                fogConfig.getPassword()
         );
 
         // scan a small range of blocks in case
         List<OwnedTxOut> records = blockClient.scanForTxOutsInBlockRange(
-                new BlockRange(txoBlock.longValue()-2, txoBlock.longValue()+1),
+                new BlockRange(txoBlock.longValue() - 2, txoBlock.longValue() + 1),
                 recipientClient.getAccountKey()
         );
 

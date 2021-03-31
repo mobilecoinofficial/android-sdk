@@ -14,9 +14,6 @@ import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 
-import static com.mobilecoin.lib.Environment.fogAuthoritySpki;
-import static com.mobilecoin.lib.Environment.fogReportId;
-
 @RunWith(AndroidJUnit4.class)
 public class PublicAddressTest {
     private final RistrettoPublic key1 = RistrettoPrivate.generateNewKey().getPublicKey();
@@ -24,6 +21,8 @@ public class PublicAddressTest {
     // make sure we have different pub key objects and only underlying key bytes are equal
     private final RistrettoPublic key1_copy = RistrettoPublic.fromBytes(key1.getKeyBytes());
     private final RistrettoPublic key2_copy = RistrettoPublic.fromBytes(key2.getKeyBytes());
+
+    private final TestFogConfig fogConfig = Environment.getTestFogConfig();
 
     @Rule
     public ExpectedException thrown = ExpectedException.none();
@@ -74,8 +73,8 @@ public class PublicAddressTest {
                 key1,
                 key2,
                 null,
-                fogAuthoritySpki,
-                fogReportId
+                fogConfig.getFogAuthoritySpki(),
+                fogConfig.getFogReportId()
         );
     }
 
@@ -84,9 +83,9 @@ public class PublicAddressTest {
         new PublicAddress(
                 key1,
                 key2,
-                Environment.FOG_URI,
-                fogAuthoritySpki,
-                fogReportId
+                fogConfig.getFogUri(),
+                fogConfig.getFogAuthoritySpki(),
+                fogConfig.getFogReportId()
         );
     }
 
@@ -94,24 +93,24 @@ public class PublicAddressTest {
     public void test_hashcode() {
         PublicAddress first = new PublicAddress(key1,
                 key2,
-                Environment.FOG_URI,
-                fogAuthoritySpki,
-                fogReportId
+                fogConfig.getFogUri(),
+                fogConfig.getFogAuthoritySpki(),
+                fogConfig.getFogReportId()
         );
         PublicAddress second = new PublicAddress(key1_copy,
                 key2_copy,
-                Environment.FOG_URI,
-                fogAuthoritySpki,
-                fogReportId
+                fogConfig.getFogUri(),
+                fogConfig.getFogAuthoritySpki(),
+                fogConfig.getFogReportId()
         );
         if (first.hashCode() != second.hashCode()) {
             Assert.fail("Equal objects must have equal hashes");
         }
         second = new PublicAddress(key2,
                 key1,
-                Environment.FOG_URI,
-                fogAuthoritySpki,
-                fogReportId
+                fogConfig.getFogUri(),
+                fogConfig.getFogAuthoritySpki(),
+                fogConfig.getFogReportId()
         );
         if (first.hashCode() == second.hashCode()) {
             Assert.fail("Different objects must have different hashes");
@@ -119,8 +118,8 @@ public class PublicAddressTest {
         second = new PublicAddress(key1,
                 key2,
                 Uri.parse("https://test.some.server"),
-                fogAuthoritySpki,
-                fogReportId
+                fogConfig.getFogAuthoritySpki(),
+                fogConfig.getFogReportId()
         );
         if (first.hashCode() == second.hashCode()) {
             Assert.fail("Different objects must have different hashes");
@@ -131,15 +130,15 @@ public class PublicAddressTest {
     public void test_compare() {
         PublicAddress first = new PublicAddress(key1,
                 key2,
-                Environment.FOG_URI,
-                fogAuthoritySpki,
-                fogReportId
+                fogConfig.getFogUri(),
+                fogConfig.getFogAuthoritySpki(),
+                fogConfig.getFogReportId()
         );
         PublicAddress second = new PublicAddress(key1_copy,
                 key2_copy,
-                Environment.FOG_URI,
-                fogAuthoritySpki,
-                fogReportId
+                fogConfig.getFogUri(),
+                fogConfig.getFogAuthoritySpki(),
+                fogConfig.getFogReportId()
         );
         if (!first.equals(second)) {
             Assert.fail("Public addresses with identical underlying key bytes must be equal");
@@ -147,9 +146,9 @@ public class PublicAddressTest {
         // swap keys to make objects not equal
         second = new PublicAddress(key2,
                 key1,
-                Environment.FOG_URI,
-                fogAuthoritySpki,
-                fogReportId
+                fogConfig.getFogUri(),
+                fogConfig.getFogAuthoritySpki(),
+                fogConfig.getFogReportId()
         );
         if (first.equals(second)) {
             Assert.fail("Different Public addresses must not be equal");
@@ -157,8 +156,8 @@ public class PublicAddressTest {
         second = new PublicAddress(key1,
                 key2,
                 Uri.parse("https://test.fog.server.com"),
-                fogAuthoritySpki,
-                fogReportId
+                fogConfig.getFogAuthoritySpki(),
+                fogConfig.getFogReportId()
         );
         if (first.equals(second)) {
             Assert.fail("Different Public addresses must not be equal");
@@ -176,12 +175,12 @@ public class PublicAddressTest {
     public void test_fields() {
         PublicAddress address = new PublicAddress(key1,
                 key2,
-                Environment.FOG_URI,
-                fogAuthoritySpki,
-                fogReportId
+                fogConfig.getFogUri(),
+                fogConfig.getFogAuthoritySpki(),
+                fogConfig.getFogReportId()
         );
         if (!address.getViewKey().equals(key1) || !address.getSpendKey().equals(key2) ||
-                !address.getFogReportUri().equals(Environment.FOG_URI)) {
+                !address.getFogReportUri().equals(fogConfig.getFogUri())) {
             Assert.fail("Getters must return valid keys");
         }
     }
@@ -190,9 +189,9 @@ public class PublicAddressTest {
     public void test_serialize() throws SerializationException {
         PublicAddress address1 = new PublicAddress(key1,
                 key2,
-                Environment.FOG_URI,
-                fogAuthoritySpki,
-                fogReportId
+                fogConfig.getFogUri(),
+                fogConfig.getFogAuthoritySpki(),
+                fogConfig.getFogReportId()
         );
         byte[] serialized = address1.toByteArray();
         PublicAddress address2 = PublicAddress.fromBytes(serialized);

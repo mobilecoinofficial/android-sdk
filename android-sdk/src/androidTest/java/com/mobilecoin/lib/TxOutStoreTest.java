@@ -25,10 +25,8 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
-import static com.mobilecoin.lib.Environment.TEST_PASSWORD;
-import static com.mobilecoin.lib.Environment.TEST_USERNAME;
-
 public class TxOutStoreTest {
+    private final TestFogConfig fogConfig = Environment.getTestFogConfig();
 
     @Test
     public void test_serialize_roundtrip()
@@ -80,7 +78,8 @@ public class TxOutStoreTest {
     public void fetch_fog_misses_test()
             throws NetworkException, AttestationException, FragmentedAccountException,
             InsufficientFundsException, InvalidFogResponse, TransactionBuilderException,
-            FeeRejectedException, InvalidTransactionException, InterruptedException, FogReportException, InvalidReceiptException, InvalidUriException {
+            FeeRejectedException, InvalidTransactionException, InterruptedException,
+            FogReportException, InvalidReceiptException, InvalidUriException {
 
         MobileCoinClient senderClient = Environment.makeFreshMobileCoinClient();
         MobileCoinClient recipientClient = Environment.makeFreshMobileCoinClient();
@@ -117,13 +116,13 @@ public class TxOutStoreTest {
         } while (receiptStatus == Receipt.Status.UNKNOWN);
 
         FogBlockClient blockClient = new FogBlockClient(
-                new FogUri(Environment.FOG_URI),
-                ClientConfig.devConfig().fogLedger
+                new FogUri(fogConfig.getFogUri()),
+                fogConfig.getClientConfig().fogLedger
         );
 
         blockClient.setAuthorization(
-                TEST_USERNAME,
-                TEST_PASSWORD
+                fogConfig.getUsername(),
+                fogConfig.getPassword()
         );
 
         TxOutStore store = new TxOutStore(recipientClient.getAccountKey());
