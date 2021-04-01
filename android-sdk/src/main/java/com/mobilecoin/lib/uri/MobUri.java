@@ -19,7 +19,9 @@ public class MobUri {
     private final static MobUriScheme mobScheme = new MobUriScheme();
 
     private MobUri(@NonNull Uri uri) throws InvalidUriException {
-        Logger.i(TAG, "Getting MobUri" + uri.toString());
+        Logger.i(TAG, "Getting MobUri", null,
+                "mobUri:", uri.toString()
+        );
         String uriScheme = uri.getScheme();
         if (null == uriScheme) {
             throw new InvalidUriException("Invalid URI scheme (null)", new NullPointerException());
