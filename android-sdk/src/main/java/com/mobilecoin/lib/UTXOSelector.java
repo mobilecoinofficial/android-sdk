@@ -73,7 +73,7 @@ class UTXOSelector {
                 .map(TxOutNode::getValue)
                 .reduce(BigInteger.ZERO, BigInteger::add);
 
-        ArrayList<TxOutNode> result = new ArrayList<>();
+        List<TxOutNode> result = new ArrayList<>();
         // initial fee is tx fee + one output fee
         BigInteger fee = txFee.add(outputFee);
         BigInteger selectionAmount = BigInteger.ZERO;
@@ -170,7 +170,7 @@ class UTXOSelector {
                 .collect(Collectors.toCollection(Vector::new));
 
         BigInteger fee = txFee.add(BigInteger.valueOf(outputsCount).multiply(outputFee));
-        ArrayList<TxOutNode> selected = new ArrayList<>();
+        List<TxOutNode> selected = new ArrayList<>();
         // add the first smallest input and the input fee
         TxOutNode input = sortedInputsVector.firstElement();
         fee = fee.add(input.getFee(txFee, inputFee));
@@ -228,7 +228,7 @@ class UTXOSelector {
                       "inputFee:", inputFee,
                       "outputFee:", outputFee);
         // convert inputs into promises for simplify calculation
-        ArrayList<TxOutNode> inputs = unspent.stream().map(
+        List<TxOutNode> inputs = unspent.stream().map(
                 txOut -> new TxOutNode(txOut, null)
         ).collect(Collectors.toCollection(ArrayList::new));
 
@@ -282,7 +282,7 @@ class UTXOSelector {
                       "inputFee:", inputFee,
                       "outputFee:", outputFee);
         // convert inputs into promises for simplify calculation
-        ArrayList<TxOutNode> inputs = unspent.stream()
+        List<TxOutNode> inputs = unspent.stream()
                 .filter(txOut -> txOut.getValue().compareTo(inputFee) > 0)
                 .map(txOut -> new TxOutNode(txOut, null)
                 ).collect(Collectors.toCollection(ArrayList::new));
