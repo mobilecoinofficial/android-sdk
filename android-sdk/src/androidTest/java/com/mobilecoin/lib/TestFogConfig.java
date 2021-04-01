@@ -29,8 +29,12 @@ public class TestFogConfig {
     private static final String TEST_DEV_USERNAME = "REPLACE_TEST_DEV_USER_STRING";
     private static final String TEST_DEV_PASSWORD = "REPLACE_TEST_DEV_PASSWORD_STRING";
 
+    private static final String TEST_NET_USERNAME = "REPLACE_TEST_NET_USER_STRING";
+    private static final String TEST_NET_PASSWORD = "REPLACE_TEST_NET_PASSWORD_STRING";
+
     private static final byte[] mobiledevFogAuthoritySpki = Base64.decode("MIICIjANBgkqhkiG9w0BAQEFAAOCAg8AMIICCgKCAgEAxABZ75QZv9uH9/E823VTTmpWiOiehoqksZMqsDARqYdDexAQb1Y+qyT6Hlp5QMUHQlkomFKLnhe/0+wxZ1/uTqnhy2FRhrlclpOvczT10Smcx9RkKACpxCW095MWxeFwtMmLpqkXfl4KeMptxdHRASHuLlKL+FXwOqKw3J2nw5q2DpBsg1ONkdW4m55ZFdimX3M7T/Wur5WlB+ntBpKFU/5T+rdD3OUm/tExbYk7C58XmYW08TnFR9JOMekFZMmTfl5d1ee3koyzz225QfNEupUJDVMXcg4whp826arxQIXrM2DfgwZnxFqS617dNsOPNjIoAYSEFPczYTw9WHR7O3UISnYwYvCsXxGwLZLXFkgUBM5GKItvEHDbUh3C7ZjyM51A04EJg47G3nI1A6q9EVnmwGaZFxq8bJAzosn5zaSrbUA25hRff25C4BYNjydBI133PjSflLaGjnJYPruLO4XpzB3wszqKm3tiWN39sgC4sMWZfSlxlWox3SzY2XVl8Q9RqMO8LMUPNhwmTfpEXDW5+NqH+vMiH9UmnsiEwybFche4sE23NJTeO2Xytt55VfoD2Gidte/Sqt5AJUPu6nfK8QloOCZ1N99MrpWpcZPHittqaYHZ5lWXHKthp/im672hXPl8bNxMUoREqomZdD9mdj/P6w9zFeTkr7P9XQUCAwEAAQ==", Base64.DEFAULT);
-    public static final byte[] alphaFogAuthoritySpki = Base64.decode("MIICIjANBgkqhkiG9w0BAQEFAAOCAg8AMIICCgKCAgEAyFOockvCEc9TcO1NvsiUfFVzvtDsR64UIRRUl3tBM2Bh8KBA932/Up86RtgJVnbslxuUCrTJZCV4dgd5hAo/mzuJOy9lAGxUTpwWWG0zZJdpt8HJRVLX76CBpWrWEt7JMoEmduvsCR8q7WkSNgT0iIoSXgT/hfWnJ8KGZkN4WBzzTH7hPrAcxPrzMI7TwHqUFfmOX7/gc+bDV5ZyRORrpuu+OR2BVObkocgFJLGmcz7KRuN7/dYtdYFpiKearGvbYqBrEjeo/15chI0Bu/9oQkjPBtkvMBYjyJPrD7oPP67i0ZfqV6xCj4nWwAD3bVjVqsw9cCBHgaykW8ArFFa0VCMdLy7UymYU5SQsfXrw/mHpr27Pp2Z0/7wpuFgJHL+0ARU48OiUzkXSHX+sBLov9X6f9tsh4q/ZRorXhcJi7FnUoagBxewvlfwQfcnLX3hp1wqoRFC4w1DC+ki93vIHUqHkNnayRsf1n48fSu5DwaFfNvejap7HCDIOpCCJmRVR8mVuxi6jgjOUa4Vhb/GCzxfNIn5ZYym1RuoE0TsFO+TPMzjed3tQvG7KemGFz3pQIryb43SbG7Q+EOzIigxYDytzcxOO5Jx7r9i+amQEiIcjBICwyFoEUlVJTgSpqBZGNpznoQ4I2m+uJzM+wMFsinTZN3mp4FU5UHjQsHKG+ZMCAwEAAQ==", Base64.DEFAULT);
+    private static final byte[] alphaFogAuthoritySpki = Base64.decode("MIICIjANBgkqhkiG9w0BAQEFAAOCAg8AMIICCgKCAgEAyFOockvCEc9TcO1NvsiUfFVzvtDsR64UIRRUl3tBM2Bh8KBA932/Up86RtgJVnbslxuUCrTJZCV4dgd5hAo/mzuJOy9lAGxUTpwWWG0zZJdpt8HJRVLX76CBpWrWEt7JMoEmduvsCR8q7WkSNgT0iIoSXgT/hfWnJ8KGZkN4WBzzTH7hPrAcxPrzMI7TwHqUFfmOX7/gc+bDV5ZyRORrpuu+OR2BVObkocgFJLGmcz7KRuN7/dYtdYFpiKearGvbYqBrEjeo/15chI0Bu/9oQkjPBtkvMBYjyJPrD7oPP67i0ZfqV6xCj4nWwAD3bVjVqsw9cCBHgaykW8ArFFa0VCMdLy7UymYU5SQsfXrw/mHpr27Pp2Z0/7wpuFgJHL+0ARU48OiUzkXSHX+sBLov9X6f9tsh4q/ZRorXhcJi7FnUoagBxewvlfwQfcnLX3hp1wqoRFC4w1DC+ki93vIHUqHkNnayRsf1n48fSu5DwaFfNvejap7HCDIOpCCJmRVR8mVuxi6jgjOUa4Vhb/GCzxfNIn5ZYym1RuoE0TsFO+TPMzjed3tQvG7KemGFz3pQIryb43SbG7Q+EOzIigxYDytzcxOO5Jx7r9i+amQEiIcjBICwyFoEUlVJTgSpqBZGNpznoQ4I2m+uJzM+wMFsinTZN3mp4FU5UHjQsHKG+ZMCAwEAAQ==", Base64.DEFAULT);
+    private static final byte[] testNetFogAuthoritySpki = Base64.decode("MIICIjANBgkqhkiG9w0BAQEFAAOCAg8AMIICCgKCAgEAvnB9wTbTOT5uoizRYaYbw7XIEkInl8E7MGOAQj+xnC+F1rIXiCnc/t1+5IIWjbRGhWzo7RAwI5sRajn2sT4rRn9NXbOzZMvIqE4hmhmEzy1YQNDnfALAWNQ+WBbYGW+Vqm3IlQvAFFjVN1YYIdYhbLjAPdkgeVsWfcLDforHn6rR3QBZYZIlSBQSKRMY/tywTxeTCvK2zWcS0kbbFPtBcVth7VFFVPAZXhPi9yy1AvnldO6n7KLiupVmojlEMtv4FQkk604nal+j/dOplTATV8a9AJBbPRBZ/yQg57EG2Y2MRiHOQifJx0S5VbNyMm9bkS8TD7Goi59aCW6OT1gyeotWwLg60JRZTfyJ7lYWBSOzh0OnaCytRpSWtNZ6barPUeOnftbnJtE8rFhF7M4F66et0LI/cuvXYecwVwykovEVBKRF4HOK9GgSm17mQMtzrD7c558TbaucOWabYR04uhdAc3s10MkuONWG0wIQhgIChYVAGnFLvSpp2/aQEq3xrRSETxsixUIjsZyWWROkuA0IFnc8d7AmcnUBvRW7FT/5thWyk5agdYUGZ+7C1o69ihR1YxmoGh69fLMPIEOhYh572+3ckgl2SaV4uo9Gvkz8MMGRBcMIMlRirSwhCfozV2RyT5Wn1NgPpyc8zJL7QdOhL7Qxb+5WjnCVrQYHI2cCAwEAAQ==", Base64.DEFAULT);
 
     private TestFogConfig(@NonNull Uri fogUri, @NonNull Uri consensusUri, @NonNull String username,
                           @NonNull String password, @NonNull ClientConfig clientConfig,
@@ -86,7 +90,7 @@ public class TestFogConfig {
                 testEnvironment.getName()
         ));
         final Uri consensusUri = Uri.parse(String.format(
-                "mc://consensus.%s.mobilecoin.com",
+                "mc://node1.%s.mobilecoin.com",
                 testEnvironment.getName()
         ));
 
@@ -99,6 +103,10 @@ public class TestFogConfig {
                 return new TestFogConfig(fogUri, consensusUri, TEST_DEV_USERNAME,
                         TEST_DEV_PASSWORD, getDevClientConfig(),
                         alphaFogAuthoritySpki, "");
+            case TEST_NET:
+                return new TestFogConfig(fogUri, consensusUri, TEST_NET_USERNAME,
+                        TEST_NET_PASSWORD, getTestNetClientConfig(),
+                        testNetFogAuthoritySpki, "");
 
         }
         throw new UnsupportedOperationException("Requested config does not exist");
@@ -136,6 +144,48 @@ public class TestFogConfig {
                     .withVerifier((new Verifier())
                             .withMrSigner(Hex.toByteArray(
                                     "7ee5e29d74623fdbc6fbf1454be6f3bb0b86c12366b7b478ad13353e44de8411"),
+                                    FOG_REPORT_PRODUCT_ID, SECURITY_VERSION,
+                                    null,
+                                    new String[]{"INTEL-SA-00334"})
+                    );
+            return clientConfig;
+        } catch (AttestationException ex) {
+            throw new IllegalStateException("BUG: Unreachable code");
+        }
+    }
+
+    @NonNull
+    private static ClientConfig getTestNetClientConfig() {
+        try {
+            ClientConfig clientConfig = new ClientConfig();
+            clientConfig.fogView = new ClientConfig.Service()
+                    .withVerifier((new Verifier())
+                            .withMrSigner(Hex.toByteArray(
+                                    "bf7fa957a6a94acb588851bc8767e0ca57706c79f4fc2aa6bcb993012c3c386c"),
+                                    FOG_VIEW_PRODUCT_ID, SECURITY_VERSION,
+                                    null,
+                                    new String[]{"INTEL-SA-00334"}))
+                    .withTrustRoots(getDevTrustRoots());
+            clientConfig.fogLedger = new ClientConfig.Service()
+                    .withVerifier((new Verifier())
+                            .withMrSigner(Hex.toByteArray(
+                                    "bf7fa957a6a94acb588851bc8767e0ca57706c79f4fc2aa6bcb993012c3c386c"),
+                                    FOG_LEDGER_PRODUCT_ID, SECURITY_VERSION,
+                                    null,
+                                    new String[]{"INTEL-SA-00334"}))
+                    .withTrustRoots(getDevTrustRoots());
+            clientConfig.consensus = new ClientConfig.Service()
+                    .withVerifier((new Verifier())
+                            .withMrSigner(Hex.toByteArray(
+                                    "bf7fa957a6a94acb588851bc8767e0ca57706c79f4fc2aa6bcb993012c3c386c"),
+                                    CONSENSUS_PRODUCT_ID, SECURITY_VERSION,
+                                    null,
+                                    new String[]{"INTEL-SA-00334"}))
+                    .withTrustRoots(getDevTrustRoots());
+            clientConfig.report = new ClientConfig.Service()
+                    .withVerifier((new Verifier())
+                            .withMrSigner(Hex.toByteArray(
+                                    "bf7fa957a6a94acb588851bc8767e0ca57706c79f4fc2aa6bcb993012c3c386c"),
                                     FOG_REPORT_PRODUCT_ID, SECURITY_VERSION,
                                     null,
                                     new String[]{"INTEL-SA-00334"})

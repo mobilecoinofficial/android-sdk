@@ -14,6 +14,8 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import java.util.Arrays;
+
 @RunWith(AndroidJUnit4.class)
 public class PrintableWrapperTest {
     private static final String MEMO = "test memo";
@@ -98,7 +100,8 @@ public class PrintableWrapperTest {
 
     @Test
     public void test_transfer_payload() throws SerializationException {
-        byte[] rootEntropy = TestKeysManager.getNextRootEntropy();
+        byte[] rootEntropy = new byte[32];
+        Arrays.fill(rootEntropy, (byte)0);
         TestFogConfig fogConfig = Environment.getTestFogConfig();
         AccountKey accountKey = AccountKey.fromRootEntropy(rootEntropy,
                 fogConfig.getFogUri(),
