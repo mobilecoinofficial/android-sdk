@@ -2,14 +2,28 @@
 
 package com.mobilecoin.lib;
 
+import android.util.Log;
+
+import androidx.test.platform.app.InstrumentationRegistry;
+
 import com.mobilecoin.lib.exceptions.InvalidUriException;
 import com.mobilecoin.lib.exceptions.SerializationException;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 import org.junit.Assert;
 import org.junit.Test;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
 public class AccountTest {
-    private final TestFogConfig fogConfig = Environment.getTestFogConfig();
 
     private static final byte[] viewPublicKeyBytes = {
             (byte) 120, (byte) 144, (byte) 28, (byte) 17, (byte) 131, (byte) 78, (byte) 132,
@@ -61,6 +75,30 @@ public class AccountTest {
             (byte) 0x6f, (byte) 0x69, (byte) 0x6e, (byte) 0x2e, (byte) 0x63, (byte) 0x6f,
             (byte) 0x6d, (byte) 0x3a, (byte) 0x34, (byte) 0x34, (byte) 0x33
     };
+    private static final List<AccountTestData> accountTestData = loadAccountTestData();
+
+    private final TestFogConfig fogConfig = Environment.getTestFogConfig();
+
+    public static List<AccountTestData> loadAccountTestData() {
+        InputStream accountTestDataStream =
+                InstrumentationRegistry.getInstrumentation().getTargetContext()
+                        .getResources().openRawResource(com.mobilecoin.lib.test.R.raw.test_account_data);
+
+        String line;
+        List<AccountTestData> accountTestData = new ArrayList<>();
+        try (BufferedReader reader =
+                     new BufferedReader(new InputStreamReader(accountTestDataStream))) {
+            while ((line = reader.readLine()) != null) {
+                JSONObject mainObject = new JSONObject(line);
+                accountTestData.add(AccountTestData.fromJsonObject(mainObject));
+            }
+        } catch (IOException | JSONException e) {
+            Log.e("ACCOUNT_TEST", e.getMessage());
+        }
+
+        return accountTestData;
+    }
+
 
     @Test
     public void test_serialize() throws SerializationException, InvalidUriException {
@@ -104,46 +142,100 @@ public class AccountTest {
                 accountKey.getSubAddressSpendKey().getPublicKey()
         );
     }
-/* // TODO:
+
     @Test
-    public void test_account_integrity() throws SerializationException, BadEntropyException,
-            InvalidUriException, BadMnemonicException {
-        byte[] rootEntropy = new byte[32];
-        Arrays.fill(
-                rootEntropy,
-                (byte) 0
-        );
-        String mnemonic = Mnemonics.bip39EntropyToMnemonic(rootEntropy);
-        AccountKey accountKey = AccountKey.fromMnemonicPhrase(
-                mnemonic,
-                0,
-                fogConfig.getFogUri(),
-                fogConfig.getFogReportId(),
-                fogConfig.getFogAuthoritySpki()
-        );
+    public void fromMnemonicPhrase_createsCorrectPrivateKeys() throws Exception {
+        Assert.assertFalse(accountTestData.isEmpty());
+        for (AccountTestData accountTestData : accountTestData) {
+            String calculatedMnemonicPhrase =
+                    Mnemonics.bip39EntropyToMnemonic(accountTestData.bip39Entropy);
+            Assert.assertEquals(calculatedMnemonicPhrase, accountTestData.mnemonic);
 
-        RistrettoPrivate restoredViewKey = RistrettoPrivate.fromBytes(viewPrivateKeyBytes);
-        RistrettoPrivate restoredSpendKey = RistrettoPrivate.fromBytes(spendPrivateKeyBytes);
-        Assert.assertEquals(
-                restoredViewKey,
-                accountKey.getViewKey()
-        );
-        Assert.assertEquals(
-                restoredSpendKey,
-                accountKey.getSpendKey()
-        );
+            TestFogConfig testFogConfig = Environment.getTestFogConfig();
+            AccountKey accountKey = AccountKey.fromMnemonicPhrase(calculatedMnemonicPhrase,
+                    accountTestData.accountIndex, testFogConfig.getFogUri(),
+                    testFogConfig.getFogReportId(), testFogConfig.getFogAuthoritySpki());
 
-        RistrettoPublic restoredViewPublicKey = RistrettoPublic.fromBytes(viewPublicKeyBytes);
-        RistrettoPublic restoredSpendPublicKey = RistrettoPublic.fromBytes(spendPublicKeyBytes);
+            byte[] calculatedViewPrivateKeyBytes = accountKey.getViewKey().getKeyBytes();
+            Assert.assertArrayEquals(accountTestData.viewPrivateKey, calculatedViewPrivateKeyBytes);
 
-        Assert.assertEquals(
-                restoredViewPublicKey,
-                accountKey.getSubAddressViewKey().getPublicKey()
-        );
-        Assert.assertEquals(
-                restoredSpendPublicKey,
-                accountKey.getSubAddressSpendKey().getPublicKey()
-        );
+            byte[] calculatedSpendPrivateKeyBytes = accountKey.getSpendKey().getKeyBytes();
+            Assert.assertArrayEquals(accountTestData.spendPrivateKey,
+                    calculatedSpendPrivateKeyBytes);
+        }
     }
- */
+
+    @Test
+    public void fromBip39Entropy_createsCorrectPrivateKeys() throws Exception {
+        Assert.assertFalse(accountTestData.isEmpty());
+        for (AccountTestData accountTestData : accountTestData) {
+            byte[] calculatedBip39Entropy =
+                    Mnemonics.bip39EntropyFromMnemonic(accountTestData.mnemonic);
+            Assert.assertArrayEquals(calculatedBip39Entropy, accountTestData.bip39Entropy);
+
+            TestFogConfig testFogConfig = Environment.getTestFogConfig();
+            AccountKey accountKey = AccountKey.fromBip39Entropy(calculatedBip39Entropy,
+                    accountTestData.accountIndex, testFogConfig.getFogUri(),
+                    testFogConfig.getFogReportId(), testFogConfig.getFogAuthoritySpki());
+
+            byte[] calculatedViewPrivateKeyBytes = accountKey.getViewKey().getKeyBytes();
+            Assert.assertArrayEquals(accountTestData.viewPrivateKey, calculatedViewPrivateKeyBytes);
+
+            byte[] calculatedSpendPrivateKeyBytes = accountKey.getSpendKey().getKeyBytes();
+            Assert.assertArrayEquals(accountTestData.spendPrivateKey,
+                    calculatedSpendPrivateKeyBytes);
+        }
+    }
+
+    /**
+     * Contains data needed for Account tests.
+     */
+    static class AccountTestData {
+        byte[] bip39Entropy;
+        String mnemonic;
+        int accountIndex;
+        byte[] viewPrivateKey;
+        byte[] spendPrivateKey;
+
+        static AccountTestData fromJsonObject(JSONObject mainObject) throws JSONException {
+            byte[] bip39Entropy
+                    = createByteArray(mainObject.getJSONArray("entropy"));
+            String mnemonic = mainObject.getString("mnemonic");
+            int accountIndex = mainObject.getInt("account_index");
+            byte[] viewPrivateKey = createByteArray(mainObject.getJSONArray("view_private_key"
+            ));
+            byte[] spendPrivateKey = createByteArray(mainObject.getJSONArray(
+                    "spend_private_key"));
+
+            return new AccountTestData(bip39Entropy, mnemonic, accountIndex,
+                    viewPrivateKey, spendPrivateKey);
+        }
+
+        private static byte[] createByteArray(JSONArray jsonArray) throws JSONException {
+            byte[] byteArray = new byte[jsonArray.length()];
+            for (int i = 0; i < jsonArray.length(); i++) {
+                byteArray[i] = (byte) jsonArray.getInt(i);
+            }
+
+            return byteArray;
+        }
+
+        @Override
+        public String toString() {
+            return String.format("AccountTestData [bip39Entropy=%s, mnemonic=%s, accountIndex=%s," +
+                            " viewPrivateKey=%s, spendPrivateKey=%s]",
+                    Arrays.toString(bip39Entropy),
+                    mnemonic, accountIndex, Arrays.toString(viewPrivateKey),
+                    Arrays.toString(spendPrivateKey));
+        }
+
+        private AccountTestData(byte[] bip39Entropy, String mnemonic, int accountIndex,
+                                byte[] viewPrivateKey, byte[] spendPrivateKey) {
+            this.bip39Entropy = bip39Entropy;
+            this.mnemonic = mnemonic;
+            this.accountIndex = accountIndex;
+            this.viewPrivateKey = viewPrivateKey;
+            this.spendPrivateKey = spendPrivateKey;
+        }
+    }
 }
