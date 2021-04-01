@@ -6,8 +6,8 @@ import androidx.annotation.NonNull;
 
 import com.mobilecoin.lib.exceptions.BadBip39EntropyException;
 
-class Slip10 extends Native {
-    private final static String TAG = Slip10.class.getName();
+class AccountKeyDeriver extends Native {
+    private final static String TAG = AccountKeyDeriver.class.getName();
 
     static AccountKey deriveAccountKeyFromMnemonic(
             @NonNull String mnemonicPhrase,
