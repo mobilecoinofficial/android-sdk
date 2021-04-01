@@ -107,10 +107,11 @@ Run **`gradle cAT`** to run the tests on the physically connected device or an e
 Existing accounts can be created with entropy and new accounts generated with `Account.createNew`
 
 ```java
-private static final Uri FOG_URI = Uri.parse("fog://FOR-REPORT-URI");
+private static final Uri FOG_URI = Uri.parse("fog://FOR-URI");
 private static final Uri CONSENSUS_URI = Uri.parse("mc://CONSENSUS-URI");
 
-byte[] rootEntropy = { /*
+
+String bip39Entropy = { /*
                       32 bytes of randomness generated using a
                       cryptographically strong random number 
                       generator like SecureRandom.
@@ -119,7 +120,8 @@ byte[] rootEntropy = { /*
                       KEYS ARE DETERMINISTICALLY GENERATED FROM IT
                  */ }
 // fogAuthoritySpki and fogReportId will be provided by the Fog operator
-AccountKey accountKey = AccountKey.fromRootEntropy(rootEntropy, FOG_URI, fogReportId, fogAuthorityKey);
+AccountKey accountKey = AccountKey.fromBip39Entropy(bip39Entropy, FOG_URI, fogReportId,
+fogAuthorityKey);
 MobileCoinClient mobileCoinClient = new MobileCoinClient(
 	account,
 	FOG_URI,
