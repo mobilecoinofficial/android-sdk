@@ -5,8 +5,6 @@ package com.mobilecoin.lib;
 import android.util.Log;
 
 import com.google.common.base.Preconditions;
-import com.mobilecoin.lib.exceptions.BadEntropyException;
-import com.mobilecoin.lib.exceptions.BadMnemonicException;
 import com.mobilecoin.lib.exceptions.InvalidUriException;
 import com.mobilecoin.lib.exceptions.SerializationException;
 
