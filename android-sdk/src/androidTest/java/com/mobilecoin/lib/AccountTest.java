@@ -8,8 +8,6 @@ import com.mobilecoin.lib.exceptions.SerializationException;
 import org.junit.Assert;
 import org.junit.Test;
 
-import java.util.Arrays;
-
 public class AccountTest {
     private final TestFogConfig fogConfig = Environment.getTestFogConfig();
 
@@ -106,15 +104,19 @@ public class AccountTest {
                 accountKey.getSubAddressSpendKey().getPublicKey()
         );
     }
-
+/* // TODO:
     @Test
-    public void test_account_integrity() throws SerializationException {
+    public void test_account_integrity() throws SerializationException, BadEntropyException,
+            InvalidUriException, BadMnemonicException {
         byte[] rootEntropy = new byte[32];
         Arrays.fill(
                 rootEntropy,
                 (byte) 0
         );
-        AccountKey accountKey = AccountKey.fromRootEntropy(rootEntropy,
+        String mnemonic = Mnemonics.bip39EntropyToMnemonic(rootEntropy);
+        AccountKey accountKey = AccountKey.fromMnemonicPhrase(
+                mnemonic,
+                0,
                 fogConfig.getFogUri(),
                 fogConfig.getFogReportId(),
                 fogConfig.getFogAuthoritySpki()
@@ -143,5 +145,5 @@ public class AccountTest {
                 accountKey.getSubAddressSpendKey().getPublicKey()
         );
     }
-
+ */
 }

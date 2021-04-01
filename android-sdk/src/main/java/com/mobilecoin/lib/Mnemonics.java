@@ -15,7 +15,7 @@ public final class Mnemonics extends Native {
     /**
      * Gives mnemonic for the supplied entropy.
      */
-    public static String entropyToMnemonic(byte[] entropy) throws BadEntropyException {
+    public static String bip39EntropyToMnemonic(byte[] entropy) throws BadEntropyException {
         Logger.i(TAG, "Converting entropy to mnemonic");
         try {
             return entropy_to_mnemonic(entropy);
@@ -30,7 +30,7 @@ public final class Mnemonics extends Native {
     /**
      * Gives entropy from the supplied mnemonic.
      */
-    public static byte[] entropyFromMnemonic(String mnemonic) throws BadMnemonicException {
+    public static byte[] bip39EntropyFromMnemonic(String mnemonic) throws BadMnemonicException {
         Logger.i(TAG, "Getting entropy from mnemonic");
         try {
             return entropy_from_mnemonic(mnemonic);
@@ -59,27 +59,10 @@ public final class Mnemonics extends Native {
         }
     }
 
-    /**
-     * Gives bip39Seed from the mnemonic.
-     */
-    public static byte[] getBip39Seed(String mnemonic) throws BadMnemonicException {
-        Logger.i(TAG, "Getting Bip39 seed");
-        try {
-            return get_bip39_seed(mnemonic);
-        } catch (Exception exception) {
-            BadMnemonicException badMnemonicException =
-                    new BadMnemonicException("Failed to get an entropy from mnemonic", exception);
-            Util.logException(TAG, badMnemonicException);
-            throw badMnemonicException;
-        }
-    }
-
     // native methods
     private static native String entropy_to_mnemonic(byte[] entropy) throws Exception;
 
     private static native byte[] entropy_from_mnemonic(String mnemonic) throws Exception;
 
     private static native String words_by_prefix(String prefix);
-
-    private static native byte[] get_bip39_seed(String mnemonic) throws Exception;
 }

@@ -5,11 +5,13 @@ package com.mobilecoin.lib;
 import android.net.Uri;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 import com.google.protobuf.ByteString;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.mobilecoin.api.MobileCoinAPI;
-import com.mobilecoin.lib.exceptions.BadBip39SeedException;
+import com.mobilecoin.lib.exceptions.BadBip39EntropyException;
+import com.mobilecoin.lib.exceptions.BadEntropyException;
 import com.mobilecoin.lib.exceptions.BadMnemonicException;
 import com.mobilecoin.lib.exceptions.InvalidUriException;
 import com.mobilecoin.lib.exceptions.SerializationException;
@@ -25,8 +27,6 @@ import java.util.Objects;
  */
 public class AccountKey extends Native {
     private final static String TAG = AccountKey.class.getName();
-    private static final int MOBILECOIN_COIN_TYPE = 866;
-
     private final Uri fogReportUri;
     private final String fogReportId;
     private final byte[] fogAuthoritySpki;
@@ -37,7 +37,7 @@ public class AccountKey extends Native {
     private final PublicAddress publicAddress;
 
     /**
-     * Package private AccountKey constructor for Ristretto private keys with fog info
+     * Create an {@link AccountKey} from Ristretto private keys and fog info
      *
      * @param viewKey          private view key
      * @param spendKey         private spend key
@@ -88,7 +88,7 @@ public class AccountKey extends Native {
     }
 
     /**
-     * Constructs an AccountKey object from root entropy and fog info
+     * Create an {@link AccountKey} object from root entropy and fog info
      *
      * @param rootEntropy      32 bytes of randomness. It is used to derive account keys
      *                         therefore it must be treated as highly sensitive
@@ -136,7 +136,40 @@ public class AccountKey extends Native {
     }
 
     /**
-     * AccountKey static constructor for root entropy with fog info
+     * Create an {@link AccountKey} object for JNI {@code AccountKey} object reference
+     *
+     * @param rustObj JNI object reference to a native {@code AccountKey} object
+     */
+    AccountKey(long rustObj) {
+        this.rustObj = rustObj;
+        String fogUriString = getFogUriString();
+        try {
+            this.fogReportUri = (fogUriString != null && !fogUriString.isEmpty())
+                    ? new FogUri(Uri.parse(fogUriString)).getUri() // normalize fog report Uri
+                    : null;
+            this.fogReportId = get_report_id();
+            this.fogAuthoritySpki = get_fog_authority_spki();
+            this.viewKey = RistrettoPrivate.fromJNI(get_view_key());
+            this.spendKey = RistrettoPrivate.fromJNI(get_spend_key());
+            this.subAddressViewKey = RistrettoPrivate.fromJNI(get_default_subaddress_view_key());
+            this.subAddressSpendKey = RistrettoPrivate.fromJNI(get_default_subaddress_spend_key());
+            this.publicAddress = PublicAddress.fromJNI(get_public_address());
+        } catch (InvalidUriException ignored) {
+            throw new IllegalStateException("Bug: unreachable code");
+        }
+    }
+
+    /**
+     * Create an {@link AccountKey} object for JNI {@code AccountKey} object reference
+     *
+     * @param rustObj JNI object reference to a native {@code AccountKey} object
+     */
+    static AccountKey fomJNI(long rustObj) {
+        return new AccountKey(rustObj);
+    }
+
+    /**
+     * Create an {@link AccountKey} from root entropy and fog info
      *
      * @param rootEntropy      32 bytes of randomness. It is used to derive account keys
      *                         therefore it must be treated as highly sensitive
@@ -150,7 +183,7 @@ public class AccountKey extends Native {
      * @throws IllegalArgumentException if the fogReportUri is invalid
      */
     @NonNull
-    public static AccountKey fromRootEntropy(
+    static AccountKey fromRootEntropy(
             @NonNull byte[] rootEntropy,
             @NonNull Uri fogReportUri,
             @NonNull String fogReportId,
@@ -165,11 +198,9 @@ public class AccountKey extends Native {
     }
 
     /**
-     * Constructs an AccountKey object from protobuf
+     * Create an {@link AccountKey} object from an {@code AccountKey} protobuf object
      *
-     * @param accountKey 32 bytes of randomness. It is used to derive account keys therefore it must
-     *                   be treated as highly sensitive information.
-     * @throws IllegalArgumentException if the fogReportUri is invalid
+     * @param accountKey {@code AccountKey} protobuf
      */
 
     @NonNull
@@ -199,7 +230,8 @@ public class AccountKey extends Native {
     }
 
     /**
-     * Constructs an AccountKey object from auto-generated account keys and fog info
+     * Create an {@link AccountKey} object from auto-generated account keys and fog info. {@link
+     * java.security.SecureRandom} is used to generate entropy.
      *
      * @param fogReportUri     fog report service url.
      * @param fogAuthoritySpki fog authority public key a byte array, provided by the fog operator
@@ -225,23 +257,81 @@ public class AccountKey extends Native {
     }
 
     /**
-     * Derives the nth root entropy from a {@code mnemonic}
-     * Obtained {@code rootEntropy} can be used to generate an {@code AccountKey} using
-     * {@link AccountKey#fromRootEntropy} method.
+     * Derives the nth {@link AccountKey} from a {@code mnemonic}
+     *
+     * @param fogReportUri     fog report service url.
+     * @param fogAuthoritySpki fog authority public key a byte array, provided by the fog operator.
+     * @param fogReportId      The fog report server may serve multiple reports, this id.
+     *                         disambiguates which one to use when sending to this account.
+     * @param mnemonicPhrase   is used as a recovery phrase to derive an {@link AccountKey}.
+     * @param accountIndex     account index to derive.
      */
-    public static byte[] deriveAccountRootEntropy(String mnemonic, int accountIndex) throws BadMnemonicException {
-        Logger.i(TAG, "Derive root entropy from mnemonic",
+    @NonNull
+    public static AccountKey fromMnemonicPhrase(
+            @NonNull String mnemonicPhrase,
+            int accountIndex,
+            @NonNull Uri fogReportUri,
+            @NonNull String fogReportId,
+            @NonNull byte[] fogAuthoritySpki
+    ) throws BadMnemonicException, InvalidUriException {
+        Logger.i(TAG, "Derive AccountKey from mnemonic phrase",
                 null,
                 "account index:", accountIndex);
-        byte[] bip39Seed = Mnemonics.getBip39Seed(mnemonic);
         try {
-            return Slip10.deriveEd25519PrivateKey(bip39Seed, 44, MOBILECOIN_COIN_TYPE,
+            AccountKey accountWithoutFog = Slip10.deriveAccountKeyFromMnemonic(mnemonicPhrase,
                     accountIndex);
-        } catch (BadBip39SeedException exception) {
+            return new AccountKey(
+                    accountWithoutFog.getViewKey(),
+                    accountWithoutFog.getSpendKey(),
+                    fogReportUri,
+                    fogReportId,
+                    fogAuthoritySpki
+            );
+        } catch (BadBip39EntropyException exception) {
             BadMnemonicException mnemonicException = new BadMnemonicException("Unable to derive " +
-                    "root entropy from the mnemonic", exception);
+                    "AccountKey from the mnemonic phrase", exception);
             Util.logException(TAG, mnemonicException);
             throw mnemonicException;
+        }
+    }
+
+    /**
+     * Derives the nth {@link AccountKey} from a {@code mnemonic}
+     *
+     * @param fogReportUri     fog report service url.
+     * @param fogAuthoritySpki fog authority public key a byte array, provided by the fog operator.
+     * @param fogReportId      The fog report server may serve multiple reports, this id.
+     *                         disambiguates which one to use when sending to this account.
+     * @param bip39Entropy     mnemonic entropy, see {@link Mnemonics#bip39EntropyFromMnemonic}.
+     * @param accountIndex     account index to derive.
+     */
+    @NonNull
+    public static AccountKey fromBip39Entropy(
+            @NonNull byte[] bip39Entropy,
+            int accountIndex,
+            @NonNull Uri fogReportUri,
+            @NonNull String fogReportId,
+            @NonNull byte[] fogAuthoritySpki
+    ) throws InvalidUriException, BadEntropyException {
+        Logger.i(TAG, "Derive AccountKey from Bip39 entropy",
+                null,
+                "account index:", accountIndex);
+        try {
+            String mnemonicPhrase = Mnemonics.bip39EntropyToMnemonic(bip39Entropy);
+            AccountKey accountWithoutFog = Slip10.deriveAccountKeyFromMnemonic(mnemonicPhrase,
+                    accountIndex);
+            return new AccountKey(
+                    accountWithoutFog.getViewKey(),
+                    accountWithoutFog.getSpendKey(),
+                    fogReportUri,
+                    fogReportId,
+                    fogAuthoritySpki
+            );
+        } catch (BadBip39EntropyException | BadEntropyException exception) {
+            BadEntropyException badEntropyException = new BadEntropyException("Unable to derive " +
+                    "AccountKey from the bip39 entropy", exception);
+            Util.logException(TAG, badEntropyException);
+            throw badEntropyException;
         }
     }
 
@@ -411,13 +501,13 @@ public class AccountKey extends Native {
 
     private native void finalize_jni();
 
-    @NonNull
+    @Nullable
     private native String getFogUriString();
 
-    @NonNull
-    private native byte[] get_fog_authority_fingerprint();
+    @Nullable
+    private native byte[] get_fog_authority_spki();
 
-    @NonNull
+    @Nullable
     private native String get_report_id();
 
     private native long get_public_address();
