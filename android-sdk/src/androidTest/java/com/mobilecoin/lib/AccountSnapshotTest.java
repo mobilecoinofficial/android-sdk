@@ -23,10 +23,6 @@ import java.util.concurrent.TimeoutException;
 import static com.mobilecoin.lib.UtilTest.waitForTransactionStatus;
 
 public class AccountSnapshotTest {
-    private static final int STATUS_CHECK_DELAY_MS = 1000;
-    // 5 minutes if the check delay is 1000
-    private static final int STATUS_MAX_RETRIES = 300;
-
     // check snapshot balance, spent some coins and check again, the balance for that snapshot
     // should remain constant
     @Test
