@@ -186,8 +186,8 @@ public class AccountTest {
                 fogConfig.getFogReportId(),
                 fogConfig.getFogAuthoritySpki()
         );
-        byte[] serialized = accountKey1.toByteArray();
-        AccountKey accountKey2 = AccountKey.fromBytes(serialized);
+        byte[] serializedAccountKey = accountKey1.toByteArray();
+        AccountKey accountKey2 = AccountKey.fromBytes(serializedAccountKey);
         Assert.assertEquals("Serialized and restored accounts must be equal",
                 accountKey1,
                 accountKey2
@@ -206,12 +206,12 @@ public class AccountTest {
                     fogConfig.getFogReportId(),
                     fogConfig.getFogAuthoritySpki()
             );
-            byte[] serialized = accountKey.toByteArray();
-            AccountKey restored = AccountKey.fromBytes(serialized);
+            byte[] serializedAccountKey = accountKey.toByteArray();
+            AccountKey restoredAccountKey = AccountKey.fromBytes(serializedAccountKey);
             Assert.assertArrayEquals(
                     "Serialized roundtrip bytes must be equal",
-                    serialized,
-                    restored.toByteArray()
+                    serializedAccountKey,
+                    restoredAccountKey.toByteArray()
             );
         }
     }

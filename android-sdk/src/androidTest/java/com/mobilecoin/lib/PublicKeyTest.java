@@ -59,9 +59,9 @@ public class PublicKeyTest {
 
     @Test
     public void test_serialize() throws SerializationException {
-        byte[] serialized = RistrettoPublic.fromBytes(pubKeyBytes).getKeyBytes();
+        byte[] serializedPubKey = RistrettoPublic.fromBytes(pubKeyBytes).getKeyBytes();
         Assert.assertArrayEquals(
-                serialized,
+                serializedPubKey,
                 pubKeyBytes
         );
     }
