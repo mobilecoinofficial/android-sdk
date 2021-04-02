@@ -10,8 +10,10 @@ import androidx.annotation.Nullable;
 import com.google.protobuf.ByteString;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.mobilecoin.api.MobileCoinAPI;
+import com.mobilecoin.lib.exceptions.InvalidUriException;
 import com.mobilecoin.lib.exceptions.SerializationException;
 import com.mobilecoin.lib.log.Logger;
+import com.mobilecoin.lib.uri.FogUri;
 import com.mobilecoin.lib.util.Hex;
 
 import java.util.Arrays;
@@ -24,35 +26,36 @@ public class PublicAddress extends Native {
     private static final String TAG = PublicAddress.class.getName();
     private final RistrettoPublic viewKey;
     private final RistrettoPublic spendKey;
-    private final Uri fogUri;
+    private final Uri fogReportUri;
     private final String fogReportId;
     private final byte[] fogAuthoritySig;
 
     /**
      * Constructs new {@link PublicAddress} instance
      *
-     * @param viewKey  view public key
-     * @param spendKey spend public key
-     * @param fogUri   user's fog service uri
-     * @throws IllegalArgumentException if provided parameters are invalid
+     * @param viewKey      view public key
+     * @param spendKey     spend public key
+     * @param fogReportUri user's fog service uri
      */
     public PublicAddress(
             @NonNull RistrettoPublic viewKey,
             @NonNull RistrettoPublic spendKey,
-            @NonNull Uri fogUri,
+            @NonNull Uri fogReportUri,
             @NonNull byte[] fogAuthoritySig,
             @NonNull String fogReportId
     ) {
         this.viewKey = viewKey;
         this.spendKey = spendKey;
-        this.fogUri = fogUri;
+        this.fogReportUri = fogReportUri;
         this.fogAuthoritySig = fogAuthoritySig;
         this.fogReportId = fogReportId;
         try {
+            new FogUri(fogReportUri);
+            // throws if the URI is not valid
             init_jni_with_fog(
                     viewKey,
                     spendKey,
-                    fogUri.toString(),
+                    fogReportUri.toString(),
                     fogAuthoritySig,
                     fogReportId
             );
@@ -79,7 +82,7 @@ public class PublicAddress extends Native {
         Logger.i(TAG, "Creating Public Address from view/spend public keys");
         this.viewKey = viewKey;
         this.spendKey = spendKey;
-        fogUri = null;
+        fogReportUri = null;
         fogReportId = null;
         fogAuthoritySig = null;
         try {
@@ -102,9 +105,9 @@ public class PublicAddress extends Native {
         spendKey = RistrettoPublic.fromJNI(get_spend_key());
         String fogUriString = get_fog_uri();
         if (fogUriString != null) {
-            fogUri = Uri.parse(fogUriString);
+            fogReportUri = Uri.parse(fogUriString);
         } else {
-            fogUri = null;
+            fogReportUri = null;
         }
         String fogReportId = get_report_id();
         this.fogReportId = (fogReportId == null)
@@ -237,7 +240,7 @@ public class PublicAddress extends Native {
      */
     @Nullable
     public Uri getFogReportUri() {
-        return fogUri;
+        return fogReportUri;
     }
 
     /**
@@ -250,22 +253,45 @@ public class PublicAddress extends Native {
         );
     }
 
+    @Nullable
+    public Uri getNormalizedFogReportUri() {
+        if (fogReportUri == null) {
+            return null;
+        }
+        try {
+            return new FogUri(fogReportUri).getUri();
+        } catch (InvalidUriException exception) {
+            throw new IllegalStateException("Bug: URI was already verified");
+        }
+    }
+
+    public boolean equivalent(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        PublicAddress that = (PublicAddress) o;
+        return viewKey.equals(that.viewKey) &&
+                spendKey.equals(that.spendKey) &&
+                Arrays.equals(fogAuthoritySig, that.fogAuthoritySig) &&
+                Objects.equals(getNormalizedFogReportUri(), that.getNormalizedFogReportUri()) &&
+                Objects.equals(fogReportId, that.fogReportId);
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         PublicAddress that = (PublicAddress) o;
-        return getViewKey().equals(that.getViewKey()) &&
-                getSpendKey().equals(that.getSpendKey()) &&
-                Arrays.equals(getFogAuthoritySig(), that.getFogAuthoritySig()) &&
-                Objects.equals(getFogReportUri(), that.getFogReportUri()) &&
-                Objects.equals(getFogReportId(), that.getFogReportId());
+        return viewKey.equals(that.viewKey) &&
+                spendKey.equals(that.spendKey) &&
+                Arrays.equals(fogAuthoritySig, that.fogAuthoritySig) &&
+                Objects.equals(fogReportUri, that.fogReportUri) &&
+                Objects.equals(fogReportId, that.fogReportId);
     }
 
     @Override
     public int hashCode() {
-        int result = Objects.hash(getFogReportId(), viewKey, spendKey, getFogReportUri());
-        result = 31 * result + Arrays.hashCode(getFogAuthoritySig());
+        int result = Objects.hash(fogReportId, viewKey, spendKey, fogReportUri);
+        result = 31 * result + Arrays.hashCode(fogAuthoritySig);
         return result;
     }
 
@@ -278,7 +304,7 @@ public class PublicAddress extends Native {
         return "PublicAddress{" +
                 "viewKey=" + viewKey.toString() +
                 ", spendKey=" + spendKey.toString() +
-                ", fogUri=" + fogUri +
+                ", fogReportUri=" + fogReportUri +
                 ", fogReportId=" + fogReportId +
                 ", fogAuthoritySig=" + fogAuthoritySignString +
                 '}';

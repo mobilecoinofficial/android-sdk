@@ -91,15 +91,19 @@ public class PublicAddressTest {
 
     @Test
     public void test_hashcode() {
+        Uri fogUri = Uri.parse("fog://some-test-uri");
+        Uri differentFogUri = Uri.parse("fog://some-other-test-uri");
+        Uri fogUriWithPort = Uri.parse("fog://some-test-uri:443");
+
         PublicAddress first = new PublicAddress(key1,
                 key2,
-                fogConfig.getFogUri(),
+                fogUri,
                 fogConfig.getFogAuthoritySpki(),
                 fogConfig.getFogReportId()
         );
         PublicAddress second = new PublicAddress(key1_copy,
                 key2_copy,
-                fogConfig.getFogUri(),
+                fogUri,
                 fogConfig.getFogAuthoritySpki(),
                 fogConfig.getFogReportId()
         );
@@ -117,36 +121,56 @@ public class PublicAddressTest {
         }
         second = new PublicAddress(key1,
                 key2,
-                Uri.parse("https://test.some.server"),
+                differentFogUri,
                 fogConfig.getFogAuthoritySpki(),
                 fogConfig.getFogReportId()
         );
         if (first.hashCode() == second.hashCode()) {
             Assert.fail("Different objects must have different hashes");
         }
+        second = new PublicAddress(key1,
+                key2,
+                fogUriWithPort,
+                fogConfig.getFogAuthoritySpki(),
+                fogConfig.getFogReportId()
+        );
+        if (first.hashCode() == second.hashCode()) {
+            Assert.fail("Hashes for equal objects must be equal as well");
+        }
     }
 
     @Test
     public void test_compare() {
+        Uri fogUri = Uri.parse("fog://some-test-uri");
+        Uri differentFogUri = Uri.parse("fog://some-other-test-uri");
+        Uri fogUriWithPort = Uri.parse("fog://some-test-uri:443");
+
         PublicAddress first = new PublicAddress(key1,
                 key2,
-                fogConfig.getFogUri(),
+                fogUri,
                 fogConfig.getFogAuthoritySpki(),
                 fogConfig.getFogReportId()
         );
+        try {
+            if (first.equals(null)) {
+                Assert.fail("Valid object cannot be equal to null");
+            }
+        } catch (Exception e) {
+            Assert.fail(e.toString());
+        }
         PublicAddress second = new PublicAddress(key1_copy,
                 key2_copy,
-                fogConfig.getFogUri(),
+                fogUri,
                 fogConfig.getFogAuthoritySpki(),
                 fogConfig.getFogReportId()
         );
         if (!first.equals(second)) {
-            Assert.fail("Public addresses with identical underlying key bytes must be equal");
+            Assert.fail("Public addresses with copied keys must be equal");
         }
         // swap keys to make objects not equal
         second = new PublicAddress(key2,
                 key1,
-                fogConfig.getFogUri(),
+                fogUri,
                 fogConfig.getFogAuthoritySpki(),
                 fogConfig.getFogReportId()
         );
@@ -155,19 +179,23 @@ public class PublicAddressTest {
         }
         second = new PublicAddress(key1,
                 key2,
-                Uri.parse("https://test.fog.server.com"),
+                differentFogUri,
                 fogConfig.getFogAuthoritySpki(),
                 fogConfig.getFogReportId()
         );
         if (first.equals(second)) {
             Assert.fail("Different Public addresses must not be equal");
         }
-        try {
-            if (first.equals(null)) {
-                Assert.fail("Valid object cannot be equal to null");
-            }
-        } catch (Exception e) {
-            Assert.fail(e.toString());
+        second = new PublicAddress(key1,
+                key2,
+                fogUriWithPort,
+                fogConfig.getFogAuthoritySpki(),
+                fogConfig.getFogReportId()
+        );
+
+        if (!first.equivalent(second)) {
+            Assert.fail("Public addresses with and without port in report uris must be " +
+                    "equivalent");
         }
     }
 
@@ -200,5 +228,29 @@ public class PublicAddressTest {
                 address1,
                 address2
         );
+    }
+
+    @Test
+    public void test_serialize_integrity() throws SerializationException {
+        Uri fogUri = Uri.parse("fog://some-test-uri");
+        Uri fogUriWithPort = Uri.parse("fog://some-test-uri:443");
+
+        Uri[] fogUrisToTest = new Uri[] {fogUri, fogUriWithPort};
+
+        for (Uri uri : fogUrisToTest) {
+            PublicAddress address = new PublicAddress(key1,
+                    key2,
+                    uri,
+                    fogConfig.getFogAuthoritySpki(),
+                    fogConfig.getFogReportId()
+            );
+            byte[] serialized = address.toByteArray();
+            PublicAddress restored = PublicAddress.fromBytes(serialized);
+            Assert.assertArrayEquals(
+                    "Serialized roundtrip bytes must be equal",
+                    serialized,
+                    restored.toByteArray()
+            );
+        }
     }
 }

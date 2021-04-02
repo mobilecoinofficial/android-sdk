@@ -61,16 +61,17 @@ public class AccountKey extends Native {
                 "fogReportId:", fogReportId,
                 "fogAuthoritySpki: ", Hex.toString(fogAuthoritySpki));
 
-        FogUri fogUriWrapper = new FogUri(fogReportUri);
+        // will throw if the Uri is invalid
+        new FogUri(fogReportUri);
         try {
             init_jni(viewKey,
                     spendKey,
-                    fogUriWrapper.toString(),
+                    fogReportUri.toString(),
                     fogAuthoritySpki,
                     fogReportId
             );
             // normalize fog report Uri
-            this.fogReportUri = new FogUri(fogReportUri).getUri();
+            this.fogReportUri = fogReportUri;
             this.fogReportId = fogReportId;
             this.fogAuthoritySpki = fogAuthoritySpki;
             this.viewKey = viewKey;
@@ -143,20 +144,16 @@ public class AccountKey extends Native {
     AccountKey(long rustObj) {
         this.rustObj = rustObj;
         String fogUriString = getFogUriString();
-        try {
-            this.fogReportUri = (fogUriString != null && !fogUriString.isEmpty())
-                    ? new FogUri(Uri.parse(fogUriString)).getUri() // normalize fog report Uri
-                    : null;
-            this.fogReportId = get_report_id();
-            this.fogAuthoritySpki = get_fog_authority_spki();
-            this.viewKey = RistrettoPrivate.fromJNI(get_view_key());
-            this.spendKey = RistrettoPrivate.fromJNI(get_spend_key());
-            this.subAddressViewKey = RistrettoPrivate.fromJNI(get_default_subaddress_view_key());
-            this.subAddressSpendKey = RistrettoPrivate.fromJNI(get_default_subaddress_spend_key());
-            this.publicAddress = PublicAddress.fromJNI(get_public_address());
-        } catch (InvalidUriException ignored) {
-            throw new IllegalStateException("Bug: unreachable code");
-        }
+        this.fogReportUri = (fogUriString != null && !fogUriString.isEmpty())
+                ? Uri.parse(fogUriString)
+                : null;
+        this.fogReportId = get_report_id();
+        this.fogAuthoritySpki = get_fog_authority_spki();
+        this.viewKey = RistrettoPrivate.fromJNI(get_view_key());
+        this.spendKey = RistrettoPrivate.fromJNI(get_spend_key());
+        this.subAddressViewKey = RistrettoPrivate.fromJNI(get_default_subaddress_view_key());
+        this.subAddressSpendKey = RistrettoPrivate.fromJNI(get_default_subaddress_spend_key());
+        this.publicAddress = PublicAddress.fromJNI(get_public_address());
     }
 
     /**
@@ -207,7 +204,7 @@ public class AccountKey extends Native {
     static AccountKey fromProtoBufObject(@NonNull MobileCoinAPI.AccountKey accountKey)
             throws SerializationException {
         Logger.i(TAG, "Reading AccountKey from the protoBuf object");
-        String fogReportUrl = accountKey.getFogReportUrl();
+        Uri fogReportUri = Uri.parse(accountKey.getFogReportUrl());
         byte[] fogAuthoritySpki = accountKey.getFogAuthoritySpki().toByteArray();
         String fogReportId = accountKey.getFogReportId();
 
@@ -216,11 +213,10 @@ public class AccountKey extends Native {
         RistrettoPrivate spendKey =
                 RistrettoPrivate.fromProtoBufObject(accountKey.getSpendPrivateKey());
         try {
-            FogUri fogUri = new FogUri(fogReportUrl);
             return new AccountKey(
                     viewKey,
                     spendKey,
-                    fogUri.getUri(),
+                    fogReportUri,
                     fogReportId,
                     fogAuthoritySpki
             );
@@ -450,13 +446,38 @@ public class AccountKey extends Native {
         return accountBuilder.build();
     }
 
+    @Nullable
+    private Uri getNormalizedFogReportUri() {
+        if (fogReportUri == null) {
+            return  null;
+        }
+        try {
+            return new FogUri(fogReportUri).getUri();
+        } catch (InvalidUriException exception) {
+            throw new IllegalStateException("Bug: the Uri was already verified");
+        }
+    }
+
+    public boolean equivalent(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        AccountKey that = (AccountKey) o;
+        return Objects.equals(fogReportId, that.fogReportId) &&
+                getNormalizedFogReportUri().equals(that.getNormalizedFogReportUri()) &&
+                Arrays.equals(fogAuthoritySpki, that.fogAuthoritySpki) &&
+                viewKey.equals(that.viewKey) &&
+                spendKey.equals(that.spendKey) &&
+                subAddressViewKey.equals(that.subAddressViewKey) &&
+                subAddressSpendKey.equals(that.subAddressSpendKey);
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         AccountKey that = (AccountKey) o;
-        return fogReportId.equals(that.fogReportId) &&
-                fogReportUri.equals(that.fogReportUri) &&
+        return Objects.equals(fogReportId, that.fogReportId) &&
+                Objects.equals(fogReportUri, that.fogReportUri) &&
                 Arrays.equals(fogAuthoritySpki, that.fogAuthoritySpki) &&
                 viewKey.equals(that.viewKey) &&
                 spendKey.equals(that.spendKey) &&
