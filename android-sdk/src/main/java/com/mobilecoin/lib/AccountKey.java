@@ -278,8 +278,10 @@ public class AccountKey extends Native {
                 null,
                 "account index:", accountIndex);
         try {
-            AccountKey accountWithoutFog = Slip10.deriveAccountKeyFromMnemonic(mnemonicPhrase,
-                    accountIndex);
+            AccountKey accountWithoutFog = AccountKeyDeriver.deriveAccountKeyFromMnemonic(
+                    mnemonicPhrase,
+                    accountIndex
+            );
             return new AccountKey(
                     accountWithoutFog.getViewKey(),
                     accountWithoutFog.getSpendKey(),
@@ -318,8 +320,10 @@ public class AccountKey extends Native {
                 "account index:", accountIndex);
         try {
             String mnemonicPhrase = Mnemonics.bip39EntropyToMnemonic(bip39Entropy);
-            AccountKey accountWithoutFog = Slip10.deriveAccountKeyFromMnemonic(mnemonicPhrase,
-                    accountIndex);
+            AccountKey accountWithoutFog = AccountKeyDeriver.deriveAccountKeyFromMnemonic(
+                    mnemonicPhrase,
+                    accountIndex
+            );
             return new AccountKey(
                     accountWithoutFog.getViewKey(),
                     accountWithoutFog.getSpendKey(),

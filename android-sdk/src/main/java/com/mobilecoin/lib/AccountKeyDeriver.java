@@ -6,9 +6,19 @@ import androidx.annotation.NonNull;
 
 import com.mobilecoin.lib.exceptions.BadBip39EntropyException;
 
-class Slip10 extends Native {
-    private final static String TAG = Slip10.class.getName();
+/**
+ * The {@link AccountKeyDeriver} is used to derive {@link AccountKey}s
+ */
+class AccountKeyDeriver extends Native {
+    private final static String TAG = AccountKeyDeriver.class.getName();
 
+    /**
+     * Derive {@link AccountKey} from a mnemonic phrase and an account index.
+     * Each account index corresponds to a unique deterministically derived {@link AccountKey}
+     *
+     * @param mnemonicPhrase is a bip39-compatible mnemonic phrase
+     * @param accountIndex   index of the account to derive
+     */
     static AccountKey deriveAccountKeyFromMnemonic(
             @NonNull String mnemonicPhrase,
             int accountIndex

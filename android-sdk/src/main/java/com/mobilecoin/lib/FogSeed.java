@@ -111,13 +111,11 @@ class FogSeed implements Serializable {
 
     @NonNull
     public UnsignedLong getStartBlock() {
-        Logger.i(TAG, "Getting start block", null, startBlock);
         return startBlock;
     }
 
     @NonNull
     List<OwnedTxOut> getTxOuts() {
-        Logger.i(TAG, "Getting utxos");
         return utxos;
     }
 

@@ -132,9 +132,7 @@ public class OwnedTxOut implements Serializable {
     }
 
     public synchronized boolean isSpent(@NonNull UnsignedLong atIndex) {
-        boolean isSpentCheck = isSpent && (spentBlockIndex.compareTo(atIndex) <= 0);
-        Logger.i(TAG, "Checking if spent", null, isSpentCheck);
-        return isSpentCheck;
+        return isSpent && (spentBlockIndex.compareTo(atIndex) <= 0);
     }
 
     synchronized void setSpent(
