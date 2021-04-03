@@ -107,36 +107,47 @@ public class PublicAddressTest {
                 fogConfig.getFogAuthoritySpki(),
                 fogConfig.getFogReportId()
         );
-        if (first.hashCode() != second.hashCode()) {
-            Assert.fail("Equal objects must have equal hashes");
-        }
+        Assert.assertEquals(
+                "Equal objects must have equal hashes",
+                first.hashCode(),
+                second.hashCode()
+        );
+
         second = new PublicAddress(key2,
                 key1,
                 fogConfig.getFogUri(),
                 fogConfig.getFogAuthoritySpki(),
                 fogConfig.getFogReportId()
         );
-        if (first.hashCode() == second.hashCode()) {
-            Assert.fail("Different objects must have different hashes");
-        }
+        Assert.assertNotEquals(
+                "Different objects must have different hashes",
+                first.hashCode(),
+                second.hashCode()
+        );
+
         second = new PublicAddress(key1,
                 key2,
                 differentFogUri,
                 fogConfig.getFogAuthoritySpki(),
                 fogConfig.getFogReportId()
         );
-        if (first.hashCode() == second.hashCode()) {
-            Assert.fail("Different objects must have different hashes");
-        }
+        Assert.assertNotEquals(
+                "Different objects must have different hashes",
+                first.hashCode(),
+                second.hashCode()
+        );
+
         second = new PublicAddress(key1,
                 key2,
                 fogUriWithPort,
                 fogConfig.getFogAuthoritySpki(),
                 fogConfig.getFogReportId()
         );
-        if (first.hashCode() == second.hashCode()) {
-            Assert.fail("Hashes for equal objects must be equal as well");
-        }
+        Assert.assertNotEquals(
+                "PublicAddresses with different uri ports must have different hashes",
+                first.hashCode(),
+                second.hashCode()
+        );
     }
 
     @Test
@@ -164,9 +175,12 @@ public class PublicAddressTest {
                 fogConfig.getFogAuthoritySpki(),
                 fogConfig.getFogReportId()
         );
-        if (!first.equals(second)) {
-            Assert.fail("Public addresses with copied keys must be equal");
-        }
+        Assert.assertEquals(
+                "Public addresses with copied keys must be equal",
+                first,
+                second
+        );
+
         // swap keys to make objects not equal
         second = new PublicAddress(key2,
                 key1,
@@ -174,18 +188,36 @@ public class PublicAddressTest {
                 fogConfig.getFogAuthoritySpki(),
                 fogConfig.getFogReportId()
         );
-        if (first.equals(second)) {
-            Assert.fail("Different Public addresses must not be equal");
-        }
+        Assert.assertNotEquals(
+                "Different Public addresses must not be equal",
+                first,
+                second
+        );
+
+        second = new PublicAddress(key1,
+                key2,
+                fogUriWithPort,
+                fogConfig.getFogAuthoritySpki(),
+                fogConfig.getFogReportId()
+        );
+        Assert.assertNotEquals(
+                "Public addresses with different ports must not be equal",
+                first,
+                second
+        );
+
         second = new PublicAddress(key1,
                 key2,
                 differentFogUri,
                 fogConfig.getFogAuthoritySpki(),
                 fogConfig.getFogReportId()
         );
-        if (first.equals(second)) {
-            Assert.fail("Different Public addresses must not be equal");
-        }
+        Assert.assertNotEquals(
+                "PublicAddresses with different report uris must not be equal",
+                first,
+                second
+        );
+
         second = new PublicAddress(key1,
                 key2,
                 fogUriWithPort,
@@ -194,8 +226,7 @@ public class PublicAddressTest {
         );
 
         if (!first.equivalent(second)) {
-            Assert.fail("Public addresses with and without port in report uris must be " +
-                    "equivalent");
+            Assert.fail("Public addresses with and without port must be equivalent");
         }
     }
 
@@ -235,7 +266,7 @@ public class PublicAddressTest {
         Uri fogUri = Uri.parse("fog://some-test-uri");
         Uri fogUriWithPort = Uri.parse("fog://some-test-uri:443");
 
-        Uri[] fogUrisToTest = new Uri[] {fogUri, fogUriWithPort};
+        Uri[] fogUrisToTest = new Uri[]{fogUri, fogUriWithPort};
 
         for (Uri uri : fogUrisToTest) {
             PublicAddress address = new PublicAddress(key1,
