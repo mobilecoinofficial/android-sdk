@@ -2,6 +2,8 @@
 
 package com.mobilecoin.lib;
 
+import android.net.Uri;
+
 import androidx.test.platform.app.InstrumentationRegistry;
 
 import com.mobilecoin.lib.exceptions.InvalidUriException;
@@ -99,20 +101,129 @@ public class AccountTest {
         return accountTestData;
     }
 
-
     @Test
-    public void test_serialize() throws SerializationException, InvalidUriException {
-        AccountKey accountKey1 = AccountKey.createNew(fogConfig.getFogUri(),
+    public void test_compare() throws InvalidUriException, SerializationException {
+        Uri fogUri = Uri.parse("fog://some-test-uri");
+        Uri differentFogUri = Uri.parse("fog://some-other-test-uri");
+        Uri fogUriWithPort = Uri.parse("fog://some-test-uri:443");
+        TestFogConfig fogConfig = Environment.getTestFogConfig();
+        RistrettoPrivate key1 = RistrettoPrivate.generateNewKey();
+        RistrettoPrivate key2 = RistrettoPrivate.generateNewKey();
+
+        RistrettoPrivate key1_copy = RistrettoPrivate.fromBytes(key1.getKeyBytes());
+        RistrettoPrivate key2_copy = RistrettoPrivate.fromBytes(key2.getKeyBytes());
+
+        AccountKey first = new AccountKey(
+                key1,
+                key2,
+                fogUri,
                 fogConfig.getFogReportId(),
                 fogConfig.getFogAuthoritySpki()
         );
-        byte[] serialized = accountKey1.toByteArray();
-        AccountKey accountKey2 = AccountKey.fromBytes(serialized);
+        try {
+            if (first.equals(null)) {
+                Assert.fail("Valid object cannot be equal to null");
+            }
+        } catch (Exception e) {
+            Assert.fail(e.toString());
+        }
+
+        AccountKey second = new AccountKey(key1_copy,
+                key2_copy,
+                fogUri,
+                fogConfig.getFogReportId(),
+                fogConfig.getFogAuthoritySpki()
+        );
+        Assert.assertEquals("Public addresses with copied keys must be equal",
+                first,
+                second
+        );
+
+        // swap keys to make objects not equal
+        second = new AccountKey(key2,
+                key1,
+                fogUri,
+                fogConfig.getFogReportId(),
+                fogConfig.getFogAuthoritySpki()
+        );
+        Assert.assertNotEquals(
+                "Different AccountKeys must not be equal",
+                first,
+                second
+        );
+
+        second = new AccountKey(key1,
+                key2,
+                differentFogUri,
+                fogConfig.getFogReportId(),
+                fogConfig.getFogAuthoritySpki()
+        );
+        Assert.assertNotEquals(
+                "AccountKeys with different report uri must not be equal",
+                first,
+                second
+        );
+
+        second = new AccountKey(key1,
+                key2,
+                fogUriWithPort,
+                fogConfig.getFogReportId(),
+                fogConfig.getFogAuthoritySpki()
+        );
+        if (!first.equivalent(second)) {
+            Assert.fail("AccountKeys with and without port must be equivalent");
+        }
+
+        second = new AccountKey(key1,
+                key2,
+                fogUriWithPort,
+                fogConfig.getFogReportId(),
+                fogConfig.getFogAuthoritySpki()
+        );
+        Assert.assertNotEquals(
+                "AccountKeys with and without port must not be equal",
+                first,
+                second
+        );
+    }
+
+    @Test
+    public void test_serialize() throws SerializationException, InvalidUriException {
+        AccountKey accountKey1 = AccountKey.createNew(
+                fogConfig.getFogUri(),
+                fogConfig.getFogReportId(),
+                fogConfig.getFogAuthoritySpki()
+        );
+        byte[] serializedAccountKey = accountKey1.toByteArray();
+        AccountKey accountKey2 = AccountKey.fromBytes(serializedAccountKey);
         Assert.assertEquals("Serialized and restored accounts must be equal",
                 accountKey1,
                 accountKey2
         );
     }
+
+    @Test
+    public void test_serialize_integrity() throws SerializationException, InvalidUriException {
+        Uri fogUri = Uri.parse("fog://some-test-uri");
+        Uri fogUriWithPort = Uri.parse("fog://some-test-uri:443");
+        Uri[] fogUrisToTest = new Uri[]{fogUri, fogUriWithPort};
+
+        for (Uri uri : fogUrisToTest) {
+            AccountKey accountKey = AccountKey.createNew(
+                    uri,
+                    fogConfig.getFogReportId(),
+                    fogConfig.getFogAuthoritySpki()
+            );
+            byte[] serializedAccountKey = accountKey.toByteArray();
+            AccountKey restoredAccountKey = AccountKey.fromBytes(serializedAccountKey);
+            Assert.assertArrayEquals(
+                    "Serialized roundtrip bytes must be equal",
+                    serializedAccountKey,
+                    restoredAccountKey.toByteArray()
+            );
+        }
+    }
+
 
     @Test
     public void test_deserialize() throws SerializationException, InvalidUriException {

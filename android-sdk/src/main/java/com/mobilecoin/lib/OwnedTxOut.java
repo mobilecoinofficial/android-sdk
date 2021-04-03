@@ -37,7 +37,6 @@ public class OwnedTxOut implements Serializable {
     private final Date receivedBlockTimestamp;
     private Date spentBlockTimestamp;
     private UnsignedLong spentBlockIndex;
-    private boolean isSpent;
 
     private final BigInteger value;
     private final RistrettoPublic txOutPublicKey;
@@ -132,7 +131,7 @@ public class OwnedTxOut implements Serializable {
     }
 
     public synchronized boolean isSpent(@NonNull UnsignedLong atIndex) {
-        return isSpent && (spentBlockIndex.compareTo(atIndex) <= 0);
+        return (spentBlockIndex != null) && (spentBlockIndex.compareTo(atIndex) <= 0);
     }
 
     synchronized void setSpent(
@@ -142,7 +141,6 @@ public class OwnedTxOut implements Serializable {
         Logger.i(TAG, "Setting spent status", null,
                 "spentBlockIndex:", spentBlockIndex,
                 "spentBlockTimeStamp:", spentBlockTimestamp);
-        this.isSpent = true;
         this.spentBlockIndex = spentBlockIndex;
         this.spentBlockTimestamp = spentBlockTimestamp;
     }
@@ -164,8 +162,7 @@ public class OwnedTxOut implements Serializable {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         OwnedTxOut that = (OwnedTxOut) o;
-        return isSpent == that.isSpent &&
-                txOutGlobalIndex.equals(that.txOutGlobalIndex) &&
+        return txOutGlobalIndex.equals(that.txOutGlobalIndex) &&
                 receivedBlockIndex.equals(that.receivedBlockIndex) &&
                 spentBlockIndex.equals(that.spentBlockIndex) &&
                 value.equals(that.value) &&
@@ -176,8 +173,7 @@ public class OwnedTxOut implements Serializable {
     @Override
     public int hashCode() {
         int result = Objects.hash(txOutGlobalIndex, receivedBlockIndex,
-                spentBlockIndex, isSpent, value,
-                txOutPublicKey);
+                spentBlockIndex, value, txOutPublicKey);
         result = 31 * result + Arrays.hashCode(keyImage);
         return result;
     }
