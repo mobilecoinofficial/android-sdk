@@ -27,7 +27,7 @@ public class Environment {
                 fogConfig.getConsensusUri(),
                 fogConfig.getClientConfig()
         );
-        mobileCoinClient.setAuthorization(
+        mobileCoinClient.setFogBasicAuthorization(
                 fogConfig.getUsername(),
                 fogConfig.getPassword()
         );
