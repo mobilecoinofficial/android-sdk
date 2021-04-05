@@ -776,7 +776,7 @@ public class MobileCoinClient {
     /**
      * Sets HTTP authorization username and password for consensus server requests.
      */
-    public void setConsensusAuthorization(@NonNull String username, @NonNull String password) {
+    public void setConsensusBasicAuthorization(@NonNull String username, @NonNull String password) {
         consensusClient.setAuthorization(
                 username,
                 password
