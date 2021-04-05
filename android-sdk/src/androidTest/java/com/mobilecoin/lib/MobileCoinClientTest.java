@@ -180,7 +180,7 @@ public class MobileCoinClientTest {
                 fogConfig.getConsensusUri(),
                 clientConfig
         );
-        mobileCoinClient.setAuthorization(
+        mobileCoinClient.setFogBasicAuthorization(
                 fogConfig.getUsername(),
                 fogConfig.getPassword()
         );
@@ -207,7 +207,7 @@ public class MobileCoinClientTest {
                 fogConfig.getConsensusUri(),
                 clientConfig
         );
-        mobileCoinClient.setAuthorization(
+        mobileCoinClient.setFogBasicAuthorization(
                 fogConfig.getUsername(),
                 fogConfig.getPassword()
         );

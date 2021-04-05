@@ -749,9 +749,9 @@ public class MobileCoinClient {
     }
 
     /**
-     * Set the basic HTTP authorization username and password for future requests
+     * Sets HTTP authorization username and password for FOG requests.
      */
-    public void setAuthorization(
+    public void setFogBasicAuthorization(
             @NonNull String username,
             @NonNull String password
     ) {
@@ -763,15 +763,21 @@ public class MobileCoinClient {
                 username,
                 password
         );
-        consensusClient.setAuthorization(
-                username,
-                password
-        );
         blockClient.setAuthorization(
                 username,
                 password
         );
         untrustedClient.setAuthorization(
+                username,
+                password
+        );
+    }
+
+    /**
+     * Sets HTTP authorization username and password for consensus server requests.
+     */
+    public void setConsensusAuthorization(@NonNull String username, @NonNull String password) {
+        consensusClient.setAuthorization(
                 username,
                 password
         );
