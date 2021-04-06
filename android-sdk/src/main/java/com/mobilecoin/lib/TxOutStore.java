@@ -203,9 +203,6 @@ class TxOutStore implements Serializable {
                     allTXOsRetrieved = true;
                 }
                 View.QueryResponse result = viewClient.request(searchKeys);
-                Logger.d(TAG, "View Request completed", null,
-                        "viewBlockIndex:", viewBlockIndex
-                );
                 for (FogCommon.BlockRange fogRange : result.getMissedBlockRangesList()) {
                     BlockRange range = new BlockRange(fogRange);
                     missedRanges.add(range);
@@ -284,6 +281,7 @@ class TxOutStore implements Serializable {
                             viewBlockIndex = (blockCount != 0)
                                     ? UnsignedLong.fromLongBits(blockCount).sub(UnsignedLong.ONE)
                                     : UnsignedLong.ZERO;
+                            Logger.i(TAG, "View Request completed blockIndex = " + viewBlockIndex);
                             break;
                         }
                     }
