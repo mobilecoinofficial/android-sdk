@@ -43,7 +43,7 @@ public class AccountKey extends Native {
      * @param spendKey         private spend key
      * @param fogReportUri     URL of the fog report server (i.e. fog://fog-ingest.test
      *                         .mobilecoin.com)
-     * @param fogAuthoritySpki fog authority public key a byte array, provided by the fog operator
+     * @param fogAuthoritySpki fog authority public key as byte array, provided by the fog operator
      * @param fogReportId      A Fog report server is permitted to hold and serve several
      *                         different reports with different id’s, this field specifies which
      *                         one should be used for a given user.
