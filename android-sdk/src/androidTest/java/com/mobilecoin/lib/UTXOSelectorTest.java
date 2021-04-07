@@ -28,8 +28,8 @@ public class UTXOSelectorTest {
   @Rule
   public ExpectedException thrown = ExpectedException.none();
 
-  @Test
-  public void selectTxOutNodesForMerging_oneInput_throwsInsufficientFundsException() throws Exception {
+  @Test(expected = InsufficientFundsException.class)
+  public void selectTxOutNodesForMerging_oneInput() throws Exception {
     BigInteger txFee = BigInteger.ZERO;
     BigInteger inputFee = BigInteger.ZERO;
     BigInteger smallAmount = BigInteger.ONE;
@@ -41,8 +41,8 @@ public class UTXOSelectorTest {
      */ BigInteger.ZERO);
   }
 
-  @Test
-  public void selectTxOutNodesForMerging_txFeeIsTooLargeToMerge_throwsInsufficientFundsException() throws Exception {
+  @Test(expected = InsufficientFundsException.class)
+  public void selectTxOutNodesForMerging_txFeeIsTooLargeToMerge() throws Exception {
     List<UTXOSelector.TxOutNode> utxos = new ArrayList<>();
     BigInteger txFee = BigInteger.TEN;
     BigInteger inputFee = BigInteger.ZERO;
@@ -57,8 +57,8 @@ public class UTXOSelectorTest {
 
   }
 
-  @Test
-  public void selectTxOutNodesForMerging_inputFeeIsTooLargeToMerge_throwsInsufficientFundsException() throws Exception {
+  @Test(expected = InsufficientFundsException.class)
+  public void selectTxOutNodesForMerging_inputFeeIsTooLargeToMerge() throws Exception {
     List<UTXOSelector.TxOutNode> utxos = new ArrayList<>();
     BigInteger txFee = BigInteger.ZERO;
     BigInteger inputFee = BigInteger.TEN;
@@ -73,7 +73,7 @@ public class UTXOSelectorTest {
   }
 
   @Test
-  public void selectTxOutNodesForMerging_amountCoversFees_twoMerges_selectsCorrectNodesBothTimes() throws Exception {
+  public void selectTxOutNodesForMerging_selectsCorrectNodes() throws Exception {
     List<UTXOSelector.TxOutNode> utxos = new ArrayList<>();
     BigInteger txFee = BigInteger.ZERO;
     BigInteger inputFee = BigInteger.ZERO;
@@ -112,8 +112,8 @@ public class UTXOSelectorTest {
     }
   }
 
-  @Test
-  public void selectTxOutNodesForAmount_emptyAccount_throwsInsufficientFundsException()
+  @Test(expected = InsufficientFundsException.class)
+  public void selectTxOutNodesForAmount_emptyAccount()
           throws FragmentedAccountException, InsufficientFundsException {
     thrown.expect(InsufficientFundsException.class);
     List<UTXOSelector.TxOutNode> utxos = new ArrayList<>();
@@ -127,8 +127,8 @@ public class UTXOSelectorTest {
     );
   }
 
-  @Test
-  public void selectTxOutNodesForAmount_fragmentedAccount_throwsFragmentedAccountException()
+  @Test(expected = FragmentedAccountException.class)
+  public void selectTxOutNodesForAmount_fragmentedAccount()
           throws FragmentedAccountException, InsufficientFundsException {
     thrown.expect(FragmentedAccountException.class);
     List<UTXOSelector.TxOutNode> utxos = new ArrayList<>();
@@ -175,8 +175,8 @@ public class UTXOSelectorTest {
     Assert.assertEquals(secondTxOut, selectedTxOuts.get(1));
   }
 
-  @Test
-  public void selectTxOutNodesForAmount_inputsDoNotCoverAmount_throwsInsufficentFundsException() throws Exception {
+  @Test(expected = InsufficientFundsException.class)
+  public void selectTxOutNodesForAmount_inputsDoNotCoverAmount() throws Exception {
     List<UTXOSelector.TxOutNode> utxos = new ArrayList<>();
     utxos.add(createMockTxOutNode(/* value= */ BigInteger.TEN, /* txFee= */ BigInteger.ZERO, /* inputFee= */ BigInteger.ZERO));
 
@@ -190,8 +190,8 @@ public class UTXOSelectorTest {
     );
   }
 
-  @Test
-  public void selectTxOutNodesForAmount_inputsDoNotCoverAmountPlusInpuFee_throwsInsufficentFundsException() throws Exception {
+  @Test(expected = InsufficientFundsException.class)
+  public void selectTxOutNodesForAmount_inputsDoNotCoverAmountPlusInpuFee() throws Exception {
     BigInteger txFee = BigInteger.ONE;
     BigInteger inputFee = BigInteger.ZERO;
     List<UTXOSelector.TxOutNode> utxos = new ArrayList<>();
