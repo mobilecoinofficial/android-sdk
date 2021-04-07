@@ -47,6 +47,7 @@ public class AccountKey extends Native {
      * @param fogReportId      A Fog report server is permitted to hold and serve several
      *                         different reports with different id’s, this field specifies which
      *                         one should be used for a given user.
+     *                         something else
      */
     AccountKey(
             @NonNull RistrettoPrivate viewKey,
