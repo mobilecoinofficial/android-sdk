@@ -25,9 +25,6 @@ import static org.mockito.Mockito.when;
 @RunWith(MockitoJUnitRunner.class)
 public class UTXOSelectorTest {
 
-  @Rule
-  public ExpectedException thrown = ExpectedException.none();
-
   @Test(expected = InsufficientFundsException.class)
   public void selectTxOutNodesForMerging_oneInput() throws Exception {
     BigInteger txFee = BigInteger.ZERO;
@@ -36,7 +33,6 @@ public class UTXOSelectorTest {
     List<UTXOSelector.TxOutNode> utxos =
             Collections.singletonList(createMockTxOutNode(smallAmount, txFee, inputFee));
 
-    thrown.expect(InsufficientFundsException.class);
     UTXOSelector.selectTxOutNodesForMerging(utxos, txFee, inputFee, /* outputFee=
      */ BigInteger.ZERO);
   }
@@ -51,7 +47,6 @@ public class UTXOSelectorTest {
       utxos.add(createMockTxOutNode(smallAmount, txFee, inputFee));
     }
 
-    thrown.expect(InsufficientFundsException.class);
     UTXOSelector.selectTxOutNodesForMerging(utxos, txFee, inputFee, /* outputFee=
      */ BigInteger.ZERO);
 
@@ -67,7 +62,6 @@ public class UTXOSelectorTest {
       utxos.add(createMockTxOutNode(smallAmount, txFee, inputFee));
     }
 
-    thrown.expect(InsufficientFundsException.class);
     UTXOSelector.selectTxOutNodesForMerging(utxos, txFee, inputFee, /* outputFee=
      */ BigInteger.ZERO);
   }
@@ -115,7 +109,6 @@ public class UTXOSelectorTest {
   @Test(expected = InsufficientFundsException.class)
   public void selectTxOutNodesForAmount_emptyAccount()
           throws FragmentedAccountException, InsufficientFundsException {
-    thrown.expect(InsufficientFundsException.class);
     List<UTXOSelector.TxOutNode> utxos = new ArrayList<>();
 
     UTXOSelector.selectTxOutNodesForAmount(utxos,
@@ -130,7 +123,6 @@ public class UTXOSelectorTest {
   @Test(expected = FragmentedAccountException.class)
   public void selectTxOutNodesForAmount_fragmentedAccount()
           throws FragmentedAccountException, InsufficientFundsException {
-    thrown.expect(FragmentedAccountException.class);
     List<UTXOSelector.TxOutNode> utxos = new ArrayList<>();
     for (int i = 0; i < 100; i++) {
       utxos.add(createMockTxOutNode(/* value=*/ BigInteger.ONE, /* txFee= */ BigInteger.ZERO, /* inputFee= */ BigInteger.ZERO));
@@ -180,7 +172,6 @@ public class UTXOSelectorTest {
     List<UTXOSelector.TxOutNode> utxos = new ArrayList<>();
     utxos.add(createMockTxOutNode(/* value= */ BigInteger.TEN, /* txFee= */ BigInteger.ZERO, /* inputFee= */ BigInteger.ZERO));
 
-    thrown.expect(InsufficientFundsException.class);
     UTXOSelector.selectTxOutNodesForAmount(utxos,
             /* amount= */ BigInteger.valueOf(15),
             /* txFee= */  BigInteger.ZERO,
@@ -197,7 +188,6 @@ public class UTXOSelectorTest {
     List<UTXOSelector.TxOutNode> utxos = new ArrayList<>();
     utxos.add(createMockTxOutNode(/* value= */ BigInteger.TEN, txFee, inputFee));
 
-    thrown.expect(InsufficientFundsException.class);
     UTXOSelector.selectTxOutNodesForAmount(utxos,
             /* amount= */ BigInteger.TEN,
             txFee,
@@ -295,9 +285,8 @@ public class UTXOSelectorTest {
     Assert.assertEquals(thirdExpectedTotalFee, fee);
   }
 
-  @Test
-  public void getTransferableAmount_nullUnspent_returnsZeroBalance() throws Exception {
-    thrown.expect(NullPointerException.class);
+  @Test(expected = NullPointerException.class)
+  public void getTransferableAmount_nullUnspent() throws Exception {
     BigInteger balance = UTXOSelector.getTransferableAmount(/* unspent= */ null, /* txFee=
      */BigInteger.ZERO, /* inputFee= */ BigInteger.ZERO, /* outputFee= */ BigInteger.ZERO);
   }
