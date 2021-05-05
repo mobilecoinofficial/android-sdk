@@ -53,11 +53,6 @@ import fog_ledger.Ledger;
  * </pre>
  */
 public class MobileCoinClient {
-    public enum FeeLevel {
-        MINIMUM
-    }
-
-    static final BigInteger TX_FEE = BigInteger.valueOf(10000000000L);
     static final BigInteger INPUT_FEE = BigInteger.valueOf(0L);
     static final BigInteger OUTPUT_FEE = BigInteger.valueOf(0L);
     private static final String TAG = MobileCoinClient.class.toString();
@@ -70,11 +65,12 @@ public class MobileCoinClient {
     private final ClientConfig clientConfig;
     private final StorageAdapter cacheStorage;
     private final FogReportsManager fogReportsManager;
-    final FogBlockClient blockClient;
+    final FogBlockClient fogBlockClient;
     final FogUntrustedClient untrustedClient;
     final AttestedViewClient viewClient;
     final AttestedLedgerClient ledgerClient;
     final AttestedConsensusClient consensusClient;
+    final BlockchainClient blockchainClient;
 
     /**
      * Construct new {@link MobileCoinClient} instance
@@ -111,11 +107,13 @@ public class MobileCoinClient {
         this.clientConfig = clientConfig;
         this.cacheStorage = clientConfig.storageAdapter;
         FogUri normalizedFogUri = new FogUri(fogUri);
+        this.blockchainClient = new BlockchainClient(new ConsensusUri(consensusUri),
+                clientConfig.consensus);
         this.viewClient = new AttestedViewClient(normalizedFogUri, clientConfig.fogView);
         this.ledgerClient = new AttestedLedgerClient(normalizedFogUri, clientConfig.fogLedger);
         this.consensusClient = new AttestedConsensusClient(new ConsensusUri(consensusUri),
                 clientConfig.consensus);
-        this.blockClient = new FogBlockClient(normalizedFogUri, clientConfig.fogLedger);
+        this.fogBlockClient = new FogBlockClient(normalizedFogUri, clientConfig.fogLedger);
         this.untrustedClient = new FogUntrustedClient(normalizedFogUri, clientConfig.fogLedger);
         this.txOutStore = new TxOutStore(accountKey);
         this.fogReportsManager = new FogReportsManager();
@@ -152,7 +150,7 @@ public class MobileCoinClient {
             txOutStore.refresh(
                     viewClient,
                     ledgerClient,
-                    blockClient
+                    fogBlockClient
             );
             // refresh store index
             storeIndex = txOutStore.getCurrentBlockIndex();
@@ -189,7 +187,7 @@ public class MobileCoinClient {
     public BigInteger getTransferableAmount() throws NetworkException, InvalidFogResponse,
             AttestationException {
         Logger.i(TAG, "GetTransferableAmount call");
-        return getAccountSnapshot().getTransferableAmount();
+        return getAccountSnapshot().getTransferableAmount(getOrFetchMinimumTxFee());
     }
 
     /**
@@ -485,33 +483,17 @@ public class MobileCoinClient {
      * @param amount an amount value in picoMob
      */
     @NonNull
-    public BigInteger estimateTotalFee(@NonNull BigInteger amount, @NonNull FeeLevel feeLevel)
+    public BigInteger estimateTotalFee(@NonNull BigInteger amount)
             throws InsufficientFundsException, NetworkException, InvalidFogResponse,
             AttestationException {
         Logger.i(TAG, "EstimateTotalFee call");
         return UTXOSelector.calculateFee(
                 getUnspentTxOuts(),
                 amount,
-                TX_FEE,
+                getOrFetchMinimumTxFee(),
                 INPUT_FEE,
                 OUTPUT_FEE,
                 2);
-    }
-
-    /**
-     * The minimum fee required to send a transaction with the specified amount. The account balance
-     * consists of multiple coins, if there are no big enough coins to successfully send the
-     * transaction {@link FragmentedAccountException} will be thrown. The account needs to be
-     * defragmented in order to send the specified amount. See
-     * {@link MobileCoinClient#defragmentAccount}
-     *
-     * @param amount an amount value in picoMob
-     */
-    @NonNull
-    public BigInteger estimateTotalFee(@NonNull BigInteger amount)
-            throws InsufficientFundsException, NetworkException, AttestationException,
-            InvalidFogResponse {
-        return estimateTotalFee(amount, FeeLevel.MINIMUM);
     }
 
     /**
@@ -537,13 +519,13 @@ public class MobileCoinClient {
                 inputSelectionForAmount = UTXOSelector.selectInputsForAmount(
                         unspent,
                         amountToSend,
-                        TX_FEE,
+                        getOrFetchMinimumTxFee(),
                         INPUT_FEE,
                         OUTPUT_FEE, 1);
             } catch (FragmentedAccountException exception) {
                 UTXOSelector.Selection<OwnedTxOut> selection = UTXOSelector.selectInputsForMerging(
                         unspent,
-                        TX_FEE,
+                        getOrFetchMinimumTxFee(),
                         INPUT_FEE,
                         OUTPUT_FEE
                 );
@@ -602,7 +584,7 @@ public class MobileCoinClient {
             UTXOSelector.selectInputsForAmount(
                     getUnspentTxOuts(),
                     amountToSend,
-                    TX_FEE,
+                    getOrFetchMinimumTxFee(),
                     INPUT_FEE,
                     OUTPUT_FEE, 1);
         } catch (FragmentedAccountException exception) {
@@ -625,9 +607,17 @@ public class MobileCoinClient {
         getTxOutStore().refresh(
                 viewClient,
                 ledgerClient,
-                blockClient
+                fogBlockClient
         );
         return getTxOutStore().getUnspentTxOuts();
+    }
+
+    /**
+     * Fetch or return cached minimum transaction fee
+     */
+    @NonNull
+    public BigInteger getOrFetchMinimumTxFee() throws NetworkException {
+        return blockchainClient.getOrFetchMinimumFee().toBigInteger();
     }
 
     /**
@@ -636,7 +626,7 @@ public class MobileCoinClient {
     @NonNull
     public AccountActivity getAccountActivity() throws NetworkException, InvalidFogResponse,
             AttestationException {
-        txOutStore.refresh(viewClient, ledgerClient, blockClient);
+        txOutStore.refresh(viewClient, ledgerClient, fogBlockClient);
         Set<OwnedTxOut> txOuts = txOutStore.getSyncedTxOuts();
         return new AccountActivity(txOuts,
                 getTxOutStore().getCurrentBlockIndex().add(UnsignedLong.ONE));
@@ -763,7 +753,7 @@ public class MobileCoinClient {
                 username,
                 password
         );
-        blockClient.setAuthorization(
+        fogBlockClient.setAuthorization(
                 username,
                 password
         );
@@ -778,6 +768,10 @@ public class MobileCoinClient {
      */
     public void setConsensusBasicAuthorization(@NonNull String username, @NonNull String password) {
         consensusClient.setAuthorization(
+                username,
+                password
+        );
+        blockchainClient.setAuthorization(
                 username,
                 password
         );
@@ -797,8 +791,11 @@ public class MobileCoinClient {
         if (null != consensusClient) {
             consensusClient.shutdown();
         }
-        if (null != blockClient) {
-            blockClient.shutdown();
+        if (null != fogBlockClient) {
+            fogBlockClient.shutdown();
+        }
+        if (null != blockchainClient) {
+            blockchainClient.shutdown();
         }
     }
 

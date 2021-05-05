@@ -4,6 +4,8 @@ package com.mobilecoin.lib;
 
 import androidx.test.platform.app.InstrumentationRegistry;
 
+import com.mobilecoin.lib.util.Hex;
+
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Scanner;
@@ -12,50 +14,57 @@ class TestKeysManager {
     private static final int DEFAULT_ACCOUNT_INDEX = 0;
     private static int currentAccountIndex = 0;
 
-    private final static String[] testNetMnemonics = loadTestMnemonics(com.mobilecoin.lib.test.R.raw.test_net_mnemonics);
+    private final static String[] testNetMnemonics =
+            loadTestStrings(com.mobilecoin.lib.test.R.raw.test_net_mnemonics);
+    private final static String[] devNetRootEntropies =
+            loadTestStrings(com.mobilecoin.lib.test.R.raw.dev_net_root_entropies);
 
-    private static String[] loadTestMnemonics(int resource) {
+    private static String[] loadTestStrings(int resource) {
         InputStream inputStream = InstrumentationRegistry.getInstrumentation().getTargetContext()
                 .getResources().openRawResource(resource);
-       Scanner scanner = new Scanner(inputStream).useDelimiter(",");
-        ArrayList<String> mnemonics = new ArrayList<>();
+        Scanner scanner = new Scanner(inputStream).useDelimiter(",");
+        ArrayList<String> strings = new ArrayList<>();
         while (scanner.hasNext()) {
-            String mnemonic = scanner.next();
-            mnemonics.add(mnemonic);
+            String string = scanner.next();
+            strings.add(string);
         }
-        return mnemonics.toArray(new String[0]);
-    }
-
-    synchronized static String getNextMnemonicPhrase() {
-        String[] currentMnemonics;
-        switch (Environment.CURRENT_TEST_ENV) {
-            case TEST_NET:
-                currentMnemonics = testNetMnemonics;
-                break;
-            case MOBILE_DEV:
-            case ALPHA:
-            default:
-                // TODO: enter the new dev env keys
-                throw new UnsupportedOperationException();
-        }
-        if (currentAccountIndex >= currentMnemonics.length) {
-            currentAccountIndex = 0;
-        }
-        return currentMnemonics[currentAccountIndex++];
+        return strings.toArray(new String[0]);
     }
 
     static AccountKey getNextAccountKey() {
         TestFogConfig fogConfig = Environment.getTestFogConfig();
-        try {
-            return AccountKey.fromMnemonicPhrase(
-                    getNextMnemonicPhrase(),
-                    DEFAULT_ACCOUNT_INDEX,
-                    fogConfig.getFogUri(),
-                    fogConfig.getFogReportId(),
-                    fogConfig.getFogAuthoritySpki()
-            );
-        } catch (Exception exception) {
-            throw new IllegalStateException("Bug: All test keys must be valid");
+        switch (Environment.CURRENT_TEST_ENV) {
+            case TEST_NET:
+                if (currentAccountIndex >= testNetMnemonics.length) {
+                    currentAccountIndex = 0;
+                }
+                try {
+                    return AccountKey.fromMnemonicPhrase(
+                            testNetMnemonics[currentAccountIndex++],
+                            DEFAULT_ACCOUNT_INDEX,
+                            fogConfig.getFogUri(),
+                            fogConfig.getFogReportId(),
+                            fogConfig.getFogAuthoritySpki()
+                    );
+                } catch (Exception exception) {
+                    throw new IllegalStateException("Bug: All test keys must be valid");
+                }
+            case MOBILE_DEV:
+            case ALPHA:
+            default:
+                if (currentAccountIndex >= devNetRootEntropies.length) {
+                    currentAccountIndex = 0;
+                }
+                try {
+                    return AccountKey.fromRootEntropy(
+                            Hex.toByteArray(devNetRootEntropies[currentAccountIndex++]),
+                            fogConfig.getFogUri(),
+                            fogConfig.getFogReportId(),
+                            fogConfig.getFogAuthoritySpki()
+                    );
+                } catch (Exception exception) {
+                    throw new IllegalStateException("Bug: All test keys must be valid");
+                }
         }
     }
 }

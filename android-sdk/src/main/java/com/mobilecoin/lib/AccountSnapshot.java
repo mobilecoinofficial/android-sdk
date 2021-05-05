@@ -27,7 +27,6 @@ import fog_ledger.Ledger;
 
 import static com.mobilecoin.lib.MobileCoinClient.INPUT_FEE;
 import static com.mobilecoin.lib.MobileCoinClient.OUTPUT_FEE;
-import static com.mobilecoin.lib.MobileCoinClient.TX_FEE;
 
 /**
  * This class represents the Account's state at the specified block index
@@ -179,15 +178,18 @@ public class AccountSnapshot {
 
     /**
      * Calculate the total transferable amount excluding all the required fees for such transfer
+     *
+     * @param minimumTxFee minimum transaction fee, see
+     * {@link MobileCoinClient#getOrFetchMinimumTxFee}
      */
     @NonNull
-    public BigInteger getTransferableAmount() {
+    public BigInteger getTransferableAmount(@NonNull BigInteger minimumTxFee) {
         Logger.i(TAG, "Calculating transferable amount");
         HashSet<OwnedTxOut> unspent = txOuts.stream().filter(p -> !p.isSpent(blockIndex))
                 .collect(Collectors.toCollection(HashSet::new));
         try {
             return UTXOSelector.getTransferableAmount(unspent,
-                    TX_FEE,
+                    minimumTxFee,
                     INPUT_FEE,
                     OUTPUT_FEE);
         } catch (InsufficientFundsException ignored) {
@@ -202,11 +204,13 @@ public class AccountSnapshot {
      * defragmented in order to send the specified amount. See
      * {@link MobileCoinClient#defragmentAccount}
      *
-     * @param amount an amount value in picoMob
+     * @param amount       an amount value in picoMob
+     * @param minimumTxFee minimum transaction fee, see
+     *                     {@link MobileCoinClient#getOrFetchMinimumTxFee}
      */
     @NonNull
     public BigInteger estimateTotalFee(@NonNull BigInteger amount,
-                                       @NonNull MobileCoinClient.FeeLevel feeLevel
+                                       @NonNull BigInteger minimumTxFee
     ) throws InsufficientFundsException {
         Logger.i(TAG, "EstimateTotalFee call");
         HashSet<OwnedTxOut> unspent = txOuts.stream().filter(p -> !p.isSpent(blockIndex))
@@ -214,27 +218,12 @@ public class AccountSnapshot {
         BigInteger totalFee = UTXOSelector.calculateFee(
                 unspent,
                 amount,
-                TX_FEE,
+                minimumTxFee,
                 INPUT_FEE,
                 OUTPUT_FEE,
                 2);
         Logger.d(TAG, "Estimated total fee", null, "totalFee:", totalFee);
         return totalFee;
-    }
-
-    /**
-     * The minimum fee required to send a transaction with the specified amount. The account balance
-     * consists of multiple coins, if there are no big enough coins to successfully send the
-     * transaction {@link FragmentedAccountException} will be thrown. The account needs to be
-     * defragmented in order to send the specified amount. See
-     * {@link MobileCoinClient#defragmentAccount}
-     *
-     * @param amount an amount value in picoMob
-     */
-    @NonNull
-    public BigInteger estimateTotalFee(@NonNull BigInteger amount)
-            throws InsufficientFundsException {
-        return estimateTotalFee(amount, MobileCoinClient.FeeLevel.MINIMUM);
     }
 
     /**

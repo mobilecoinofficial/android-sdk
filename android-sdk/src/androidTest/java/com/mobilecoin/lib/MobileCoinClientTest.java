@@ -111,8 +111,7 @@ public class MobileCoinClientTest {
         PublicAddress recipient = TestKeysManager.getNextAccountKey().getPublicAddress();
         try {
             BigInteger minimumFee = mobileCoinClient.estimateTotalFee(
-                    amount,
-                    MobileCoinClient.FeeLevel.MINIMUM
+                    amount
             );
             PendingTransaction pending = mobileCoinClient.prepareTransaction(
                     recipient,
@@ -153,8 +152,7 @@ public class MobileCoinClientTest {
 
             BigInteger amount = BigInteger.TEN;
             BigInteger minimumFee = mobileCoinClient.estimateTotalFee(
-                    amount,
-                    MobileCoinClient.FeeLevel.MINIMUM
+                    amount
             );
             PendingTransaction pending = mobileCoinClient.prepareTransaction(
                     recipientAddress,
@@ -231,8 +229,7 @@ public class MobileCoinClientTest {
         try {
             BigInteger amount = BigInteger.TEN;
             BigInteger minimumFee = mobileCoinClient.estimateTotalFee(
-                    amount,
-                    MobileCoinClient.FeeLevel.MINIMUM
+                    amount
             );
             PendingTransaction pending = mobileCoinClient.prepareTransaction(
                     recipient.getPublicAddress(),
@@ -266,8 +263,7 @@ public class MobileCoinClientTest {
         try {
             BigInteger amount = BigInteger.TEN;
             BigInteger minimumFee = senderClient.estimateTotalFee(
-                    amount,
-                    MobileCoinClient.FeeLevel.MINIMUM
+                    amount
             );
             PendingTransaction pending = senderClient.prepareTransaction(
                     recipientClient.getAccountKey().getPublicAddress(),
@@ -316,8 +312,7 @@ public class MobileCoinClientTest {
         try {
             BigInteger amount = BigInteger.ZERO;
             BigInteger minimumFee = senderClient.estimateTotalFee(
-                    amount,
-                    MobileCoinClient.FeeLevel.MINIMUM
+                    amount
             );
             PendingTransaction pending = senderClient.prepareTransaction(
                     recipientClient.getAccountKey().getPublicAddress(),
@@ -337,7 +332,7 @@ public class MobileCoinClientTest {
             // make sure a zero value unspent TxOut exists
             UnsignedLong startBlock = initialBalance.getBlockIndex();
             UnsignedLong endBlock = finalBalance.getBlockIndex();
-            List<OwnedTxOut> txOuts = recipientClient.blockClient.scanForTxOutsInBlockRange(
+            List<OwnedTxOut> txOuts = recipientClient.fogBlockClient.scanForTxOutsInBlockRange(
                     new BlockRange(startBlock, endBlock.add(UnsignedLong.ONE)),
                     recipientClient.getAccountKey()
             );
@@ -374,11 +369,12 @@ public class MobileCoinClientTest {
             InvalidTransactionException, FragmentedAccountException, FeeRejectedException,
             TimeoutException, FogReportException, InvalidReceiptException, InvalidUriException {
 
-        final int FRAGMENTS_TO_TEST = 20;
-        final BigInteger FRAGMENT_AMOUNT = MobileCoinClient.TX_FEE.multiply(BigInteger.TEN);
-
         AccountKey coinSourceKey = TestKeysManager.getNextAccountKey();
         MobileCoinClient coinSourceClient = Environment.makeFreshMobileCoinClient(coinSourceKey);
+
+        final int FRAGMENTS_TO_TEST = 20;
+        final BigInteger MINIMUM_TX_FEE = coinSourceClient.getOrFetchMinimumTxFee();
+        final BigInteger FRAGMENT_AMOUNT = MINIMUM_TX_FEE.multiply(BigInteger.TEN);
 
         TestFogConfig fogConfig = Environment.getTestFogConfig();
         // 1. Create a new fragmented account
@@ -414,8 +410,7 @@ public class MobileCoinClientTest {
         // 2c. Add necessary amount to cover the fees (number of optimizations + actual Tx)
         // and verify the transferable amount before and after fees
         int iterations = FRAGMENTS_TO_TEST / UTXOSelector.MAX_INPUTS + 1;
-        BigInteger futureFees = MobileCoinClient
-                .TX_FEE.multiply(BigInteger.valueOf(iterations))
+        BigInteger futureFees = MINIMUM_TX_FEE.multiply(BigInteger.valueOf(iterations))
                 .add(MobileCoinClient.INPUT_FEE.multiply(BigInteger.valueOf(FRAGMENTS_TO_TEST)))
                 .add(MobileCoinClient.OUTPUT_FEE.multiply(BigInteger.valueOf(iterations)));
 
@@ -497,7 +492,7 @@ public class MobileCoinClientTest {
         store.refresh(
                 mobileCoinClient.viewClient,
                 mobileCoinClient.ledgerClient,
-                mobileCoinClient.blockClient
+                mobileCoinClient.fogBlockClient
         );
         AccountActivity accountActivity = mobileCoinClient.getAccountActivity();
         UnsignedLong activityBlockCount = accountActivity.getBlockCount();
@@ -539,8 +534,7 @@ public class MobileCoinClientTest {
         BigInteger amount = BigInteger.TEN;
         try {
             BigInteger minimumFee = senderClient.estimateTotalFee(
-                    amount,
-                    MobileCoinClient.FeeLevel.MINIMUM
+                    amount
             );
             PendingTransaction pending = senderClient.prepareTransaction(
                     recipientClient.getAccountKey().getPublicAddress(),

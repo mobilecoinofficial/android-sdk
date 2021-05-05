@@ -65,8 +65,7 @@ public class ParallelExecutionTest {
                 try {
                     // Alice sends coins to Bob
                     BigInteger fee = aliceClient.estimateTotalFee(
-                            BigInteger.valueOf(AMOUNT_TO_SEND),
-                            MobileCoinClient.FeeLevel.MINIMUM
+                            BigInteger.valueOf(AMOUNT_TO_SEND)
                     );
                     PendingTransaction pending = aliceClient
                             .prepareTransaction(bobClient.getAccountKey().getPublicAddress(),
@@ -77,8 +76,7 @@ public class ParallelExecutionTest {
 
                     // Bob sends coins to Alice
                     fee = bobClient.estimateTotalFee(
-                            BigInteger.valueOf(AMOUNT_TO_SEND),
-                            MobileCoinClient.FeeLevel.MINIMUM
+                            BigInteger.valueOf(AMOUNT_TO_SEND)
                     );
                     pending = aliceClient
                             .prepareTransaction(aliceClient.getAccountKey().getPublicAddress(),

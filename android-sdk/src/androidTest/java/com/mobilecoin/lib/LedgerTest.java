@@ -80,8 +80,7 @@ public class LedgerTest {
         // randomize the amount for each test run, up to a 100 picoMob
         BigInteger amount = BigInteger.valueOf(Math.abs(new SecureRandom().nextInt() % 100) + 1);
         BigInteger minimumFee = senderClient.estimateTotalFee(
-                amount,
-                MobileCoinClient.FeeLevel.MINIMUM
+                amount
         );
         PendingTransaction pending = senderClient.prepareTransaction(
                 recipientClient.getAccountKey().getPublicAddress(),

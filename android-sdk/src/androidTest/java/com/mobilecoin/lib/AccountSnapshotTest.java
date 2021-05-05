@@ -2,6 +2,8 @@
 
 package com.mobilecoin.lib;
 
+import static com.mobilecoin.lib.UtilTest.waitForTransactionStatus;
+
 import com.mobilecoin.lib.exceptions.AttestationException;
 import com.mobilecoin.lib.exceptions.FeeRejectedException;
 import com.mobilecoin.lib.exceptions.FogReportException;
@@ -19,8 +21,6 @@ import org.junit.Test;
 
 import java.math.BigInteger;
 import java.util.concurrent.TimeoutException;
-
-import static com.mobilecoin.lib.UtilTest.waitForTransactionStatus;
 
 public class AccountSnapshotTest {
     // check snapshot balance, spent some coins and check again, the balance for that snapshot
@@ -64,7 +64,7 @@ public class AccountSnapshotTest {
         AccountSnapshot snapshot = mobileCoinClient.getAccountSnapshot();
         Balance balanceBefore = snapshot.getBalance();
         BigInteger amount = BigInteger.valueOf(100);
-        BigInteger fee = snapshot.estimateTotalFee(amount);
+        BigInteger fee = snapshot.estimateTotalFee(amount, mobileCoinClient.getOrFetchMinimumTxFee());
         PendingTransaction pendingTransaction = snapshot.prepareTransaction(
                 TestKeysManager.getNextAccountKey().getPublicAddress(),
                 amount,

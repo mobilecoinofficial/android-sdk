@@ -13,6 +13,7 @@ import java.util.concurrent.TimeUnit;
 
 import attest.AttestedApiGrpc;
 import consensus_client.ConsensusClientAPIGrpc;
+import consensus_common.BlockchainAPIGrpc;
 import fog_ledger.FogBlockAPIGrpc;
 import fog_ledger.FogKeyImageAPIGrpc;
 import fog_ledger.FogMerkleProofAPIGrpc;
@@ -38,6 +39,7 @@ class ServiceAPIManager {
     private ConsensusClientAPIGrpc.ConsensusClientAPIBlockingStub consensusClientAPIBlockingStub;
     private AttestedApiGrpc.AttestedApiBlockingStub attestedApiBlockingStub;
     private FogUntrustedTxOutApiGrpc.FogUntrustedTxOutApiBlockingStub fogUntrustedTxOutApiBlockingStub;
+    private BlockchainAPIGrpc.BlockchainAPIBlockingStub blockchainAPIBlockingStub;
 
     ServiceAPIManager() {
         executorService = Executors.newSingleThreadExecutor();
@@ -128,6 +130,17 @@ class ServiceAPIManager {
                     configureStub(ConsensusClientAPIGrpc.newBlockingStub(managedChannel));
         }
         return consensusClientAPIBlockingStub;
+    }
+
+    @NonNull
+    synchronized BlockchainAPIGrpc.BlockchainAPIBlockingStub getBlockchainAPIStub(
+            @NonNull ManagedChannel managedChannel
+    ) {
+        if (blockchainAPIBlockingStub == null) {
+            blockchainAPIBlockingStub =
+                    configureStub(BlockchainAPIGrpc.newBlockingStub(managedChannel));
+        }
+        return blockchainAPIBlockingStub;
     }
 
     @NonNull
