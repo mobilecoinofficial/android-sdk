@@ -396,6 +396,7 @@ public class MobileCoinClient {
                 consensusClient.proposeTx(transaction.toProtoBufObject());
         int code = txResponse.getResult().getNumber();
         if (0 != code) {
+            blockchainClient.resetCache();
             String message = txResponse.getResult().toString();
             InvalidTransactionException invalidTransactionException =
                     new InvalidTransactionException(message);

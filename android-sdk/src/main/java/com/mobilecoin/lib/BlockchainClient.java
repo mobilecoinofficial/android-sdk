@@ -34,6 +34,7 @@ class BlockchainClient extends AnyClient {
     /**
      * Fetch or return cached current minimal fee
      */
+    synchronized
     UnsignedLong getOrFetchMinimumFee() throws NetworkException {
         ConsensusCommon.LastBlockInfoResponse response = getOrFetchLastBlockInfo();
         long minimumFeeBits = response.getMinimumFee();
@@ -42,6 +43,13 @@ class BlockchainClient extends AnyClient {
             minimumFee = UnsignedLong.fromBigInteger(DEFAULT_TX_FEE);
         }
         return minimumFee;
+    }
+
+    /**
+     * Reset cache
+     */
+    synchronized void resetCache() {
+        lastBlockInfo = null;
     }
 
     /**
