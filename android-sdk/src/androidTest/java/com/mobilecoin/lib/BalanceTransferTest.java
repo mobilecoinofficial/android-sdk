@@ -43,7 +43,7 @@ public class BalanceTransferTest {
                 fogConfig.getFogAuthoritySpki()
         );
         MobileCoinClient balanceAccount = Environment.makeFreshMobileCoinClient(accountKey);
-        BigInteger amount = MobileCoinClient.TX_FEE.multiply(BigInteger.TEN);
+        BigInteger amount = balanceAccount.getOrFetchMinimumTxFee().multiply(BigInteger.TEN);
         for (int i = 0; i < TEST_FRAGMENTS; ++i) {
             BigInteger fee = mobileCoinClient.estimateTotalFee(amount);
             PendingTransaction pendingTransaction = mobileCoinClient.prepareTransaction(
@@ -90,7 +90,7 @@ public class BalanceTransferTest {
         UtilTest.waitForReceiptStatus(mobileCoinClient, pendingTransaction.getReceipt());
 
         Assert.assertTrue(balanceAccount.getBalance().getAmountPicoMob()
-                .compareTo(MobileCoinClient.TX_FEE) < 0);
+                .compareTo(balanceAccount.getOrFetchMinimumTxFee()) < 0);
 
     }
 

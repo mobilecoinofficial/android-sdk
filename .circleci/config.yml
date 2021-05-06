@@ -22,6 +22,9 @@ jobs:
           name: Provide TestNet mnemonics
           command: echo $TEST_NET_MNEMONICS > android-sdk/src/androidTest/res/raw/test_net_mnemonics
 
+      - run:
+          name: Provide DevNet entropies 
+          command: echo $DEV_NET_TEST_ENTROPIES > android-sdk/src/androidTest/res/raw/dev_net_root_entropies
 
       - run: make setup
       - run: make build

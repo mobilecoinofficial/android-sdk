@@ -26,7 +26,7 @@ import io.grpc.StatusRuntimeException;
  * AttestedClient}
  */
 class FogBlockClient extends AnyClient {
-    private static final String TAG = AttestedLedgerClient.class.getName();
+    private static final String TAG = FogBlockClient.class.getName();
 
     /**
      * Creates and initializes an instance of {@link FogBlockClient}

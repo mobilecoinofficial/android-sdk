@@ -38,7 +38,7 @@ public class TxOutStoreTest {
         store.refresh(
                 mobileCoinClient.viewClient,
                 mobileCoinClient.ledgerClient,
-                mobileCoinClient.blockClient
+                mobileCoinClient.fogBlockClient
         );
         mobileCoinClient.shutdown();
         Set<OwnedTxOut> utxos = store.getSyncedTxOuts();
@@ -87,8 +87,7 @@ public class TxOutStoreTest {
         // send a random amount
         BigInteger amount = BigInteger.valueOf(Math.abs(new SecureRandom().nextInt() % 100) + 1);
         BigInteger minimumFee = senderClient.estimateTotalFee(
-                amount,
-                MobileCoinClient.FeeLevel.MINIMUM
+                amount
         );
         PendingTransaction pending = senderClient.prepareTransaction(
                 recipientClient.getAccountKey().getPublicAddress(),
