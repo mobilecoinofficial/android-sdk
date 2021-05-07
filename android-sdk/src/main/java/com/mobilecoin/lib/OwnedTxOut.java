@@ -22,7 +22,7 @@ import fog_view.View;
 /**
  * A transaction output that belongs to a {@link AccountKey}
  */
-public final class OwnedTxOut implements Serializable {
+public class OwnedTxOut implements Serializable {
     private final static String TAG = OwnedTxOut.class.getName();
 
     // Bump serial version and read/write code if fields change
