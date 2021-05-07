@@ -4,7 +4,7 @@ package com.mobilecoin.lib.exceptions;
 
 import androidx.annotation.Nullable;
 
-public class AttestationException extends MobileCoinException {
+public final class AttestationException extends MobileCoinException {
 
     public AttestationException(@Nullable String message) {
         super(message);

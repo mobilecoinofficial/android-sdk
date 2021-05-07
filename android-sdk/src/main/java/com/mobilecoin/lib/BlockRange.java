@@ -11,7 +11,7 @@ import fog_common.FogCommon;
 /**
  * A class for representing a range of blocks [start, end)
  */
-class BlockRange implements Comparable<BlockRange> {
+final class BlockRange implements Comparable<BlockRange> {
     private final UnsignedLong start;
     private final UnsignedLong end;
 

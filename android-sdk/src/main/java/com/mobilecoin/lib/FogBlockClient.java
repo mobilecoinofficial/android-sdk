@@ -25,7 +25,7 @@ import io.grpc.StatusRuntimeException;
  * Attested client for a ledger service Attestation is done automatically by the parent class {@link
  * AttestedClient}
  */
-class FogBlockClient extends AnyClient {
+final class FogBlockClient extends AnyClient {
     private static final String TAG = FogBlockClient.class.getName();
 
     /**

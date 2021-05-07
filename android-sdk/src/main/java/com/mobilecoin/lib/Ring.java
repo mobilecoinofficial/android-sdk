@@ -11,7 +11,7 @@ import com.mobilecoin.lib.log.Logger;
 import java.util.ArrayList;
 import java.util.List;
 
-class Ring {
+final class Ring {
     private final static String TAG = Ring.class.getName();
     public final short realIndex;
     public final OwnedTxOut utxo;

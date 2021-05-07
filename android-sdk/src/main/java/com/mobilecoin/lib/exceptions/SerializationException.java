@@ -4,7 +4,7 @@ package com.mobilecoin.lib.exceptions;
 
 import androidx.annotation.Nullable;
 
-public class SerializationException extends MobileCoinException {
+public final class SerializationException extends MobileCoinException {
     public SerializationException(@Nullable String message) {
         super(message);
     }

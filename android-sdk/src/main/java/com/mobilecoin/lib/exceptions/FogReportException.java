@@ -4,7 +4,7 @@ package com.mobilecoin.lib.exceptions;
 
 import androidx.annotation.Nullable;
 
-public class FogReportException extends MobileCoinException {
+public final class FogReportException extends MobileCoinException {
 
     public FogReportException() {
         super();

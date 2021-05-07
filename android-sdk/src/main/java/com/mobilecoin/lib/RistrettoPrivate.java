@@ -19,7 +19,7 @@ import java.util.Arrays;
  * MobileCoin accounts consist of two RistrettoPrivate keys: view & spend
  * </pre>
  */
-public class RistrettoPrivate extends Native {
+public final class RistrettoPrivate extends Native {
     private final byte[] keyBytes;
 
     private RistrettoPrivate(long existingRustObj) {

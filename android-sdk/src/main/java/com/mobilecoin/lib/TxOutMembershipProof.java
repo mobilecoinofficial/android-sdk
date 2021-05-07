@@ -7,7 +7,7 @@ import androidx.annotation.NonNull;
 import com.mobilecoin.lib.exceptions.SerializationException;
 import com.mobilecoin.lib.log.Logger;
 
-class TxOutMembershipProof extends Native {
+final class TxOutMembershipProof extends Native {
     private final static String TAG = TxOutMembershipProof.class.getName();
 
     TxOutMembershipProof(@NonNull byte[] protobufBytes) throws SerializationException {

@@ -10,7 +10,7 @@ import com.mobilecoin.lib.log.Logger;
 
 import java.util.Objects;
 
-public class PaymentRequest {
+public final class PaymentRequest {
     private final static String TAG = PaymentRequest.class.getName();
     private final PublicAddress publicAddress;
     private final UnsignedLong value;

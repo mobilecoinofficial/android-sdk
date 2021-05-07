@@ -4,7 +4,7 @@ package com.mobilecoin.lib.exceptions;
 
 import androidx.annotation.Nullable;
 
-public class BadBip39EntropyException extends MobileCoinException {
+public final class BadBip39EntropyException extends MobileCoinException {
     public BadBip39EntropyException() {
         super();
     }

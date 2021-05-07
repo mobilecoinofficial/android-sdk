@@ -6,7 +6,7 @@ import android.net.Uri;
 
 import androidx.annotation.NonNull;
 
-class ResponderId extends Native {
+final class ResponderId extends Native {
 
     ResponderId(@NonNull Uri serviceUri) {
         init_jni(String.format(

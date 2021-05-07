@@ -14,7 +14,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-public class Transaction extends Native {
+public final class Transaction extends Native {
     private final static String TAG = Transaction.class.getName();
     private final MobileCoinAPI.Tx protoBufTx;
     private byte[] serializedBytes;

@@ -7,7 +7,7 @@ import androidx.annotation.Nullable;
 
 import io.grpc.StatusRuntimeException;
 
-public class NetworkException extends MobileCoinException {
+public final class NetworkException extends MobileCoinException {
     public final int statusCode;
 
     public NetworkException(int statusCode, @Nullable String message, @Nullable Throwable throwable) {

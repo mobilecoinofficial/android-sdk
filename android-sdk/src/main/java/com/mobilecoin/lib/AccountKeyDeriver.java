@@ -9,7 +9,7 @@ import com.mobilecoin.lib.exceptions.BadBip39EntropyException;
 /**
  * The {@link AccountKeyDeriver} is used to derive {@link AccountKey}s
  */
-class AccountKeyDeriver extends Native {
+final class AccountKeyDeriver extends Native {
     private final static String TAG = AccountKeyDeriver.class.getName();
 
     /**

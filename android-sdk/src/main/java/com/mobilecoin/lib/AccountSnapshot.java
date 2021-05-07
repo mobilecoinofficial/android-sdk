@@ -2,6 +2,9 @@
 
 package com.mobilecoin.lib;
 
+import static com.mobilecoin.lib.MobileCoinClient.INPUT_FEE;
+import static com.mobilecoin.lib.MobileCoinClient.OUTPUT_FEE;
+
 import androidx.annotation.NonNull;
 
 import com.mobilecoin.lib.exceptions.AmountDecoderException;
@@ -25,13 +28,10 @@ import java.util.stream.Collectors;
 
 import fog_ledger.Ledger;
 
-import static com.mobilecoin.lib.MobileCoinClient.INPUT_FEE;
-import static com.mobilecoin.lib.MobileCoinClient.OUTPUT_FEE;
-
 /**
  * This class represents the Account's state at the specified block index
  */
-public class AccountSnapshot {
+public final class AccountSnapshot {
     private final static String TAG = AccountSnapshot.class.getName();
     private final UnsignedLong blockIndex;
     private final Set<OwnedTxOut> txOuts;

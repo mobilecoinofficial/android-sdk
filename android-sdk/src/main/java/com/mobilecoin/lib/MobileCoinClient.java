@@ -52,7 +52,7 @@ import fog_ledger.Ledger;
  * Fog-enabled {@link AccountKey} is required to use {@code MobileCoinClient}.
  * </pre>
  */
-public class MobileCoinClient {
+public final class MobileCoinClient {
     static final BigInteger INPUT_FEE = BigInteger.valueOf(0L);
     static final BigInteger OUTPUT_FEE = BigInteger.valueOf(0L);
     private static final String TAG = MobileCoinClient.class.toString();

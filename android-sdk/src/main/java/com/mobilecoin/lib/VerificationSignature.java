@@ -7,7 +7,7 @@ import androidx.annotation.NonNull;
 import com.mobilecoin.lib.exceptions.FogReportException;
 import com.mobilecoin.lib.log.Logger;
 
-class VerificationSignature extends Native {
+final class VerificationSignature extends Native {
     private final static String TAG = VerificationSignature.class.getName();
 
     VerificationSignature(@NonNull byte[] sigBytes) throws FogReportException {

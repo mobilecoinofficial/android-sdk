@@ -9,7 +9,7 @@ import java.math.BigInteger;
 /**
  * The {@code Balance} class represents the account balance
  */
-public class Balance {
+final public class Balance {
     private final static String TAG = Balance.class.getName();
     private final BigInteger amountPicoMob;
     private final UnsignedLong atBlock;

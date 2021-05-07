@@ -12,7 +12,7 @@ import java.util.List;
 
 import report.ReportOuterClass;
 
-class Report extends Native {
+final class Report extends Native {
     private final static String TAG = Report.class.getName();
     private final long publicKeyExpiry;
 

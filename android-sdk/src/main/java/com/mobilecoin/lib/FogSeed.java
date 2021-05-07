@@ -17,7 +17,7 @@ import java.util.List;
 
 import fog_view.View;
 
-class FogSeed implements Serializable {
+final class FogSeed implements Serializable {
     private final static String TAG = FogSeed.class.getName();
 
     // Bump serial version and read/write code if fields change

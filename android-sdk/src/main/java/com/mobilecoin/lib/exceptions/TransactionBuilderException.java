@@ -4,7 +4,7 @@ package com.mobilecoin.lib.exceptions;
 
 import androidx.annotation.Nullable;
 
-public class TransactionBuilderException extends MobileCoinException {
+public final class TransactionBuilderException extends MobileCoinException {
     public TransactionBuilderException(@Nullable String message) {
         super(message);
     }

@@ -22,7 +22,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
-class FogReportsManager {
+final class FogReportsManager {
     private final static String TAG = FogReportsManager.class.getName();
     private static final int MAX_FETCH_THREADS = 10;
     // timeout the network call if it's more than 5 minutes

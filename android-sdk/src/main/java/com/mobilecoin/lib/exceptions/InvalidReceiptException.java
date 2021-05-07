@@ -4,7 +4,7 @@ package com.mobilecoin.lib.exceptions;
 
 import androidx.annotation.Nullable;
 
-public class InvalidReceiptException extends MobileCoinException {
+public final class InvalidReceiptException extends MobileCoinException {
     public InvalidReceiptException(@Nullable String message) {
         super(message);
     }

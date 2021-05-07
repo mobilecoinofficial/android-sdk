@@ -13,7 +13,7 @@ import com.mobilecoin.lib.log.Logger;
 
 import java.util.Objects;
 
-class TxOut extends Native {
+final class TxOut extends Native {
     private final static String TAG = TxOut.class.getName();
     private final MobileCoinAPI.TxOut protoBufTxOut;
     private final RistrettoPublic pubKey;

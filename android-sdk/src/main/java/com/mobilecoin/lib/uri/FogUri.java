@@ -8,7 +8,7 @@ import androidx.annotation.NonNull;
 
 import com.mobilecoin.lib.exceptions.InvalidUriException;
 
-public class FogUri extends MobileCoinUri {
+public final class FogUri extends MobileCoinUri {
 
     public FogUri(@NonNull Uri uri) throws InvalidUriException {
         super(uri, new FogUriScheme());

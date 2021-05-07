@@ -22,7 +22,7 @@ import java.util.Objects;
 /**
  * Represents account's public address to receive coins
  */
-public class PublicAddress extends Native {
+public final class PublicAddress extends Native {
     private static final String TAG = PublicAddress.class.getName();
     private final RistrettoPublic viewKey;
     private final RistrettoPublic spendKey;

@@ -7,7 +7,7 @@ import androidx.annotation.NonNull;
 import com.mobilecoin.lib.exceptions.KexRngException;
 import com.mobilecoin.lib.log.Logger;
 
-class ClientKexRng extends Native {
+final class ClientKexRng extends Native {
     private final static String TAG = ClientKexRng.class.getName();
 
     ClientKexRng(

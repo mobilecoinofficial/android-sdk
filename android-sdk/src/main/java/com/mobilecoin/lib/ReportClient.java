@@ -21,7 +21,7 @@ import report.ReportOuterClass;
 /**
  * ReportClient
  */
-class ReportClient extends AnyClient {
+final class ReportClient extends AnyClient {
     private static final String TAG = ReportClient.class.getName();
 
     /**

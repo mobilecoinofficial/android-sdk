@@ -15,7 +15,7 @@ import java.math.BigInteger;
  * Encapsulates the abstraction of a native Amount with a JNI link to control the native
  * counterpart.
  */
-class Amount extends Native {
+final class Amount extends Native {
     private final static String TAG = Amount.class.getName();
     private final MobileCoinAPI.Amount protoBufAmount;
 

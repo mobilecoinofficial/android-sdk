@@ -4,7 +4,7 @@ package com.mobilecoin.lib.exceptions;
 
 import androidx.annotation.Nullable;
 
-public class FeeRejectedException extends MobileCoinException {
+public final class FeeRejectedException extends MobileCoinException {
 
     public FeeRejectedException(@Nullable String message) {
         super(message);
