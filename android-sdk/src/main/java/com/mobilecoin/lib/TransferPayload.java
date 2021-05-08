@@ -33,7 +33,7 @@ public class TransferPayload {
             throws SerializationException {
         Logger.i(TAG, "Initializing from protobuf");
         return new TransferPayload(
-                protoBuf.getEntropy().toByteArray(),
+                protoBuf.getBip39Entropy().toByteArray(),
                 RistrettoPublic.fromBytes(protoBuf.getTxOutPublicKey().getData().toByteArray()),
                 protoBuf.getMemo()
         );
@@ -61,7 +61,7 @@ public class TransferPayload {
         Logger.i(TAG, "Serializing to protobuf");
         return Printable.TransferPayload.newBuilder().setMemo(getMemo())
                 .setTxOutPublicKey(getPublicKey().toProtoBufObject())
-                .setEntropy(ByteString.copyFrom(rootEntropy)).build();
+                .setBip39Entropy(ByteString.copyFrom(rootEntropy)).build();
     }
 
     @Override
