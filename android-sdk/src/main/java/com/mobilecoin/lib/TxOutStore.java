@@ -38,7 +38,7 @@ import fog_common.FogCommon;
 import fog_ledger.Ledger;
 import fog_view.View;
 
-class TxOutStore implements Serializable {
+final class TxOutStore implements Serializable {
     private static final String TAG = TxOutStore.class.getName();
 
     // Bump serial version and read/write code if fields change

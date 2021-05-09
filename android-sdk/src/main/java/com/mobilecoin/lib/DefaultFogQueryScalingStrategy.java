@@ -2,7 +2,7 @@
 
 package com.mobilecoin.lib;
 
-class DefaultFogQueryScalingStrategy implements FogQueryScalingStrategy {
+final class DefaultFogQueryScalingStrategy implements FogQueryScalingStrategy {
     private final static int MIN_QUERY_SIZE = 10;
     private final static int MAX_QUERY_SIZE = 200;
     private final static int MULTIPLIER = 3;

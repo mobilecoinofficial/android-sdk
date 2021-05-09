@@ -4,7 +4,7 @@ package com.mobilecoin.lib.exceptions;
 
 import androidx.annotation.Nullable;
 
-public class KexRngException extends MobileCoinException {
+public final class KexRngException extends MobileCoinException {
     public KexRngException() {
     }
 

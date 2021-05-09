@@ -4,7 +4,7 @@ package com.mobilecoin.lib.exceptions;
 
 import androidx.annotation.Nullable;
 
-public class InsufficientFundsException extends MobileCoinException {
+public final class InsufficientFundsException extends MobileCoinException {
     InsufficientFundsException(@Nullable String message) {
         super(message);
     }

@@ -9,7 +9,7 @@ import androidx.annotation.NonNull;
 import com.mobilecoin.lib.exceptions.FogReportException;
 import com.mobilecoin.lib.log.Logger;
 
-class FogReportResponses extends Native {
+final class FogReportResponses extends Native {
     private static final String TAG = FogReportResponses.class.getName();
 
     FogReportResponses() throws FogReportException {

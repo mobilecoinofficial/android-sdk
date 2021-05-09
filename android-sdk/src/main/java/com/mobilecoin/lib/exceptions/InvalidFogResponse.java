@@ -4,7 +4,7 @@ package com.mobilecoin.lib.exceptions;
 
 import androidx.annotation.Nullable;
 
-public class InvalidFogResponse extends MobileCoinException {
+public final class InvalidFogResponse extends MobileCoinException {
     public InvalidFogResponse(@Nullable String message) {
         super(message);
     }

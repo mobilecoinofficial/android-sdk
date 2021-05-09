@@ -4,7 +4,7 @@ package com.mobilecoin.lib.exceptions;
 
 import androidx.annotation.Nullable;
 
-public class BadMnemonicException extends MobileCoinException {
+public final class BadMnemonicException extends MobileCoinException {
     public BadMnemonicException() {
         super();
     }

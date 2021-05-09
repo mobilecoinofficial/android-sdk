@@ -21,7 +21,7 @@ import java.util.Arrays;
  * MobileCoin public addresses consist of two RistrettoPublic keys: view & spend
  * </pre>
  */
-public class RistrettoPublic extends Native implements Serializable {
+public final class RistrettoPublic extends Native implements Serializable {
     public static final int PUBLIC_KEY_SIZE = 32;
     private static final long serialVersionUID = 1L;
     private MobileCoinAPI.CompressedRistretto compressedRistretto;

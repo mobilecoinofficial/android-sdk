@@ -18,7 +18,7 @@ import io.grpc.MethodDescriptor;
  * outgoing requests. Cookie persistence is required for session stickiness on the load balanced
  * services.
  */
-class CookieInterceptor implements ClientInterceptor {
+final class CookieInterceptor implements ClientInterceptor {
     private final static String TAG = CookieInterceptor.class.getName();
 
     // metadata keys are case insensitive

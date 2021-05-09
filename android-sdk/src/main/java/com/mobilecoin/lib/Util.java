@@ -18,7 +18,7 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 
-class Util extends Native {
+final class Util extends Native {
     private final static String TAG = Util.class.getName();
 
     static RistrettoPrivate recoverOnetimePrivateKey(

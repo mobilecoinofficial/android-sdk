@@ -25,7 +25,7 @@ import java.util.Objects;
 /**
  * The {@code AccountKey} class represents an abstraction of view & spent private keys
  */
-public class AccountKey extends Native {
+public final class AccountKey extends Native {
     private final static String TAG = AccountKey.class.getName();
     private final Uri fogReportUri;
     private final String fogReportId;

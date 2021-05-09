@@ -1,9 +1,9 @@
-FROM gradle:6.5.1-jdk8
+FROM gradle:6.7.1-jdk8
 USER root
 ENV SDK_URL="https://dl.google.com/android/repository/commandlinetools-linux-6200805_latest.zip" \
     ANDROID_HOME="/usr/local/android-sdk" \
-    ANDROID_VERSION=29 \
-    ANDROID_BUILD_TOOLS_VERSION=29.0.3 \
+    ANDROID_VERSION=30 \
+    ANDROID_BUILD_TOOLS_VERSION=30.0.2 \
     PATH="$PATH":/usr/local/bin:/usr/local/google-cloud-sdk/bin \
     GCLOUD_URL="https://dl.google.com/dl/cloudsdk/channels/rapid/downloads/google-cloud-sdk-294.0.0-linux-x86_64.tar.gz"
 

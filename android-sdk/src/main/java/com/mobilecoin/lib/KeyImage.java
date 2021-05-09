@@ -9,7 +9,7 @@ import java.util.Arrays;
 /**
  * A 32-byte image of a private key `x`: I = x * H(x * G) = x * H(P).
  */
-public class KeyImage {
+final public class KeyImage {
     private final byte[] data;
 
     private KeyImage(@NonNull byte[] data) {

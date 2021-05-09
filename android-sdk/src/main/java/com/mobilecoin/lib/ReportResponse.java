@@ -9,7 +9,7 @@ import com.mobilecoin.lib.log.Logger;
 
 import java.util.List;
 
-class ReportResponse extends Native {
+final class ReportResponse extends Native {
     private final static String TAG = ReportResponse.class.getName();
     private final List<Report> reports;
     private final byte[][] chain;

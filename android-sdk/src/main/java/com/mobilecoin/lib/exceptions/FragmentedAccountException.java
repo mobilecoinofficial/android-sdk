@@ -4,7 +4,7 @@ package com.mobilecoin.lib.exceptions;
 
 import androidx.annotation.Nullable;
 
-public class FragmentedAccountException extends MobileCoinException {
+public final class FragmentedAccountException extends MobileCoinException {
     public FragmentedAccountException(@Nullable String message) {
         super(message);
     }

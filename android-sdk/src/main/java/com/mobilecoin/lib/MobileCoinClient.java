@@ -52,7 +52,7 @@ import fog_ledger.Ledger;
  * Fog-enabled {@link AccountKey} is required to use {@code MobileCoinClient}.
  * </pre>
  */
-public class MobileCoinClient {
+public final class MobileCoinClient {
     static final BigInteger INPUT_FEE = BigInteger.valueOf(0L);
     static final BigInteger OUTPUT_FEE = BigInteger.valueOf(0L);
     private static final String TAG = MobileCoinClient.class.toString();
@@ -434,44 +434,7 @@ public class MobileCoinClient {
             throws InvalidFogResponse, AttestationException,
             NetworkException {
         Logger.i(TAG, "GetTransactionStatus call");
-        Ledger.CheckKeyImagesResponse keyImagesResponse =
-                ledgerClient.checkKeyImages(transaction.getKeyImages());
-        getTxOutStore().updateTxOutsSpentState(keyImagesResponse);
-        UnsignedLong ledgerBlockIndex =
-                UnsignedLong.fromLongBits(keyImagesResponse.getNumBlocks()).sub(UnsignedLong.ONE);
-        List<Ledger.KeyImageResult> keyImageResults = keyImagesResponse.getResultsList();
-        boolean txHasUnspentKeyImages = false;
-        for (Ledger.KeyImageResult keyImageResult : keyImageResults) {
-            if (keyImageResult.getKeyImageResultCode() != Ledger.KeyImageResultCode.Spent_VALUE) {
-                txHasUnspentKeyImages = true;
-                break;
-            }
-        }
-        if (!txHasUnspentKeyImages) {
-            Set<RistrettoPublic> outputPublicKeys = transaction.getOutputPublicKeys();
-            Ledger.TxOutResponse response =
-                    untrustedClient.fetchTxOuts(outputPublicKeys);
-            List<Ledger.TxOutResult> results = response.getResultsList();
-            boolean allTxOutsFound = true;
-            UnsignedLong outputBlockIndex = UnsignedLong.ZERO;
-            for (Ledger.TxOutResult txOutResult : results) {
-                if (txOutResult.getResultCode() != Ledger.TxOutResultCode.Found) {
-                    allTxOutsFound = false;
-                    break;
-                } else {
-                    UnsignedLong txOutBlockIndex =
-                            UnsignedLong.fromLongBits(txOutResult.getBlockIndex());
-                    if (outputBlockIndex.compareTo(txOutBlockIndex) < 0) {
-                        outputBlockIndex = txOutBlockIndex;
-                    }
-                }
-            }
-            if (allTxOutsFound) {
-                return Transaction.Status.ACCEPTED.atBlock(outputBlockIndex);
-            }
-            return Transaction.Status.FAILED.atBlock(ledgerBlockIndex);
-        }
-        return Transaction.Status.UNKNOWN.atBlock(ledgerBlockIndex);
+        return getAccountSnapshot().getTransactionStatus(transaction);
     }
 
     /**

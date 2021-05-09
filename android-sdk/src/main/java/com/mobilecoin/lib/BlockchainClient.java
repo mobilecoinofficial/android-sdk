@@ -15,7 +15,7 @@ import consensus_common.BlockchainAPIGrpc;
 import consensus_common.ConsensusCommon;
 import io.grpc.StatusRuntimeException;
 
-class BlockchainClient extends AnyClient {
+final class BlockchainClient extends AnyClient {
     private static final String TAG = BlockchainClient.class.getName();
     private static final BigInteger DEFAULT_TX_FEE = BigInteger.valueOf(10000000000L);
     private ConsensusCommon.LastBlockInfoResponse lastBlockInfo;

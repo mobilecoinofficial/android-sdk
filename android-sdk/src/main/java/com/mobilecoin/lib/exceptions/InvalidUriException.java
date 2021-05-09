@@ -4,7 +4,7 @@ package com.mobilecoin.lib.exceptions;
 
 import androidx.annotation.Nullable;
 
-public class InvalidUriException extends MobileCoinException {
+public final class InvalidUriException extends MobileCoinException {
     public InvalidUriException() {
     }
 

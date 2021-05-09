@@ -6,7 +6,7 @@ import androidx.annotation.Nullable;
 /**
  * This class represents failed state of @{link Result}.
  */
-public class Err<V, E> implements Result<V, E> {
+public final class Err<V, E> implements Result<V, E> {
     private final E error;
 
     Err(final E error) {

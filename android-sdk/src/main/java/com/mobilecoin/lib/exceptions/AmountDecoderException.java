@@ -4,7 +4,7 @@ package com.mobilecoin.lib.exceptions;
 
 import androidx.annotation.Nullable;
 
-public class AmountDecoderException extends MobileCoinException {
+public final class AmountDecoderException extends MobileCoinException {
     public AmountDecoderException(@Nullable String message) {
         super(message);
     }

@@ -13,7 +13,7 @@ import com.mobilecoin.lib.exceptions.SerializationException;
 import com.mobilecoin.lib.log.Logger;
 import com.mobilecoin.lib.uri.MobUri;
 
-public class PrintableWrapper extends Native {
+public final class PrintableWrapper extends Native {
     private final static String TAG = PrintableWrapper.class.getName();
     private final PublicAddress publicAddress;
     private final PaymentRequest paymentRequest;

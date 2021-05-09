@@ -4,7 +4,7 @@ package com.mobilecoin.lib.uri;
 
 import androidx.annotation.NonNull;
 
-public class MobUriScheme implements MobileCoinScheme {
+public final class MobUriScheme implements MobileCoinScheme {
     @NonNull
     @Override
     public String secureScheme() {

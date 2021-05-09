@@ -22,7 +22,7 @@ import java.math.BigInteger;
  * BigInteger)} Then shared with the recipient, so they can check the transaction status. Only the
  * recipient can use this receipt since it requires a recipient's key for decoding.
  */
-public class Receipt {
+public final class Receipt {
     private static final String TAG = Receipt.class.getName();
     static final int CONFIRMATION_NUMBER_LENGTH = 32;
     private final MobileCoinAPI.Receipt receiptBuf;

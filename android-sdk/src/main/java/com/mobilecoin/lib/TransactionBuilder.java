@@ -14,7 +14,7 @@ import java.util.List;
 import java.util.Locale;
 
 
-class TransactionBuilder extends Native {
+final class TransactionBuilder extends Native {
     private static final String TAG = TransactionBuilder.class.getName();
 
     TransactionBuilder(@NonNull FogResolver fogResolver) throws FogReportException {

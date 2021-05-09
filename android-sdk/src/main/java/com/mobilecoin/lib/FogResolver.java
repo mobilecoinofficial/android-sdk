@@ -7,7 +7,7 @@ import androidx.annotation.NonNull;
 import com.mobilecoin.lib.exceptions.FogReportException;
 import com.mobilecoin.lib.log.Logger;
 
-class FogResolver extends Native {
+final class FogResolver extends Native {
     private final static String TAG = FogResolver.class.getName();
 
     FogResolver(@NonNull FogReportResponses responses, @NonNull Verifier verifier) throws FogReportException {

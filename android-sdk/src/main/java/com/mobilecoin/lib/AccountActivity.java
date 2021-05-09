@@ -17,7 +17,7 @@ import java.util.Set;
  * received and spent (if it was spent).
  * </pre>
  */
-public class AccountActivity {
+public final class AccountActivity {
     private final static String TAG = AccountActivity.class.getName();
     private final UnsignedLong blockCount;
     private final Set<OwnedTxOut> txOuts;

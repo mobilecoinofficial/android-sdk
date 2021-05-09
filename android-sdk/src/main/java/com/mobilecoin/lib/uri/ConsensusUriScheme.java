@@ -4,7 +4,7 @@ package com.mobilecoin.lib.uri;
 
 import androidx.annotation.NonNull;
 
-public class ConsensusUriScheme implements MobileCoinScheme {
+public final class ConsensusUriScheme implements MobileCoinScheme {
     @NonNull
     @Override
     public String secureScheme() {

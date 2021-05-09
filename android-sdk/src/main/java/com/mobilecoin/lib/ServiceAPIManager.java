@@ -23,7 +23,7 @@ import io.grpc.ManagedChannel;
 import io.grpc.stub.AbstractStub;
 import report.ReportAPIGrpc;
 
-class ServiceAPIManager {
+final class ServiceAPIManager {
     private static final String TAG = AttestedClient.class.toString();
     private static final int SHUTDOWN_TIMEOUT = 5000;
     private static final int MEGABYTE = 1024 * 1024;

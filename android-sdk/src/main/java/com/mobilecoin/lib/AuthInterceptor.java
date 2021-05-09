@@ -18,7 +18,7 @@ import io.grpc.MethodDescriptor;
 /**
  * AuthInterceptor intercepts GRPC API calls to adds basic authorization header
  */
-class AuthInterceptor implements ClientInterceptor {
+final class AuthInterceptor implements ClientInterceptor {
 
     // metadata keys are case insensitive
     static final Metadata.Key<String> AUTHORIZATION_HEADER_KEY = Metadata.Key.of(

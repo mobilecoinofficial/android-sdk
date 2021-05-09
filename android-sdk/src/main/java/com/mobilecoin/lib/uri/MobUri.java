@@ -12,7 +12,7 @@ import com.mobilecoin.lib.log.Logger;
 import java.util.List;
 import java.util.Locale;
 
-public class MobUri {
+public final class MobUri {
     private final static String TAG = MobUri.class.getName();
     private final Uri uri;
     private final String payload;

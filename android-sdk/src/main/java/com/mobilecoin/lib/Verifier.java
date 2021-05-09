@@ -12,7 +12,7 @@ import com.mobilecoin.lib.log.Logger;
  * Verifier is used for attestation connection verification.
  */
 
-public class Verifier extends Native {
+public final class Verifier extends Native {
     private static final String TAG = Verifier.class.getName();
 
     public Verifier() throws AttestationException {
