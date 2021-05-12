@@ -75,7 +75,7 @@ public interface MobileCoinAccountClient {
    * Retrieves the account activity.
    */
   @NonNull
-  AccountActivity getAccountActivity() throws NetworkException, InvalidFogResponse;
+  AccountActivity getAccountActivity() throws NetworkException, InvalidFogResponse, AttestationException;
 
   /**
    * Provides the {@link AccountKey} associated with this client instance.
