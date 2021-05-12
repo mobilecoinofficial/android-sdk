@@ -306,7 +306,9 @@ public class MobileCoinClientTest {
             TransactionBuilderException, InterruptedException, TimeoutException,
             FogReportException, InvalidReceiptException, InvalidUriException {
         MobileCoinClient senderClient = Environment.makeFreshMobileCoinClient();
-        MobileCoinClient recipientClient = Environment.makeFreshMobileCoinClient();
+        // TODO: Refactor MobileCoinClientImpl to pass these values for the clients in a better way. Then remove
+        //  this cast.
+        MobileCoinClientImpl recipientClient = (MobileCoinClientImpl) Environment.makeFreshMobileCoinClient();
 
         Balance initialBalance = recipientClient.getBalance();
         try {
@@ -487,7 +489,9 @@ public class MobileCoinClientTest {
     @Test
     public void test_internal_external_get_owned_tx_outs_api()
             throws InvalidFogResponse, NetworkException, AttestationException, InvalidUriException {
-        MobileCoinClient mobileCoinClient = Environment.makeFreshMobileCoinClient();
+        // TODO: Refactor MobileCoinClientImpl to pass these values for hte clients in a better way. Then remove
+        //  this cast.
+        MobileCoinClientImpl mobileCoinClient = (MobileCoinClientImpl) Environment.makeFreshMobileCoinClient();
         TxOutStore store = mobileCoinClient.getTxOutStore();
         store.refresh(
                 mobileCoinClient.viewClient,

@@ -33,7 +33,7 @@ public class TxOutStoreTest {
             throws SerializationException, InvalidFogResponse, NetworkException,
             AttestationException, InvalidUriException {
         AccountKey accountKey = TestKeysManager.getNextAccountKey();
-        MobileCoinClient mobileCoinClient = Environment.makeFreshMobileCoinClient(accountKey);
+        MobileCoinClientImpl mobileCoinClient = (MobileCoinClientImpl) Environment.makeFreshMobileCoinClient(accountKey);
         TxOutStore store = new TxOutStore(accountKey);
         store.refresh(
                 mobileCoinClient.viewClient,

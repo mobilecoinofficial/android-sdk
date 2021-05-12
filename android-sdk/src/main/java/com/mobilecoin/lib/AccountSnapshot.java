@@ -6,7 +6,6 @@ import static com.mobilecoin.lib.MobileCoinClientImpl.INPUT_FEE;
 import static com.mobilecoin.lib.MobileCoinClientImpl.OUTPUT_FEE;
 
 import androidx.annotation.NonNull;
-
 import com.mobilecoin.lib.exceptions.AmountDecoderException;
 import com.mobilecoin.lib.exceptions.AttestationException;
 import com.mobilecoin.lib.exceptions.FeeRejectedException;
@@ -18,15 +17,13 @@ import com.mobilecoin.lib.exceptions.InvalidReceiptException;
 import com.mobilecoin.lib.exceptions.NetworkException;
 import com.mobilecoin.lib.exceptions.TransactionBuilderException;
 import com.mobilecoin.lib.log.Logger;
-
+import fog_ledger.Ledger;
 import java.math.BigInteger;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
-
-import fog_ledger.Ledger;
 
 /**
  * This class represents the Account's state at the specified block index
@@ -35,9 +32,9 @@ public final class AccountSnapshot {
     private final static String TAG = AccountSnapshot.class.getName();
     private final UnsignedLong blockIndex;
     private final Set<OwnedTxOut> txOuts;
-    private final MobileCoinClient mobileCoinClient;
+    private final MobileCoinClientImpl mobileCoinClient;
 
-    AccountSnapshot(@NonNull MobileCoinClient mobileCoinClient, @NonNull Set<OwnedTxOut> txOuts,
+    AccountSnapshot(@NonNull MobileCoinClientImpl mobileCoinClient, @NonNull Set<OwnedTxOut> txOuts,
                     @NonNull UnsignedLong blockIndex) {
         this.txOuts = txOuts;
         this.blockIndex = blockIndex;
@@ -147,7 +144,7 @@ public final class AccountSnapshot {
         if (keyMapping.isEmpty()) {
             Set<RistrettoPublic> outputPublicKeys = transaction.getOutputPublicKeys();
             Ledger.TxOutResponse response =
-                    mobileCoinClient.untrustedClient.fetchTxOuts(outputPublicKeys);
+                mobileCoinClient.untrustedClient.fetchTxOuts(outputPublicKeys);
             List<Ledger.TxOutResult> results = response.getResultsList();
 
             boolean allTxOutsFound = true;
