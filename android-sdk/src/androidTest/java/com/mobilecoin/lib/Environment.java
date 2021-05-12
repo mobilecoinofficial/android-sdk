@@ -21,7 +21,7 @@ public class Environment {
 
     static public MobileCoinClient makeFreshMobileCoinClient(AccountKey accountKey) throws InvalidUriException {
         TestFogConfig fogConfig = getTestFogConfig();
-        MobileCoinClientImpl mobileCoinClient = new MobileCoinClientImpl(
+        MobileCoinClient mobileCoinClient = new MobileCoinClientImpl(
                 accountKey,
                 fogConfig.getFogUri(),
                 fogConfig.getConsensusUri(),
