@@ -49,7 +49,7 @@ import static com.mobilecoin.lib.UtilTest.waitForTransactionStatus;
 
 @RunWith(AndroidJUnit4.class)
 public class MobileCoinClientTest {
-    private static final String TAG = MobileCoinClientImpl.class.toString();
+    private static final String TAG = MobileCoinClient.class.toString();
     private static final String wrongTrustRootBase64 = "MIIDdzCCAl" +
             "+gAwIBAgIEAgAAuTANBgkqhkiG9w0BAQUFADBaMQswCQYDVQQGEwJJRTESMBAGA1UEChMJQmFsdGltb3JlMRMwEQYDVQQLEwpDeWJlclRydXN0MSIwIAYDVQQDExlCYWx0aW1vcmUgQ3liZXJUcnVzdCBSb290MB4XDTAwMDUxMjE4NDYwMFoXDTI1MDUxMjIzNTkwMFowWjELMAkGA1UEBhMCSUUxEjAQBgNVBAoTCUJhbHRpbW9yZTETMBEGA1UECxMKQ3liZXJUcnVzdDEiMCAGA1UEAxMZQmFsdGltb3JlIEN5YmVyVHJ1c3QgUm9vdDCCASIwDQYJKoZIhvcNAQEBBQADggEPADCCAQoCggEBAKMEuyKrmD1X6CZymrV51Cni4eiVgLGw41uOKymaZN+hXe2wCQVt2yguzmKiYv60iNoS6zjrIZ3AQSsBUnuId9Mcj8e6uYi1agnnc+gRQKfRzMpijS3ljwumUNKoUMMo6vWrJYeKmpYcqWe4PwzV9/lSEy/CG9VwcPCPwBLKBsua4dnKM3p31vjsufFoREJIE9LAwqSuXmD+tqYF/LTdB1kC1FkYmGP1pWPgkAx9XbIGevOF6uvUA65ehD5f/xXtabz5OTZydc93Uk3zyZAsuT3lySNTPx8kmCFcB5kpvcY67Oduhjprl3RjM71oGDHweI12v/yejl0qhqdNkNwnGjkCAwEAAaNFMEMwHQYDVR0OBBYEFOWdWTCCR1jMrPoIVDaGezq1BE3wMBIGA1UdEwEB/wQIMAYBAf8CAQMwDgYDVR0PAQH/BAQDAgEGMA0GCSqGSIb3DQEBBQUAA4IBAQCFDF2O5G9RaEIFoN27TyclhAO992T9Ldcw46QQF+vaKSm2eT929hkTI7gQCvlYpNRhcL0EYWoSihfVCr3FvDB81ukMJY2GQE/szKN+OMY3EU/t3WgxjkzSswF07r51XgdIGn9w/xZchMB5hbgF/X++ZRGjD8ACtPhSNzkE1akxehi/oCr0Epn3o0WC4zxe9Z2etciefC7IpJ5OCBRLbf1wbWsaY71k5h+3zvDyny67G7fyUIhzksLi4xaNmjICq44Y3ekQEe5+NauQrz4wlHrQMz2nZQ/1/I6eYs9HRCwBXbsdtTLSR9I4LtD+gdwyah617jzV/OeBHRnDJELqYzmp";
 
@@ -306,7 +306,7 @@ public class MobileCoinClientTest {
             TransactionBuilderException, InterruptedException, TimeoutException,
             FogReportException, InvalidReceiptException, InvalidUriException {
         MobileCoinClient senderClient = Environment.makeFreshMobileCoinClient();
-        MobileCoinClientImpl recipientClient = Environment.makeFreshMobileCoinClient();
+        MobileCoinClient recipientClient = Environment.makeFreshMobileCoinClient();
 
         Balance initialBalance = recipientClient.getBalance();
         try {
@@ -487,7 +487,7 @@ public class MobileCoinClientTest {
     @Test
     public void test_internal_external_get_owned_tx_outs_api()
             throws InvalidFogResponse, NetworkException, AttestationException, InvalidUriException {
-        MobileCoinClientImpl mobileCoinClient = Environment.makeFreshMobileCoinClient();
+        MobileCoinClient mobileCoinClient = Environment.makeFreshMobileCoinClient();
         TxOutStore store = mobileCoinClient.getTxOutStore();
         store.refresh(
                 mobileCoinClient.viewClient,
