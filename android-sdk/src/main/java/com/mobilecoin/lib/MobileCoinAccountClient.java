@@ -35,7 +35,7 @@ public interface MobileCoinAccountClient {
    */
   @Nullable
   AccountSnapshot getAccountSnapshot(UnsignedLong blockIndex) throws NetworkException,
-      InvalidFogResponse, AttestationException
+      InvalidFogResponse, AttestationException;
 
   /**
    * Retrieves {@code AccountKey}'s balance.

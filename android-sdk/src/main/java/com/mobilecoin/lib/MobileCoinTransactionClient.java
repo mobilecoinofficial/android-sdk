@@ -48,7 +48,7 @@ public interface MobileCoinTransactionClient {
    * @param transaction a valid transaction object to submit (see {@link MobileCoinClient#prepareTransaction}}
    */
   void submitTransaction(@NonNull Transaction transaction)
-      throws InvalidTransactionException, NetworkException, AttestationException
+      throws InvalidTransactionException, NetworkException, AttestationException;
 
   /**
    * Checks the status of the transaction receipt. Recipient's key is required to decode
@@ -94,7 +94,7 @@ public interface MobileCoinTransactionClient {
    * Fetches or returns the cached minimum transaction fee.
    */
   @NonNull
-  public BigInteger getOrFetchMinimumTxFee() throws NetworkException
+  public BigInteger getOrFetchMinimumTxFee() throws NetworkException;
 
 
 }
