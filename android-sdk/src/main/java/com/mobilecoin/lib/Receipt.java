@@ -18,7 +18,7 @@ import com.mobilecoin.lib.log.Logger;
 import java.math.BigInteger;
 
 /**
- * This receipt is created by {@link MobileCoinClient#prepareTransaction(PublicAddress, BigInteger,
+ * This receipt is created by {@link MobileCoinClientImpl#prepareTransaction(PublicAddress, BigInteger,
  * BigInteger)} Then shared with the recipient, so they can check the transaction status. Only the
  * recipient can use this receipt since it requires a recipient's key for decoding.
  */

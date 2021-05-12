@@ -2,8 +2,8 @@
 
 package com.mobilecoin.lib;
 
-import static com.mobilecoin.lib.MobileCoinClient.INPUT_FEE;
-import static com.mobilecoin.lib.MobileCoinClient.OUTPUT_FEE;
+import static com.mobilecoin.lib.MobileCoinClientImpl.INPUT_FEE;
+import static com.mobilecoin.lib.MobileCoinClientImpl.OUTPUT_FEE;
 
 import androidx.annotation.NonNull;
 
@@ -35,9 +35,9 @@ public final class AccountSnapshot {
     private final static String TAG = AccountSnapshot.class.getName();
     private final UnsignedLong blockIndex;
     private final Set<OwnedTxOut> txOuts;
-    private final MobileCoinClient mobileCoinClient;
+    private final MobileCoinClientImpl mobileCoinClient;
 
-    AccountSnapshot(@NonNull MobileCoinClient mobileCoinClient, @NonNull Set<OwnedTxOut> txOuts,
+    AccountSnapshot(@NonNull MobileCoinClientImpl mobileCoinClient, @NonNull Set<OwnedTxOut> txOuts,
                     @NonNull UnsignedLong blockIndex) {
         this.txOuts = txOuts;
         this.blockIndex = blockIndex;
@@ -81,7 +81,7 @@ public final class AccountSnapshot {
     /**
      * Check the status of the transaction receipt. Recipient's key is required to decode
      * verification data, hence only the recipient of the transaction can verify receipts. Sender
-     * should use {@link MobileCoinClient#getTransactionStatus}
+     * should use {@link MobileCoinClientImpl#getTransactionStatus}
      *
      * @param receipt provided by the transaction sender to the recipient
      * @return {@link Receipt.Status}
@@ -123,7 +123,7 @@ public final class AccountSnapshot {
      * hence only the sender of the transaction can verify it's status. Recipients should use {@link
      * AccountSnapshot#getReceiptStatus} )}
      *
-     * @param transaction obtained from {@link MobileCoinClient#prepareTransaction}
+     * @param transaction obtained from {@link MobileCoinClientImpl#prepareTransaction}
      * @return {@link Transaction.Status}
      */
     @NonNull
@@ -180,7 +180,7 @@ public final class AccountSnapshot {
      * Calculate the total transferable amount excluding all the required fees for such transfer
      *
      * @param minimumTxFee minimum transaction fee, see
-     * {@link MobileCoinClient#getOrFetchMinimumTxFee}
+     * {@link MobileCoinClientImpl#getOrFetchMinimumTxFee}
      */
     @NonNull
     public BigInteger getTransferableAmount(@NonNull BigInteger minimumTxFee) {
@@ -202,11 +202,11 @@ public final class AccountSnapshot {
      * consists of multiple coins, if there are no big enough coins to successfully send the
      * transaction {@link FragmentedAccountException} will be thrown. The account needs to be
      * defragmented in order to send the specified amount. See
-     * {@link MobileCoinClient#defragmentAccount}
+     * {@link MobileCoinClientImpl#defragmentAccount}
      *
      * @param amount       an amount value in picoMob
      * @param minimumTxFee minimum transaction fee, see
-     *                     {@link MobileCoinClient#getOrFetchMinimumTxFee}
+     *                     {@link MobileCoinClientImpl#getOrFetchMinimumTxFee}
      */
     @NonNull
     public BigInteger estimateTotalFee(@NonNull BigInteger amount,
@@ -229,7 +229,7 @@ public final class AccountSnapshot {
     /**
      * @param recipient {@link PublicAddress} of the recipient
      * @param amount    transaction amount
-     * @param fee       transaction fee (see {@link MobileCoinClient#estimateTotalFee})
+     * @param fee       transaction fee (see {@link MobileCoinClientImpl#estimateTotalFee})
      * @return {@link PendingTransaction} which encapsulates the {@link Transaction} and {@link
      * Receipt} objects
      */

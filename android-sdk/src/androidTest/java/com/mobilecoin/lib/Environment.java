@@ -10,7 +10,7 @@ import com.mobilecoin.lib.exceptions.InvalidUriException;
 public class Environment {
     public static final TestEnvironment CURRENT_TEST_ENV = TestEnvironment.ALPHA;
 
-    static public MobileCoinClient makeFreshMobileCoinClient() throws InvalidUriException {
+    static public MobileCoinClientImpl makeFreshMobileCoinClient() throws InvalidUriException {
         AccountKey accountKey = TestKeysManager.getNextAccountKey();
         return makeFreshMobileCoinClient(accountKey);
     }
@@ -19,9 +19,9 @@ public class Environment {
         return TestFogConfig.getFogConfig(CURRENT_TEST_ENV);
     }
 
-    static public MobileCoinClient makeFreshMobileCoinClient(AccountKey accountKey) throws InvalidUriException {
+    static public MobileCoinClientImpl makeFreshMobileCoinClient(AccountKey accountKey) throws InvalidUriException {
         TestFogConfig fogConfig = getTestFogConfig();
-        MobileCoinClient mobileCoinClient = new MobileCoinClient(
+        MobileCoinClientImpl mobileCoinClient = new MobileCoinClientImpl(
                 accountKey,
                 fogConfig.getFogUri(),
                 fogConfig.getConsensusUri(),

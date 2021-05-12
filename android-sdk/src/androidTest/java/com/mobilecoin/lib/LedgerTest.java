@@ -31,7 +31,7 @@ import fog_view.View;
 
 @RunWith(AndroidJUnit4.class)
 public class LedgerTest {
-    private static final String TAG = MobileCoinClient.class.toString();
+    private static final String TAG = MobileCoinClientImpl.class.toString();
     private final TestFogConfig fogConfig = Environment.getTestFogConfig();
 
     @Rule
