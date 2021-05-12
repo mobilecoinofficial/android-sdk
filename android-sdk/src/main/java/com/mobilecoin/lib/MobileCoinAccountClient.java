@@ -30,8 +30,8 @@ public interface MobileCoinAccountClient {
    * Creates an account snapshot for the provided block index.
    *
    * @param blockIndex is the index of the last block to include TxOuts from
-   * @return {@link AccountSnapshot} or {@code null} if the {@code blockIndex} is higher than
-   * what fog currently at and not equals to {@link UnsignedLong#MAX_VALUE}
+   * @return {@link AccountSnapshot} or {@code null} if the {@code blockIndex} is higher than what
+   * fog currently at and not equals to {@link UnsignedLong#MAX_VALUE}
    */
   @Nullable
   AccountSnapshot getAccountSnapshot(UnsignedLong blockIndex) throws NetworkException,

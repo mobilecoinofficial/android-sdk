@@ -22,4 +22,5 @@ public interface MobileCoinNetworkManager {
    * call which in rare cases may take up to 10 seconds to complete.
    */
   void shutdown();
+
 }

@@ -13,7 +13,9 @@ import com.mobilecoin.lib.exceptions.NetworkException;
 import com.mobilecoin.lib.exceptions.TransactionBuilderException;
 import java.math.BigInteger;
 
-/** Enables clients to make MobileCoin transactions. */
+/**
+ * Enables clients to make MobileCoin transactions.
+ */
 public interface MobileCoinTransactionClient {
 
   /**
@@ -77,11 +79,10 @@ public interface MobileCoinTransactionClient {
       NetworkException;
 
   /**
-   * Estimates the minimum fee required to send a transaction with the specified amount. The account balance
-   * consists of multiple coins, if there are no big enough coins to successfully send the
+   * Estimates the minimum fee required to send a transaction with the specified amount. The account
+   * balance consists of multiple coins, if there are no big enough coins to successfully send the
    * transaction {@link FragmentedAccountException} will be thrown. The account needs to be
-   * defragmented in order to send the specified amount. See
-   * {@link MobileCoinClient#defragmentAccount}.
+   * defragmented in order to send the specified amount. See {@link MobileCoinClient#defragmentAccount}.
    *
    * @param amount an amount value in picoMob
    */
@@ -94,8 +95,7 @@ public interface MobileCoinTransactionClient {
    * Fetches or returns the cached minimum transaction fee.
    */
   @NonNull
-  public BigInteger getOrFetchMinimumTxFee() throws NetworkException;
-
+  BigInteger getOrFetchMinimumTxFee() throws NetworkException;
 
 }
 
