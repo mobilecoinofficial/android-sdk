@@ -3,10 +3,8 @@
 package com.mobilecoin.lib;
 
 import android.net.Uri;
-
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-
 import com.mobilecoin.api.MobileCoinAPI;
 import com.mobilecoin.lib.exceptions.AttestationException;
 import com.mobilecoin.lib.exceptions.FeeRejectedException;
@@ -25,7 +23,8 @@ import com.mobilecoin.lib.uri.ConsensusUri;
 import com.mobilecoin.lib.uri.FogUri;
 import com.mobilecoin.lib.util.Result;
 import com.mobilecoin.lib.util.Task;
-
+import consensus_common.ConsensusCommon;
+import fog_ledger.Ledger;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -41,9 +40,6 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeoutException;
 import java.util.stream.Collectors;
 
-import consensus_common.ConsensusCommon;
-import fog_ledger.Ledger;
-
 /**
  * <pre>
  * The {@link MobileCoinClient} class is a high-level Fog-enabled client to access MobileCoin
@@ -52,7 +48,9 @@ import fog_ledger.Ledger;
  * Fog-enabled {@link AccountKey} is required to use {@code MobileCoinClient}.
  * </pre>
  */
-public final class MobileCoinClient {
+public final class MobileCoinClient implements MobileCoinAccountClient, MobileCoinTransactionClient,
+    MobileCoinNetworkManager {
+
     static final BigInteger INPUT_FEE = BigInteger.valueOf(0L);
     static final BigInteger OUTPUT_FEE = BigInteger.valueOf(0L);
     private static final String TAG = MobileCoinClient.class.toString();
@@ -124,22 +122,14 @@ public final class MobileCoinClient {
         }
     }
 
-    /**
-     * Fetch the latest account snapshot.
-     */
+    @Override
     @NonNull
     public AccountSnapshot getAccountSnapshot() throws NetworkException,
             InvalidFogResponse, AttestationException {
         return Objects.requireNonNull(getAccountSnapshot(UnsignedLong.MAX_VALUE));
     }
 
-    /**
-     * Create an account snapshot for the provided block index.
-     *
-     * @param blockIndex is the index of the last block to include TxOuts from
-     * @return {@link AccountSnapshot} or {@code null} if the {@code blockIndex} is higher than
-     * what fog currently at and not equals to {@link UnsignedLong#MAX_VALUE}
-     */
+    @Override
     @Nullable
     public AccountSnapshot getAccountSnapshot(UnsignedLong blockIndex) throws NetworkException,
             InvalidFogResponse, AttestationException {
@@ -171,18 +161,14 @@ public final class MobileCoinClient {
         return new AccountSnapshot(this, txOuts, finalBlockIndex);
     }
 
-    /**
-     * Retrieve accountKey's balance
-     */
+    @Override
     @NonNull
     public Balance getBalance() throws InvalidFogResponse, NetworkException, AttestationException {
         Logger.i(TAG, "GetBalance call");
         return getAccountSnapshot().getBalance();
     }
 
-    /**
-     * Calculate the total transferable amount excluding all the required fees for such transfer
-     */
+    @Override
     @NonNull
     public BigInteger getTransferableAmount() throws NetworkException, InvalidFogResponse,
             AttestationException {
@@ -190,13 +176,7 @@ public final class MobileCoinClient {
         return getAccountSnapshot().getTransferableAmount(getOrFetchMinimumTxFee());
     }
 
-    /**
-     * @param recipient {@link PublicAddress} of the recipient
-     * @param amount    transaction amount
-     * @param fee       transaction fee (see {@link MobileCoinClient#estimateTotalFee})
-     * @return {@link PendingTransaction} which encapsulates the {@link Transaction} and {@link
-     * Receipt} objects
-     */
+    @Override
     @NonNull
     public PendingTransaction prepareTransaction(
             @NonNull final PublicAddress recipient,
@@ -382,12 +362,7 @@ public final class MobileCoinClient {
         );
     }
 
-    /**
-     * Submit transaction to the consensus service
-     *
-     * @param transaction a valid transaction object to submit (see
-     *                    {@link MobileCoinClient#prepareTransaction}}
-     */
+    @Override
     public void submitTransaction(@NonNull Transaction transaction)
             throws InvalidTransactionException, NetworkException, AttestationException {
         Logger.i(TAG, "SubmitTransaction call", null,
@@ -405,14 +380,7 @@ public final class MobileCoinClient {
         }
     }
 
-    /**
-     * Check the status of the transaction receipt. Recipient's key is required to decode
-     * verification data, hence only the recipient of the transaction can verify receipts. Sender
-     * should use {@link MobileCoinClient#getTransactionStatus}
-     *
-     * @param receipt provided by the transaction sender to the recipient
-     * @return {@link Receipt.Status}
-     */
+    @Override
     @NonNull
     public Receipt.Status getReceiptStatus(@NonNull Receipt receipt)
             throws InvalidFogResponse, NetworkException, AttestationException,
@@ -421,14 +389,7 @@ public final class MobileCoinClient {
         return getAccountSnapshot().getReceiptStatus(receipt);
     }
 
-    /**
-     * Check the status of the transaction. Sender's key is required to decode verification data,
-     * hence only the sender of the transaction can verify it's status. Recipients should use {@link
-     * MobileCoinClient#getReceiptStatus}
-     *
-     * @param transaction obtained from {@link MobileCoinClient#prepareTransaction}
-     * @return {@link Transaction.Status}
-     */
+    @Override
     @NonNull
     public Transaction.Status getTransactionStatus(@NonNull Transaction transaction)
             throws InvalidFogResponse, AttestationException,
@@ -437,15 +398,7 @@ public final class MobileCoinClient {
         return getAccountSnapshot().getTransactionStatus(transaction);
     }
 
-    /**
-     * The minimum fee required to send a transaction with the specified amount. The account balance
-     * consists of multiple coins, if there are no big enough coins to successfully send the
-     * transaction {@link FragmentedAccountException} will be thrown. The account needs to be
-     * defragmented in order to send the specified amount. See
-     * {@link MobileCoinClient#defragmentAccount}
-     *
-     * @param amount an amount value in picoMob
-     */
+    @Override
     @NonNull
     public BigInteger estimateTotalFee(@NonNull BigInteger amount)
             throws InsufficientFundsException, NetworkException, InvalidFogResponse,
@@ -460,15 +413,7 @@ public final class MobileCoinClient {
                 2);
     }
 
-    /**
-     * The account balance consists of multiple coins, if there are no big enough coins to
-     * successfully send transaction, the account needs to be defragmented. If the account is too
-     * fragmented, there may be a need to defragment the account more than once. However, wallet
-     * fragmentation is a rare occurrence since there is an internal mechanism to defragment the
-     * account during other operations.
-     *
-     * @param delegate monitors and controls the defragmentation process
-     */
+    @Override
     public void defragmentAccount(
             @NonNull BigInteger amountToSend,
             @NonNull DefragmentationDelegate delegate
@@ -537,10 +482,7 @@ public final class MobileCoinClient {
         delegate.onComplete();
     }
 
-    /**
-     * Returns whether the defragmentation is required on the active account
-     * in order to send the specified amount
-     */
+    @Override
     public boolean requiresDefragmentation(@NonNull BigInteger amountToSend)
             throws NetworkException, InvalidFogResponse, AttestationException,
             InsufficientFundsException {
@@ -576,17 +518,13 @@ public final class MobileCoinClient {
         return getTxOutStore().getUnspentTxOuts();
     }
 
-    /**
-     * Fetch or return cached minimum transaction fee
-     */
+    @Override
     @NonNull
     public BigInteger getOrFetchMinimumTxFee() throws NetworkException {
         return blockchainClient.getOrFetchMinimumFee().toBigInteger();
     }
 
-    /**
-     * Retrieve the account activity
-     */
+    @Override
     @NonNull
     public AccountActivity getAccountActivity() throws NetworkException, InvalidFogResponse,
             AttestationException {
@@ -694,17 +632,13 @@ public final class MobileCoinClient {
         return rings;
     }
 
-    /**
-     * AccountKey associated with this client instance.
-     */
+    @Override
     @NonNull
     public final AccountKey getAccountKey() {
         return accountKey;
     }
 
-    /**
-     * Sets HTTP authorization username and password for FOG requests.
-     */
+    @Override
     public void setFogBasicAuthorization(
             @NonNull String username,
             @NonNull String password
@@ -727,9 +661,7 @@ public final class MobileCoinClient {
         );
     }
 
-    /**
-     * Sets HTTP authorization username and password for consensus server requests.
-     */
+    @Override
     public void setConsensusBasicAuthorization(@NonNull String username, @NonNull String password) {
         consensusClient.setAuthorization(
                 username,
@@ -741,10 +673,7 @@ public final class MobileCoinClient {
         );
     }
 
-    /**
-     * Attempt to gracefully shutdown internal networking and threading services This is a blocking
-     * call which in rare cases may take up to 10 seconds to complete.
-     */
+    @Override
     public synchronized void shutdown() {
         if (null != viewClient) {
             viewClient.shutdown();
