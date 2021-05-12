@@ -27,7 +27,7 @@ import java.util.concurrent.TimeUnit;
 
 @RunWith(AndroidJUnit4.class)
 public class ParallelExecutionTest {
-    private static final String TAG = MobileCoinClientImpl.class.toString();
+    private static final String TAG = MobileCoinClient.class.toString();
     private static final int TASKS_TO_TEST = 10;
     private static final int AMOUNT_TO_SEND = 10;
 
