@@ -9,6 +9,13 @@ import androidx.annotation.NonNull;
 import com.mobilecoin.lib.exceptions.AttestationException;
 import com.mobilecoin.lib.exceptions.NetworkException;
 import com.mobilecoin.lib.log.Logger;
+import com.mobilecoin.lib.network.TransportProtocol;
+import com.mobilecoin.lib.network.services.GRPCServiceAPIManager;
+import com.mobilecoin.lib.network.services.RestServiceAPIManager;
+import com.mobilecoin.lib.network.services.ServiceAPIManager;
+import com.mobilecoin.lib.network.services.http.Requester;
+import com.mobilecoin.lib.network.services.http.clients.RestClient;
+import com.mobilecoin.lib.network.services.transport.Transport;
 
 import java.io.IOException;
 import java.security.KeyManagementException;
@@ -33,24 +40,61 @@ class AnyClient extends Native {
     // How long to wait for the managed connection to gracefully shutdown in milliseconds
     private final static long MANAGED_CONNECTION_SHUTDOWN_TIME_LIMIT = 1000;
     private final Uri serviceUri;
-    private final ServiceAPIManager apiManager;
     private final ClientConfig.Service serviceConfig;
+    private final GRPCServiceAPIManager grpcApiManager;
+    private final RestServiceAPIManager restApiManager;
     private ManagedChannel managedChannel;
+    private RestClient restClient;
+    private Transport networkTransport;
+    private TransportProtocol transportProtocol;
 
     /**
-     * Creates and initializes an instance of {@link com.mobilecoin.lib.AttestedClient}
+     * Creates and initializes an instance of {@link AttestedClient}
      *
      * @param uri a complete {@link Uri} of the service including port.
      */
     protected AnyClient(@NonNull Uri uri, @NonNull ClientConfig.Service serviceConfig) {
         this.serviceUri = uri;
         this.serviceConfig = serviceConfig;
-        this.apiManager = new ServiceAPIManager();
+        this.grpcApiManager = new GRPCServiceAPIManager();
+        this.restApiManager = new RestServiceAPIManager();
+        this.transportProtocol = TransportProtocol.forGRPC();
     }
 
     @NonNull
     final ServiceAPIManager getAPIManager() {
-        return apiManager;
+        switch (transportProtocol.getTransportType()) {
+            case HTTP:
+                return restApiManager;
+            case GRPC:
+                return grpcApiManager;
+            default:
+                throw new UnsupportedOperationException("Unimplemented");
+        }
+    }
+
+    synchronized void setTransportProtocol(@NonNull TransportProtocol protocol) {
+        this.transportProtocol = protocol;
+        this.networkTransport = null;
+    }
+
+    @NonNull
+    synchronized Transport getNetworkTransport() throws NetworkException, AttestationException {
+        if (null == networkTransport) {
+            switch (transportProtocol.getTransportType()) {
+                case GRPC: {
+                    networkTransport = Transport.fromManagedChannel(getManagedChannel());
+                }
+                break;
+                case HTTP: {
+                    networkTransport = Transport.fromRestClient(getRestClient());
+                }
+                break;
+                default:
+                    throw new UnsupportedOperationException("Unimplemented");
+            }
+        }
+        return networkTransport;
     }
 
     @NonNull
@@ -63,13 +107,19 @@ class AnyClient extends Native {
         return serviceConfig;
     }
 
-    /**
-     * Subclasses must use this method to get access to a managed channel. The connection
-     * will be
-     * automatically attested during this call
-     *
-     * @return {@link ManagedChannel}
-     */
+    @NonNull
+    protected synchronized RestClient getRestClient() throws NetworkException,
+            AttestationException {
+        if (null == restClient) {
+            Requester httpRequester = transportProtocol.getHttpRequester();
+            if (null == httpRequester) {
+                throw new IllegalArgumentException("HttpRequester was not properly set");
+            }
+            restClient = new RestClient(getServiceUri(), httpRequester);
+        }
+        return restClient;
+    }
+
     @NonNull
     protected synchronized ManagedChannel getManagedChannel()
             throws AttestationException, NetworkException {
@@ -93,8 +143,13 @@ class AnyClient extends Native {
                 Logger.i(TAG, "Managed channel exists: using existing");
             }
         } catch (Exception ex) {
-            NetworkException exception = new NetworkException(500, "Unable to create managed channel", ex);
-            Util.logException(TAG, exception);
+            NetworkException exception = new NetworkException(500, "Unable to create managed " +
+                    "channel", ex);
+            String message = exception.getMessage();
+            if (null == message) {
+                message = "";
+            }
+            Logger.w(TAG, message, exception);
         }
         return managedChannel;
     }
@@ -163,7 +218,6 @@ class AnyClient extends Native {
      */
     void shutdown() {
         Logger.i(TAG, "Client shutdown");
-        apiManager.reset();
         if (null != managedChannel) {
             try {
                 managedChannel.shutdown();

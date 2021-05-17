@@ -12,6 +12,9 @@ import com.google.protobuf.ByteString;
 import com.mobilecoin.lib.exceptions.AttestationException;
 import com.mobilecoin.lib.exceptions.NetworkException;
 import com.mobilecoin.lib.log.Logger;
+import com.mobilecoin.lib.network.services.http.clients.RestClient;
+import com.mobilecoin.lib.network.services.transport.GRPCTransport;
+import com.mobilecoin.lib.network.services.transport.Transport;
 
 import attest.Attest;
 import io.grpc.ManagedChannel;
@@ -46,15 +49,26 @@ abstract class AttestedClient extends AnyClient {
             throws AttestationException, NetworkException {
         ManagedChannel managedChannel = super.getManagedChannel();
         if (!isAttested()) {
-            attest(managedChannel);
+            attest(GRPCTransport.fromManagedChannel(managedChannel));
         }
         return managedChannel;
+    }
+
+    @NonNull
+    @Override
+    protected synchronized RestClient getRestClient()
+            throws NetworkException, AttestationException {
+        RestClient restClient = super.getRestClient();
+        if (!isAttested()) {
+            attest(Transport.fromRestClient(restClient));
+        }
+        return restClient;
     }
 
     /**
      * Attest service connection or throw an exception if error occurs.
      */
-    protected abstract void attest(@NonNull ManagedChannel managedChannel)
+    protected abstract void attest(@NonNull Transport transport)
             throws AttestationException, NetworkException;
 
     /**
@@ -144,7 +158,13 @@ abstract class AttestedClient extends AnyClient {
     protected byte[] attestStart(@NonNull Uri serviceUri) throws AttestationException {
         Logger.i(TAG, "FFI: attest_start call");
         try {
-            ResponderId responderId = new ResponderId(serviceUri);
+            ResponderId responderId;
+            String responderIdString = serviceUri.getQueryParameter("responder-id");
+            if (responderIdString != null && !responderIdString.isEmpty()) {
+                responderId = ResponderId.fromStringRepresentation(responderIdString);
+            } else {
+                responderId = ResponderId.fromUri(serviceUri);
+            }
             return attest_start(responderId);
         } catch (Exception exception) {
             AttestationException attestationException =

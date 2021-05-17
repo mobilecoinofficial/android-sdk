@@ -12,7 +12,10 @@ import com.mobilecoin.lib.exceptions.AttestationException;
 import com.mobilecoin.lib.exceptions.InvalidFogResponse;
 import com.mobilecoin.lib.exceptions.NetworkException;
 import com.mobilecoin.lib.log.Logger;
-import com.mobilecoin.lib.uri.FogUri;
+import com.mobilecoin.lib.network.services.FogKeyImageService;
+import com.mobilecoin.lib.network.services.FogMerkleProofService;
+import com.mobilecoin.lib.network.services.transport.Transport;
+import com.mobilecoin.lib.network.uri.FogUri;
 import com.mobilecoin.lib.util.NetworkingCall;
 
 import java.util.ArrayList;
@@ -22,10 +25,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import attest.Attest;
-import fog_ledger.FogKeyImageAPIGrpc;
-import fog_ledger.FogMerkleProofAPIGrpc;
 import fog_ledger.Ledger;
-import io.grpc.ManagedChannel;
 import io.grpc.Status;
 import io.grpc.StatusRuntimeException;
 
@@ -64,19 +64,19 @@ final class AttestedLedgerClient extends AttestedClient {
      * If the attestation failed, the invalid intermediate state can be reset with {@link
      * AttestedClient#attestReset}
      *
-     * @param managedChannel a channel that requires attestation
+     * @param transport a channel that requires attestation
      */
     @Override
-    protected synchronized void attest(@NonNull ManagedChannel managedChannel)
+    protected synchronized void attest(@NonNull Transport transport)
             throws AttestationException, NetworkException {
         try {
             Logger.i(TAG, "Attest ledger connection");
             byte[] requestBytes = attestStart(getServiceUri());
-            FogKeyImageAPIGrpc.FogKeyImageAPIBlockingStub blockingRequest =
-                    getAPIManager().getFogKeyImageAPIStub(managedChannel);
+            FogKeyImageService fogKeyImageService =
+                    getAPIManager().getFogKeyImageService(transport);
             ByteString bytes = ByteString.copyFrom(requestBytes);
             Attest.AuthMessage authMessage = Attest.AuthMessage.newBuilder().setData(bytes).build();
-            Attest.AuthMessage response = blockingRequest.auth(authMessage);
+            Attest.AuthMessage response = fogKeyImageService.auth(authMessage);
             attestFinish(response.getData().toByteArray(), getServiceConfig().getVerifier());
         } catch (StatusRuntimeException exception) {
             attestReset();
@@ -109,8 +109,8 @@ final class AttestedLedgerClient extends AttestedClient {
             long merkleRootBlock
     ) throws InvalidFogResponse, AttestationException, NetworkException {
         Logger.i(TAG, "Retrieving outputs");
-        FogMerkleProofAPIGrpc.FogMerkleProofAPIBlockingStub ledger =
-                getAPIManager().getMerkleProofAPIStub(getManagedChannel());
+        FogMerkleProofService fogMerkleProofService =
+                getAPIManager().getFogMerkleProofService(getNetworkTransport());
         Ledger.GetOutputsRequest request =
                 Ledger.GetOutputsRequest.newBuilder().addAllIndices(
                         indexes.stream().map(UnsignedLong::longValue).collect(Collectors.toList()))
@@ -119,7 +119,7 @@ final class AttestedLedgerClient extends AttestedClient {
         NetworkingCall<Ledger.GetOutputsResponse> networkingCall =
                 new NetworkingCall<>(() -> {
                     try {
-                        Attest.Message responseMessage = ledger.getOutputs(message);
+                        Attest.Message responseMessage = fogMerkleProofService.getOutputs(message);
                         Attest.Message response = decryptMessage(responseMessage);
                         return Ledger.GetOutputsResponse.parseFrom(response.getData());
                     } catch (StatusRuntimeException exception) {
@@ -151,8 +151,8 @@ final class AttestedLedgerClient extends AttestedClient {
     ) throws InvalidFogResponse, AttestationException, NetworkException {
         Logger.i(TAG, "Checking key images", null,
                 "size:", keyImages.size());
-        FogKeyImageAPIGrpc.FogKeyImageAPIBlockingStub ledger =
-                getAPIManager().getFogKeyImageAPIStub(getManagedChannel());
+        FogKeyImageService fogKeyImageService =
+                getAPIManager().getFogKeyImageService(getNetworkTransport());
         ArrayList<Ledger.KeyImageQuery> keyImageQueries = new ArrayList<>();
         for (KeyImage keyImage : keyImages) {
             Ledger.KeyImageQuery query = Ledger.KeyImageQuery.newBuilder()
@@ -167,7 +167,7 @@ final class AttestedLedgerClient extends AttestedClient {
         NetworkingCall<Ledger.CheckKeyImagesResponse> networkingCall =
                 new NetworkingCall<>(() -> {
                     try {
-                        Attest.Message encryptedResponse = ledger.checkKeyImages(encryptedRequest);
+                        Attest.Message encryptedResponse = fogKeyImageService.checkKeyImages(encryptedRequest);
                         Attest.Message response = decryptMessage(encryptedResponse);
                         return Ledger.CheckKeyImagesResponse.parseFrom(response.getData().toByteArray());
                     } catch (InvalidProtocolBufferException exception) {

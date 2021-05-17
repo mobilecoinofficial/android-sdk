@@ -3,8 +3,10 @@
 package com.mobilecoin.lib;
 
 import android.net.Uri;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+
 import com.mobilecoin.api.MobileCoinAPI;
 import com.mobilecoin.lib.exceptions.AttestationException;
 import com.mobilecoin.lib.exceptions.FeeRejectedException;
@@ -19,12 +21,12 @@ import com.mobilecoin.lib.exceptions.NetworkException;
 import com.mobilecoin.lib.exceptions.TransactionBuilderException;
 import com.mobilecoin.lib.log.LogAdapter;
 import com.mobilecoin.lib.log.Logger;
-import com.mobilecoin.lib.uri.ConsensusUri;
-import com.mobilecoin.lib.uri.FogUri;
+import com.mobilecoin.lib.network.TransportProtocol;
+import com.mobilecoin.lib.network.uri.ConsensusUri;
+import com.mobilecoin.lib.network.uri.FogUri;
 import com.mobilecoin.lib.util.Result;
 import com.mobilecoin.lib.util.Task;
-import consensus_common.ConsensusCommon;
-import fog_ledger.Ledger;
+
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -39,6 +41,9 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeoutException;
 import java.util.stream.Collectors;
+
+import consensus_common.ConsensusCommon;
+import fog_ledger.Ledger;
 
 /**
  * <pre>
@@ -671,6 +676,14 @@ public final class MobileCoinClient implements MobileCoinAccountClient, MobileCo
                 username,
                 password
         );
+    }
+
+    @Override
+    public void setTransportProtocol(@NonNull TransportProtocol protocol) {
+        viewClient.setTransportProtocol(protocol);
+        ledgerClient.setTransportProtocol(protocol);
+        consensusClient.setTransportProtocol(protocol);
+        blockchainClient.setTransportProtocol(protocol);
     }
 
     @Override

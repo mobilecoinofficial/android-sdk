@@ -8,14 +8,14 @@ import androidx.annotation.NonNull;
 import com.mobilecoin.lib.exceptions.AttestationException;
 import com.mobilecoin.lib.exceptions.NetworkException;
 import com.mobilecoin.lib.log.Logger;
-import com.mobilecoin.lib.uri.FogUri;
+import com.mobilecoin.lib.network.services.FogUntrustedService;
+import com.mobilecoin.lib.network.services.transport.Transport;
+import com.mobilecoin.lib.network.uri.FogUri;
 import com.mobilecoin.lib.util.NetworkingCall;
 
 import java.util.Set;
 
-import fog_ledger.FogUntrustedTxOutApiGrpc;
 import fog_ledger.Ledger;
-import io.grpc.ManagedChannel;
 import io.grpc.StatusRuntimeException;
 
 /**
@@ -46,15 +46,15 @@ final class FogUntrustedClient extends AnyClient {
     Ledger.TxOutResponse fetchTxOuts(@NonNull Set<RistrettoPublic> publicKeys) throws NetworkException {
         Logger.i(TAG, "Fetching TxOuts via untrusted fog API", null,
                 "public keys number:", publicKeys.size());
-        ManagedChannel managedChannel;
+        Transport transport;
         try {
-            managedChannel = getManagedChannel();
+            transport = getNetworkTransport();
         } catch (AttestationException exception) {
             throw new IllegalStateException("BUG: Untrusted service cannot throw attestation " +
                     "exception");
         }
-        FogUntrustedTxOutApiGrpc.FogUntrustedTxOutApiBlockingStub fogClient =
-                getAPIManager().getFogUntrustedTxOutApiBlockingStub(managedChannel);
+        FogUntrustedService fogService =
+                getAPIManager().getFogUntrustedService(transport);
         Ledger.TxOutRequest.Builder requestBuilder = Ledger.TxOutRequest.newBuilder();
         for (RistrettoPublic publicKey : publicKeys) {
             requestBuilder.addTxOutPubkeys(publicKey.toProtoBufObject());
@@ -62,7 +62,7 @@ final class FogUntrustedClient extends AnyClient {
         NetworkingCall<Ledger.TxOutResponse> networkingCall =
                 new NetworkingCall<>(() -> {
                     try {
-                        return fogClient.getTxOuts(requestBuilder.build());
+                        return fogService.getTxOuts(requestBuilder.build());
                     } catch (StatusRuntimeException exception) {
                         Logger.w(TAG, "Unable to fetch TxOuts from the untrusted service",
                                 exception);

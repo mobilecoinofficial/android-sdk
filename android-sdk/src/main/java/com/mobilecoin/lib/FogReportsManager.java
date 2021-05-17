@@ -9,7 +9,7 @@ import com.mobilecoin.lib.exceptions.FogReportException;
 import com.mobilecoin.lib.exceptions.MobileCoinException;
 import com.mobilecoin.lib.exceptions.NetworkException;
 import com.mobilecoin.lib.log.Logger;
-import com.mobilecoin.lib.uri.FogUri;
+import com.mobilecoin.lib.network.uri.FogUri;
 import com.mobilecoin.lib.util.Result;
 import com.mobilecoin.lib.util.Task;
 

@@ -16,7 +16,7 @@ import com.mobilecoin.lib.exceptions.BadMnemonicException;
 import com.mobilecoin.lib.exceptions.InvalidUriException;
 import com.mobilecoin.lib.exceptions.SerializationException;
 import com.mobilecoin.lib.log.Logger;
-import com.mobilecoin.lib.uri.FogUri;
+import com.mobilecoin.lib.network.uri.FogUri;
 import com.mobilecoin.lib.util.Hex;
 
 import java.util.Arrays;

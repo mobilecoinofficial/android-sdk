@@ -5,8 +5,8 @@ package com.mobilecoin.lib;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 
 import com.mobilecoin.lib.exceptions.InvalidUriException;
-import com.mobilecoin.lib.uri.ConsensusUri;
-import com.mobilecoin.lib.uri.FogUri;
+import com.mobilecoin.lib.network.uri.ConsensusUri;
+import com.mobilecoin.lib.network.uri.FogUri;
 
 import org.junit.Assert;
 import org.junit.Test;

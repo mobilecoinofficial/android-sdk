@@ -2,6 +2,9 @@
 
 package com.mobilecoin.lib;
 
+import static com.mobilecoin.lib.UtilTest.waitForReceiptStatus;
+import static com.mobilecoin.lib.UtilTest.waitForTransactionStatus;
+
 import android.Manifest;
 import android.util.Base64;
 
@@ -23,7 +26,7 @@ import com.mobilecoin.lib.exceptions.NetworkException;
 import com.mobilecoin.lib.exceptions.SerializationException;
 import com.mobilecoin.lib.exceptions.TransactionBuilderException;
 import com.mobilecoin.lib.log.Logger;
-import com.mobilecoin.lib.uri.FogUri;
+import com.mobilecoin.lib.network.uri.FogUri;
 
 import org.junit.Assert;
 import org.junit.Rule;
@@ -37,9 +40,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.TimeoutException;
 import java.util.stream.Collectors;
-
-import static com.mobilecoin.lib.UtilTest.waitForReceiptStatus;
-import static com.mobilecoin.lib.UtilTest.waitForTransactionStatus;
 
 /**
  * Instrumented test, which will execute on an Android device.

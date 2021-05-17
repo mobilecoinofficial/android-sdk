@@ -6,14 +6,14 @@ import com.google.protobuf.Empty;
 import com.mobilecoin.lib.exceptions.AttestationException;
 import com.mobilecoin.lib.exceptions.NetworkException;
 import com.mobilecoin.lib.log.Logger;
-import com.mobilecoin.lib.uri.ConsensusUri;
+import com.mobilecoin.lib.network.services.BlockchainService;
+import com.mobilecoin.lib.network.uri.ConsensusUri;
 import com.mobilecoin.lib.util.NetworkingCall;
 
 import java.math.BigInteger;
 import java.time.Duration;
 import java.time.LocalDateTime;
 
-import consensus_common.BlockchainAPIGrpc;
 import consensus_common.ConsensusCommon;
 import io.grpc.StatusRuntimeException;
 
@@ -84,11 +84,11 @@ final class BlockchainClient extends AnyClient {
         Logger.i(TAG, "Fetching last block info via Blockchain API");
         NetworkingCall<ConsensusCommon.LastBlockInfoResponse> networkingCall;
         try {
-            BlockchainAPIGrpc.BlockchainAPIBlockingStub blockchainAPIStub =
-                    getAPIManager().getBlockchainAPIStub(getManagedChannel());
+            BlockchainService blockchainService =
+                    getAPIManager().getBlockchainService(getNetworkTransport());
             networkingCall = new NetworkingCall<>(() -> {
                 try {
-                    return blockchainAPIStub.getLastBlockInfo(Empty.newBuilder().build());
+                    return blockchainService.getLastBlockInfo(Empty.newBuilder().build());
                 } catch (StatusRuntimeException exception) {
                     Logger.w(TAG, "Unable to post transaction with consensus", exception);
                     throw new NetworkException(exception);

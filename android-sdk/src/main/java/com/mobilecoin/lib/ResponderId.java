@@ -6,7 +6,10 @@ import android.net.Uri;
 
 import androidx.annotation.NonNull;
 
+import com.mobilecoin.lib.log.Logger;
+
 final class ResponderId extends Native {
+    private final static String TAG = ResponderId.class.getName();
 
     ResponderId(@NonNull Uri serviceUri) {
         init_jni(String.format(
@@ -23,6 +26,19 @@ final class ResponderId extends Native {
     @NonNull
     static ResponderId fromJNI(long rustObj) {
         return new ResponderId(rustObj);
+    }
+
+    ResponderId(@NonNull String responderIdString) {
+        Logger.d(TAG, "Setting responder id: " + responderIdString);
+        init_jni(responderIdString);
+    }
+
+    static ResponderId fromStringRepresentation(String responderIdString) {
+        return new ResponderId(responderIdString);
+    }
+
+    static ResponderId fromUri(Uri responderUri) {
+        return new ResponderId(responderUri);
     }
 
     @Override

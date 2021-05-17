@@ -1,20 +1,20 @@
 // Copyright (c) 2020-2021 MobileCoin. All rights reserved.
 
-package com.mobilecoin.lib.uri;
+package com.mobilecoin.lib.network.uri;
 
 import androidx.annotation.NonNull;
 
-public final class ConsensusUriScheme implements MobileCoinScheme {
+public final class FogUriScheme implements MobileCoinScheme {
     @NonNull
     @Override
     public String secureScheme() {
-        return "mc";
+        return "fog";
     }
 
     @NonNull
     @Override
     public String insecureScheme() {
-        return "insecure-mc";
+        return "insecure-fog";
     }
 
     @Override
@@ -24,6 +24,6 @@ public final class ConsensusUriScheme implements MobileCoinScheme {
 
     @Override
     public int insecurePort() {
-        return 3223;
+        return 3225;
     }
 }

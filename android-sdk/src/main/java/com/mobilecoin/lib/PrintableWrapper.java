@@ -11,7 +11,7 @@ import com.mobilecoin.api.Printable;
 import com.mobilecoin.lib.exceptions.InvalidUriException;
 import com.mobilecoin.lib.exceptions.SerializationException;
 import com.mobilecoin.lib.log.Logger;
-import com.mobilecoin.lib.uri.MobUri;
+import com.mobilecoin.lib.network.uri.MobUri;
 
 public final class PrintableWrapper extends Native {
     private final static String TAG = PrintableWrapper.class.getName();
