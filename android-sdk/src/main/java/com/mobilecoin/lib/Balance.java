@@ -14,7 +14,7 @@ final public class Balance {
     private final BigInteger amountPicoMob;
     private final UnsignedLong atBlock;
 
-    Balance(
+    public Balance(
             @NonNull BigInteger amountPicoMob,
             @NonNull UnsignedLong atBlock
     ) {
