@@ -9,6 +9,7 @@ import com.mobilecoin.lib.exceptions.AttestationException;
 import com.mobilecoin.lib.log.LogAdapter;
 
 import java.security.cert.X509Certificate;
+import java.time.Duration;
 import java.util.Objects;
 import java.util.Set;
 
@@ -22,6 +23,8 @@ public final class ClientConfig {
     public Service consensus;
     public StorageAdapter storageAdapter;
     public LogAdapter logAdapter;
+    // default minimum fee cache TTL is 30 minutes
+    public Duration minimumFeeCacheTTL = Duration.ofMinutes(30);
 
     /**
      * Service Configuration
