@@ -106,7 +106,7 @@ public final class MobileCoinClient implements MobileCoinAccountClient, MobileCo
         this.cacheStorage = clientConfig.storageAdapter;
         FogUri normalizedFogUri = new FogUri(fogUri);
         this.blockchainClient = new BlockchainClient(new ConsensusUri(consensusUri),
-                clientConfig.consensus);
+                clientConfig.consensus, clientConfig.minimumFeeCacheTTL);
         this.viewClient = new AttestedViewClient(normalizedFogUri, clientConfig.fogView);
         this.ledgerClient = new AttestedLedgerClient(normalizedFogUri, clientConfig.fogLedger);
         this.consensusClient = new AttestedConsensusClient(new ConsensusUri(consensusUri),

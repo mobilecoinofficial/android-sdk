@@ -10,6 +10,8 @@ import com.mobilecoin.lib.uri.ConsensusUri;
 import com.mobilecoin.lib.util.NetworkingCall;
 
 import java.math.BigInteger;
+import java.time.Duration;
+import java.time.LocalDateTime;
 
 import consensus_common.BlockchainAPIGrpc;
 import consensus_common.ConsensusCommon;
@@ -18,24 +20,29 @@ import io.grpc.StatusRuntimeException;
 final class BlockchainClient extends AnyClient {
     private static final String TAG = BlockchainClient.class.getName();
     private static final BigInteger DEFAULT_TX_FEE = BigInteger.valueOf(10000000000L);
+    private final Duration minimumFeeCacheTTL;
     private ConsensusCommon.LastBlockInfoResponse lastBlockInfo;
+    private LocalDateTime lastBlockInfoTimestamp;
 
     /**
      * Creates and initializes an instance of {@link BlockchainClient}
      *
-     * @param uri           a uri of the service
-     * @param serviceConfig service configuration passed to MobileCoinClient
+     * @param uri                a uri of the service
+     * @param serviceConfig      service configuration passed to MobileCoinClient
+     * @param minimumFeeCacheTTL duration of the minimum fee cache lifetime
      */
     BlockchainClient(@NonNull ConsensusUri uri,
-                     @NonNull ClientConfig.Service serviceConfig) {
+                     @NonNull ClientConfig.Service serviceConfig,
+                     @NonNull Duration minimumFeeCacheTTL) {
         super(uri.getUri(), serviceConfig);
+        this.minimumFeeCacheTTL = minimumFeeCacheTTL;
     }
 
     /**
      * Fetch or return cached current minimal fee
      */
-    synchronized
-    UnsignedLong getOrFetchMinimumFee() throws NetworkException {
+    @NonNull
+    synchronized UnsignedLong getOrFetchMinimumFee() throws NetworkException {
         ConsensusCommon.LastBlockInfoResponse response = getOrFetchLastBlockInfo();
         long minimumFeeBits = response.getMinimumFee();
         UnsignedLong minimumFee = UnsignedLong.fromLongBits(minimumFeeBits);
@@ -50,15 +57,20 @@ final class BlockchainClient extends AnyClient {
      */
     synchronized void resetCache() {
         lastBlockInfo = null;
+        lastBlockInfoTimestamp = null;
     }
 
     /**
      * Fetch or return cached last block info
      */
-    synchronized
-    ConsensusCommon.LastBlockInfoResponse getOrFetchLastBlockInfo() throws NetworkException {
-        if (lastBlockInfo == null) {
+    @NonNull
+    synchronized ConsensusCommon.LastBlockInfoResponse getOrFetchLastBlockInfo() throws NetworkException {
+        if (lastBlockInfo == null ||
+                lastBlockInfoTimestamp
+                        .plus(minimumFeeCacheTTL)
+                        .compareTo(LocalDateTime.now()) <= 0) {
             lastBlockInfo = fetchLastBlockInfo();
+            lastBlockInfoTimestamp = LocalDateTime.now();
         }
         return lastBlockInfo;
     }
@@ -75,13 +87,13 @@ final class BlockchainClient extends AnyClient {
             BlockchainAPIGrpc.BlockchainAPIBlockingStub blockchainAPIStub =
                     getAPIManager().getBlockchainAPIStub(getManagedChannel());
             networkingCall = new NetworkingCall<>(() -> {
-                        try {
-                            return blockchainAPIStub.getLastBlockInfo(Empty.newBuilder().build());
-                        } catch (StatusRuntimeException exception) {
-                            Logger.w(TAG, "Unable to post transaction with consensus", exception);
-                            throw new NetworkException(exception);
-                        }
-                    });
+                try {
+                    return blockchainAPIStub.getLastBlockInfo(Empty.newBuilder().build());
+                } catch (StatusRuntimeException exception) {
+                    Logger.w(TAG, "Unable to post transaction with consensus", exception);
+                    throw new NetworkException(exception);
+                }
+            });
         } catch (AttestationException exception) {
             throw new IllegalStateException("BUG", exception);
         }
