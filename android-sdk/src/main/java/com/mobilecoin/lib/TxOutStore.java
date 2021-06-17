@@ -149,8 +149,7 @@ final class TxOutStore implements Serializable {
         // update RNGs, TxOuts, and fog misses
         Set<BlockRange> fogMisses;
         try {
-            fogMisses = updateRNGsAndTxOuts(viewClient,
-                    new DefaultFogQueryScalingStrategy());
+            fogMisses = updateRNGsAndTxOuts(viewClient, new DefaultFogQueryScalingStrategy());
             // Find the first RNG
             Optional<FogSeed> firstRngSeed = seeds.values().stream()
                     .min((o1, o2) -> o1.getStartBlock().compareTo(o2.getStartBlock()));

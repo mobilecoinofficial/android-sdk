@@ -6,7 +6,7 @@ import android.net.Uri;
 
 import com.mobilecoin.lib.exceptions.InvalidUriException;
 import com.mobilecoin.lib.log.Logger;
-import com.mobilecoin.lib.uri.MobUri;
+import com.mobilecoin.lib.network.uri.MobUri;
 
 import org.junit.Assert;
 import org.junit.Test;

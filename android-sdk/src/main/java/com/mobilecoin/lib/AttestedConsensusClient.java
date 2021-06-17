@@ -9,14 +9,14 @@ import com.mobilecoin.api.MobileCoinAPI;
 import com.mobilecoin.lib.exceptions.AttestationException;
 import com.mobilecoin.lib.exceptions.NetworkException;
 import com.mobilecoin.lib.log.Logger;
-import com.mobilecoin.lib.uri.ConsensusUri;
+import com.mobilecoin.lib.network.services.AttestedService;
+import com.mobilecoin.lib.network.services.ConsensusClientService;
+import com.mobilecoin.lib.network.services.transport.Transport;
+import com.mobilecoin.lib.network.uri.ConsensusUri;
 import com.mobilecoin.lib.util.NetworkingCall;
 
 import attest.Attest;
-import attest.AttestedApiGrpc;
-import consensus_client.ConsensusClientAPIGrpc;
 import consensus_common.ConsensusCommon;
-import io.grpc.ManagedChannel;
 import io.grpc.Status;
 import io.grpc.StatusRuntimeException;
 
@@ -55,19 +55,18 @@ final class AttestedConsensusClient extends AttestedClient {
      * If the attestation failed, the invalid intermediate state can be reset with {@link
      * AttestedClient#attestReset}
      *
-     * @param managedChannel a channel that requires attestation
+     * @param transport a channel that requires attestation
      */
     @Override
-    protected synchronized void attest(@NonNull ManagedChannel managedChannel)
+    protected synchronized void attest(@NonNull Transport transport)
             throws AttestationException, NetworkException {
         try {
             Logger.i(TAG, "Attest consensus connection");
             byte[] requestBytes = attestStart(getServiceUri());
-            AttestedApiGrpc.AttestedApiBlockingStub blockingRequest =
-                    getAPIManager().getAttestedAPIStub(managedChannel);
+            AttestedService attestedService = getAPIManager().getAttestedService(transport);
             ByteString bytes = ByteString.copyFrom(requestBytes);
             Attest.AuthMessage authMessage = Attest.AuthMessage.newBuilder().setData(bytes).build();
-            Attest.AuthMessage response = blockingRequest.auth(authMessage);
+            Attest.AuthMessage response = attestedService.auth(authMessage);
             attestFinish(response.getData().toByteArray(), getServiceConfig().getVerifier());
         } catch (StatusRuntimeException exception) {
             attestReset();
@@ -97,11 +96,11 @@ final class AttestedConsensusClient extends AttestedClient {
                 new NetworkingCall<>(
                         () -> {
                             Logger.i(TAG, "Propose transaction to consensus");
-                            ConsensusClientAPIGrpc.ConsensusClientAPIBlockingStub blockingRequest =
-                                    getAPIManager().getConsensusAPIStub(getManagedChannel());
+                            ConsensusClientService consensusClientService =
+                                    getAPIManager().getConsensusClientService(getNetworkTransport());
                             Attest.Message encryptedRequest = encryptMessage(tx);
                             try {
-                                return blockingRequest.clientTxPropose(encryptedRequest);
+                                return consensusClientService.clientTxPropose(encryptedRequest);
                             } catch (StatusRuntimeException exception) {
                                 attestReset();
                                 throw new NetworkException(exception);

@@ -1,6 +1,6 @@
 // Copyright (c) 2020-2021 MobileCoin. All rights reserved.
 
-package com.mobilecoin.lib;
+package com.mobilecoin.lib.network;
 
 import com.mobilecoin.lib.log.Logger;
 
@@ -18,7 +18,7 @@ import io.grpc.MethodDescriptor;
  * outgoing requests. Cookie persistence is required for session stickiness on the load balanced
  * services.
  */
-final class CookieInterceptor implements ClientInterceptor {
+public final class CookieInterceptor implements ClientInterceptor {
     private final static String TAG = CookieInterceptor.class.getName();
 
     // metadata keys are case insensitive
@@ -73,7 +73,7 @@ final class CookieInterceptor implements ClientInterceptor {
         };
     }
 
-    synchronized String getServiceCookie() {
+    synchronized public String getServiceCookie() {
         return serviceCookie;
     }
 

@@ -1,6 +1,6 @@
 // Copyright (c) 2020-2021 MobileCoin. All rights reserved.
 
-package com.mobilecoin.lib;
+package com.mobilecoin.lib.network;
 
 import androidx.annotation.NonNull;
 
@@ -18,7 +18,7 @@ import io.grpc.MethodDescriptor;
 /**
  * AuthInterceptor intercepts GRPC API calls to adds basic authorization header
  */
-final class AuthInterceptor implements ClientInterceptor {
+public final class AuthInterceptor implements ClientInterceptor {
 
     // metadata keys are case insensitive
     static final Metadata.Key<String> AUTHORIZATION_HEADER_KEY = Metadata.Key.of(
@@ -34,7 +34,7 @@ final class AuthInterceptor implements ClientInterceptor {
      * Basic <credentials>, where credentials is the Base64 encoding of ID and password joined by a
      * single colon :
      */
-    void setAuthorization(
+    public void setAuthorization(
             @NonNull String username,
             @NonNull String password
     ) {

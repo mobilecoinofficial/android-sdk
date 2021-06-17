@@ -1,6 +1,6 @@
 package com.mobilecoin.lib;
 
-import com.mobilecoin.lib.uri.ConsensusUri;
+import com.mobilecoin.lib.network.uri.ConsensusUri;
 
 import org.junit.Assert;
 import org.junit.Test;

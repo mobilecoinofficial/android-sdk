@@ -9,14 +9,14 @@ import com.mobilecoin.api.MobileCoinAPI;
 import com.mobilecoin.lib.exceptions.AttestationException;
 import com.mobilecoin.lib.exceptions.NetworkException;
 import com.mobilecoin.lib.log.Logger;
-import com.mobilecoin.lib.uri.FogUri;
+import com.mobilecoin.lib.network.services.FogBlockService;
+import com.mobilecoin.lib.network.uri.FogUri;
 import com.mobilecoin.lib.util.NetworkingCall;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
-import fog_ledger.FogBlockAPIGrpc;
 import fog_ledger.Ledger;
 import fog_view.View;
 import io.grpc.StatusRuntimeException;
@@ -83,16 +83,15 @@ final class FogBlockClient extends AnyClient {
                 "range:", range);
         NetworkingCall<Ledger.BlockResponse> networkingCall;
         try {
-            FogBlockAPIGrpc.FogBlockAPIBlockingStub blockAPIStub =
-                    getAPIManager().getBlockAPIStub(getManagedChannel());
-
+            FogBlockService fogBlockService =
+                    getAPIManager().getFogBlockService(getNetworkTransport());
             Ledger.BlockRequest request = Ledger.BlockRequest.newBuilder()
                     .addRanges(range.toProtoBuf())
                     .build();
             networkingCall =
                     new NetworkingCall<>(() -> {
                         try {
-                            return blockAPIStub.getBlocks(request);
+                            return fogBlockService.getBlocks(request);
                         } catch (StatusRuntimeException exception) {
                             Logger.w(TAG, "Unable to post transaction with consensus", exception);
                             throw new NetworkException(exception);

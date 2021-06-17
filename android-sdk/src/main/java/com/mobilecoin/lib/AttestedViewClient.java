@@ -11,15 +11,15 @@ import com.mobilecoin.lib.exceptions.AttestationException;
 import com.mobilecoin.lib.exceptions.InvalidFogResponse;
 import com.mobilecoin.lib.exceptions.NetworkException;
 import com.mobilecoin.lib.log.Logger;
-import com.mobilecoin.lib.uri.FogUri;
+import com.mobilecoin.lib.network.services.FogViewService;
+import com.mobilecoin.lib.network.services.transport.Transport;
+import com.mobilecoin.lib.network.uri.FogUri;
 import com.mobilecoin.lib.util.NetworkingCall;
 
 import java.util.List;
 
 import attest.Attest;
-import fog_view.FogViewAPIGrpc;
 import fog_view.View;
-import io.grpc.ManagedChannel;
 import io.grpc.Status;
 import io.grpc.StatusRuntimeException;
 
@@ -63,19 +63,18 @@ final class AttestedViewClient extends AttestedClient {
      * If the attestation failed, the invalid intermediate state can be reset with {@link
      * AttestedClient#attestReset}
      *
-     * @param managedChannel a channel that requires attestation
+     * @param transport a channel that requires attestation
      */
     @Override
-    protected synchronized void attest(@NonNull ManagedChannel managedChannel)
+    protected synchronized void attest(@NonNull Transport transport)
             throws AttestationException, NetworkException {
         try {
             Logger.i(TAG, "Attest view connection");
             byte[] requestBytes = attestStart(getServiceUri());
-            FogViewAPIGrpc.FogViewAPIBlockingStub blockingRequest =
-                    getAPIManager().getFogViewAPIStub(managedChannel);
+            FogViewService fogViewService = getAPIManager().getFogViewService(getNetworkTransport());
             ByteString bytes = ByteString.copyFrom(requestBytes);
             Attest.AuthMessage authMessage = Attest.AuthMessage.newBuilder().setData(bytes).build();
-            Attest.AuthMessage response = blockingRequest.auth(authMessage);
+            Attest.AuthMessage response = fogViewService.auth(authMessage);
             attestFinish(response.getData().toByteArray(), getServiceConfig().getVerifier());
         } catch (StatusRuntimeException exception) {
             attestReset();
@@ -104,8 +103,7 @@ final class AttestedViewClient extends AttestedClient {
     synchronized View.QueryResponse request(
             @Nullable List<byte[]> getTxosKexRngOutputs
     ) throws InvalidFogResponse, AttestationException, NetworkException {
-        FogViewAPIGrpc.FogViewAPIBlockingStub view =
-                getAPIManager().getFogViewAPIStub(getManagedChannel());
+        FogViewService fogViewService = getAPIManager().getFogViewService(getNetworkTransport());
         View.QueryRequest.Builder requestBuilder = View.QueryRequest.newBuilder();
         View.QueryRequestAAD.Builder aadRequestBuilder = View.QueryRequestAAD.newBuilder();
         if (getTxosKexRngOutputs != null) {
@@ -121,7 +119,7 @@ final class AttestedViewClient extends AttestedClient {
         Attest.Message message = encryptMessage(requestBuilder.build(), aadRequestBuilder.build());
         NetworkingCall<View.QueryResponse> networkingCall = new NetworkingCall<>(() -> {
             try {
-                Attest.Message encryptedResponse = view.query(message);
+                Attest.Message encryptedResponse = fogViewService.query(message);
                 Attest.Message response = decryptMessage(encryptedResponse);
                 View.QueryResponse queryResponse = View.QueryResponse.parseFrom(response.getData());
                 lastKnownBlockIndex = queryResponse.getHighestProcessedBlockCount();

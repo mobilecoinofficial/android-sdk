@@ -16,6 +16,8 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import androidx.annotation.Nullable;
 
+import com.mobilecoin.lib.network.CookieInterceptor;
+
 import io.grpc.CallOptions;
 import io.grpc.Channel;
 import io.grpc.ClientCall;

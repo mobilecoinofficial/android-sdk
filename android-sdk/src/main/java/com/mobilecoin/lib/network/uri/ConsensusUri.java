@@ -1,6 +1,6 @@
 // Copyright (c) 2020-2021 MobileCoin. All rights reserved.
 
-package com.mobilecoin.lib.uri;
+package com.mobilecoin.lib.network.uri;
 
 import android.net.Uri;
 

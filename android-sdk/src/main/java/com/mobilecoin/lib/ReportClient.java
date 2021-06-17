@@ -9,13 +9,13 @@ import com.mobilecoin.lib.exceptions.AttestationException;
 import com.mobilecoin.lib.exceptions.InvalidFogResponse;
 import com.mobilecoin.lib.exceptions.NetworkException;
 import com.mobilecoin.lib.log.Logger;
-import com.mobilecoin.lib.uri.FogUri;
+import com.mobilecoin.lib.network.services.FogReportService;
+import com.mobilecoin.lib.network.uri.FogUri;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import io.grpc.StatusRuntimeException;
-import report.ReportAPIGrpc;
 import report.ReportOuterClass;
 
 /**
@@ -44,8 +44,8 @@ final class ReportClient extends AnyClient {
         Logger.i(TAG, "Retrieving the fog public key");
         ReportOuterClass.ReportRequest reportRequest =
                 ReportOuterClass.ReportRequest.newBuilder().build();
-        ReportAPIGrpc.ReportAPIBlockingStub service =
-                getAPIManager().getReportAPIStub(getManagedChannel());
+        FogReportService service =
+                getAPIManager().getFogReportService(getNetworkTransport());
         try {
             ReportOuterClass.ReportResponse response = service.getReports(reportRequest);
             List<ReportOuterClass.Report> protoReports = response.getReportsList();
