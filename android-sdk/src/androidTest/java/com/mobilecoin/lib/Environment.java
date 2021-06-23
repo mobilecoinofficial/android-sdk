@@ -8,7 +8,7 @@ import com.mobilecoin.lib.exceptions.InvalidUriException;
 
 @VisibleForTesting
 public class Environment {
-    public static final TestEnvironment CURRENT_TEST_ENV = TestEnvironment.ALPHA;
+    public static final TestEnvironment CURRENT_TEST_ENV = TestEnvironment.BUILD_TEST;
 
     static public MobileCoinClient makeFreshMobileCoinClient() throws InvalidUriException {
         AccountKey accountKey = TestKeysManager.getNextAccountKey();
@@ -39,6 +39,7 @@ public class Environment {
     }
 
     enum TestEnvironment {
+        BUILD_TEST("buildtest"),
         MOBILE_DEV("mobiledev"),
         ALPHA("alpha"),
         TEST_NET("test");

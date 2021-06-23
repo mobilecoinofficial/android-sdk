@@ -49,6 +49,7 @@ class TestKeysManager {
                 } catch (Exception exception) {
                     throw new IllegalStateException("Bug: All test keys must be valid");
                 }
+            case BUILD_TEST:
             case MOBILE_DEV:
             case ALPHA:
             default:
