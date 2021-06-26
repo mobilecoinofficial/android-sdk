@@ -3,11 +3,9 @@
 package com.mobilecoin.lib;
 
 import androidx.annotation.NonNull;
-
 import com.mobilecoin.lib.exceptions.InvalidFogResponse;
 import com.mobilecoin.lib.exceptions.TransactionBuilderException;
 import com.mobilecoin.lib.log.Logger;
-
 import java.io.ByteArrayInputStream;
 import java.math.BigInteger;
 import java.security.cert.Certificate;
@@ -54,6 +52,20 @@ final class Util extends Native {
         }
     }
 
+    @NonNull
+    public static RistrettoPublic getSharedSecret(
+        @NonNull RistrettoPrivate viewPrivateKey,
+        @NonNull RistrettoPublic txOutPublicKey
+    ) throws TransactionBuilderException {
+      Logger.i(TAG, "Retrieving shared secret", null, "txOut public:", txOutPublicKey);
+      try {
+        long rustObj = get_shared_secret(viewPrivateKey, txOutPublicKey);
+        return RistrettoPublic.fromJNI(rustObj);
+      } catch(Exception ex) {
+        throw new TransactionBuilderException(ex.getLocalizedMessage(), ex);
+      }
+    }
+
     // Used in tests
     public native static String bigint2string(@NonNull BigInteger value);
 
@@ -70,6 +82,11 @@ final class Util extends Native {
     private native static byte[] versioned_crypto_box_decrypt(
             @NonNull RistrettoPrivate viewKey,
             @NonNull byte[] cipherText
+    );
+
+    private native static long get_shared_secret(
+        @NonNull RistrettoPrivate viewPrivateKey,
+        @NonNull RistrettoPublic txOutPublicKey
     );
 
     static void logException(@NonNull String TAG, @NonNull Exception exception) {

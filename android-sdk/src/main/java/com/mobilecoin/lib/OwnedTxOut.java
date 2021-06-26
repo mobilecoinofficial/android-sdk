@@ -8,6 +8,7 @@ import androidx.annotation.Nullable;
 import com.mobilecoin.api.MobileCoinAPI;
 import com.mobilecoin.lib.exceptions.AmountDecoderException;
 import com.mobilecoin.lib.exceptions.SerializationException;
+import com.mobilecoin.lib.exceptions.TransactionBuilderException;
 import com.mobilecoin.lib.log.Logger;
 
 import java.io.Serializable;
@@ -68,9 +69,10 @@ public class OwnedTxOut implements Serializable {
                             .setData(txOutRecord.getTxOutTargetKeyData())
                             .build();
             txOutPublicKey = RistrettoPublic.fromProtoBufObject(txOutPublicKeyProto);
-            byte[] amountCommitment = txOutRecord.getTxOutAmountCommitmentData().toByteArray();
             long maskedValue = txOutRecord.getTxOutAmountMaskedValue();
-            Amount amount = new Amount(amountCommitment, maskedValue);
+            RistrettoPublic txOutSharedSecret =
+                Util.getSharedSecret(accountKey.getViewKey(), txOutPublicKey);
+            Amount amount = new Amount(txOutSharedSecret, maskedValue);
             value = amount.unmaskValue(
                     accountKey.getViewKey(),
                     txOutPublicKey
@@ -84,7 +86,7 @@ public class OwnedTxOut implements Serializable {
             // Calculated fields
             TxOut nativeTxOut = TxOut.fromProtoBufObject(txOutProto);
             keyImage = nativeTxOut.computeKeyImage(accountKey);
-        } catch (SerializationException | AmountDecoderException e) {
+        } catch (SerializationException | AmountDecoderException | TransactionBuilderException e) {
             IllegalArgumentException illegalArgumentException =
                     new IllegalArgumentException("Unable to decode the TxOutRecord", e);
             Util.logException(TAG, illegalArgumentException);

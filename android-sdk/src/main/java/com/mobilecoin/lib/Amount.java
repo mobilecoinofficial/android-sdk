@@ -44,6 +44,28 @@ final class Amount extends Native {
     }
 
     /**
+     * Constructs native Amount object from the txOutSharedSecret and masked value.
+     *
+     * @param txOutSharedSecret  A {@link RistrettoPrivate} representing the shared secret.
+     * @param maskedValue {@code masked_value = value XOR_8 Blake2B(value_mask || shared_secret)}
+     */
+    Amount(@NonNull RistrettoPublic txOutSharedSecret, long maskedValue) throws AmountDecoderException {
+        try {
+            init_jni_with_secret(
+                txOutSharedSecret,
+                maskedValue
+            );
+            byte[] amountBytes = get_bytes();
+            protoBufAmount = MobileCoinAPI.Amount.parseFrom(amountBytes);
+        } catch (Exception exception) {
+            AmountDecoderException amountDecoderException = new AmountDecoderException("Unable to" +
+                " initialize amount object", exception);
+            Util.logException(TAG, amountDecoderException);
+            throw amountDecoderException;
+        }
+    }
+
+    /**
      * Constructs native Amount object from the protocol buffer
      */
     Amount(@NonNull MobileCoinAPI.Amount amount) throws AmountDecoderException {
@@ -132,6 +154,13 @@ final class Amount extends Native {
             @NonNull byte[] commitment,
             long maskedValue
     );
+
+    private native void init_jni_with_secret(
+        @NonNull RistrettoPublic txOutSharedSecret,
+        long maskedValue
+    );
+
+    private native byte[] get_bytes();
 
     private native void finalize_jni();
 }
