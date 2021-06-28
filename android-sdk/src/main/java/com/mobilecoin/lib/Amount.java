@@ -46,7 +46,7 @@ final class Amount extends Native {
     /**
      * Constructs native Amount object from the txOutSharedSecret and masked value.
      *
-     * @param txOutSharedSecret  A {@link RistrettoPrivate} representing the shared secret.
+     * @param txOutSharedSecret  A {@link RistrettoPublic} representing the shared secret.
      * @param maskedValue {@code masked_value = value XOR_8 Blake2B(value_mask || shared_secret)}
      */
     Amount(@NonNull RistrettoPublic txOutSharedSecret, long maskedValue) throws AmountDecoderException {
