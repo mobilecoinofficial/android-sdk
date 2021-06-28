@@ -108,9 +108,9 @@ final class FogBlockClient extends AnyClient {
         } catch (Exception exception) {
             throw new IllegalStateException("BUG: unreachable code");
         }
-        List<Ledger.Block> blocks = response.getBlocksList();
+        List<Ledger.BlockData> blocks = response.getBlocksList();
         ArrayList<View.TxOutRecord> records = new ArrayList<>();
-        for (Ledger.Block block : blocks) {
+        for (Ledger.BlockData block : blocks) {
             long globalIndexStart = block.getGlobalTxoCount() - block.getOutputsCount();
             List<MobileCoinAPI.TxOut> outputs = block.getOutputsList();
             for (MobileCoinAPI.TxOut txOut : outputs) {
