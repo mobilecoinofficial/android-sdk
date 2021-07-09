@@ -36,11 +36,11 @@ import javax.net.ssl.TrustManagerFactory;
 import io.grpc.ManagedChannel;
 import io.grpc.okhttp.OkHttpChannelBuilder;
 
-class AnyClient<MobUri extends MobileCoinUri> extends Native {
+class AnyClient extends Native {
     private final static String TAG = AttestedClient.class.getName();
     // How long to wait for the managed connection to gracefully shutdown in milliseconds
     private final static long MANAGED_CONNECTION_SHUTDOWN_TIME_LIMIT = 1000;
-    private final MobUri serviceUri;
+    private final MobileCoinUri serviceUri;
     private final ClientConfig.Service serviceConfig;
     private final GRPCServiceAPIManager grpcApiManager;
     private final RestServiceAPIManager restApiManager;
@@ -54,7 +54,7 @@ class AnyClient<MobUri extends MobileCoinUri> extends Native {
      *
      * @param uri a complete {@link Uri} of the service including port.
      */
-    protected AnyClient(@NonNull MobUri uri, @NonNull ClientConfig.Service serviceConfig) {
+    protected AnyClient(@NonNull MobileCoinUri uri, @NonNull ClientConfig.Service serviceConfig) {
         this.serviceUri = uri;
         this.serviceConfig = serviceConfig;
         this.grpcApiManager = new GRPCServiceAPIManager();
@@ -99,7 +99,7 @@ class AnyClient<MobUri extends MobileCoinUri> extends Native {
     }
 
     @NonNull
-    final MobUri getServiceUri() {
+    final MobileCoinUri getServiceUri() {
         return serviceUri;
     }
 

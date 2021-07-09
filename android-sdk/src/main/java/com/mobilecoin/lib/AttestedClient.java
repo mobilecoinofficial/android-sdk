@@ -24,7 +24,7 @@ import io.grpc.ManagedChannel;
  * Base class for attested communication with View/Ledger/Consensus servers
  */
 
-abstract class AttestedClient<MobUri extends MobileCoinUri> extends AnyClient<MobUri> {
+abstract class AttestedClient extends AnyClient {
     private final static String TAG = AttestedClient.class.getName();
     // How long to wait for the managed connection to gracefully shutdown in milliseconds
 
@@ -34,7 +34,8 @@ abstract class AttestedClient<MobUri extends MobileCoinUri> extends AnyClient<Mo
      * @param uri           a complete {@link Uri} of the service including port.
      * @param serviceConfig service configuration passed to MobileCoinClient
      */
-    protected AttestedClient(@NonNull MobUri uri, @NonNull ClientConfig.Service serviceConfig) {
+    protected AttestedClient(@NonNull MobileCoinUri uri,
+                             @NonNull ClientConfig.Service serviceConfig) {
         super(uri, serviceConfig);
     }
 
@@ -156,16 +157,15 @@ abstract class AttestedClient<MobUri extends MobileCoinUri> extends AnyClient<Mo
      * @param serviceUri must include the port as well
      */
     @NonNull
-    protected byte[] attestStart(@NonNull MobUri mobileCoinUri) throws AttestationException {
+    protected byte[] attestStart(@NonNull MobileCoinUri serviceUri) throws AttestationException {
         Logger.i(TAG, "FFI: attest_start call");
         try {
             ResponderId responderId;
-            Uri serviceUri = mobileCoinUri.getUri();
-            String responderIdString = serviceUri.getQueryParameter("responder-id");
+            String responderIdString = serviceUri.getUri().getQueryParameter("responder-id");
             if (responderIdString != null && !responderIdString.isEmpty()) {
                 responderId = ResponderId.fromStringRepresentation(responderIdString);
             } else {
-                responderId = ResponderId.fromUri(serviceUri);
+                responderId = ResponderId.fromUri(serviceUri.getUri());
             }
             return attest_start(responderId);
         } catch (Exception exception) {

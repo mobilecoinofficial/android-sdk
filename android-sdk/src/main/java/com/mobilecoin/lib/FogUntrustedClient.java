@@ -22,7 +22,7 @@ import io.grpc.StatusRuntimeException;
  * Attested client for a ledger service Attestation is done automatically by the parent class {@link
  * AttestedClient}
  */
-final class FogUntrustedClient extends AnyClient<FogUri> {
+final class FogUntrustedClient extends AnyClient {
     private static final String TAG = AttestedLedgerClient.class.getName();
 
     /**

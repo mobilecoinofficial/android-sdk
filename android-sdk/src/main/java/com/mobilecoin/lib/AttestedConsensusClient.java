@@ -23,7 +23,7 @@ import io.grpc.StatusRuntimeException;
 /**
  * Attested client for a consensus service
  */
-final class AttestedConsensusClient extends AttestedClient<ConsensusUri> {
+final class AttestedConsensusClient extends AttestedClient {
     private static final String TAG = AttestedConsensusClient.class.getName();
 
     /**

@@ -33,7 +33,7 @@ import io.grpc.StatusRuntimeException;
  * Attested client for a ledger service Attestation is done automatically by the parent class {@link
  * AttestedClient}
  */
-final class AttestedLedgerClient extends AttestedClient<FogUri> {
+final class AttestedLedgerClient extends AttestedClient {
     private static final String TAG = AttestedLedgerClient.class.getName();
 
     /**
