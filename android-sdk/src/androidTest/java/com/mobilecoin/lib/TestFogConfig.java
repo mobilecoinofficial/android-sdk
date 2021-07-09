@@ -90,7 +90,7 @@ public class TestFogConfig {
                 testEnvironment.getName()
         ));
         final Uri consensusUri = Uri.parse(String.format(
-                "mc://consensus.%s.mobilecoin.com",
+                "mc://node1.%s.mobilecoin.com",
                 testEnvironment.getName()
         ));
 
