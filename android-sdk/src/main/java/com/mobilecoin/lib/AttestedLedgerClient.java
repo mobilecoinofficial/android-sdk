@@ -33,7 +33,7 @@ import io.grpc.StatusRuntimeException;
  * Attested client for a ledger service Attestation is done automatically by the parent class {@link
  * AttestedClient}
  */
-final class AttestedLedgerClient extends AttestedClient {
+final class AttestedLedgerClient extends AttestedClient<FogUri> {
     private static final String TAG = AttestedLedgerClient.class.getName();
 
     /**
@@ -44,7 +44,7 @@ final class AttestedLedgerClient extends AttestedClient {
      * @param serviceConfig service configuration passed to MobileCoinClient
      */
     AttestedLedgerClient(@NonNull FogUri uri, @NonNull ClientConfig.Service serviceConfig) {
-        super(uri.getUri(), serviceConfig);
+        super(uri, serviceConfig);
         Logger.i(TAG, "Created new AttestedLedgerClient", null,
                 "uri:", uri,
                 "verifier:", serviceConfig);

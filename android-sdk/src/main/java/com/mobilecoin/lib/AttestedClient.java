@@ -15,6 +15,7 @@ import com.mobilecoin.lib.log.Logger;
 import com.mobilecoin.lib.network.services.http.clients.RestClient;
 import com.mobilecoin.lib.network.services.transport.GRPCTransport;
 import com.mobilecoin.lib.network.services.transport.Transport;
+import com.mobilecoin.lib.network.uri.MobileCoinUri;
 
 import attest.Attest;
 import io.grpc.ManagedChannel;
@@ -23,7 +24,7 @@ import io.grpc.ManagedChannel;
  * Base class for attested communication with View/Ledger/Consensus servers
  */
 
-abstract class AttestedClient extends AnyClient {
+abstract class AttestedClient<MobUri extends MobileCoinUri> extends AnyClient<MobUri> {
     private final static String TAG = AttestedClient.class.getName();
     // How long to wait for the managed connection to gracefully shutdown in milliseconds
 
@@ -33,7 +34,7 @@ abstract class AttestedClient extends AnyClient {
      * @param uri           a complete {@link Uri} of the service including port.
      * @param serviceConfig service configuration passed to MobileCoinClient
      */
-    protected AttestedClient(@NonNull Uri uri, @NonNull ClientConfig.Service serviceConfig) {
+    protected AttestedClient(@NonNull MobUri uri, @NonNull ClientConfig.Service serviceConfig) {
         super(uri, serviceConfig);
     }
 
@@ -155,10 +156,11 @@ abstract class AttestedClient extends AnyClient {
      * @param serviceUri must include the port as well
      */
     @NonNull
-    protected byte[] attestStart(@NonNull Uri serviceUri) throws AttestationException {
+    protected byte[] attestStart(@NonNull MobUri mobileCoinUri) throws AttestationException {
         Logger.i(TAG, "FFI: attest_start call");
         try {
             ResponderId responderId;
+            Uri serviceUri = mobileCoinUri.getUri();
             String responderIdString = serviceUri.getQueryParameter("responder-id");
             if (responderIdString != null && !responderIdString.isEmpty()) {
                 responderId = ResponderId.fromStringRepresentation(responderIdString);

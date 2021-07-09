@@ -17,7 +17,7 @@ import java.time.LocalDateTime;
 import consensus_common.ConsensusCommon;
 import io.grpc.StatusRuntimeException;
 
-final class BlockchainClient extends AnyClient {
+final class BlockchainClient extends AnyClient<ConsensusUri> {
     private static final String TAG = BlockchainClient.class.getName();
     private static final BigInteger DEFAULT_TX_FEE = BigInteger.valueOf(10000000000L);
     private final Duration minimumFeeCacheTTL;
@@ -34,7 +34,7 @@ final class BlockchainClient extends AnyClient {
     BlockchainClient(@NonNull ConsensusUri uri,
                      @NonNull ClientConfig.Service serviceConfig,
                      @NonNull Duration minimumFeeCacheTTL) {
-        super(uri.getUri(), serviceConfig);
+        super(uri, serviceConfig);
         this.minimumFeeCacheTTL = minimumFeeCacheTTL;
     }
 

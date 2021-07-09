@@ -21,7 +21,7 @@ import report.ReportOuterClass;
 /**
  * ReportClient
  */
-final class ReportClient extends AnyClient {
+final class ReportClient extends AnyClient<FogUri> {
     private static final String TAG = ReportClient.class.getName();
 
     /**
@@ -30,7 +30,7 @@ final class ReportClient extends AnyClient {
      * @param uri address of the service.
      */
     ReportClient(@NonNull FogUri uri, @NonNull ClientConfig.Service serviceConfig) {
-        super(uri.getUri(), serviceConfig);
+        super(uri, serviceConfig);
     }
 
     /**

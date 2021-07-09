@@ -27,7 +27,7 @@ import io.grpc.StatusRuntimeException;
  * Attested client for a Fog View service Attestation is done automatically by the parent class
  * {@link AttestedClient}
  */
-final class AttestedViewClient extends AttestedClient {
+final class AttestedViewClient extends AttestedClient<FogUri> {
     private static final String TAG = AttestedViewClient.class.getName();
 
     // The last event id serves as a cursor
@@ -43,7 +43,7 @@ final class AttestedViewClient extends AttestedClient {
      * @param serviceConfig service configuration passed to MobileCoinClient
      */
     AttestedViewClient(@NonNull FogUri uri, @NonNull ClientConfig.Service serviceConfig) {
-        super(uri.getUri(), serviceConfig);
+        super(uri, serviceConfig);
         Logger.i(TAG, "Created new AttestedViewClient", null,
                 "uri:", uri,
                 "verifier:", serviceConfig);
