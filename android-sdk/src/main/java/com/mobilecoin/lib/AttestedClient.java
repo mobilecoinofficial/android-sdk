@@ -15,6 +15,7 @@ import com.mobilecoin.lib.log.Logger;
 import com.mobilecoin.lib.network.services.http.clients.RestClient;
 import com.mobilecoin.lib.network.services.transport.GRPCTransport;
 import com.mobilecoin.lib.network.services.transport.Transport;
+import com.mobilecoin.lib.network.uri.MobileCoinUri;
 
 import attest.Attest;
 import io.grpc.ManagedChannel;
@@ -33,7 +34,8 @@ abstract class AttestedClient extends AnyClient {
      * @param uri           a complete {@link Uri} of the service including port.
      * @param serviceConfig service configuration passed to MobileCoinClient
      */
-    protected AttestedClient(@NonNull Uri uri, @NonNull ClientConfig.Service serviceConfig) {
+    protected AttestedClient(@NonNull MobileCoinUri uri,
+                             @NonNull ClientConfig.Service serviceConfig) {
         super(uri, serviceConfig);
     }
 
@@ -155,15 +157,15 @@ abstract class AttestedClient extends AnyClient {
      * @param serviceUri must include the port as well
      */
     @NonNull
-    protected byte[] attestStart(@NonNull Uri serviceUri) throws AttestationException {
+    protected byte[] attestStart(@NonNull MobileCoinUri serviceUri) throws AttestationException {
         Logger.i(TAG, "FFI: attest_start call");
         try {
             ResponderId responderId;
-            String responderIdString = serviceUri.getQueryParameter("responder-id");
+            String responderIdString = serviceUri.getUri().getQueryParameter("responder-id");
             if (responderIdString != null && !responderIdString.isEmpty()) {
                 responderId = ResponderId.fromStringRepresentation(responderIdString);
             } else {
-                responderId = ResponderId.fromUri(serviceUri);
+                responderId = ResponderId.fromUri(serviceUri.getUri());
             }
             return attest_start(responderId);
         } catch (Exception exception) {

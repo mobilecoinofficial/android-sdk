@@ -44,7 +44,7 @@ final class AttestedLedgerClient extends AttestedClient {
      * @param serviceConfig service configuration passed to MobileCoinClient
      */
     AttestedLedgerClient(@NonNull FogUri uri, @NonNull ClientConfig.Service serviceConfig) {
-        super(uri.getUri(), serviceConfig);
+        super(uri, serviceConfig);
         Logger.i(TAG, "Created new AttestedLedgerClient", null,
                 "uri:", uri,
                 "verifier:", serviceConfig);

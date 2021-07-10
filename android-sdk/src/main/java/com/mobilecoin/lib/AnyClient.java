@@ -16,6 +16,7 @@ import com.mobilecoin.lib.network.services.ServiceAPIManager;
 import com.mobilecoin.lib.network.services.http.Requester;
 import com.mobilecoin.lib.network.services.http.clients.RestClient;
 import com.mobilecoin.lib.network.services.transport.Transport;
+import com.mobilecoin.lib.network.uri.MobileCoinUri;
 
 import java.io.IOException;
 import java.security.KeyManagementException;
@@ -39,7 +40,7 @@ class AnyClient extends Native {
     private final static String TAG = AttestedClient.class.getName();
     // How long to wait for the managed connection to gracefully shutdown in milliseconds
     private final static long MANAGED_CONNECTION_SHUTDOWN_TIME_LIMIT = 1000;
-    private final Uri serviceUri;
+    private final MobileCoinUri serviceUri;
     private final ClientConfig.Service serviceConfig;
     private final GRPCServiceAPIManager grpcApiManager;
     private final RestServiceAPIManager restApiManager;
@@ -53,7 +54,7 @@ class AnyClient extends Native {
      *
      * @param uri a complete {@link Uri} of the service including port.
      */
-    protected AnyClient(@NonNull Uri uri, @NonNull ClientConfig.Service serviceConfig) {
+    protected AnyClient(@NonNull MobileCoinUri uri, @NonNull ClientConfig.Service serviceConfig) {
         this.serviceUri = uri;
         this.serviceConfig = serviceConfig;
         this.grpcApiManager = new GRPCServiceAPIManager();
@@ -98,7 +99,7 @@ class AnyClient extends Native {
     }
 
     @NonNull
-    final Uri getServiceUri() {
+    final MobileCoinUri getServiceUri() {
         return serviceUri;
     }
 
@@ -115,7 +116,7 @@ class AnyClient extends Native {
             if (null == httpRequester) {
                 throw new IllegalArgumentException("HttpRequester was not properly set");
             }
-            restClient = new RestClient(getServiceUri(), httpRequester);
+            restClient = new RestClient(getServiceUri().getUri(), httpRequester);
         }
         return restClient;
     }
@@ -128,10 +129,14 @@ class AnyClient extends Native {
                 Logger.i(TAG, "Managed channel does not exist: creating one");
                 OkHttpChannelBuilder managedChannelBuilder = OkHttpChannelBuilder
                         .forAddress(
-                                serviceUri.getHost(),
-                                serviceUri.getPort()
-                        )
-                        .useTransportSecurity();
+                                serviceUri.getUri().getHost(),
+                                serviceUri.getUri().getPort()
+                        );
+                if (getServiceUri().isTlsEnabled()) {
+                    managedChannelBuilder.useTransportSecurity();
+                } else {
+                    managedChannelBuilder.usePlaintext();
+                }
                 Set<X509Certificate> trustRoots = getServiceConfig().getTrustRoots();
                 if (trustRoots != null && trustRoots.size() > 0) {
                     KeyStore caKeyStore = getTrustRootsKeyStore(trustRoots);

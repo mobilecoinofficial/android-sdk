@@ -30,7 +30,7 @@ final class ReportClient extends AnyClient {
      * @param uri address of the service.
      */
     ReportClient(@NonNull FogUri uri, @NonNull ClientConfig.Service serviceConfig) {
-        super(uri.getUri(), serviceConfig);
+        super(uri, serviceConfig);
     }
 
     /**

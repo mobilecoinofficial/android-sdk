@@ -43,7 +43,7 @@ final class AttestedViewClient extends AttestedClient {
      * @param serviceConfig service configuration passed to MobileCoinClient
      */
     AttestedViewClient(@NonNull FogUri uri, @NonNull ClientConfig.Service serviceConfig) {
-        super(uri.getUri(), serviceConfig);
+        super(uri, serviceConfig);
         Logger.i(TAG, "Created new AttestedViewClient", null,
                 "uri:", uri,
                 "verifier:", serviceConfig);

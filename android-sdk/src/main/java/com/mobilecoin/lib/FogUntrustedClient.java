@@ -33,7 +33,7 @@ final class FogUntrustedClient extends AnyClient {
      * @param serviceConfig service configuration passed to MobileCoinClient
      */
     FogUntrustedClient(@NonNull FogUri uri, @NonNull ClientConfig.Service serviceConfig) {
-        super(uri.getUri(), serviceConfig);
+        super(uri, serviceConfig);
         Logger.i(TAG, "Created new FogUntrustedClient", null,
                 "uri:", uri,
                 "verifier:", serviceConfig);

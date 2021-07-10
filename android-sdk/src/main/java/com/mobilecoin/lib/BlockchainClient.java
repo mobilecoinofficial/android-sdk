@@ -34,7 +34,7 @@ final class BlockchainClient extends AnyClient {
     BlockchainClient(@NonNull ConsensusUri uri,
                      @NonNull ClientConfig.Service serviceConfig,
                      @NonNull Duration minimumFeeCacheTTL) {
-        super(uri.getUri(), serviceConfig);
+        super(uri, serviceConfig);
         this.minimumFeeCacheTTL = minimumFeeCacheTTL;
     }
 

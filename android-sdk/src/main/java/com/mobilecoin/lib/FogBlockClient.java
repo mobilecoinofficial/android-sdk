@@ -36,7 +36,7 @@ final class FogBlockClient extends AnyClient {
      * @param serviceConfig service configuration passed to MobileCoinClient
      */
     FogBlockClient(@NonNull FogUri uri, @NonNull ClientConfig.Service serviceConfig) {
-        super(uri.getUri(), serviceConfig);
+        super(uri, serviceConfig);
         Logger.i(TAG, "Created new FogBlockClient", null,
                 "uri:", uri,
                 "verifier:", serviceConfig);

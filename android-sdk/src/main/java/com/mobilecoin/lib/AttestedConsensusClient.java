@@ -35,7 +35,7 @@ final class AttestedConsensusClient extends AttestedClient {
      */
     AttestedConsensusClient(@NonNull ConsensusUri uri,
                             @NonNull ClientConfig.Service serviceConfig) {
-        super(uri.getUri(), serviceConfig);
+        super(uri, serviceConfig);
         Logger.i(TAG, "Created new AttestedConsensusClient", null,
                 "uri:", uri,
                 "verifier:", serviceConfig);
