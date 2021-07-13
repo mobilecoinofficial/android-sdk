@@ -113,12 +113,12 @@ final class AttestedLedgerClient extends AttestedClient {
                 Ledger.GetOutputsRequest.newBuilder().addAllIndices(
                         indexes.stream().map(UnsignedLong::longValue).collect(Collectors.toList()))
                         .setMerkleRootBlock(merkleRootBlock).build();
-        Attest.Message message = encryptMessage(request);
         NetworkingCall<Ledger.GetOutputsResponse> networkingCall =
                 new NetworkingCall<>(() -> {
                     try {
                         FogMerkleProofService fogMerkleProofService =
                                 getAPIManager().getFogMerkleProofService(getNetworkTransport());
+                        Attest.Message message = encryptMessage(request);
                         Attest.Message responseMessage = fogMerkleProofService.getOutputs(message);
                         Attest.Message response = decryptMessage(responseMessage);
                         return Ledger.GetOutputsResponse.parseFrom(response.getData());
@@ -163,12 +163,12 @@ final class AttestedLedgerClient extends AttestedClient {
         Ledger.CheckKeyImagesRequest imagesRequest =
                 Ledger.CheckKeyImagesRequest.newBuilder().addAllQueries(keyImageQueries)
                         .build();
-        Attest.Message encryptedRequest = encryptMessage(imagesRequest);
         NetworkingCall<Ledger.CheckKeyImagesResponse> networkingCall =
                 new NetworkingCall<>(() -> {
                     try {
                         FogKeyImageService fogKeyImageService =
                                 getAPIManager().getFogKeyImageService(getNetworkTransport());
+                        Attest.Message encryptedRequest = encryptMessage(imagesRequest);
                         Attest.Message encryptedResponse = fogKeyImageService.checkKeyImages(encryptedRequest);
                         Attest.Message response = decryptMessage(encryptedResponse);
                         return Ledger.CheckKeyImagesResponse.parseFrom(response.getData().toByteArray());

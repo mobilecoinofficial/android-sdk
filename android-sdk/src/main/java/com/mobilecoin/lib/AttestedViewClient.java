@@ -116,10 +116,10 @@ final class AttestedViewClient extends AttestedClient {
         aadRequestBuilder.setStartFromUserEventId(lastKnownEventId);
         aadRequestBuilder.setStartFromBlockIndex(lastKnownBlockIndex);
 
-        Attest.Message message = encryptMessage(requestBuilder.build(), aadRequestBuilder.build());
         NetworkingCall<View.QueryResponse> networkingCall = new NetworkingCall<>(() -> {
             try {
                 FogViewService fogViewService = getAPIManager().getFogViewService(getNetworkTransport());
+                Attest.Message message = encryptMessage(requestBuilder.build(), aadRequestBuilder.build());
                 Attest.Message encryptedResponse = fogViewService.query(message);
                 Attest.Message response = decryptMessage(encryptedResponse);
                 View.QueryResponse queryResponse = View.QueryResponse.parseFrom(response.getData());
