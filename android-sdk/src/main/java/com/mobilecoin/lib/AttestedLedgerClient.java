@@ -109,16 +109,16 @@ final class AttestedLedgerClient extends AttestedClient {
             long merkleRootBlock
     ) throws InvalidFogResponse, AttestationException, NetworkException {
         Logger.i(TAG, "Retrieving outputs");
-        FogMerkleProofService fogMerkleProofService =
-                getAPIManager().getFogMerkleProofService(getNetworkTransport());
         Ledger.GetOutputsRequest request =
                 Ledger.GetOutputsRequest.newBuilder().addAllIndices(
                         indexes.stream().map(UnsignedLong::longValue).collect(Collectors.toList()))
                         .setMerkleRootBlock(merkleRootBlock).build();
-        Attest.Message message = encryptMessage(request);
         NetworkingCall<Ledger.GetOutputsResponse> networkingCall =
                 new NetworkingCall<>(() -> {
                     try {
+                        FogMerkleProofService fogMerkleProofService =
+                                getAPIManager().getFogMerkleProofService(getNetworkTransport());
+                        Attest.Message message = encryptMessage(request);
                         Attest.Message responseMessage = fogMerkleProofService.getOutputs(message);
                         Attest.Message response = decryptMessage(responseMessage);
                         return Ledger.GetOutputsResponse.parseFrom(response.getData());
@@ -126,6 +126,7 @@ final class AttestedLedgerClient extends AttestedClient {
                         attestReset();
                         throw new NetworkException(exception);
                     } catch (InvalidProtocolBufferException exception) {
+                        attestReset();
                         throw new InvalidFogResponse("GetOutputsResponse contains invalid data",
                                 exception);
                     }
@@ -133,6 +134,7 @@ final class AttestedLedgerClient extends AttestedClient {
         try {
             return networkingCall.run();
         } catch (InvalidFogResponse | AttestationException | NetworkException | RuntimeException exception) {
+            attestReset();
             Util.logException(TAG, exception);
             throw exception;
         } catch (Exception exception) {
@@ -151,8 +153,6 @@ final class AttestedLedgerClient extends AttestedClient {
     ) throws InvalidFogResponse, AttestationException, NetworkException {
         Logger.i(TAG, "Checking key images", null,
                 "size:", keyImages.size());
-        FogKeyImageService fogKeyImageService =
-                getAPIManager().getFogKeyImageService(getNetworkTransport());
         ArrayList<Ledger.KeyImageQuery> keyImageQueries = new ArrayList<>();
         for (KeyImage keyImage : keyImages) {
             Ledger.KeyImageQuery query = Ledger.KeyImageQuery.newBuilder()
@@ -163,14 +163,17 @@ final class AttestedLedgerClient extends AttestedClient {
         Ledger.CheckKeyImagesRequest imagesRequest =
                 Ledger.CheckKeyImagesRequest.newBuilder().addAllQueries(keyImageQueries)
                         .build();
-        Attest.Message encryptedRequest = encryptMessage(imagesRequest);
         NetworkingCall<Ledger.CheckKeyImagesResponse> networkingCall =
                 new NetworkingCall<>(() -> {
                     try {
+                        FogKeyImageService fogKeyImageService =
+                                getAPIManager().getFogKeyImageService(getNetworkTransport());
+                        Attest.Message encryptedRequest = encryptMessage(imagesRequest);
                         Attest.Message encryptedResponse = fogKeyImageService.checkKeyImages(encryptedRequest);
                         Attest.Message response = decryptMessage(encryptedResponse);
                         return Ledger.CheckKeyImagesResponse.parseFrom(response.getData().toByteArray());
                     } catch (InvalidProtocolBufferException exception) {
+                        attestReset();
                         throw new InvalidFogResponse(
                                 "CheckKeyImagesResponse contains invalid data", exception);
                     } catch (StatusRuntimeException exception) {
@@ -181,6 +184,7 @@ final class AttestedLedgerClient extends AttestedClient {
         try {
             return networkingCall.run();
         } catch (InvalidFogResponse | AttestationException | NetworkException | RuntimeException exception) {
+            attestReset();
             Util.logException(TAG, exception);
             throw exception;
         } catch (Exception exception) {

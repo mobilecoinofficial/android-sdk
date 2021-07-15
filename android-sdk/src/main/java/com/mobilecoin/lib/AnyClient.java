@@ -98,6 +98,10 @@ class AnyClient extends Native {
         return networkTransport;
     }
 
+    protected synchronized void resetNetworkTransport() {
+       networkTransport = null;
+    }
+
     @NonNull
     final MobileCoinUri getServiceUri() {
         return serviceUri;

@@ -87,6 +87,7 @@ final class AttestedViewClient extends AttestedClient {
             Logger.w(TAG, "Failed to attest the fog view connection", exception);
             throw new NetworkException(exception);
         } catch (Exception exception) {
+            attestReset();
             AttestationException attestationException =
                     new AttestationException("Failed to attest the fog view connection", exception);
             Util.logException(TAG, attestationException);
@@ -103,7 +104,6 @@ final class AttestedViewClient extends AttestedClient {
     synchronized View.QueryResponse request(
             @Nullable List<byte[]> getTxosKexRngOutputs
     ) throws InvalidFogResponse, AttestationException, NetworkException {
-        FogViewService fogViewService = getAPIManager().getFogViewService(getNetworkTransport());
         View.QueryRequest.Builder requestBuilder = View.QueryRequest.newBuilder();
         View.QueryRequestAAD.Builder aadRequestBuilder = View.QueryRequestAAD.newBuilder();
         if (getTxosKexRngOutputs != null) {
@@ -116,9 +116,10 @@ final class AttestedViewClient extends AttestedClient {
         aadRequestBuilder.setStartFromUserEventId(lastKnownEventId);
         aadRequestBuilder.setStartFromBlockIndex(lastKnownBlockIndex);
 
-        Attest.Message message = encryptMessage(requestBuilder.build(), aadRequestBuilder.build());
         NetworkingCall<View.QueryResponse> networkingCall = new NetworkingCall<>(() -> {
             try {
+                FogViewService fogViewService = getAPIManager().getFogViewService(getNetworkTransport());
+                Attest.Message message = encryptMessage(requestBuilder.build(), aadRequestBuilder.build());
                 Attest.Message encryptedResponse = fogViewService.query(message);
                 Attest.Message response = decryptMessage(encryptedResponse);
                 View.QueryResponse queryResponse = View.QueryResponse.parseFrom(response.getData());
@@ -138,6 +139,7 @@ final class AttestedViewClient extends AttestedClient {
         try {
             return networkingCall.run();
         } catch (InvalidFogResponse | AttestationException | NetworkException | RuntimeException exception) {
+            attestReset();
             Util.logException(TAG, exception);
             throw exception;
         } catch (Exception exception) {

@@ -80,6 +80,7 @@ final class AttestedConsensusClient extends AttestedClient {
             Util.logException(TAG, networkException);
             throw networkException;
         } catch (Exception exception) {
+            attestReset();
             AttestationException attestationException = new AttestationException("Failed to" +
                     " attest the consensus connection", exception);
             Util.logException(TAG, attestationException);
@@ -110,6 +111,7 @@ final class AttestedConsensusClient extends AttestedClient {
         try {
             return networkingCall.run();
         } catch (AttestationException | NetworkException | RuntimeException exception) {
+            attestReset();
             Util.logException(TAG, exception);
             throw exception;
         } catch (Exception exception) {

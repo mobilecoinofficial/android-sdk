@@ -208,6 +208,7 @@ abstract class AttestedClient extends AnyClient {
      */
     protected synchronized void attestReset() {
         Logger.i(TAG, "Reset attested state");
+        resetNetworkTransport();
         if (rustObj != 0) {
             try {
                 finalize_jni();
