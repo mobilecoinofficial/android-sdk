@@ -124,15 +124,15 @@ final class FogSeed implements Serializable {
         return utxos;
     }
 
-    public long getIngestInvocationId() {
+    long getIngestInvocationId() {
         return ingestInvocationId;
     }
 
-    public boolean isObsolete() {
+    boolean isObsolete() {
         return isObsolete;
     }
 
-    public void markObsolete() {
+    void markObsolete() {
         isObsolete = true;
     }
 
