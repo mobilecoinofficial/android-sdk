@@ -29,8 +29,8 @@ final class FogSeed implements Serializable {
     // Data that comes straight from fog.
     private byte[] nonce;
     private int rngVersion;
-    // True if the seed is decommissioned and all utxos have been retrieved.
-    private boolean isDeprecated;
+    // True if the seed is (a) decommissioned and (b) all utxos have been retrieved.
+    private boolean isObsolete;
     private UnsignedLong startBlock;
     private ArrayList<OwnedTxOut> utxos;
 
@@ -128,12 +128,12 @@ final class FogSeed implements Serializable {
         return ingestInvocationId;
     }
 
-    public boolean isDeprecated() {
-        return isDeprecated;
+    public boolean isObsolete() {
+        return isObsolete;
     }
 
-    public void deprecate() {
-        isDeprecated = true;
+    public void markObsolete() {
+        isObsolete = true;
     }
 
 

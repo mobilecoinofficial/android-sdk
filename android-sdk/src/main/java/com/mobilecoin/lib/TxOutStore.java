@@ -197,7 +197,7 @@ final class TxOutStore implements Serializable {
             boolean allTXOsRetrieved = false;
             do {
                 List<byte[]> searchKeys = null;
-                if (seed != null && !seed.isDeprecated()) {
+                if (seed != null && !seed.isObsolete()) {
                     searchKeys = Arrays.asList(seed.getNextN(scalingStrategy.nextQuerySize()));
                 } else {
                     allTXOsRetrieved = true;
@@ -282,7 +282,7 @@ final class TxOutStore implements Serializable {
                         case View.TxOutSearchResultCode.NotFound_VALUE: {
                             allTXOsRetrieved = true;
                             if (isSeedDecommissioned(seed)) {
-                                seed.deprecate();
+                                seed.markObsolete();
                             }
                             long blockCount = result.getHighestProcessedBlockCount();
                             viewBlockIndex = (blockCount != 0)
