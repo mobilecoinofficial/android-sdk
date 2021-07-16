@@ -380,6 +380,7 @@ final class TxOutStore implements Serializable {
         out.writeObject(viewBlockIndex);
         out.writeObject(ledgerTotalTxCount);
         out.writeObject(seeds);
+        out.writeObject(decommissionedIngestInvocationIds);
         out.writeObject(recoveredTxOuts);
     }
 
@@ -390,6 +391,7 @@ final class TxOutStore implements Serializable {
         viewBlockIndex = (UnsignedLong) in.readObject();
         ledgerTotalTxCount = (UnsignedLong) in.readObject();
         seeds = (HashMap<Integer, FogSeed>) in.readObject();
+        decommissionedIngestInvocationIds = (Set<Long>) in.readObject();
         recoveredTxOuts = new ConcurrentLinkedQueue<>();
     }
 }

@@ -23,7 +23,6 @@ final class FogSeed implements Serializable {
     // Bump serial version and read/write code if fields change
     private static final long serialVersionUID = 1L;
 
-    private final long ingestInvocationId;
     // RNG
     private final ClientKexRng kexRng;
     // Data that comes straight from fog.
@@ -31,6 +30,7 @@ final class FogSeed implements Serializable {
     private int rngVersion;
     // True if the seed is (a) decommissioned and (b) all utxos have been retrieved.
     private boolean isObsolete;
+    private long ingestInvocationId;
     private UnsignedLong startBlock;
     private ArrayList<OwnedTxOut> utxos;
 
@@ -143,6 +143,7 @@ final class FogSeed implements Serializable {
         out.writeInt(rngVersion);
         out.writeObject(startBlock);
         out.writeObject(utxos);
+        out.writeObject(ingestInvocationId);
     }
 
     @SuppressWarnings("unchecked")
@@ -156,5 +157,6 @@ final class FogSeed implements Serializable {
         rngVersion = in.readInt();
         startBlock = (UnsignedLong) in.readObject();
         utxos = (ArrayList<OwnedTxOut>) in.readObject();
+        ingestInvocationId = in.readLong();
     }
 }
