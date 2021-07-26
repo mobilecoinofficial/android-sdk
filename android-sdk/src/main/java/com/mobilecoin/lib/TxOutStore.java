@@ -4,7 +4,6 @@ package com.mobilecoin.lib;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.mobilecoin.lib.exceptions.AttestationException;
 import com.mobilecoin.lib.exceptions.InvalidFogResponse;
@@ -13,7 +12,10 @@ import com.mobilecoin.lib.exceptions.NetworkException;
 import com.mobilecoin.lib.exceptions.SerializationException;
 import com.mobilecoin.lib.log.Logger;
 import com.mobilecoin.lib.util.Hex;
-
+import fog_common.FogCommon;
+import fog_ledger.Ledger;
+import fog_view.View;
+import fog_view.View.DecommissionedIngestInvocation;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -34,10 +36,6 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
-import fog_common.FogCommon;
-import fog_ledger.Ledger;
-import fog_view.View;
-
 final class TxOutStore implements Serializable {
     private static final String TAG = TxOutStore.class.getName();
 
@@ -46,6 +44,8 @@ final class TxOutStore implements Serializable {
 
     // A map of nonce -> Seed.
     private HashMap<Integer, FogSeed> seeds;
+
+    private Set<Long> decommissionedIngestInvocationIds;
     // AccountKey.
     private AccountKey accountKey;
     // Block index reported from ledger server.
@@ -59,6 +59,7 @@ final class TxOutStore implements Serializable {
 
     TxOutStore(@NonNull AccountKey accountKey) {
         this.seeds = new HashMap<>();
+        this.decommissionedIngestInvocationIds = new HashSet<>();
         this.accountKey = accountKey;
         this.ledgerBlockIndex = UnsignedLong.ZERO;
         this.viewBlockIndex = UnsignedLong.ZERO;
@@ -196,12 +197,16 @@ final class TxOutStore implements Serializable {
             boolean allTXOsRetrieved = false;
             do {
                 List<byte[]> searchKeys = null;
-                if (seed != null) {
+                if (seed != null && !seed.isObsolete()) {
                     searchKeys = Arrays.asList(seed.getNextN(scalingStrategy.nextQuerySize()));
                 } else {
                     allTXOsRetrieved = true;
                 }
                 View.QueryResponse result = viewClient.request(searchKeys);
+                for (DecommissionedIngestInvocation decommissionedIngestInvocation : result
+                    .getDecommissionedIngestInvocationsList()) {
+                  decommissionedIngestInvocationIds.add(decommissionedIngestInvocation.getIngestInvocationId());
+                }
                 for (FogCommon.BlockRange fogRange : result.getMissedBlockRangesList()) {
                     BlockRange range = new BlockRange(fogRange);
                     missedRanges.add(range);
@@ -276,6 +281,9 @@ final class TxOutStore implements Serializable {
                         }
                         case View.TxOutSearchResultCode.NotFound_VALUE: {
                             allTXOsRetrieved = true;
+                            if (isSeedDecommissioned(seed)) {
+                                seed.markObsolete();
+                            }
                             long blockCount = result.getHighestProcessedBlockCount();
                             viewBlockIndex = (blockCount != 0)
                                     ? UnsignedLong.fromLongBits(blockCount).sub(UnsignedLong.ONE)
@@ -289,6 +297,10 @@ final class TxOutStore implements Serializable {
             } while (!allTXOsRetrieved);
         } while (pendingSeeds.size() > 0);
         return missedRanges;
+    }
+
+    private boolean isSeedDecommissioned(FogSeed seed) {
+      return decommissionedIngestInvocationIds.contains(seed.getIngestInvocationId());
     }
 
     void updateTxOutsSpentState(Ledger.CheckKeyImagesResponse keyImagesResponse) throws InvalidFogResponse {
@@ -368,6 +380,7 @@ final class TxOutStore implements Serializable {
         out.writeObject(viewBlockIndex);
         out.writeObject(ledgerTotalTxCount);
         out.writeObject(seeds);
+        out.writeObject(decommissionedIngestInvocationIds);
         out.writeObject(recoveredTxOuts);
     }
 
@@ -378,6 +391,7 @@ final class TxOutStore implements Serializable {
         viewBlockIndex = (UnsignedLong) in.readObject();
         ledgerTotalTxCount = (UnsignedLong) in.readObject();
         seeds = (HashMap<Integer, FogSeed>) in.readObject();
+        decommissionedIngestInvocationIds = (Set<Long>) in.readObject();
         recoveredTxOuts = new ConcurrentLinkedQueue<>();
     }
 }

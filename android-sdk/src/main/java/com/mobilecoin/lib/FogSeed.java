@@ -22,11 +22,15 @@ final class FogSeed implements Serializable {
 
     // Bump serial version and read/write code if fields change
     private static final long serialVersionUID = 1L;
+
     // RNG
     private final ClientKexRng kexRng;
     // Data that comes straight from fog.
     private byte[] nonce;
     private int rngVersion;
+    // True if the seed is (a) decommissioned and (b) all utxos have been retrieved.
+    private boolean isObsolete;
+    private long ingestInvocationId;
     private UnsignedLong startBlock;
     private ArrayList<OwnedTxOut> utxos;
 
@@ -35,6 +39,7 @@ final class FogSeed implements Serializable {
             @NonNull View.RngRecord rngRecord
     ) throws KexRngException {
         Logger.i(TAG, "Initializing Fog Seed");
+        ingestInvocationId = rngRecord.getIngestInvocationId();
         nonce = rngRecord.getPubkey().getPubkey().toByteArray();
         rngVersion = rngRecord.getPubkey().getVersion();
         startBlock = UnsignedLong.fromLongBits(rngRecord.getStartBlock());
@@ -119,12 +124,26 @@ final class FogSeed implements Serializable {
         return utxos;
     }
 
+    long getIngestInvocationId() {
+        return ingestInvocationId;
+    }
+
+    boolean isObsolete() {
+        return isObsolete;
+    }
+
+    void markObsolete() {
+        isObsolete = true;
+    }
+
+
     private void writeObject(ObjectOutputStream out) throws IOException {
         out.write(nonce.length);
         out.write(nonce);
         out.writeInt(rngVersion);
         out.writeObject(startBlock);
         out.writeObject(utxos);
+        out.writeLong(ingestInvocationId);
     }
 
     @SuppressWarnings("unchecked")
@@ -138,5 +157,6 @@ final class FogSeed implements Serializable {
         rngVersion = in.readInt();
         startBlock = (UnsignedLong) in.readObject();
         utxos = (ArrayList<OwnedTxOut>) in.readObject();
+        ingestInvocationId = in.readLong();
     }
 }
