@@ -143,7 +143,7 @@ final class FogSeed implements Serializable {
         out.writeInt(rngVersion);
         out.writeObject(startBlock);
         out.writeObject(utxos);
-        out.writeObject(ingestInvocationId);
+        out.writeLong(ingestInvocationId);
     }
 
     @SuppressWarnings("unchecked")
