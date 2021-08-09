@@ -30,12 +30,6 @@ import io.grpc.StatusRuntimeException;
 final class AttestedViewClient extends AttestedClient {
     private static final String TAG = AttestedViewClient.class.getName();
 
-    // The last event id serves as a cursor
-    private long lastKnownEventId;
-
-    // The last block index of the already downloaded TXOs
-    private long lastKnownBlockIndex;
-
     /**
      * Creates and initializes an instance of {@link AttestedViewClient}
      *
@@ -102,7 +96,7 @@ final class AttestedViewClient extends AttestedClient {
      */
     @NonNull
     synchronized View.QueryResponse request(
-            @Nullable List<byte[]> getTxosKexRngOutputs
+            @Nullable List<byte[]> getTxosKexRngOutputs, long lastKnownEventId, long lastKnownBlockIndex
     ) throws InvalidFogResponse, AttestationException, NetworkException {
         View.QueryRequest.Builder requestBuilder = View.QueryRequest.newBuilder();
         View.QueryRequestAAD.Builder aadRequestBuilder = View.QueryRequestAAD.newBuilder();
@@ -123,8 +117,6 @@ final class AttestedViewClient extends AttestedClient {
                 Attest.Message encryptedResponse = fogViewService.query(message);
                 Attest.Message response = decryptMessage(encryptedResponse);
                 View.QueryResponse queryResponse = View.QueryResponse.parseFrom(response.getData());
-                lastKnownBlockIndex = queryResponse.getHighestProcessedBlockCount();
-                lastKnownEventId = queryResponse.getNextStartFromUserEventId();
                 return queryResponse;
             } catch (InvalidProtocolBufferException exception) {
                 InvalidFogResponse invalidFogResponse = new InvalidFogResponse("View response " +

@@ -52,6 +52,8 @@ final class TxOutStore implements Serializable {
     private UnsignedLong ledgerBlockIndex;
     // Block index reported from view server.
     private UnsignedLong viewBlockIndex;
+    // The last event id serves as a cursor for Fog View events.
+    private long lastKnownFogViewEventId;
     private UnsignedLong ledgerTotalTxCount;
 
     // TxOuts recovered from missed blocks
@@ -202,7 +204,8 @@ final class TxOutStore implements Serializable {
                 } else {
                     allTXOsRetrieved = true;
                 }
-                View.QueryResponse result = viewClient.request(searchKeys);
+                View.QueryResponse result = viewClient
+                    .request(searchKeys, lastKnownFogViewEventId, viewBlockIndex.longValue());
                 for (DecommissionedIngestInvocation decommissionedIngestInvocation : result
                     .getDecommissionedIngestInvocationsList()) {
                   decommissionedIngestInvocationIds.add(decommissionedIngestInvocation.getIngestInvocationId());
@@ -288,6 +291,7 @@ final class TxOutStore implements Serializable {
                             viewBlockIndex = (blockCount != 0)
                                     ? UnsignedLong.fromLongBits(blockCount).sub(UnsignedLong.ONE)
                                     : UnsignedLong.ZERO;
+                            lastKnownFogViewEventId = result.getNextStartFromUserEventId();
                             Logger.i(TAG, "View Request completed blockIndex = " + viewBlockIndex);
                             break;
                         }
@@ -376,6 +380,7 @@ final class TxOutStore implements Serializable {
     }
 
     private synchronized void writeObject(ObjectOutputStream out) throws IOException {
+        out.writeLong(lastKnownFogViewEventId);
         out.writeObject(ledgerBlockIndex);
         out.writeObject(viewBlockIndex);
         out.writeObject(ledgerTotalTxCount);
@@ -387,11 +392,34 @@ final class TxOutStore implements Serializable {
     @SuppressWarnings("unchecked")
     private synchronized void readObject(ObjectInputStream in)
             throws IOException, ClassNotFoundException {
+        lastKnownFogViewEventId = in.readLong();
         ledgerBlockIndex = (UnsignedLong) in.readObject();
         viewBlockIndex = (UnsignedLong) in.readObject();
         ledgerTotalTxCount = (UnsignedLong) in.readObject();
         seeds = (HashMap<Integer, FogSeed>) in.readObject();
         decommissionedIngestInvocationIds = (Set<Long>) in.readObject();
         recoveredTxOuts = new ConcurrentLinkedQueue<>();
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        TxOutStore that = (TxOutStore) o;
+
+        return lastKnownFogViewEventId == that.lastKnownFogViewEventId &&
+            Objects.equals(ledgerBlockIndex, that.ledgerBlockIndex) &&
+            Objects.equals(viewBlockIndex, that.viewBlockIndex) &&
+            Objects.equals(ledgerTotalTxCount, that.ledgerTotalTxCount) &&
+             Objects.equals(seeds, that.seeds) &&
+            Objects
+                .equals(decommissionedIngestInvocationIds, that.decommissionedIngestInvocationIds)
+            &&
+            Arrays.equals(recoveredTxOuts.toArray(), that.recoveredTxOuts.toArray()) &&
+            Objects.equals(accountKey, that.accountKey);
     }
 }
