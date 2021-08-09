@@ -37,7 +37,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 final class TxOutStore implements Serializable {
-    private static final String TAG = TxOutStore.class.getName();
+     static final String TAG = TxOutStore.class.getName();
 
     // Bump serial version and read/write code if fields change
     private static final long serialVersionUID = 2L;
@@ -66,6 +66,10 @@ final class TxOutStore implements Serializable {
         this.ledgerBlockIndex = UnsignedLong.ZERO;
         this.viewBlockIndex = UnsignedLong.ZERO;
         this.recoveredTxOuts = new ConcurrentLinkedQueue<>();
+    }
+
+    static String createStorageKey(AccountKey accountKey) {
+        return accountKey.hashCode() + "-" + TAG;
     }
 
     @NonNull
