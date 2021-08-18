@@ -8,7 +8,9 @@ import androidx.annotation.NonNull;
 import com.mobilecoin.lib.exceptions.AttestationException;
 import com.mobilecoin.lib.util.Hex;
 
+import io.grpc.Context.Storage;
 import java.security.cert.X509Certificate;
+import java.util.Optional;
 import java.util.Set;
 
 public class TestFogConfig {
@@ -84,7 +86,17 @@ public class TestFogConfig {
     }
 
     @NonNull
-    public static TestFogConfig getFogConfig(Environment.TestEnvironment testEnvironment) {
+    static TestFogConfig getFogConfig(Environment.TestEnvironment testEnvironment, StorageAdapter storageAdapter) {
+        return getFogConfig(testEnvironment, Optional.of(storageAdapter));
+    }
+
+    @NonNull
+    static TestFogConfig getFogConfig(Environment.TestEnvironment testEnvironment) {
+      return getFogConfig(testEnvironment, Optional.empty());
+    }
+
+    @NonNull
+    private static TestFogConfig getFogConfig(Environment.TestEnvironment testEnvironment, Optional<StorageAdapter> storageAdapter) {
         final Uri fogUri = Uri.parse(String.format(
                 "fog://fog.%s.mobilecoin.com",
                 testEnvironment.getName()
@@ -97,15 +109,15 @@ public class TestFogConfig {
         switch (testEnvironment) {
             case MOBILE_DEV:
                 return new TestFogConfig(fogUri, consensusUri, TEST_DEV_USERNAME,
-                        TEST_DEV_PASSWORD, getDevClientConfig(),
+                        TEST_DEV_PASSWORD, getDevClientConfig(storageAdapter),
                         mobiledevFogAuthoritySpki, "");
             case ALPHA:
                 return new TestFogConfig(fogUri, consensusUri, TEST_DEV_USERNAME,
-                        TEST_DEV_PASSWORD, getDevClientConfig(),
+                        TEST_DEV_PASSWORD, getDevClientConfig(storageAdapter),
                         alphaFogAuthoritySpki, "");
             case TEST_NET:
                 return new TestFogConfig(fogUri, consensusUri, TEST_NET_USERNAME,
-                        TEST_NET_PASSWORD, getTestNetClientConfig(),
+                        TEST_NET_PASSWORD, getTestNetClientConfig(storageAdapter),
                         testNetFogAuthoritySpki, "");
 
         }
@@ -113,9 +125,12 @@ public class TestFogConfig {
     }
 
     @NonNull
-    private static ClientConfig getDevClientConfig() {
+    private static ClientConfig getDevClientConfig(Optional<StorageAdapter> storageAdapter) {
         try {
             ClientConfig clientConfig = new ClientConfig();
+            if (storageAdapter.isPresent()) {
+                clientConfig.storageAdapter = storageAdapter.get();
+            }
             clientConfig.fogView = new ClientConfig.Service()
                     .withVerifier((new Verifier())
                             .withMrSigner(Hex.toByteArray(
@@ -155,9 +170,12 @@ public class TestFogConfig {
     }
 
     @NonNull
-    private static ClientConfig getTestNetClientConfig() {
+    private static ClientConfig getTestNetClientConfig(Optional<StorageAdapter> storageAdapter) {
         try {
             ClientConfig clientConfig = new ClientConfig();
+            if (storageAdapter.isPresent()) {
+                clientConfig.storageAdapter = storageAdapter.get();
+            }
             clientConfig.fogView = new ClientConfig.Service()
                     .withVerifier((new Verifier())
                             .withMrSigner(Hex.toByteArray(

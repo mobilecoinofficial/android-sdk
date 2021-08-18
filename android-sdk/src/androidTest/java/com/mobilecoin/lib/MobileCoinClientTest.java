@@ -28,6 +28,8 @@ import com.mobilecoin.lib.exceptions.TransactionBuilderException;
 import com.mobilecoin.lib.log.Logger;
 import com.mobilecoin.lib.network.uri.FogUri;
 
+import java.util.HashMap;
+import java.util.Map;
 import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
@@ -614,5 +616,64 @@ public class MobileCoinClientTest {
             }
         }
         Assert.assertTrue(foundSentTxOut);
+    }
+
+    @Test
+    public void test_txOutStore_serialization() throws Exception {
+        StorageAdapter storageAdapter = new TestStorageAdapter();
+        MobileCoinClient mobileCoinClient = Environment.makeFreshMobileCoinClient(storageAdapter);
+
+        TxOutStore txOutStore = mobileCoinClient.getTxOutStore();
+        txOutStore.refresh(
+            mobileCoinClient.viewClient,
+            mobileCoinClient.ledgerClient,
+            mobileCoinClient.fogBlockClient
+        );
+
+        mobileCoinClient.cacheUserData();
+
+        String txOutStoreStorageKey = TxOutStore.createStorageKey(mobileCoinClient.getAccountKey());
+        byte[] serializedTxOutStore = storageAdapter.get(txOutStoreStorageKey);
+        TxOutStore deserializedTxOutStore = TxOutStore.fromBytes(
+            serializedTxOutStore,
+            mobileCoinClient.getAccountKey()
+        );
+
+        Assert.assertEquals(txOutStore, deserializedTxOutStore);
+    }
+
+    private static final class TestStorageAdapter implements StorageAdapter {
+
+        private final Map<String, byte[]> storage;
+
+        private String key;
+        private byte[] serializedObject;
+
+        TestStorageAdapter() {
+           storage = new HashMap<>();
+        }
+
+        @Override
+        public boolean has(String key) {
+           return storage.containsValue(key);
+        }
+
+        @Override
+        public byte[] get(String key) {
+          if (storage.containsKey(key)) {
+              return storage.get(key);
+          }
+          throw new IllegalArgumentException("The provided key doesn't match any stored key.");
+        }
+
+        @Override
+        public void set(String key, byte[] value) {
+          storage.put(key, value);
+        }
+
+        @Override
+        public void clear(String key) {
+          storage.clear();
+        }
     }
 }

@@ -19,8 +19,21 @@ public class Environment {
         return TestFogConfig.getFogConfig(CURRENT_TEST_ENV);
     }
 
+    static public TestFogConfig getTestFogConfig(StorageAdapter storageAdapter) {
+        return TestFogConfig.getFogConfig(CURRENT_TEST_ENV, storageAdapter);
+    }
+
     static public MobileCoinClient makeFreshMobileCoinClient(AccountKey accountKey) throws InvalidUriException {
         TestFogConfig fogConfig = getTestFogConfig();
+        return makeFreshMobileCoinClient(fogConfig, accountKey);
+    }
+
+    static public MobileCoinClient makeFreshMobileCoinClient(StorageAdapter storageAdapter) throws InvalidUriException { AccountKey accountKey = TestKeysManager.getNextAccountKey();
+        TestFogConfig fogConfig = getTestFogConfig(storageAdapter);
+        return makeFreshMobileCoinClient(fogConfig, accountKey);
+    }
+
+    static private MobileCoinClient makeFreshMobileCoinClient(TestFogConfig fogConfig, AccountKey accountKey) throws  InvalidUriException {
         MobileCoinClient mobileCoinClient = new MobileCoinClient(
                 accountKey,
                 fogConfig.getFogUri(),

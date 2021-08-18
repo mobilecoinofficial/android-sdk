@@ -2,13 +2,14 @@
 
 package com.mobilecoin.lib;
 
-public abstract class StorageAdapter {
-    public abstract byte[] get(String key);
+/** Allows SDK to serialize and deserialize SDK object using host-app provided storage. */
+public interface StorageAdapter {
 
-    public abstract void set(
-            String key,
-            byte[] value
-    );
+    boolean has(String key);
 
-    public abstract void clear(String key);
+    byte[] get(String key);
+
+    void set(String key, byte[] value);
+
+    void clear(String key);
 }
