@@ -17,9 +17,12 @@ import java.util.Locale;
 final class TransactionBuilder extends Native {
     private static final String TAG = TransactionBuilder.class.getName();
 
-    TransactionBuilder(@NonNull FogResolver fogResolver) throws FogReportException {
+    TransactionBuilder(
+        @NonNull FogResolver fogResolver,
+        TxOutMemoBuilder txOutMemoBuilder
+    ) throws FogReportException {
         try {
-            init_jni(fogResolver);
+            init_jni(fogResolver, txOutMemoBuilder);
         } catch (Exception exception) {
             throw new FogReportException("Unable to create TxBuilder", exception);
         }
@@ -114,7 +117,7 @@ final class TransactionBuilder extends Native {
         super.finalize();
     }
 
-    private native void init_jni(@NonNull FogResolver fog_resolver);
+    private native void init_jni(@NonNull FogResolver fog_resolver, TxOutMemoBuilder txOutMemoBuilder);
 
     private native void finalize_jni();
 
