@@ -237,7 +237,8 @@ public final class AccountSnapshot {
     public PendingTransaction prepareTransaction(
             @NonNull final PublicAddress recipient,
             @NonNull final BigInteger amount,
-            @NonNull final BigInteger fee
+            @NonNull final BigInteger fee,
+            @NonNull final TxOutMemoBuilder txOutMemoBuilder
     ) throws InsufficientFundsException, FragmentedAccountException, FeeRejectedException,
             InvalidFogResponse, AttestationException, NetworkException,
             TransactionBuilderException, FogReportException {
@@ -266,7 +267,8 @@ public final class AccountSnapshot {
                 recipient,
                 amount,
                 selection.txOuts,
-                fee
+                fee,
+                txOutMemoBuilder
         );
     }
 }

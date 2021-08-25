@@ -31,6 +31,7 @@ public interface MobileCoinTransactionClient {
    * @param recipient {@link PublicAddress} of the recipient
    * @param amount    transaction amount
    * @param fee       transaction fee (see {@link MobileCoinClient#estimateTotalFee})
+   * @param txOutMemoBuilder
    * @return {@link PendingTransaction} which encapsulates the {@link Transaction} and {@link
    * Receipt} objects
    */
@@ -38,7 +39,8 @@ public interface MobileCoinTransactionClient {
   PendingTransaction prepareTransaction(
       @NonNull final PublicAddress recipient,
       @NonNull final BigInteger amount,
-      @NonNull final BigInteger fee
+      @NonNull final BigInteger fee,
+      @NonNull TxOutMemoBuilder txOutMemoBuilder
   ) throws InsufficientFundsException, FragmentedAccountException, FeeRejectedException,
       InvalidFogResponse, AttestationException, NetworkException,
       TransactionBuilderException, FogReportException;

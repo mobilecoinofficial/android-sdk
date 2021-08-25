@@ -85,7 +85,8 @@ public class LedgerTest {
         PendingTransaction pending = senderClient.prepareTransaction(
                 recipientClient.getAccountKey().getPublicAddress(),
                 amount,
-                minimumFee
+                minimumFee,
+                TxOutMemoBuilder.createDefaultRTHMemoBuilder()
         );
         senderClient.submitTransaction(pending.getTransaction());
 

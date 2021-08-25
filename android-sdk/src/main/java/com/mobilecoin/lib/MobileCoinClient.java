@@ -215,9 +215,10 @@ public final class MobileCoinClient implements MobileCoinAccountClient, MobileCo
     @Override
     @NonNull
     public PendingTransaction prepareTransaction(
-            @NonNull final PublicAddress recipient,
-            @NonNull final BigInteger amount,
-            @NonNull final BigInteger fee
+        @NonNull final PublicAddress recipient,
+        @NonNull final BigInteger amount,
+        @NonNull final BigInteger fee,
+        @NonNull TxOutMemoBuilder txOutMemoBuilder
     ) throws InsufficientFundsException, FragmentedAccountException, FeeRejectedException,
             InvalidFogResponse, AttestationException, NetworkException,
             TransactionBuilderException, FogReportException {
@@ -245,16 +246,18 @@ public final class MobileCoinClient implements MobileCoinAccountClient, MobileCo
                 recipient,
                 amount,
                 selection.txOuts,
-                fee
+                fee,
+                txOutMemoBuilder
         );
     }
 
     @NonNull
     PendingTransaction prepareTransaction(
-            @NonNull final PublicAddress recipient,
-            @NonNull final BigInteger amount,
-            @NonNull final List<OwnedTxOut> txOuts,
-            @NonNull final BigInteger fee
+        @NonNull final PublicAddress recipient,
+        @NonNull final BigInteger amount,
+        @NonNull final List<OwnedTxOut> txOuts,
+        @NonNull final BigInteger fee,
+        TxOutMemoBuilder txOutMemoBuilder
     ) throws InvalidFogResponse, AttestationException, NetworkException,
             TransactionBuilderException, FogReportException {
         Logger.i(TAG, "PrepareTransaction with TxOuts call", null,
@@ -349,8 +352,6 @@ public final class MobileCoinClient implements MobileCoinAccountClient, MobileCo
         Logger.d(TAG, "Report + Rings fetch time: " + (endTime - startTime) + "ms");
         FogResolver fogResolver = new FogResolver(fogReportResponses,
                 clientConfig.report.getVerifier());
-        // TODO(sam): Make this a param.
-        TxOutMemoBuilder txOutMemoBuilder = TxOutMemoBuilder.createDefaultRTHMemoBuilder();
         TransactionBuilder txBuilder = new TransactionBuilder(fogResolver, txOutMemoBuilder);
         BigInteger totalAmount = BigInteger.valueOf(0);
         for (Ring ring : rings) {
@@ -484,7 +485,11 @@ public final class MobileCoinClient implements MobileCoinAccountClient, MobileCo
                         accountKey.getPublicAddress(),
                         totalValue.subtract(selection.fee),
                         selection.txOuts,
-                        selection.fee
+                        selection.fee,
+                        // TODO: Decide if we want to allow clients to write RTH TxOutMemos on
+                        // defragmentation TxOuts. If so, add as a param to this method or
+                        // a boolean that allows us to choose the RTH memobuilder accordingly.
+                        TxOutMemoBuilder.createDefaultRTHMemoBuilder()
                 );
                 if (!delegate.onStepReady(pendingTransaction, selection.fee)) {
                     delegate.onCancel();
