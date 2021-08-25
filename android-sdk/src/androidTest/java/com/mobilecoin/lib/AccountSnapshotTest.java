@@ -36,10 +36,12 @@ public class AccountSnapshotTest {
         Balance balanceBefore = snapshot.getBalance();
         BigInteger amount = BigInteger.valueOf(100);
         BigInteger fee = mobileCoinClient.estimateTotalFee(amount);
+        TxOutMemoBuilder txOutMemoBuilder = TxOutMemoBuilder.createDefaultRTHMemoBuilder();
         PendingTransaction pendingTransaction = mobileCoinClient.prepareTransaction(
                 TestKeysManager.getNextAccountKey().getPublicAddress(),
                 amount,
-                fee
+                fee,
+                txOutMemoBuilder
         );
         mobileCoinClient.submitTransaction(pendingTransaction.getTransaction());
         waitForTransactionStatus(mobileCoinClient, pendingTransaction.getTransaction());
@@ -68,7 +70,8 @@ public class AccountSnapshotTest {
         PendingTransaction pendingTransaction = snapshot.prepareTransaction(
                 TestKeysManager.getNextAccountKey().getPublicAddress(),
                 amount,
-                fee
+                fee,
+                TxOutMemoBuilder.createDefaultRTHMemoBuilder()
         );
         mobileCoinClient.submitTransaction(pendingTransaction.getTransaction());
         waitForTransactionStatus(mobileCoinClient, pendingTransaction.getTransaction());
@@ -88,10 +91,12 @@ public class AccountSnapshotTest {
                 mobileCoinClient.getAccountSnapshot();
         BigInteger amount = BigInteger.valueOf(100);
         BigInteger fee = mobileCoinClient.estimateTotalFee(amount);
+        TxOutMemoBuilder txOutMemoBuilder = TxOutMemoBuilder.createDefaultRTHMemoBuilder();
         PendingTransaction pendingTransaction = mobileCoinClient.prepareTransaction(
                 TestKeysManager.getNextAccountKey().getPublicAddress(),
                 amount,
-                fee
+                fee,
+                txOutMemoBuilder
         );
         mobileCoinClient.submitTransaction(pendingTransaction.getTransaction());
         Transaction.Status status = waitForTransactionStatus(mobileCoinClient,
@@ -124,10 +129,12 @@ public class AccountSnapshotTest {
                 recipientClient.getAccountSnapshot();
         BigInteger amount = BigInteger.valueOf(100);
         BigInteger fee = senderClient.estimateTotalFee(amount);
+        TxOutMemoBuilder txOutMemoBuilder = TxOutMemoBuilder.createDefaultRTHMemoBuilder();
         PendingTransaction pendingTransaction = senderClient.prepareTransaction(
                 recipientClient.getAccountKey().getPublicAddress(),
                 amount,
-                fee
+                fee,
+                txOutMemoBuilder
         );
         senderClient.submitTransaction(pendingTransaction.getTransaction());
         Transaction.Status txStatus = waitForTransactionStatus(senderClient,

@@ -49,7 +49,9 @@ public class BalanceTransferTest {
             PendingTransaction pendingTransaction = mobileCoinClient.prepareTransaction(
                     accountKey.getPublicAddress(),
                     amount,
-                    fee);
+                    fee,
+                    TxOutMemoBuilder.createDefaultRTHMemoBuilder()
+                );
             mobileCoinClient.submitTransaction(pendingTransaction.getTransaction());
             UtilTest.waitForReceiptStatus(balanceAccount, pendingTransaction.getReceipt());
         }
@@ -85,7 +87,9 @@ public class BalanceTransferTest {
         PendingTransaction pendingTransaction =
                 balanceAccount.prepareTransaction(testKey.getPublicAddress(),
                         transferableAmount,
-                        totalFee);
+                        totalFee,
+                        TxOutMemoBuilder.createDefaultRTHMemoBuilder()
+                    );
         balanceAccount.submitTransaction(pendingTransaction.getTransaction());
         UtilTest.waitForReceiptStatus(mobileCoinClient, pendingTransaction.getReceipt());
 
