@@ -378,13 +378,9 @@ public final class MobileCoinClient implements MobileCoinAccountClient, MobileCo
 
         BigInteger finalAmount = amount.add(fee);
 
-        if (totalAmount.compareTo(finalAmount) > 0) { // if total amount > finalAmount
-            BigInteger change = totalAmount.subtract(finalAmount);
-            txBuilder.addOutput(change,
-                    accountKey.getPublicAddress(),
-                    null
-            );
-        }
+        BigInteger change = totalAmount.subtract(finalAmount);
+        txBuilder.addChangeOutput(change, accountKey, null);
+
         txBuilder.setTombstoneBlockIndex(tombstoneBlockIndex);
         txBuilder.setFee(fee.longValue());
 
