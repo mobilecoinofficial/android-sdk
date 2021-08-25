@@ -76,6 +76,30 @@ final class TransactionBuilder extends Native {
         }
     }
 
+    @NonNull
+    TxOut addChangeOutput(
+        @NonNull BigInteger value,
+        @NonNull AccountKey accountKey,
+        @Nullable byte[] confirmationNumberOut
+    ) throws TransactionBuilderException {
+        Logger.i(TAG, "Adding transaction output");
+        byte[] confirmationOut = new byte[Receipt.CONFIRMATION_NUMBER_LENGTH];
+        try {
+            long rustObj = add_change_output(value, accountKey, confirmationOut);
+            if (confirmationNumberOut != null) {
+                if (confirmationNumberOut.length < Receipt.CONFIRMATION_NUMBER_LENGTH) {
+                    throw new IllegalArgumentException("ConfirmationNumber buffer is too small");
+                }
+                System.arraycopy(confirmationOut, 0, confirmationNumberOut, 0,
+                    confirmationOut.length);
+            }
+            return TxOut.fromJNI(rustObj);
+        } catch (Exception exception) {
+            Logger.e(TAG, "Unable to add transaction change output", exception);
+            throw new TransactionBuilderException(exception.getLocalizedMessage(), exception);
+        }
+    }
+
     void setTombstoneBlockIndex(@NonNull UnsignedLong value) throws TransactionBuilderException {
         Logger.i(TAG, String.format(Locale.US, "Set transaction tombstone %s", value.toString()));
         try {
@@ -133,6 +157,12 @@ final class TransactionBuilder extends Native {
             @NonNull BigInteger value,
             @NonNull PublicAddress recipient,
             @NonNull byte[] confirmationNumberOut
+    );
+
+    private native long add_change_output(
+        @NonNull BigInteger value,
+        @NonNull AccountKey accountKey,
+        @NonNull byte[] confirmationNumberOut
     );
 
     private native void set_tombstone_block(long value);
