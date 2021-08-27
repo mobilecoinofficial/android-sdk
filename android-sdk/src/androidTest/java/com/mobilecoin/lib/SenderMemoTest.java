@@ -2,7 +2,6 @@ package com.mobilecoin.lib;
 
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertThat;
 
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import com.mobilecoin.api.MobileCoinAPI;
