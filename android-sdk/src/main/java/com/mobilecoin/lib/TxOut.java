@@ -108,6 +108,11 @@ final class TxOut extends Native {
         return protoBufTxOut;
     }
 
+    @NonNull
+    byte[] decryptMemoPayload(@NonNull AccountKey accountKey) {
+      return decrypt_memo_payload(accountKey);
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -149,4 +154,7 @@ final class TxOut extends Native {
 
     @NonNull
     private native byte[] encode();
+
+    @NonNull
+    private native byte[] decrypt_memo_payload(@NonNull AccountKey accountKey);
 }

@@ -4,21 +4,18 @@ package com.mobilecoin.lib;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-
 import com.mobilecoin.api.MobileCoinAPI;
 import com.mobilecoin.lib.exceptions.AmountDecoderException;
 import com.mobilecoin.lib.exceptions.SerializationException;
 import com.mobilecoin.lib.exceptions.TransactionBuilderException;
 import com.mobilecoin.lib.log.Logger;
-
+import fog_view.View;
 import java.io.Serializable;
 import java.math.BigInteger;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
-
-import fog_view.View;
 
 /**
  * A transaction output that belongs to a {@link AccountKey}
@@ -31,6 +28,7 @@ public class OwnedTxOut implements Serializable {
 
     //  The global index of this TxOut in the entire block chain.
     private final UnsignedLong txOutGlobalIndex;
+    private final byte[] decryptedMemoPayload;
 
     // The block index at which this TxOut appeared.
     private final UnsignedLong receivedBlockIndex;
@@ -38,6 +36,8 @@ public class OwnedTxOut implements Serializable {
     private final Date receivedBlockTimestamp;
     private Date spentBlockTimestamp;
     private UnsignedLong spentBlockIndex;
+
+    private TxOutMemo cachedTxOutMemo;
 
     private final BigInteger value;
     private final RistrettoPublic txOutPublicKey;
@@ -85,6 +85,7 @@ public class OwnedTxOut implements Serializable {
                     .build();
             // Calculated fields
             TxOut nativeTxOut = TxOut.fromProtoBufObject(txOutProto);
+            decryptedMemoPayload = nativeTxOut.decryptMemoPayload(accountKey);
             keyImage = nativeTxOut.computeKeyImage(accountKey);
         } catch (SerializationException | AmountDecoderException | TransactionBuilderException e) {
             IllegalArgumentException illegalArgumentException =
@@ -92,6 +93,31 @@ public class OwnedTxOut implements Serializable {
             Util.logException(TAG, illegalArgumentException);
             throw illegalArgumentException;
         }
+    }
+
+    /** Retrieves the {@link TxOutMemo} for the given TxOut. */
+    public TxOutMemo getTxOutMemo() {
+        if (cachedTxOutMemo == null) {
+            cachedTxOutMemo = parseTxOutMemo();
+        }
+
+        return cachedTxOutMemo;
+    }
+
+    private TxOutMemo parseTxOutMemo() {
+      byte[] memoType = Arrays.copyOfRange(decryptedMemoPayload, 0, 3);
+      byte[] memoData =
+          Arrays.copyOfRange(decryptedMemoPayload, 3, decryptedMemoPayload.length);
+      TxOutMemoType txOutMemoType = TxOutMemoType.fromBytes(memoType);
+
+      switch(txOutMemoType) {
+          case SENDER:
+              return SenderMemo.create(memoData);
+          case DESTINATION:
+              return DestinationMemo.create(memoData);
+          default:
+              throw new IllegalArgumentException("Unknown memo data type.");
+      }
     }
 
     /**
