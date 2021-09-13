@@ -2,6 +2,7 @@
 
 package com.mobilecoin.lib;
 
+import android.accounts.Account;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import com.mobilecoin.api.MobileCoinAPI;
@@ -32,6 +33,8 @@ public class OwnedTxOut implements Serializable {
 
     // The block index at which this TxOut appeared.
     private final UnsignedLong receivedBlockIndex;
+    private final AccountKey accountKey;
+    private final TxOut nativeTxOut;
 
     private final Date receivedBlockTimestamp;
     private Date spentBlockTimestamp;
@@ -49,6 +52,7 @@ public class OwnedTxOut implements Serializable {
             @NonNull AccountKey accountKey
     ) {
         try {
+            this.accountKey = accountKey;
             txOutGlobalIndex = UnsignedLong.fromLongBits(txOutRecord.getTxOutGlobalIndex());
             long longTimestampSeconds = txOutRecord.getTimestamp();
             // when the timestamp is missing U64::MAX is returned
@@ -84,7 +88,7 @@ public class OwnedTxOut implements Serializable {
                     .setTargetKey(txOutTargetKeyProto)
                     .build();
             // Calculated fields
-            TxOut nativeTxOut = TxOut.fromProtoBufObject(txOutProto);
+            nativeTxOut = TxOut.fromProtoBufObject(txOutProto);
             decryptedMemoPayload = nativeTxOut.decryptMemoPayload(accountKey);
             keyImage = nativeTxOut.computeKeyImage(accountKey);
         } catch (SerializationException | AmountDecoderException | TransactionBuilderException e) {
@@ -112,9 +116,9 @@ public class OwnedTxOut implements Serializable {
 
       switch(txOutMemoType) {
           case SENDER:
-              return SenderMemo.create(memoData);
+              return SenderMemo.create(accountKey.getViewKey(), nativeTxOut.getPubKey(), memoData);
           case DESTINATION:
-              return DestinationMemo.create(memoData);
+              return DestinationMemo.create(accountKey, nativeTxOut, memoData);
           default:
               throw new IllegalArgumentException("Unknown memo data type.");
       }
