@@ -5,6 +5,7 @@ package com.mobilecoin.lib;
 import androidx.annotation.VisibleForTesting;
 
 import com.mobilecoin.lib.exceptions.InvalidUriException;
+import com.mobilecoin.lib.network.TransportProtocol;
 
 @VisibleForTesting
 public class Environment {
@@ -35,6 +36,7 @@ public class Environment {
                 fogConfig.getUsername(),
                 fogConfig.getPassword()
         );
+        mobileCoinClient.setTransportProtocol(TransportProtocol.forHTTP(new SimpleRequester()));
         return mobileCoinClient;
     }
 

@@ -31,6 +31,13 @@ class TestKeysManager {
         return strings.toArray(new String[0]);
     }
 
+    static int getTotalTestKeysCount() {
+        if (Environment.CURRENT_TEST_ENV == Environment.TestEnvironment.TEST_NET) {
+            return testNetMnemonics.length;
+        }
+        return devNetRootEntropies.length;
+    }
+
     static AccountKey getNextAccountKey() {
         TestFogConfig fogConfig = Environment.getTestFogConfig();
         switch (Environment.CURRENT_TEST_ENV) {

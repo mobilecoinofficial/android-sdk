@@ -129,7 +129,8 @@ public class TxOutStoreTest {
         // add two small ranges to check
         Set<BlockRange> fakeFogMisses = new HashSet<>(Arrays.asList(new BlockRange(txoBlock,
                         txoBlock.add(UnsignedLong.ONE)),
-                new BlockRange(25, 50)));
+                new BlockRange(status.getBlockIndex(),
+                        status.getBlockIndex().add(UnsignedLong.TEN))));
         Set<OwnedTxOut> records = store.fetchFogMisses(
                 fakeFogMisses,
                 blockClient

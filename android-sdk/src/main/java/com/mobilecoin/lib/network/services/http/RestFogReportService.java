@@ -21,7 +21,7 @@ public class RestFogReportService extends RestService implements FogReportServic
     public ReportOuterClass.ReportResponse getReports(ReportOuterClass.ReportRequest request) {
         try {
             byte[] responseData = getRestClient().makeRequest(
-                    SERVICE_NAME + "/" + "GetReports",
+                    PREFIX + SERVICE_NAME + "/" + "GetReports",
                     request.toByteArray()
             );
             return ReportOuterClass.ReportResponse.parseFrom(responseData);

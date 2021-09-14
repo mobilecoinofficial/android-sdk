@@ -22,7 +22,7 @@ public class RestBlockchainService extends RestService implements BlockchainServ
     public ConsensusCommon.LastBlockInfoResponse getLastBlockInfo(Empty request) {
         try {
             byte[] responseData = getRestClient().makeRequest(
-                    SERVICE_NAME + "/" + "GetLastBlockInfo",
+                    PREFIX + SERVICE_NAME + "/" + "GetLastBlockInfo",
                     request.toByteArray()
             );
             return ConsensusCommon.LastBlockInfoResponse.parseFrom(responseData);

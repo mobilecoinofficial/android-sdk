@@ -21,7 +21,7 @@ public class RestFogMerkleProofService extends RestService implements FogMerkleP
     public Attest.Message getOutputs(Attest.Message request) {
         try {
             byte[] responseData = getRestClient().makeRequest(
-                    SERVICE_NAME + "/" + "GetOutputs",
+                    PREFIX + SERVICE_NAME + "/" + "GetOutputs",
                     request.toByteArray()
             );
             return Attest.Message.parseFrom(responseData);

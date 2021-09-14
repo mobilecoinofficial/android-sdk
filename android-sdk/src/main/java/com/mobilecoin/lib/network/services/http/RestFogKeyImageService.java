@@ -21,7 +21,7 @@ public class RestFogKeyImageService extends RestService implements FogKeyImageSe
     public Attest.AuthMessage auth(Attest.AuthMessage authMessage) {
         try {
             byte[] responseData = getRestClient().makeRequest(
-                    SERVICE_NAME + "/" + "Auth",
+                    PREFIX + SERVICE_NAME + "/" + "Auth",
                     authMessage.toByteArray()
             );
             return Attest.AuthMessage.parseFrom(responseData);
@@ -34,7 +34,7 @@ public class RestFogKeyImageService extends RestService implements FogKeyImageSe
     public Attest.Message checkKeyImages(Attest.Message request) {
         try {
             byte[] responseData = getRestClient().makeRequest(
-                    SERVICE_NAME + "/" + "CheckKeyImages",
+                    PREFIX + SERVICE_NAME + "/" + "CheckKeyImages",
                     request.toByteArray()
             );
             return Attest.Message.parseFrom(responseData);

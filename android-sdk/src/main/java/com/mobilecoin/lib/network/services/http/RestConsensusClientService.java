@@ -22,7 +22,7 @@ public class RestConsensusClientService extends RestService implements Consensus
     public ConsensusCommon.ProposeTxResponse clientTxPropose(Attest.Message request) {
         try {
             byte[] responseData = getRestClient().makeRequest(
-                    SERVICE_NAME + "/" + "ClientTxPropose",
+                    PREFIX + SERVICE_NAME + "/" + "ClientTxPropose",
                     request.toByteArray()
             );
             return ConsensusCommon.ProposeTxResponse.parseFrom(responseData);

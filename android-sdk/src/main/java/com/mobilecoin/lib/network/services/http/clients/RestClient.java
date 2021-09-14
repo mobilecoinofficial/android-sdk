@@ -16,7 +16,7 @@ import io.grpc.StatusRuntimeException;
 
 public final class RestClient {
     public final static String METHOD = "POST";
-    public final static String SCHEME = "http";
+    public final static String SCHEME = "https";
     public final static String SET_COOKIE_KEY = "Set-Cookie";
     public final static String COOKIE_KEY = "Cookie";
     public final static String CONTENT_TYPE = "application/x-protobuf";
