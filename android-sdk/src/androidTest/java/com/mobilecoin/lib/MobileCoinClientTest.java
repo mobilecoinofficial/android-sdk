@@ -27,6 +27,7 @@ import com.mobilecoin.lib.exceptions.NetworkException;
 import com.mobilecoin.lib.exceptions.SerializationException;
 import com.mobilecoin.lib.exceptions.TransactionBuilderException;
 import com.mobilecoin.lib.log.Logger;
+import com.mobilecoin.lib.network.TransportProtocol;
 import com.mobilecoin.lib.network.uri.FogUri;
 
 import org.junit.Assert;
@@ -615,5 +616,64 @@ public class MobileCoinClientTest {
             }
         }
         Assert.assertTrue(foundSentTxOut);
+    }
+
+    // Tests RestFogBlockService, RestFogKeyImageService, and RestFogViewService
+    @Test
+    public void getBalance_afterSetTransportProtocolWithHTTP_retrievesBalance() throws Exception {
+        MobileCoinClient mobileCoinClient = Environment.makeFreshMobileCoinClient();
+
+        TransportProtocol httpTransportProtocol = TransportProtocol.forHTTP(new SimpleRequester());
+        mobileCoinClient.setTransportProtocol(httpTransportProtocol);
+
+        Balance balance = mobileCoinClient.getBalance();
+        Assert.assertNotNull(balance);
+    }
+
+    // Tests RestBlockchainService.
+    @Test
+    public void getOrFetchMinimumTxFee_afterSetTransportProtocolWithHTTP_retrievesTransferableAmount() throws Exception {
+        MobileCoinClient mobileCoinClient = Environment.makeFreshMobileCoinClient();
+
+        TransportProtocol httpTransportProtocol = TransportProtocol.forHTTP(new SimpleRequester());
+        mobileCoinClient.setTransportProtocol(httpTransportProtocol);
+
+        BigInteger minimumTxFee = mobileCoinClient.getOrFetchMinimumTxFee();
+
+        Assert.assertNotNull(minimumTxFee);
+    }
+
+    // Tests RestConsensusClientService, RestFogMerkleProofService, RestFogReportService,
+    // and RestFogUntrustedService.
+    @Test
+    public void submitTransaction_afterSetTransportProtocolWithHTTP_submitsTransaction() throws Exception {
+        MobileCoinClient mobileCoinClient = Environment.makeFreshMobileCoinClient();
+        TransportProtocol httpTransportProtocol = TransportProtocol.forHTTP(new SimpleRequester());
+        mobileCoinClient.setTransportProtocol(httpTransportProtocol);
+
+        AccountKey recipient = TestKeysManager.getNextAccountKey();
+        try {
+            BigInteger amount = BigInteger.TEN;
+            BigInteger minimumFee = mobileCoinClient.estimateTotalFee(
+                amount
+            );
+            PendingTransaction pending = mobileCoinClient.prepareTransaction(
+                recipient.getPublicAddress(),
+                amount,
+                minimumFee
+            );
+            mobileCoinClient.submitTransaction(pending.getTransaction());
+            Transaction.Status status = waitForTransactionStatus(
+                mobileCoinClient,
+                pending.getTransaction()
+            );
+            Assert.assertSame(
+                "Valid transaction must be accepted",
+                status,
+                Transaction.Status.ACCEPTED
+            );
+        } finally {
+            mobileCoinClient.shutdown();
+        }
     }
 }
