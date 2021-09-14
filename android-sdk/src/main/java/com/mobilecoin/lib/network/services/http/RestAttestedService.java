@@ -21,7 +21,7 @@ public class RestAttestedService extends RestService implements AttestedService 
     public Attest.AuthMessage auth(Attest.AuthMessage authMessage) {
             try {
                 byte[] responseData = getRestClient().makeRequest(
-                        SERVICE_NAME + "/" + "Auth",
+                        PREFIX + SERVICE_NAME + "/" + "Auth",
                         authMessage.toByteArray()
                 );
                 return Attest.AuthMessage.parseFrom(responseData);

@@ -166,7 +166,7 @@ public class OwnedTxOut implements Serializable {
         OwnedTxOut that = (OwnedTxOut) o;
         return txOutGlobalIndex.equals(that.txOutGlobalIndex) &&
                 receivedBlockIndex.equals(that.receivedBlockIndex) &&
-                spentBlockIndex.equals(that.spentBlockIndex) &&
+                Objects.equals(spentBlockIndex, that.spentBlockIndex) &&
                 value.equals(that.value) &&
                 txOutPublicKey.equals(that.txOutPublicKey) &&
                 Arrays.equals(keyImage, that.keyImage);

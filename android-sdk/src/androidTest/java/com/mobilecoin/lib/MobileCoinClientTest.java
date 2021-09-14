@@ -2,6 +2,7 @@
 
 package com.mobilecoin.lib;
 
+import static com.mobilecoin.lib.Environment.getTestFogConfig;
 import static com.mobilecoin.lib.UtilTest.waitForReceiptStatus;
 import static com.mobilecoin.lib.UtilTest.waitForTransactionStatus;
 
@@ -168,7 +169,7 @@ public class MobileCoinClientTest {
     @Test
     public void test_attestation_must_fail() throws NetworkException, InvalidFogResponse,
             InvalidUriException {
-        TestFogConfig fogConfig = Environment.getTestFogConfig();
+        TestFogConfig fogConfig = getTestFogConfig();
         ClientConfig clientConfig = fogConfig.getClientConfig();
         // change fog verifier to make balance call fail
         clientConfig.fogView = clientConfig.consensus;
@@ -193,7 +194,7 @@ public class MobileCoinClientTest {
     @Test
     public void test_bad_trust_root_must_fail() throws InvalidFogResponse,
             InvalidUriException, AttestationException {
-        TestFogConfig fogConfig = Environment.getTestFogConfig();
+        TestFogConfig fogConfig = getTestFogConfig();
         ClientConfig clientConfig = fogConfig.getClientConfig();
         // change fog verifier to make balance call fail
         byte[] certificateBytes = Base64.decode(wrongTrustRootBase64, Base64.DEFAULT);
@@ -376,7 +377,7 @@ public class MobileCoinClientTest {
         final BigInteger MINIMUM_TX_FEE = coinSourceClient.getOrFetchMinimumTxFee();
         final BigInteger FRAGMENT_AMOUNT = MINIMUM_TX_FEE.multiply(BigInteger.TEN);
 
-        TestFogConfig fogConfig = Environment.getTestFogConfig();
+        TestFogConfig fogConfig = getTestFogConfig();
         // 1. Create a new fragmented account
         AccountKey fragmentedAccount = AccountKey.createNew(
                 fogConfig.getFogUri(),
@@ -576,7 +577,7 @@ public class MobileCoinClientTest {
             AttestationException, FogReportException, TransactionBuilderException,
             FragmentedAccountException, FeeRejectedException, InterruptedException,
             InvalidTransactionException, TimeoutException {
-        TestFogConfig fogConfig = Environment.getTestFogConfig();
+        TestFogConfig fogConfig = getTestFogConfig();
         AccountKey recipientAccount = TestKeysManager.getNextAccountKey();
         // remove fog info from the public address
         PublicAddress addressWithFog = recipientAccount.getPublicAddress();

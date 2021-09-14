@@ -21,7 +21,7 @@ public class RestFogUntrustedService extends RestService implements FogUntrusted
     public Ledger.TxOutResponse getTxOuts(Ledger.TxOutRequest request) {
         try {
             byte[] responseData = getRestClient().makeRequest(
-                    SERVICE_NAME + "/" + "GetTxOuts",
+                    PREFIX + SERVICE_NAME + "/" + "GetTxOuts",
                     request.toByteArray()
             );
             return Ledger.TxOutResponse.parseFrom(responseData);
