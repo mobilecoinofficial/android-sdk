@@ -4,6 +4,19 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.2.0-pre0] - 2021-09-15
+### Added
+- Network Robustness. Host applications now have the ability to choose which transport protocols
+  (HTTPS or GRPC) the SDK uses when communicating with MobileCoin services.
+
+### Changed
+- Decommissioned RNGs. The SDK no longer generates search keys from Randon Number Generator (RNG)
+  seeds that have been "decommissioned," which are RNGS that are associated with an outdated
+  enclave.
+
+### Fixes
+- Reset attestation state on errors.
+
 ## [1.1.0] - 2020-09-06
 ### Changed
 - Added `minimumFeeCacheTTL` parameter to `ClientConfig` to control the duration of the minimum transaction fee caching period. The default value is set to 30 minutes.
