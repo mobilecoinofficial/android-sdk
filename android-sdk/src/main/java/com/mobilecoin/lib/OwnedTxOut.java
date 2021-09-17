@@ -2,7 +2,6 @@
 
 package com.mobilecoin.lib;
 
-import android.accounts.Account;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import com.mobilecoin.api.MobileCoinAPI;
@@ -16,6 +15,7 @@ import java.math.BigInteger;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -29,7 +29,7 @@ public class OwnedTxOut implements Serializable {
 
     //  The global index of this TxOut in the entire block chain.
     private final UnsignedLong txOutGlobalIndex;
-    private final byte[] decryptedMemoPayload;
+    private final Optional<byte[]> decryptedMemoPayload;
 
     // The block index at which this TxOut appeared.
     private final UnsignedLong receivedBlockIndex;
@@ -89,7 +89,7 @@ public class OwnedTxOut implements Serializable {
                     .build();
             // Calculated fields
             nativeTxOut = TxOut.fromProtoBufObject(txOutProto);
-            decryptedMemoPayload = nativeTxOut.decryptMemoPayload(accountKey);
+            decryptedMemoPayload = decryptMemoPayload();
             keyImage = nativeTxOut.computeKeyImage(accountKey);
         } catch (SerializationException | AmountDecoderException | TransactionBuilderException e) {
             IllegalArgumentException illegalArgumentException =
@@ -97,6 +97,14 @@ public class OwnedTxOut implements Serializable {
             Util.logException(TAG, illegalArgumentException);
             throw illegalArgumentException;
         }
+    }
+
+    private Optional<byte[]> decryptMemoPayload() {
+        if (!nativeTxOut.toProtoBufObject().hasEMemo()) {
+            return Optional.empty();
+        }
+
+        return Optional.of(nativeTxOut.decryptMemoPayload(accountKey));
     }
 
     /** Retrieves the {@link TxOutMemo} for the given TxOut. */
@@ -109,19 +117,23 @@ public class OwnedTxOut implements Serializable {
     }
 
     private TxOutMemo parseTxOutMemo() {
-      byte[] memoType = Arrays.copyOfRange(decryptedMemoPayload, 0, 3);
-      byte[] memoData =
-          Arrays.copyOfRange(decryptedMemoPayload, 3, decryptedMemoPayload.length);
-      TxOutMemoType txOutMemoType = TxOutMemoType.fromBytes(memoType);
+        if (!decryptedMemoPayload.isPresent()) {
+            return () -> TxOutMemoType.UNKNOWN;
+        }
+        byte[] memoType = Arrays.copyOfRange(decryptedMemoPayload.get(), 0, 3);
+        byte[] memoData =
+            Arrays.copyOfRange(decryptedMemoPayload.get(), 3, decryptedMemoPayload.get().length);
+        TxOutMemoType txOutMemoType = TxOutMemoType.fromBytes(memoType);
 
-      switch(txOutMemoType) {
-          case SENDER:
-              return SenderMemo.create(accountKey.getViewKey(), nativeTxOut.getPubKey(), memoData);
-          case DESTINATION:
-              return DestinationMemo.create(accountKey, nativeTxOut, memoData);
-          default:
-              throw new IllegalArgumentException("Unknown memo data type.");
-      }
+        switch (txOutMemoType) {
+            case SENDER:
+                return SenderMemo
+                    .create(accountKey.getViewKey(), nativeTxOut.getPubKey(), memoData);
+            case DESTINATION:
+                return DestinationMemo.create(accountKey, nativeTxOut, memoData);
+            default:
+                throw new IllegalArgumentException("Unknown memo data type.");
+        }
     }
 
     /**
