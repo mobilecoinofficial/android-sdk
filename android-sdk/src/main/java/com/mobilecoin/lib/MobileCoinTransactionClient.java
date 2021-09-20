@@ -84,7 +84,7 @@ public interface MobileCoinTransactionClient {
    * Estimates the minimum fee required to send a transaction with the specified amount. The account
    * balance consists of multiple coins, if there are no big enough coins to successfully send the
    * transaction {@link FragmentedAccountException} will be thrown. The account needs to be
-   * defragmented in order to send the specified amount. See {@link MobileCoinClient#defragmentAccount}.
+   * defragmented in order to send the specified amount. See {@link MobileCoinAccountClient#defragmentAccount}.
    *
    * @param amount an amount value in picoMob
    */

@@ -70,13 +70,13 @@ public interface MobileCoinAccountClient {
    * <p>If the account is too fragmented, it might be necessary to defragment the account more than
    * once. However, wallet fragmentation is a rare occurrence since there is an internal mechanism
    * to defragment the account during other operations.
-   *
-   * @param delegate monitors and controls the defragmentation process
+   *  @param delegate monitors and controls the defragmentation process
+   * @param shouldWriteRTHMemos writes sender and destination memos for a defrag transaction if true.
    */
   void defragmentAccount(
       @NonNull BigInteger amountToSend,
-      @NonNull DefragmentationDelegate delegate
-  ) throws InvalidFogResponse, AttestationException, NetworkException, InsufficientFundsException,
+      @NonNull DefragmentationDelegate delegate,
+      boolean shouldWriteRTHMemos) throws InvalidFogResponse, AttestationException, NetworkException, InsufficientFundsException,
       TransactionBuilderException, InvalidTransactionException,
       FogReportException, TimeoutException;
 

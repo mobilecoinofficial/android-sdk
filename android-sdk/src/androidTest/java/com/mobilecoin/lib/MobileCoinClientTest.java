@@ -483,7 +483,7 @@ public class MobileCoinClientTest {
                 Logger.wtf(TAG, "Defragmentation process was cancelled");
                 Assert.fail("Defragmentation process should not be cancelled in this test");
             }
-        });
+        }, false);
         // 5. Send the funds back to the original wallet
         BigInteger fee = fragmentedClient.estimateTotalFee(txAmount);
         pendingTransaction = fragmentedClient.prepareTransaction(

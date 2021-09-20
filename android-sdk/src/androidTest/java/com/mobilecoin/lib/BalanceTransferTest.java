@@ -81,7 +81,7 @@ public class BalanceTransferTest {
                 public void onCancel() {
                     Assert.fail("Defrag should not be cancelled in this test");
                 }
-            });
+            }, false);
         }
         BigInteger totalFee = balanceAccount.estimateTotalFee(transferableAmount);
         PendingTransaction pendingTransaction =

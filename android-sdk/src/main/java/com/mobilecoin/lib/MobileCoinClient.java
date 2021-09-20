@@ -454,13 +454,16 @@ public final class MobileCoinClient implements MobileCoinAccountClient, MobileCo
 
     @Override
     public void defragmentAccount(
-            @NonNull BigInteger amountToSend,
-            @NonNull DefragmentationDelegate delegate
-    ) throws InvalidFogResponse, AttestationException, NetworkException, InsufficientFundsException,
+        @NonNull BigInteger amountToSend,
+        @NonNull DefragmentationDelegate delegate,
+        boolean shouldWriteRTHMemos) throws InvalidFogResponse, AttestationException, NetworkException, InsufficientFundsException,
             TransactionBuilderException, InvalidTransactionException,
             FogReportException, TimeoutException {
         delegate.onStart();
         UTXOSelector.Selection<OwnedTxOut> inputSelectionForAmount = null;
+        TxOutMemoBuilder txOutMemoBuilder = shouldWriteRTHMemos ? TxOutMemoBuilder
+            .createSenderAndDestinationRTHMemoBuilder(accountKey)
+            : TxOutMemoBuilder.createDefaultRTHMemoBuilder();
         do {
             Set<OwnedTxOut> unspent = getUnspentTxOuts();
             try {
@@ -486,10 +489,7 @@ public final class MobileCoinClient implements MobileCoinAccountClient, MobileCo
                         totalValue.subtract(selection.fee),
                         selection.txOuts,
                         selection.fee,
-                        // TODO: Decide if we want to allow clients to write RTH TxOutMemos on
-                        // defragmentation TxOuts. If so, add as a param to this method or
-                        // a boolean that allows us to choose the RTH memobuilder accordingly.
-                        TxOutMemoBuilder.createDefaultRTHMemoBuilder()
+                        txOutMemoBuilder
                 );
                 if (!delegate.onStepReady(pendingTransaction, selection.fee)) {
                     delegate.onCancel();
