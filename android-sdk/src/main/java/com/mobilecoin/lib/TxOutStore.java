@@ -419,7 +419,7 @@ final class TxOutStore implements Serializable {
             Objects.equals(ledgerBlockIndex, that.ledgerBlockIndex) &&
             Objects.equals(viewBlockIndex, that.viewBlockIndex) &&
             Objects.equals(ledgerTotalTxCount, that.ledgerTotalTxCount) &&
-             Objects.equals(seeds, that.seeds) &&
+            Objects.equals(seeds, that.seeds) &&
             Objects
                 .equals(decommissionedIngestInvocationIds, that.decommissionedIngestInvocationIds)
             &&
