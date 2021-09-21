@@ -165,11 +165,11 @@ public class OwnedTxOut implements Serializable {
         if (o == null || getClass() != o.getClass()) return false;
         OwnedTxOut that = (OwnedTxOut) o;
         return Objects.equals(txOutGlobalIndex, that.txOutGlobalIndex) &&
-               Objects.equals(receivedBlockIndex, that.receivedBlockIndex) &&
-               Objects.equals(spentBlockIndex, that.spentBlockIndex) &&
-               Objects.equals(value, that.value) &&
-               Objects.equals(txOutPublicKey, that.txOutPublicKey) &&
-               Arrays.equals(keyImage, that.keyImage);
+                Objects.equals(receivedBlockIndex, that.receivedBlockIndex) &&
+                Objects.equals(spentBlockIndex, that.spentBlockIndex) &&
+                Objects.equals(value, that.value) &&
+                Objects.equals(txOutPublicKey, that.txOutPublicKey) &&
+                Arrays.equals(keyImage, that.keyImage);
     }
 
     @Override
