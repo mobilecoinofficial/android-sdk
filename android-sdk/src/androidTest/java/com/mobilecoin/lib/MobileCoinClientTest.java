@@ -2,6 +2,7 @@
 
 package com.mobilecoin.lib;
 
+import static com.mobilecoin.lib.Environment.getTestFogConfig;
 import static com.mobilecoin.lib.UtilTest.waitForReceiptStatus;
 import static com.mobilecoin.lib.UtilTest.waitForTransactionStatus;
 
@@ -26,6 +27,7 @@ import com.mobilecoin.lib.exceptions.NetworkException;
 import com.mobilecoin.lib.exceptions.SerializationException;
 import com.mobilecoin.lib.exceptions.TransactionBuilderException;
 import com.mobilecoin.lib.log.Logger;
+import com.mobilecoin.lib.network.TransportProtocol;
 import com.mobilecoin.lib.network.uri.FogUri;
 
 import java.util.HashMap;
@@ -170,7 +172,7 @@ public class MobileCoinClientTest {
     @Test
     public void test_attestation_must_fail() throws NetworkException, InvalidFogResponse,
             InvalidUriException {
-        TestFogConfig fogConfig = Environment.getTestFogConfig();
+        TestFogConfig fogConfig = getTestFogConfig();
         ClientConfig clientConfig = fogConfig.getClientConfig();
         // change fog verifier to make balance call fail
         clientConfig.fogView = clientConfig.consensus;
@@ -195,7 +197,7 @@ public class MobileCoinClientTest {
     @Test
     public void test_bad_trust_root_must_fail() throws InvalidFogResponse,
             InvalidUriException, AttestationException {
-        TestFogConfig fogConfig = Environment.getTestFogConfig();
+        TestFogConfig fogConfig = getTestFogConfig();
         ClientConfig clientConfig = fogConfig.getClientConfig();
         // change fog verifier to make balance call fail
         byte[] certificateBytes = Base64.decode(wrongTrustRootBase64, Base64.DEFAULT);
@@ -378,7 +380,7 @@ public class MobileCoinClientTest {
         final BigInteger MINIMUM_TX_FEE = coinSourceClient.getOrFetchMinimumTxFee();
         final BigInteger FRAGMENT_AMOUNT = MINIMUM_TX_FEE.multiply(BigInteger.TEN);
 
-        TestFogConfig fogConfig = Environment.getTestFogConfig();
+        TestFogConfig fogConfig = getTestFogConfig();
         // 1. Create a new fragmented account
         AccountKey fragmentedAccount = AccountKey.createNew(
                 fogConfig.getFogUri(),
@@ -578,7 +580,7 @@ public class MobileCoinClientTest {
             AttestationException, FogReportException, TransactionBuilderException,
             FragmentedAccountException, FeeRejectedException, InterruptedException,
             InvalidTransactionException, TimeoutException {
-        TestFogConfig fogConfig = Environment.getTestFogConfig();
+        TestFogConfig fogConfig = getTestFogConfig();
         AccountKey recipientAccount = TestKeysManager.getNextAccountKey();
         // remove fog info from the public address
         PublicAddress addressWithFog = recipientAccount.getPublicAddress();
@@ -674,6 +676,65 @@ public class MobileCoinClientTest {
         @Override
         public void clear(String key) {
           storage.clear();
+        }
+    }
+
+    // Tests RestFogBlockService, RestFogKeyImageService, and RestFogViewService
+    @Test
+    public void getBalance_afterSetTransportProtocolWithHTTP_retrievesBalance() throws Exception {
+        MobileCoinClient mobileCoinClient = Environment.makeFreshMobileCoinClient();
+
+        TransportProtocol httpTransportProtocol = TransportProtocol.forHTTP(new SimpleRequester());
+        mobileCoinClient.setTransportProtocol(httpTransportProtocol);
+
+        Balance balance = mobileCoinClient.getBalance();
+        Assert.assertNotNull(balance);
+    }
+
+    // Tests RestBlockchainService.
+    @Test
+    public void getOrFetchMinimumTxFee_afterSetTransportProtocolWithHTTP_retrievesTransferableAmount() throws Exception {
+        MobileCoinClient mobileCoinClient = Environment.makeFreshMobileCoinClient();
+
+        TransportProtocol httpTransportProtocol = TransportProtocol.forHTTP(new SimpleRequester());
+        mobileCoinClient.setTransportProtocol(httpTransportProtocol);
+
+        BigInteger minimumTxFee = mobileCoinClient.getOrFetchMinimumTxFee();
+
+        Assert.assertNotNull(minimumTxFee);
+    }
+
+    // Tests RestConsensusClientService, RestFogMerkleProofService, RestFogReportService,
+    // and RestFogUntrustedService.
+    @Test
+    public void submitTransaction_afterSetTransportProtocolWithHTTP_submitsTransaction() throws Exception {
+        MobileCoinClient mobileCoinClient = Environment.makeFreshMobileCoinClient();
+        TransportProtocol httpTransportProtocol = TransportProtocol.forHTTP(new SimpleRequester());
+        mobileCoinClient.setTransportProtocol(httpTransportProtocol);
+
+        AccountKey recipient = TestKeysManager.getNextAccountKey();
+        try {
+            BigInteger amount = BigInteger.TEN;
+            BigInteger minimumFee = mobileCoinClient.estimateTotalFee(
+                amount
+            );
+            PendingTransaction pending = mobileCoinClient.prepareTransaction(
+                recipient.getPublicAddress(),
+                amount,
+                minimumFee
+            );
+            mobileCoinClient.submitTransaction(pending.getTransaction());
+            Transaction.Status status = waitForTransactionStatus(
+                mobileCoinClient,
+                pending.getTransaction()
+            );
+            Assert.assertSame(
+                "Valid transaction must be accepted",
+                status,
+                Transaction.Status.ACCEPTED
+            );
+        } finally {
+            mobileCoinClient.shutdown();
         }
     }
 }
