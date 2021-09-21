@@ -20,7 +20,7 @@ public class RestFogViewService extends RestService implements FogViewService {
     public Attest.AuthMessage auth(Attest.AuthMessage authMessage) {
         try {
             byte[] responseData = getRestClient().makeRequest(
-                    SERVICE_NAME + "/" + "Auth",
+                    PREFIX + SERVICE_NAME + "/" + "Auth",
                     authMessage.toByteArray()
             );
             return Attest.AuthMessage.parseFrom(responseData);
@@ -32,7 +32,7 @@ public class RestFogViewService extends RestService implements FogViewService {
     public Attest.Message query(Attest.Message queryMessage) {
         try {
             byte[] responseData = getRestClient().makeRequest(
-                    SERVICE_NAME + "/" + "Query",
+                    PREFIX + SERVICE_NAME + "/" + "Query",
                     queryMessage.toByteArray()
             );
             return Attest.Message.parseFrom(responseData);

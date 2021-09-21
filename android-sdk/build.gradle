@@ -1,5 +1,6 @@
 apply plugin: 'com.android.library'
 apply plugin: 'com.google.protobuf'
+apply from: 'publish.gradle'
 
 def grpcVersion = "1.38.0"
 def protobufVersion = "3.17.0"

@@ -6,6 +6,7 @@ import com.mobilecoin.lib.network.services.ApiService;
 import com.mobilecoin.lib.network.services.http.clients.RestClient;
 
 abstract class RestService implements ApiService {
+    protected static final String PREFIX = "/gw/";
     private final RestClient restClient;
 
     protected RestService(@NonNull RestClient restClient) {

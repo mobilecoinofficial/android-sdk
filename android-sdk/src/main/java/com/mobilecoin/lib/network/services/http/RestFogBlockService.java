@@ -21,7 +21,7 @@ public class RestFogBlockService extends RestService implements FogBlockService 
     public Ledger.BlockResponse getBlocks(Ledger.BlockRequest request) {
         try {
             byte[] responseData = getRestClient().makeRequest(
-                    SERVICE_NAME + "/" + "GetBlocks",
+                    PREFIX + SERVICE_NAME + "/" + "GetBlocks",
                     request.toByteArray()
             );
             return Ledger.BlockResponse.parseFrom(responseData);
