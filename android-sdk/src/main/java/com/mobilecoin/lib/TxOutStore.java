@@ -37,7 +37,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 final class TxOutStore implements Serializable {
-     static final String TAG = TxOutStore.class.getName();
+    private static final String TAG = TxOutStore.class.getName();
 
     // Bump serial version and read/write code if fields change
     private static final long serialVersionUID = 2L;

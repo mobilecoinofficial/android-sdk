@@ -144,7 +144,7 @@ final class FogSeed implements Serializable {
         out.write(nonce.length);
         out.write(nonce);
 
-        byte[] storedRngProtobufBytes= kexRng.getProtobufBytes();
+        byte[] storedRngProtobufBytes = kexRng.getProtobufBytes();
         out.write(storedRngProtobufBytes.length);
         out.write(storedRngProtobufBytes);
 
