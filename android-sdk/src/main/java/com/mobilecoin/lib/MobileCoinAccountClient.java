@@ -8,9 +8,19 @@ import com.mobilecoin.lib.exceptions.InsufficientFundsException;
 import com.mobilecoin.lib.exceptions.InvalidFogResponse;
 import com.mobilecoin.lib.exceptions.InvalidTransactionException;
 import com.mobilecoin.lib.exceptions.NetworkException;
+import com.mobilecoin.lib.exceptions.SerializationException;
+import com.mobilecoin.lib.exceptions.StorageNotFoundException;
 import com.mobilecoin.lib.exceptions.TransactionBuilderException;
+import java.io.IOException;
 import java.math.BigInteger;
+import java.security.InvalidKeyException;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import java.security.UnrecoverableEntryException;
 import java.util.concurrent.TimeoutException;
+import javax.crypto.BadPaddingException;
+import javax.crypto.IllegalBlockSizeException;
+import javax.crypto.NoSuchPaddingException;
 
 /**
  * Handles interactions with the user's MobileCoin account.
@@ -82,5 +92,20 @@ public interface MobileCoinAccountClient {
    */
   @NonNull
   AccountKey getAccountKey();
+
+  /**
+   * Serializes and caches user data that's then deserialized on the next app boot.
+   *
+   * <p>You must provide an implementation for {@link StorageAdapter} in the {@code
+   * ClientConfig}</p>
+   *
+   * <p>The serialized data is sensitive, so we encrypt it using a private key via Android's {@code
+   * KeyStore}. Please consider adding additional layers of security.
+   *
+   * @throws {@link StorageNotFoundException} if {@link StorageAdapter} is not provided by the
+   *                {@link ClientConfig}.
+   */
+  void cacheUserData()
+      throws StorageNotFoundException, SerializationException, IllegalBlockSizeException, InvalidKeyException, NoSuchAlgorithmException, KeyStoreException, BadPaddingException, NoSuchPaddingException, UnrecoverableEntryException, IOException;
 
 }

@@ -3,10 +3,8 @@
 package com.mobilecoin.lib;
 
 import android.net.Uri;
-
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-
 import com.mobilecoin.api.MobileCoinAPI;
 import com.mobilecoin.lib.exceptions.AttestationException;
 import com.mobilecoin.lib.exceptions.FeeRejectedException;
@@ -18,6 +16,8 @@ import com.mobilecoin.lib.exceptions.InvalidReceiptException;
 import com.mobilecoin.lib.exceptions.InvalidTransactionException;
 import com.mobilecoin.lib.exceptions.InvalidUriException;
 import com.mobilecoin.lib.exceptions.NetworkException;
+import com.mobilecoin.lib.exceptions.SerializationException;
+import com.mobilecoin.lib.exceptions.StorageNotFoundException;
 import com.mobilecoin.lib.exceptions.TransactionBuilderException;
 import com.mobilecoin.lib.log.LogAdapter;
 import com.mobilecoin.lib.log.Logger;
@@ -26,7 +26,8 @@ import com.mobilecoin.lib.network.uri.ConsensusUri;
 import com.mobilecoin.lib.network.uri.FogUri;
 import com.mobilecoin.lib.util.Result;
 import com.mobilecoin.lib.util.Task;
-
+import consensus_common.ConsensusCommon;
+import fog_ledger.Ledger;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -41,9 +42,6 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeoutException;
 import java.util.stream.Collectors;
-
-import consensus_common.ConsensusCommon;
-import fog_ledger.Ledger;
 
 /**
  * <pre>
@@ -118,13 +116,46 @@ public final class MobileCoinClient implements MobileCoinAccountClient, MobileCo
                 clientConfig.consensus);
         this.fogBlockClient = new FogBlockClient(normalizedFogUri, clientConfig.fogLedger);
         this.untrustedClient = new FogUntrustedClient(normalizedFogUri, clientConfig.fogLedger);
-        this.txOutStore = new TxOutStore(accountKey);
+        this.txOutStore = createTxOutStore(accountKey);
         this.fogReportsManager = new FogReportsManager();
         // add client provided log adapter
         LogAdapter logAdapter = clientConfig.logAdapter;
         if (null != logAdapter) {
             Logger.addAdapter(logAdapter);
         }
+    }
+
+    private TxOutStore createTxOutStore(AccountKey accountKey) {
+        String txOutStoreStorageKey = TxOutStore.createStorageKey(accountKey);
+        if(cacheStorage != null && cacheStorage.has(txOutStoreStorageKey)) {
+            byte[] serializedTxOutStore = cacheStorage.get(txOutStoreStorageKey);
+            return deserializeTxOutStore(serializedTxOutStore, accountKey);
+        }
+
+        return new TxOutStore(accountKey);
+    }
+
+    private TxOutStore deserializeTxOutStore(byte[] serializedTxOutStore, AccountKey accountKey) {
+        try {
+            return TxOutStore.fromBytes(serializedTxOutStore, accountKey);
+        } catch (SerializationException e) {
+            Logger.i(TAG, "Failed to deserialize the serialized TxOutStore:" + e.getMessage());
+            return new TxOutStore(accountKey);
+        }
+    }
+
+    @Override
+    public void cacheUserData()
+        throws StorageNotFoundException, SerializationException {
+        if (cacheStorage == null) {
+            throw new StorageNotFoundException(
+                "Data cannot be persisted because no cache storage is available.");
+        }
+
+        String txOutStoreStorageKey = TxOutStore.createStorageKey(accountKey);
+        byte[] serializedTxOutStore = txOutStore.toByteArray();
+
+        cacheStorage.set(txOutStoreStorageKey, serializedTxOutStore);
     }
 
     @Override

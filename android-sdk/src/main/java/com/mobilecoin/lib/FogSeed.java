@@ -7,6 +7,7 @@ import androidx.annotation.NonNull;
 import com.mobilecoin.lib.exceptions.KexRngException;
 import com.mobilecoin.lib.log.Logger;
 
+import fog_view.View.RngRecord;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -16,6 +17,8 @@ import java.util.Arrays;
 import java.util.List;
 
 import fog_view.View;
+import java.util.Objects;
+import kex_rng.KexRng.StoredRng;
 
 final class FogSeed implements Serializable {
     private final static String TAG = FogSeed.class.getName();
@@ -24,7 +27,7 @@ final class FogSeed implements Serializable {
     private static final long serialVersionUID = 1L;
 
     // RNG
-    private final ClientKexRng kexRng;
+    private ClientKexRng kexRng;
     // Data that comes straight from fog.
     private byte[] nonce;
     private int rngVersion;
@@ -137,9 +140,14 @@ final class FogSeed implements Serializable {
     }
 
 
-    private void writeObject(ObjectOutputStream out) throws IOException {
+    private void writeObject(ObjectOutputStream out) throws IOException, KexRngException {
         out.write(nonce.length);
         out.write(nonce);
+
+        byte[] storedRngProtobufBytes = kexRng.getProtobufBytes();
+        out.write(storedRngProtobufBytes.length);
+        out.write(storedRngProtobufBytes);
+
         out.writeInt(rngVersion);
         out.writeObject(startBlock);
         out.writeObject(utxos);
@@ -147,16 +155,42 @@ final class FogSeed implements Serializable {
     }
 
     @SuppressWarnings("unchecked")
-    private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException {
+    private void readObject(ObjectInputStream in)
+        throws IOException, ClassNotFoundException, KexRngException {
         int nonceLength = in.read();
         nonce = new byte[nonceLength];
         int bytesRead = in.read(nonce);
         if (bytesRead != nonceLength) {
             throw new IOException();
         }
+        int storedRngProtobufBytesLength = in.read();
+        byte[] storedRngProtobufBytes = new byte[storedRngProtobufBytesLength];
+        int kexRngProtobufBytesRead = in.read(storedRngProtobufBytes);
+        if (kexRngProtobufBytesRead != storedRngProtobufBytesLength) {
+            throw new IOException();
+        }
+        kexRng = new ClientKexRng(storedRngProtobufBytes);
         rngVersion = in.readInt();
         startBlock = (UnsignedLong) in.readObject();
         utxos = (ArrayList<OwnedTxOut>) in.readObject();
         ingestInvocationId = in.readLong();
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        FogSeed fogSeed = (FogSeed) o;
+        return rngVersion == fogSeed.rngVersion &&
+            isObsolete == fogSeed.isObsolete &&
+            ingestInvocationId == fogSeed.ingestInvocationId &&
+            Objects.equals(kexRng, fogSeed.kexRng) &&
+            Arrays.equals(nonce, fogSeed.nonce) &&
+            Objects.equals(startBlock, fogSeed.startBlock) &&
+            Objects.equals(utxos, fogSeed.utxos);
     }
 }
