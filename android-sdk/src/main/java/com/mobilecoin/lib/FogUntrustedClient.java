@@ -9,6 +9,7 @@ import com.mobilecoin.lib.exceptions.AttestationException;
 import com.mobilecoin.lib.exceptions.NetworkException;
 import com.mobilecoin.lib.log.Logger;
 import com.mobilecoin.lib.network.services.FogUntrustedService;
+import com.mobilecoin.lib.network.services.ServiceAPIManager;
 import com.mobilecoin.lib.network.services.transport.Transport;
 import com.mobilecoin.lib.network.uri.FogUri;
 import com.mobilecoin.lib.util.NetworkingCall;
@@ -37,6 +38,16 @@ final class FogUntrustedClient extends AnyClient {
         Logger.i(TAG, "Created new FogUntrustedClient", null,
                 "uri:", uri,
                 "verifier:", serviceConfig);
+    }
+
+    FogUntrustedClient(@NonNull FogUri uri,
+                   @NonNull ClientConfig.Service serviceConfig,
+                   @NonNull ServiceAPIManager apiManager) {
+        super(uri, serviceConfig, apiManager);
+        Logger.i(TAG, "Created new FogUntrustedClient", null,
+                "uri:", uri,
+                "verifier:", serviceConfig,
+                "apiManager:", apiManager);
     }
 
     /**

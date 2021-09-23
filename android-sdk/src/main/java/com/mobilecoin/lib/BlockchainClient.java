@@ -7,7 +7,9 @@ import com.mobilecoin.lib.exceptions.AttestationException;
 import com.mobilecoin.lib.exceptions.NetworkException;
 import com.mobilecoin.lib.log.Logger;
 import com.mobilecoin.lib.network.services.BlockchainService;
+import com.mobilecoin.lib.network.services.ServiceAPIManager;
 import com.mobilecoin.lib.network.uri.ConsensusUri;
+import com.mobilecoin.lib.network.uri.FogUri;
 import com.mobilecoin.lib.util.NetworkingCall;
 
 import java.math.BigInteger;
@@ -38,6 +40,18 @@ final class BlockchainClient extends AnyClient {
         this.minimumFeeCacheTTL = minimumFeeCacheTTL;
     }
 
+    BlockchainClient(@NonNull ConsensusUri uri,
+                   @NonNull ClientConfig.Service serviceConfig,
+                   @NonNull Duration minimumFeeCacheTTL,
+                   @NonNull ServiceAPIManager apiManager) {
+        super(uri, serviceConfig, apiManager);
+        this.minimumFeeCacheTTL = minimumFeeCacheTTL;
+        Logger.i(TAG, "Created new BlockchainClient", null,
+                "uri:", uri,
+                "verifier:", serviceConfig,
+                "apiManager:", apiManager);
+    }
+
     /**
      * Fetch or return cached current minimal fee
      */
@@ -65,6 +79,13 @@ final class BlockchainClient extends AnyClient {
      */
     @NonNull
     synchronized ConsensusCommon.LastBlockInfoResponse getOrFetchLastBlockInfo() throws NetworkException {
+        if(lastBlockInfoTimestamp != null) {
+            Logger.e("HERE! ", lastBlockInfoTimestamp.plus(minimumFeeCacheTTL).toString());
+            Logger.e("HERE! ", LocalDateTime.now().toString());
+            Logger.e("HERE! ", Integer.toString(lastBlockInfoTimestamp
+                    .plus(minimumFeeCacheTTL)
+                    .compareTo(LocalDateTime.now())));
+        }
         if (lastBlockInfo == null ||
                 lastBlockInfoTimestamp
                         .plus(minimumFeeCacheTTL)

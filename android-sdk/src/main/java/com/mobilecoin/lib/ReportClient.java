@@ -10,6 +10,7 @@ import com.mobilecoin.lib.exceptions.InvalidFogResponse;
 import com.mobilecoin.lib.exceptions.NetworkException;
 import com.mobilecoin.lib.log.Logger;
 import com.mobilecoin.lib.network.services.FogReportService;
+import com.mobilecoin.lib.network.services.ServiceAPIManager;
 import com.mobilecoin.lib.network.uri.FogUri;
 
 import java.util.ArrayList;
@@ -31,6 +32,16 @@ final class ReportClient extends AnyClient {
      */
     ReportClient(@NonNull FogUri uri, @NonNull ClientConfig.Service serviceConfig) {
         super(uri, serviceConfig);
+    }
+
+    ReportClient(@NonNull FogUri uri,
+                   @NonNull ClientConfig.Service serviceConfig,
+                   @NonNull ServiceAPIManager apiManager) {
+        super(uri, serviceConfig, apiManager);
+        Logger.i(TAG, "Created new ReportClient", null,
+                "uri:", uri,
+                "verifier:", serviceConfig,
+                "apiManager:", apiManager);
     }
 
     /**
