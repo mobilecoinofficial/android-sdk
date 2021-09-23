@@ -4,21 +4,20 @@ package com.mobilecoin.lib;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-
 import com.mobilecoin.api.MobileCoinAPI;
+import com.mobilecoin.api.MobileCoinAPI.EncryptedMemo;
 import com.mobilecoin.lib.exceptions.AmountDecoderException;
 import com.mobilecoin.lib.exceptions.SerializationException;
 import com.mobilecoin.lib.exceptions.TransactionBuilderException;
 import com.mobilecoin.lib.log.Logger;
-
+import com.mobilecoin.lib.util.Hex;
+import fog_view.View;
 import java.io.Serializable;
 import java.math.BigInteger;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
-
-import fog_view.View;
 
 /**
  * A transaction output that belongs to a {@link AccountKey}
@@ -31,13 +30,18 @@ public class OwnedTxOut implements Serializable {
 
     //  The global index of this TxOut in the entire block chain.
     private final UnsignedLong txOutGlobalIndex;
+    private final byte[] decryptedMemoPayload;
 
     // The block index at which this TxOut appeared.
     private final UnsignedLong receivedBlockIndex;
+    private final AccountKey accountKey;
+    private final TxOut nativeTxOut;
 
     private final Date receivedBlockTimestamp;
     private Date spentBlockTimestamp;
     private UnsignedLong spentBlockIndex;
+
+    private TxOutMemo cachedTxOutMemo;
 
     private final BigInteger value;
     private final RistrettoPublic txOutPublicKey;
@@ -49,6 +53,7 @@ public class OwnedTxOut implements Serializable {
             @NonNull AccountKey accountKey
     ) {
         try {
+            this.accountKey = accountKey;
             txOutGlobalIndex = UnsignedLong.fromLongBits(txOutRecord.getTxOutGlobalIndex());
             long longTimestampSeconds = txOutRecord.getTimestamp();
             // when the timestamp is missing U64::MAX is returned
@@ -78,13 +83,18 @@ public class OwnedTxOut implements Serializable {
                     txOutPublicKey
             );
 
-            MobileCoinAPI.TxOut txOutProto = MobileCoinAPI.TxOut.newBuilder()
+            MobileCoinAPI.TxOut.Builder txOutProtoBuilder = MobileCoinAPI.TxOut.newBuilder()
                     .setAmount(amount.toProtoBufObject())
                     .setPublicKey(txOutPublicKeyProto)
-                    .setTargetKey(txOutTargetKeyProto)
-                    .build();
+                    .setTargetKey(txOutTargetKeyProto);
+            if (!txOutRecord.getTxOutEMemoData().isEmpty()) {
+                EncryptedMemo encryptedMemo = EncryptedMemo.newBuilder()
+                    .setData(txOutRecord.getTxOutEMemoData()).build();
+                txOutProtoBuilder.setEMemo(encryptedMemo);
+            }
             // Calculated fields
-            TxOut nativeTxOut = TxOut.fromProtoBufObject(txOutProto);
+            nativeTxOut = TxOut.fromProtoBufObject(txOutProtoBuilder.build());
+            decryptedMemoPayload = nativeTxOut.decryptMemoPayload(accountKey);
             keyImage = nativeTxOut.computeKeyImage(accountKey);
         } catch (SerializationException | AmountDecoderException | TransactionBuilderException e) {
             IllegalArgumentException illegalArgumentException =
@@ -92,6 +102,16 @@ public class OwnedTxOut implements Serializable {
             Util.logException(TAG, illegalArgumentException);
             throw illegalArgumentException;
         }
+    }
+
+    /** Retrieves the {@link TxOutMemo} for the given TxOut. */
+    public TxOutMemo getTxOutMemo() {
+        if (cachedTxOutMemo == null) {
+            cachedTxOutMemo = TxOutMemoParser
+                .parseTxOutMemo(decryptedMemoPayload, accountKey, nativeTxOut);
+        }
+
+        return cachedTxOutMemo;
     }
 
     /**
