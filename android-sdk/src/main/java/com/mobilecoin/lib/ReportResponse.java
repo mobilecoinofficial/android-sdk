@@ -7,6 +7,7 @@ import androidx.annotation.NonNull;
 import com.mobilecoin.lib.exceptions.FogReportException;
 import com.mobilecoin.lib.log.Logger;
 
+import com.mobilecoin.lib.util.Hex;
 import java.util.List;
 
 final class ReportResponse extends Native {
@@ -30,6 +31,19 @@ final class ReportResponse extends Native {
         }
     }
 
+    ReportResponse(byte[] protobufBytes) throws FogReportException {
+       try {
+           init_jni_from_protobuf_bytes(protobufBytes);
+           this.reports = getReports();
+           this.chain = getChain();
+           this.signature = getSignature();
+       } catch (Exception exception) {
+           FogReportException fogReportException =
+               new FogReportException("Unable to create report response", exception);
+           Util.logException(TAG, fogReportException);
+           throw fogReportException;
+       }
+    }
     @NonNull
     public List<Report> getReports() {
         Logger.i(TAG, "Getting reports", null, reports);
@@ -61,6 +75,8 @@ final class ReportResponse extends Native {
     // native calls
     private native void init_jni(@NonNull Report[] reports, @NonNull byte[][] chain,
                                  @NonNull byte[] signature);
+
+    private native void init_jni_from_protobuf_bytes(byte[] protobufBytes);
 
     private native void finalize_jni();
 }
