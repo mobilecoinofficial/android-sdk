@@ -43,6 +43,11 @@ public class BlockchainClientTest {
                         .setIndex(1)
                         .setMinimumFee(1)
                         .build()
+        ).thenReturn(
+                ConsensusCommon.LastBlockInfoResponse.newBuilder()
+                        .setIndex(2)
+                        .setMinimumFee(3)
+                        .build()
         );
         when(apiManager.getBlockchainService(any())).thenReturn(blockchainService);
 
@@ -56,14 +61,6 @@ public class BlockchainClientTest {
         // Get initial block response and cache it
         ConsensusCommon.LastBlockInfoResponse lastBlockInfoResponse1 =
                 blockchainClient.getOrFetchLastBlockInfo();
-
-        // Create new response for blockchainService to fetch (will be fetched if cache not valid/expired)
-        when(blockchainService.getLastBlockInfo(any())).thenReturn(
-                ConsensusCommon.LastBlockInfoResponse.newBuilder()
-                        .setIndex(1)
-                        .setMinimumFee(1)
-                        .build()
-        );
 
         // Test client caching last block info
         ConsensusCommon.LastBlockInfoResponse lastBlockInfoResponse2 =
@@ -99,6 +96,11 @@ public class BlockchainClientTest {
                         .setIndex(1)
                         .setMinimumFee(1)
                         .build()
+        ).thenReturn(
+                ConsensusCommon.LastBlockInfoResponse.newBuilder()
+                        .setIndex(1)
+                        .setMinimumFee(1)
+                        .build()
         );
         when(apiManager.getBlockchainService(any())).thenReturn(blockchainService);
 
@@ -112,14 +114,6 @@ public class BlockchainClientTest {
         ConsensusCommon.LastBlockInfoResponse lastBlockInfoResponse1 =
                 blockchainClient.getOrFetchLastBlockInfo();
         Thread.sleep(1000);
-
-        // Create new response for blockchainService to fetch (will be fetched if cache not valid/expired)
-        when(blockchainService.getLastBlockInfo(any())).thenReturn(
-                ConsensusCommon.LastBlockInfoResponse.newBuilder()
-                        .setIndex(1)
-                        .setMinimumFee(1)
-                        .build()
-        );
 
         // Test client respects cache TTL
         ConsensusCommon.LastBlockInfoResponse lastBlockInfoResponse2 =
