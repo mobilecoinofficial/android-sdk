@@ -5,13 +5,13 @@ package com.mobilecoin.lib;
 
 import androidx.annotation.NonNull;
 
+import com.mobilecoin.lib.ClientConfig.Service;
 import com.mobilecoin.lib.exceptions.AttestationException;
 import com.mobilecoin.lib.exceptions.NetworkException;
 import com.mobilecoin.lib.log.Logger;
 import com.mobilecoin.lib.network.services.FogUntrustedService;
 import com.mobilecoin.lib.network.services.ServiceAPIManager;
 import com.mobilecoin.lib.network.services.transport.Transport;
-import com.mobilecoin.lib.network.uri.FogUri;
 import com.mobilecoin.lib.util.NetworkingCall;
 
 import java.util.Set;
@@ -28,15 +28,14 @@ final class FogUntrustedClient extends AnyClient {
 
     /**
      * Creates and initializes an instance of {@link FogUntrustedClient}
-     *
-     * @param uri           an address of the service. Example:
+     *  @param loadBalancer           an address of the service. Example:
      *                      fog://fog.test.mobilecoin.com
      * @param serviceConfig service configuration passed to MobileCoinClient
      */
-    FogUntrustedClient(@NonNull FogUri uri, @NonNull ClientConfig.Service serviceConfig) {
-        super(uri, serviceConfig);
+    FogUntrustedClient(@NonNull LoadBalancer loadBalancer, @NonNull Service serviceConfig) {
+        super(loadBalancer, serviceConfig);
         Logger.i(TAG, "Created new FogUntrustedClient", null,
-                "uri:", uri,
+                "uri:", loadBalancer,
                 "verifier:", serviceConfig);
     }
 

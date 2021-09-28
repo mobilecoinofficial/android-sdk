@@ -7,7 +7,6 @@ import static org.mockito.Mockito.when;
 import com.mobilecoin.lib.network.services.BlockchainService;
 import com.mobilecoin.lib.network.services.ServiceAPIManager;
 import com.mobilecoin.lib.network.uri.ConsensusUri;
-
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -18,8 +17,10 @@ import consensus_common.ConsensusCommon;
 public class BlockchainClientTest {
     @Test
     public void clientCachesLastBlockInfo() throws Exception {
+        ConsensusUri consensusUri = new ConsensusUri(
+            Environment.getTestFogConfig().getConsensusUri());
         BlockchainClient blockchainClient = new BlockchainClient(
-                new ConsensusUri(Environment.getTestFogConfig().getConsensusUri()),
+                RandomLoadBalancer.create(consensusUri),
                 Environment.getTestFogConfig().getClientConfig().consensus,
                 Duration.ofHours(1));
         blockchainClient.setAuthorization(
@@ -70,8 +71,10 @@ public class BlockchainClientTest {
 
     @Test
     public void clientRespectsCacheTTL() throws Exception {
+        ConsensusUri consensusUri = new ConsensusUri(
+            Environment.getTestFogConfig().getConsensusUri());
         BlockchainClient blockchainClient = new BlockchainClient(
-                new ConsensusUri(Environment.getTestFogConfig().getConsensusUri()),
+                RandomLoadBalancer.create(consensusUri),
                 Environment.getTestFogConfig().getClientConfig().consensus,
                 Duration.ofMillis(1));
         blockchainClient.setAuthorization(

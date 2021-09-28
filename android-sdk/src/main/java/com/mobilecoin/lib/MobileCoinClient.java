@@ -24,12 +24,14 @@ import com.mobilecoin.lib.log.Logger;
 import com.mobilecoin.lib.network.TransportProtocol;
 import com.mobilecoin.lib.network.uri.ConsensusUri;
 import com.mobilecoin.lib.network.uri.FogUri;
+import com.mobilecoin.lib.network.uri.MobileCoinUri;
 import com.mobilecoin.lib.util.Result;
 import com.mobilecoin.lib.util.Task;
 import consensus_common.ConsensusCommon;
 import fog_ledger.Ledger;
 import java.math.BigInteger;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -108,14 +110,22 @@ public final class MobileCoinClient implements MobileCoinAccountClient, MobileCo
         this.clientConfig = clientConfig;
         this.cacheStorage = clientConfig.storageAdapter;
         FogUri normalizedFogUri = new FogUri(fogUri);
-        this.blockchainClient = new BlockchainClient(new ConsensusUri(consensusUri),
-                clientConfig.consensus, clientConfig.minimumFeeCacheTTL);
-        this.viewClient = new AttestedViewClient(normalizedFogUri, clientConfig.fogView);
-        this.ledgerClient = new AttestedLedgerClient(normalizedFogUri, clientConfig.fogLedger);
-        this.consensusClient = new AttestedConsensusClient(new ConsensusUri(consensusUri),
-                clientConfig.consensus);
-        this.fogBlockClient = new FogBlockClient(normalizedFogUri, clientConfig.fogLedger);
-        this.untrustedClient = new FogUntrustedClient(normalizedFogUri, clientConfig.fogLedger);
+        ConsensusUri normalizedConsensusUri = new ConsensusUri(consensusUri);
+        this.blockchainClient = new BlockchainClient(
+            RandomLoadBalancer.create(normalizedConsensusUri),
+            clientConfig.consensus,
+            clientConfig.minimumFeeCacheTTL
+        );
+        this.viewClient = new AttestedViewClient(RandomLoadBalancer.create(normalizedFogUri),
+            clientConfig.fogView);
+        this.ledgerClient = new AttestedLedgerClient(RandomLoadBalancer.create(normalizedFogUri),
+            clientConfig.fogLedger);
+        this.consensusClient = new AttestedConsensusClient(RandomLoadBalancer.create(normalizedConsensusUri),
+            clientConfig.consensus);
+        this.fogBlockClient = new FogBlockClient(RandomLoadBalancer.create(normalizedFogUri),
+            clientConfig.fogLedger);
+        this.untrustedClient = new FogUntrustedClient(RandomLoadBalancer.create(normalizedFogUri),
+            clientConfig.fogLedger);
         this.txOutStore = createTxOutStore(accountKey);
         this.fogReportsManager = new FogReportsManager();
         // add client provided log adapter

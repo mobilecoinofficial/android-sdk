@@ -40,8 +40,9 @@ public class LedgerTest {
     @Test
     public void fetch_block_records_test() throws NetworkException, AttestationException,
             InvalidUriException {
+        FogUri fogUri = new FogUri(fogConfig.getFogUri());
         FogBlockClient blockClient = new FogBlockClient(
-                new FogUri(fogConfig.getFogUri()),
+                RandomLoadBalancer.create(fogUri),
                 fogConfig.getClientConfig().fogLedger
         );
 
@@ -106,9 +107,9 @@ public class LedgerTest {
             txoBlock = receiptStatus.getBlockIndex();
             Thread.sleep(1000);
         } while (receiptStatus == Receipt.Status.UNKNOWN);
-
+        FogUri fogUri = new FogUri(fogConfig.getFogUri());
         FogBlockClient blockClient = new FogBlockClient(
-                new FogUri(fogConfig.getFogUri()),
+                RandomLoadBalancer.create(fogUri),
                 fogConfig.getClientConfig().fogLedger
         );
 

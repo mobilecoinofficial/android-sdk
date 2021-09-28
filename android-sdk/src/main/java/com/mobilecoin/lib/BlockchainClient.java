@@ -3,6 +3,7 @@ package com.mobilecoin.lib;
 import androidx.annotation.NonNull;
 
 import com.google.protobuf.Empty;
+import com.mobilecoin.lib.ClientConfig.Service;
 import com.mobilecoin.lib.exceptions.AttestationException;
 import com.mobilecoin.lib.exceptions.NetworkException;
 import com.mobilecoin.lib.log.Logger;
@@ -28,15 +29,14 @@ final class BlockchainClient extends AnyClient {
 
     /**
      * Creates and initializes an instance of {@link BlockchainClient}
-     *
-     * @param uri                a uri of the service
+     *  @param loadBalancer                a uri of the service
      * @param serviceConfig      service configuration passed to MobileCoinClient
      * @param minimumFeeCacheTTL duration of the minimum fee cache lifetime
      */
-    BlockchainClient(@NonNull ConsensusUri uri,
-                     @NonNull ClientConfig.Service serviceConfig,
+    BlockchainClient(@NonNull LoadBalancer loadBalancer,
+                     @NonNull Service serviceConfig,
                      @NonNull Duration minimumFeeCacheTTL) {
-        super(uri, serviceConfig);
+        super(loadBalancer, serviceConfig);
         this.minimumFeeCacheTTL = minimumFeeCacheTTL;
     }
 
