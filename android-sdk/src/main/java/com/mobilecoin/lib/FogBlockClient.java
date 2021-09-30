@@ -10,6 +10,7 @@ import com.mobilecoin.lib.exceptions.AttestationException;
 import com.mobilecoin.lib.exceptions.NetworkException;
 import com.mobilecoin.lib.log.Logger;
 import com.mobilecoin.lib.network.services.FogBlockService;
+import com.mobilecoin.lib.network.services.ServiceAPIManager;
 import com.mobilecoin.lib.network.uri.FogUri;
 import com.mobilecoin.lib.util.NetworkingCall;
 
@@ -41,6 +42,17 @@ final class FogBlockClient extends AnyClient {
                 "uri:", uri,
                 "verifier:", serviceConfig);
     }
+
+    FogBlockClient(@NonNull FogUri uri,
+                   @NonNull ClientConfig.Service serviceConfig,
+                   @NonNull ServiceAPIManager apiManager) {
+        super(uri, serviceConfig, apiManager);
+        Logger.i(TAG, "Created new FogBlockClient", null,
+                "uri:", uri,
+                "verifier:", serviceConfig,
+                "apiManager:", apiManager);
+    }
+
 
     /**
      * Scan for OwnedTxOuts

@@ -7,7 +7,9 @@ import com.mobilecoin.lib.exceptions.AttestationException;
 import com.mobilecoin.lib.exceptions.NetworkException;
 import com.mobilecoin.lib.log.Logger;
 import com.mobilecoin.lib.network.services.BlockchainService;
+import com.mobilecoin.lib.network.services.ServiceAPIManager;
 import com.mobilecoin.lib.network.uri.ConsensusUri;
+import com.mobilecoin.lib.network.uri.FogUri;
 import com.mobilecoin.lib.util.NetworkingCall;
 
 import java.math.BigInteger;
@@ -36,6 +38,18 @@ final class BlockchainClient extends AnyClient {
                      @NonNull Duration minimumFeeCacheTTL) {
         super(uri, serviceConfig);
         this.minimumFeeCacheTTL = minimumFeeCacheTTL;
+    }
+
+    BlockchainClient(@NonNull ConsensusUri uri,
+                   @NonNull ClientConfig.Service serviceConfig,
+                   @NonNull Duration minimumFeeCacheTTL,
+                   @NonNull ServiceAPIManager apiManager) {
+        super(uri, serviceConfig, apiManager);
+        this.minimumFeeCacheTTL = minimumFeeCacheTTL;
+        Logger.i(TAG, "Created new BlockchainClient", null,
+                "uri:", uri,
+                "verifier:", serviceConfig,
+                "apiManager:", apiManager);
     }
 
     /**

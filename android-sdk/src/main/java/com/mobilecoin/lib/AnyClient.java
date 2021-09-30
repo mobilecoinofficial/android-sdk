@@ -42,8 +42,8 @@ class AnyClient extends Native {
     private final static long MANAGED_CONNECTION_SHUTDOWN_TIME_LIMIT = 1000;
     private final MobileCoinUri serviceUri;
     private final ClientConfig.Service serviceConfig;
-    private final GRPCServiceAPIManager grpcApiManager;
-    private final RestServiceAPIManager restApiManager;
+    private final ServiceAPIManager grpcApiManager;
+    private final ServiceAPIManager restApiManager;
     private ManagedChannel managedChannel;
     private RestClient restClient;
     private Transport networkTransport;
@@ -59,6 +59,16 @@ class AnyClient extends Native {
         this.serviceConfig = serviceConfig;
         this.grpcApiManager = new GRPCServiceAPIManager();
         this.restApiManager = new RestServiceAPIManager();
+        this.transportProtocol = TransportProtocol.forGRPC();
+    }
+
+    protected AnyClient(@NonNull MobileCoinUri uri,
+                        @NonNull ClientConfig.Service serviceConfig,
+                        @NonNull ServiceAPIManager apiManager) {
+        this.serviceUri = uri;
+        this.serviceConfig = serviceConfig;
+        this.grpcApiManager = apiManager;
+        this.restApiManager = apiManager;
         this.transportProtocol = TransportProtocol.forGRPC();
     }
 
