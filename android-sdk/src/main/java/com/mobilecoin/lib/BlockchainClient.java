@@ -79,13 +79,6 @@ final class BlockchainClient extends AnyClient {
      */
     @NonNull
     synchronized ConsensusCommon.LastBlockInfoResponse getOrFetchLastBlockInfo() throws NetworkException {
-        if(lastBlockInfoTimestamp != null) {
-            Logger.e("HERE! ", lastBlockInfoTimestamp.plus(minimumFeeCacheTTL).toString());
-            Logger.e("HERE! ", LocalDateTime.now().toString());
-            Logger.e("HERE! ", Integer.toString(lastBlockInfoTimestamp
-                    .plus(minimumFeeCacheTTL)
-                    .compareTo(LocalDateTime.now())));
-        }
         if (lastBlockInfo == null ||
                 lastBlockInfoTimestamp
                         .plus(minimumFeeCacheTTL)
