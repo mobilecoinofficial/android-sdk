@@ -257,5 +257,7 @@ class AnyClient extends Native {
             } catch (InterruptedException ignored) { /* */ }
             managedChannel = null;
         }
+
+        restClient = null;
     }
 }
