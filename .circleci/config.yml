@@ -28,7 +28,10 @@ jobs:
 
       - run: make setup
       - run: make build
-      - run: make tests
+      - run: 
+          name: make tests
+          command: make tests
+          no_output_timeout: 20m
 
       - store_artifacts:
           path: android-sdk/build/reports
