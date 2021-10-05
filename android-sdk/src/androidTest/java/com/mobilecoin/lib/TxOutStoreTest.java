@@ -2,6 +2,14 @@
 
 package com.mobilecoin.lib;
 
+import static org.junit.Assert.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
+import com.google.protobuf.ByteString;
 import com.mobilecoin.lib.exceptions.AttestationException;
 import com.mobilecoin.lib.exceptions.FeeRejectedException;
 import com.mobilecoin.lib.exceptions.FogReportException;
@@ -14,6 +22,8 @@ import com.mobilecoin.lib.exceptions.InvalidUriException;
 import com.mobilecoin.lib.exceptions.NetworkException;
 import com.mobilecoin.lib.exceptions.SerializationException;
 import com.mobilecoin.lib.exceptions.TransactionBuilderException;
+import com.mobilecoin.lib.log.Logger;
+import com.mobilecoin.lib.network.services.ServiceAPIManager;
 import com.mobilecoin.lib.network.uri.FogUri;
 
 import org.junit.Assert;
@@ -21,9 +31,14 @@ import org.junit.Test;
 
 import java.math.BigInteger;
 import java.security.SecureRandom;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
+
+import fog_common.FogCommon;
+import fog_view.View;
+import kex_rng.KexRng;
 
 public class TxOutStoreTest {
     private final TestFogConfig fogConfig = Environment.getTestFogConfig();
@@ -100,7 +115,7 @@ public class TxOutStoreTest {
         do {
             Thread.sleep(1000);
             status = senderClient.getTransactionStatus(pending.getTransaction());
-            Assert.assertTrue(status.getBlockIndex().compareTo(UnsignedLong.ZERO) > 0);
+            assertTrue(status.getBlockIndex().compareTo(UnsignedLong.ZERO) > 0);
             // transaction status will change to FAILED if the current block index becomes
             // higher than transaction maximum heights
         } while (status == Transaction.Status.UNKNOWN);
@@ -147,6 +162,65 @@ public class TxOutStoreTest {
         if (!found) {
             Assert.fail("Unable to retrieve account TxOuts from the ledger");
         }
+    }
+
+    @Test
+    public void testEmptyResponse() throws Exception {
+        AttestedViewClient viewClient = mock(AttestedViewClient.class);
+        View.QueryResponse.Builder responseBuilder = View.QueryResponse.newBuilder();
+        when(viewClient.request(any(), eq(Long.valueOf(0L)), eq(Long.valueOf(0L)))).thenReturn(responseBuilder.build());
+
+        TxOutStore uut = new TxOutStore(null);
+        Set<BlockRange> results = uut.updateRNGsAndTxOuts(viewClient,
+                new DefaultFogQueryScalingStrategy(), new DefaultFogSeedProvider(),
+                new DefaultVersionedCryptoBox());
+        assertTrue(results.isEmpty());
+    }
+
+    @Test
+    public void testUpdateRNGs() throws Exception {
+
+        //build AccountKey
+        AccountKey accountKey = mock(AccountKey.class);
+        //
+
+        AttestedViewClient viewClient = mock(AttestedViewClient.class);
+
+        //build Kex RNG pub key
+        KexRng.KexRngPubkey.Builder kexRngPubkey = KexRng.KexRngPubkey.newBuilder();
+        kexRngPubkey.setVersion(0);
+        kexRngPubkey.setPubkey(ByteString.copyFrom(new byte[32]));
+        //
+        //build RNG record
+        View.RngRecord.Builder rngRecord = View.RngRecord.newBuilder();
+        rngRecord.setStartBlock(0L);
+        rngRecord.setIngestInvocationId(0L);
+        rngRecord.setPubkey(kexRngPubkey.build());//add Kex RNG pub key;
+        //
+        //build query response
+        View.QueryResponse.Builder responseBuilder = View.QueryResponse.newBuilder();
+        responseBuilder.addRngs(rngRecord.build());//add RNG record
+
+        //
+        //build FogSeed
+        FogSeed fogSeed = mock(FogSeed.class);
+        when(fogSeed.isObsolete()).thenReturn(false);
+        when(fogSeed.getNextN(anyLong())).thenReturn(new byte[1][32]);
+        //
+        //build FogSeedProvider
+        FogSeedProvider seedProvider = mock(FogSeedProvider.class);
+        when(seedProvider.fogSeedFor(any(), any())).thenReturn(fogSeed);
+        //
+        //build VersionedCryptoBox
+        VersionedCryptoBox cryptoBox = mock(VersionedCryptoBox.class);
+
+        when(viewClient.request(any(), eq(Long.valueOf(0L)), eq(Long.valueOf(0L)))).thenReturn(responseBuilder.build());
+
+        TxOutStore uut = new TxOutStore(accountKey);
+        Set<BlockRange> results = uut.updateRNGsAndTxOuts(viewClient,
+                new DefaultFogQueryScalingStrategy(), seedProvider, cryptoBox);//TODO:
+        return;
+
     }
 
 }
