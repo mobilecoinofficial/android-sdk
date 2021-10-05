@@ -3,6 +3,7 @@
 package com.mobilecoin.lib;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.VisibleForTesting;
 
 import com.google.protobuf.ByteString;
 import com.mobilecoin.api.MobileCoinAPI;
@@ -23,7 +24,7 @@ import io.grpc.StatusRuntimeException;
 /**
  * Attested client for a consensus service
  */
-final class AttestedConsensusClient extends AttestedClient {
+class AttestedConsensusClient extends AttestedClient {
     private static final String TAG = AttestedConsensusClient.class.getName();
 
     /**

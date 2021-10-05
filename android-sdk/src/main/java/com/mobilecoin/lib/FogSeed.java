@@ -20,7 +20,7 @@ import fog_view.View;
 import java.util.Objects;
 import kex_rng.KexRng.StoredRng;
 
-final class FogSeed implements Serializable {
+class FogSeed implements Serializable {
     private final static String TAG = FogSeed.class.getName();
 
     // Bump serial version and read/write code if fields change

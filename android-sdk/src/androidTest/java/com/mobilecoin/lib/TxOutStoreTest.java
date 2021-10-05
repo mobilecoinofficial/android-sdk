@@ -200,7 +200,7 @@ public class TxOutStoreTest {
         //build query response
         View.QueryResponse.Builder responseBuilder = View.QueryResponse.newBuilder();
         responseBuilder.addRngs(rngRecord.build());//add RNG record
-
+        //TODO:
         //
         //build FogSeed
         FogSeed fogSeed = mock(FogSeed.class);

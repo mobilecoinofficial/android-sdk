@@ -12,6 +12,7 @@ import com.google.protobuf.ByteString;
 import com.mobilecoin.lib.exceptions.AttestationException;
 import com.mobilecoin.lib.exceptions.NetworkException;
 import com.mobilecoin.lib.log.Logger;
+import com.mobilecoin.lib.network.services.ServiceAPIManager;
 import com.mobilecoin.lib.network.services.http.clients.RestClient;
 import com.mobilecoin.lib.network.services.transport.GRPCTransport;
 import com.mobilecoin.lib.network.services.transport.Transport;
@@ -37,6 +38,12 @@ abstract class AttestedClient extends AnyClient {
     protected AttestedClient(@NonNull MobileCoinUri uri,
                              @NonNull ClientConfig.Service serviceConfig) {
         super(uri, serviceConfig);
+    }
+
+    protected AttestedClient(@NonNull MobileCoinUri uri,
+                             @NonNull ClientConfig.Service serviceConfig,
+                             @NonNull ServiceAPIManager apiManager) {
+        super(uri, serviceConfig, apiManager);
     }
 
     /**
