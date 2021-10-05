@@ -197,15 +197,24 @@ public class TxOutStoreTest {
         rngRecord.setIngestInvocationId(0L);
         rngRecord.setPubkey(kexRngPubkey.build());//add Kex RNG pub key;
         //
-        //build query response
+        //build TxOutStoreResult
+        View.TxOutSearchResult.Builder searchResult = View.TxOutSearchResult.newBuilder();
+        searchResult.setResultCode(View.TxOutSearchResultCode.NotFound_VALUE);
+        searchResult.setCiphertext(ByteString.copyFrom(new byte[32]));
+        searchResult.setSearchKey(ByteString.copyFrom(new byte[32]));
+        //
+        //build query responses
         View.QueryResponse.Builder responseBuilder = View.QueryResponse.newBuilder();
         responseBuilder.addRngs(rngRecord.build());//add RNG record
-        //TODO:
+        View.QueryResponse response1 = responseBuilder.build();
+        responseBuilder.addTxOutSearchResults(searchResult.build());
+        View.QueryResponse response2 = responseBuilder.build();
         //
         //build FogSeed
         FogSeed fogSeed = mock(FogSeed.class);
         when(fogSeed.isObsolete()).thenReturn(false);
         when(fogSeed.getNextN(anyLong())).thenReturn(new byte[1][32]);
+        when(fogSeed.getOutput()).thenReturn(new byte[32]);
         //
         //build FogSeedProvider
         FogSeedProvider seedProvider = mock(FogSeedProvider.class);
@@ -214,13 +223,36 @@ public class TxOutStoreTest {
         //build VersionedCryptoBox
         VersionedCryptoBox cryptoBox = mock(VersionedCryptoBox.class);
 
-        when(viewClient.request(any(), eq(Long.valueOf(0L)), eq(Long.valueOf(0L)))).thenReturn(responseBuilder.build());
+        //chain different response scenarios from view client
+        when(viewClient.request(any(), eq(Long.valueOf(0L)), eq(Long.valueOf(0L))))
+                .thenReturn(response1)//seed is null
+                .thenReturn(response2)//use new fog seed created in the first iteration of updateRNGsAndTxOuts
+                .thenReturn(responseBuilder.setTxOutSearchResults(0, searchResult.setResultCode(
+                        View.TxOutSearchResultCode.BadSearchKey_VALUE).build()).build())//Exception should be thrown in this case
+                .thenReturn(responseBuilder.setTxOutSearchResults(0, searchResult.setResultCode(
+                        View.TxOutSearchResultCode.InternalError_VALUE).build()).build());//Exception should be thrown in this case
 
         TxOutStore uut = new TxOutStore(accountKey);
         Set<BlockRange> results = uut.updateRNGsAndTxOuts(viewClient,
-                new DefaultFogQueryScalingStrategy(), seedProvider, cryptoBox);//TODO:
-        return;
+                new DefaultFogQueryScalingStrategy(), seedProvider, cryptoBox);
+        assertTrue(results.isEmpty());
 
+        boolean exceptionThrown = false;
+        try {
+            uut.updateRNGsAndTxOuts(viewClient,
+                    new DefaultFogQueryScalingStrategy(), seedProvider, cryptoBox);
+        } catch(InvalidFogResponse expected) {
+            exceptionThrown = true;
+        }
+        assertTrue(exceptionThrown);
+        exceptionThrown = false;
+        try {
+            uut.updateRNGsAndTxOuts(viewClient,
+                    new DefaultFogQueryScalingStrategy(), seedProvider, cryptoBox);
+        } catch(InvalidFogResponse expected) {
+            exceptionThrown = true;
+        }
+        assertTrue(exceptionThrown);
     }
 
 }
