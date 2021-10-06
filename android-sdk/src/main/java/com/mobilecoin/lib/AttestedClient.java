@@ -40,12 +40,6 @@ abstract class AttestedClient extends AnyClient {
         super(uri, serviceConfig);
     }
 
-    protected AttestedClient(@NonNull MobileCoinUri uri,
-                             @NonNull ClientConfig.Service serviceConfig,
-                             @NonNull ServiceAPIManager apiManager) {
-        super(uri, serviceConfig, apiManager);
-    }
-
     /**
      * Subclasses must use this method to get access to a managed channel. The connection will be
      * automatically attested during this call
