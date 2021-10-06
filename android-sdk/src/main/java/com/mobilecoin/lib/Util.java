@@ -3,7 +3,6 @@
 package com.mobilecoin.lib;
 
 import androidx.annotation.NonNull;
-import com.mobilecoin.lib.exceptions.InvalidFogResponse;
 import com.mobilecoin.lib.exceptions.TransactionBuilderException;
 import com.mobilecoin.lib.log.Logger;
 import java.io.ByteArrayInputStream;
@@ -35,12 +34,6 @@ final class Util extends Native {
             throw new TransactionBuilderException(ex.getLocalizedMessage(), ex);
         }
     }
-
-    @NonNull
-    public static native byte[] versioned_crypto_box_decrypt(
-            @NonNull RistrettoPrivate viewKey,
-            @NonNull byte[] cipherText
-    );
 
     @NonNull
     public static RistrettoPublic getSharedSecret(

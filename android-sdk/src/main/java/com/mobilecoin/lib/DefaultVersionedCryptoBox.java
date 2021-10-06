@@ -1,7 +1,5 @@
 package com.mobilecoin.lib;
 
-import android.accounts.Account;
-
 import androidx.annotation.NonNull;
 
 import com.mobilecoin.lib.exceptions.InvalidFogResponse;
@@ -24,7 +22,7 @@ public class DefaultVersionedCryptoBox extends Native implements VersionedCrypto
         Logger.i(TAG, "Decrypting with view key", null,
                 "viewKey public:", viewKey.getPublicKey());
         try {
-            return Util.versioned_crypto_box_decrypt(
+            return versioned_crypto_box_decrypt(
                     viewKey,
                     cipherText
             );
@@ -32,6 +30,12 @@ public class DefaultVersionedCryptoBox extends Native implements VersionedCrypto
             throw new InvalidFogResponse(ex.getLocalizedMessage(), ex);
         }
     }
+
+    @NonNull
+    private native byte[] versioned_crypto_box_decrypt(
+            @NonNull RistrettoPrivate viewKey,
+            @NonNull byte[] cipherText
+    );
 
     @NonNull
     @Override
