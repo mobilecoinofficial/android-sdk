@@ -9,6 +9,7 @@ import androidx.annotation.Nullable;
 
 import com.google.protobuf.AbstractMessageLite;
 import com.google.protobuf.ByteString;
+import com.mobilecoin.lib.ClientConfig.Service;
 import com.mobilecoin.lib.exceptions.AttestationException;
 import com.mobilecoin.lib.exceptions.NetworkException;
 import com.mobilecoin.lib.log.Logger;
@@ -30,13 +31,12 @@ abstract class AttestedClient extends AnyClient {
 
     /**
      * Creates and initializes an instance of {@link AttestedClient}
-     *
-     * @param uri           a complete {@link Uri} of the service including port.
+     *  @param loadBalancer           a complete {@link Uri} of the service including port.
      * @param serviceConfig service configuration passed to MobileCoinClient
      */
-    protected AttestedClient(@NonNull MobileCoinUri uri,
-                             @NonNull ClientConfig.Service serviceConfig) {
-        super(uri, serviceConfig);
+    protected AttestedClient(@NonNull LoadBalancer loadBalancer,
+                             @NonNull Service serviceConfig) {
+        super(loadBalancer, serviceConfig);
     }
 
     /**

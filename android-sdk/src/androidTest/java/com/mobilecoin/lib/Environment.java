@@ -38,7 +38,7 @@ public class Environment {
         MobileCoinClient mobileCoinClient = new MobileCoinClient(
                 accountKey,
                 fogConfig.getFogUri(),
-                fogConfig.getConsensusUri(),
+                fogConfig.getConsensusUris(),
                 fogConfig.getClientConfig()
         );
         mobileCoinClient.setFogBasicAuthorization(

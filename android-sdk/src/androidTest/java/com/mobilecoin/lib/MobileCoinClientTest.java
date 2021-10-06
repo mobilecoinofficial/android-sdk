@@ -600,7 +600,8 @@ public class MobileCoinClientTest {
         Receipt txReceipt = pendingTransaction.getReceipt();
 
         UnsignedLong txBlockIndex = txStatus.getBlockIndex();
-        FogBlockClient blockClient = new FogBlockClient(new FogUri(fogConfig.getFogUri()),
+        FogUri fogUri = new FogUri(fogConfig.getFogUri());
+        FogBlockClient blockClient = new FogBlockClient(RandomLoadBalancer.create(fogUri),
                 ClientConfig.defaultConfig().fogLedger);
         blockClient.setAuthorization(fogConfig.getUsername(), fogConfig.getPassword());
         List<OwnedTxOut> txOuts = blockClient.scanForTxOutsInBlockRange(

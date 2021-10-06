@@ -7,13 +7,13 @@ import androidx.annotation.Nullable;
 
 import com.google.protobuf.ByteString;
 import com.google.protobuf.InvalidProtocolBufferException;
+import com.mobilecoin.lib.ClientConfig.Service;
 import com.mobilecoin.lib.exceptions.AttestationException;
 import com.mobilecoin.lib.exceptions.InvalidFogResponse;
 import com.mobilecoin.lib.exceptions.NetworkException;
 import com.mobilecoin.lib.log.Logger;
 import com.mobilecoin.lib.network.services.FogViewService;
 import com.mobilecoin.lib.network.services.transport.Transport;
-import com.mobilecoin.lib.network.uri.FogUri;
 import com.mobilecoin.lib.util.NetworkingCall;
 
 import java.util.List;
@@ -32,14 +32,13 @@ final class AttestedViewClient extends AttestedClient {
 
     /**
      * Creates and initializes an instance of {@link AttestedViewClient}
-     *
-     * @param uri           an address of the service
+     *  @param loadBalancer           an address of the service
      * @param serviceConfig service configuration passed to MobileCoinClient
      */
-    AttestedViewClient(@NonNull FogUri uri, @NonNull ClientConfig.Service serviceConfig) {
-        super(uri, serviceConfig);
+    AttestedViewClient(@NonNull LoadBalancer loadBalancer, @NonNull Service serviceConfig) {
+        super(loadBalancer, serviceConfig);
         Logger.i(TAG, "Created new AttestedViewClient", null,
-                "uri:", uri,
+                "loadBalancer:", loadBalancer,
                 "verifier:", serviceConfig);
     }
 
@@ -64,7 +63,7 @@ final class AttestedViewClient extends AttestedClient {
             throws AttestationException, NetworkException {
         try {
             Logger.i(TAG, "Attest view connection");
-            byte[] requestBytes = attestStart(getServiceUri());
+            byte[] requestBytes = attestStart(getCurrentServiceUri());
             FogViewService fogViewService = getAPIManager().getFogViewService(getNetworkTransport());
             ByteString bytes = ByteString.copyFrom(requestBytes);
             Attest.AuthMessage authMessage = Attest.AuthMessage.newBuilder().setData(bytes).build();

@@ -114,8 +114,9 @@ public class TxOutStoreTest {
             Thread.sleep(1000);
         } while (receiptStatus == Receipt.Status.UNKNOWN);
 
+        FogUri fogUri = new FogUri(fogConfig.getFogUri());
         FogBlockClient blockClient = new FogBlockClient(
-                new FogUri(fogConfig.getFogUri()),
+                RandomLoadBalancer.create(fogUri),
                 fogConfig.getClientConfig().fogLedger
         );
 

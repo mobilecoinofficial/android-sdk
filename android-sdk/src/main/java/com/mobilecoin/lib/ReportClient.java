@@ -5,6 +5,7 @@ package com.mobilecoin.lib;
 import androidx.annotation.NonNull;
 
 import com.google.protobuf.ByteString;
+import com.mobilecoin.lib.ClientConfig.Service;
 import com.mobilecoin.lib.exceptions.AttestationException;
 import com.mobilecoin.lib.exceptions.InvalidFogResponse;
 import com.mobilecoin.lib.exceptions.NetworkException;
@@ -28,18 +29,18 @@ final class ReportClient extends AnyClient {
     /**
      * Creates and initializes an instance of {@link ReportClient}
      *
-     * @param uri address of the service.
+     * @param loadBalancer address of the service.
      */
-    ReportClient(@NonNull FogUri uri, @NonNull ClientConfig.Service serviceConfig) {
-        super(uri, serviceConfig);
+    ReportClient(@NonNull LoadBalancer loadBalancer, @NonNull Service serviceConfig) {
+        super(loadBalancer, serviceConfig);
     }
 
-    ReportClient(@NonNull FogUri uri,
+    ReportClient(@NonNull LoadBalancer loadBalancer,
                    @NonNull ClientConfig.Service serviceConfig,
                    @NonNull ServiceAPIManager apiManager) {
-        super(uri, serviceConfig, apiManager);
+        super(loadBalancer, serviceConfig, apiManager);
         Logger.i(TAG, "Created new ReportClient", null,
-                "uri:", uri,
+                "loadBalancer:", loadBalancer,
                 "verifier:", serviceConfig,
                 "apiManager:", apiManager);
     }

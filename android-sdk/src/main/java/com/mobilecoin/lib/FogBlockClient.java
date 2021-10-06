@@ -6,6 +6,7 @@ package com.mobilecoin.lib;
 import androidx.annotation.NonNull;
 
 import com.mobilecoin.api.MobileCoinAPI;
+import com.mobilecoin.lib.ClientConfig.Service;
 import com.mobilecoin.lib.exceptions.AttestationException;
 import com.mobilecoin.lib.exceptions.NetworkException;
 import com.mobilecoin.lib.log.Logger;
@@ -31,24 +32,23 @@ final class FogBlockClient extends AnyClient {
 
     /**
      * Creates and initializes an instance of {@link FogBlockClient}
-     *
-     * @param uri           an address of the service. Example:
+     *  @param loadBalancer           an address of the service. Example:
      *                      fog://fog.test.mobilecoin.com
      * @param serviceConfig service configuration passed to MobileCoinClient
      */
-    FogBlockClient(@NonNull FogUri uri, @NonNull ClientConfig.Service serviceConfig) {
-        super(uri, serviceConfig);
+    FogBlockClient(@NonNull LoadBalancer loadBalancer, @NonNull Service serviceConfig) {
+        super(loadBalancer, serviceConfig);
         Logger.i(TAG, "Created new FogBlockClient", null,
-                "uri:", uri,
+                "loadBalancer:", loadBalancer,
                 "verifier:", serviceConfig);
     }
 
-    FogBlockClient(@NonNull FogUri uri,
+    FogBlockClient(@NonNull LoadBalancer loadBalancer,
                    @NonNull ClientConfig.Service serviceConfig,
                    @NonNull ServiceAPIManager apiManager) {
-        super(uri, serviceConfig, apiManager);
+        super(loadBalancer, serviceConfig, apiManager);
         Logger.i(TAG, "Created new FogBlockClient", null,
-                "uri:", uri,
+                "loadBalancer:", loadBalancer,
                 "verifier:", serviceConfig,
                 "apiManager:", apiManager);
     }

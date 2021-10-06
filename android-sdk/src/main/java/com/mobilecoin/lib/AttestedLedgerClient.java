@@ -8,6 +8,7 @@ import androidx.annotation.NonNull;
 import com.google.protobuf.ByteString;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.mobilecoin.api.MobileCoinAPI;
+import com.mobilecoin.lib.ClientConfig.Service;
 import com.mobilecoin.lib.exceptions.AttestationException;
 import com.mobilecoin.lib.exceptions.InvalidFogResponse;
 import com.mobilecoin.lib.exceptions.NetworkException;
@@ -15,7 +16,6 @@ import com.mobilecoin.lib.log.Logger;
 import com.mobilecoin.lib.network.services.FogKeyImageService;
 import com.mobilecoin.lib.network.services.FogMerkleProofService;
 import com.mobilecoin.lib.network.services.transport.Transport;
-import com.mobilecoin.lib.network.uri.FogUri;
 import com.mobilecoin.lib.util.NetworkingCall;
 
 import java.util.ArrayList;
@@ -38,15 +38,14 @@ final class AttestedLedgerClient extends AttestedClient {
 
     /**
      * Creates and initializes an instance of {@link AttestedLedgerClient}
-     *
-     * @param uri           an address of the service. Example:
+     *  @param loadBalancer           an address of the service. Example:
      *                      fog://fog.test.mobilecoin.com
      * @param serviceConfig service configuration passed to MobileCoinClient
      */
-    AttestedLedgerClient(@NonNull FogUri uri, @NonNull ClientConfig.Service serviceConfig) {
-        super(uri, serviceConfig);
+    AttestedLedgerClient(@NonNull LoadBalancer loadBalancer, @NonNull Service serviceConfig) {
+        super(loadBalancer, serviceConfig);
         Logger.i(TAG, "Created new AttestedLedgerClient", null,
-                "uri:", uri,
+                "loadBalancer:", loadBalancer,
                 "verifier:", serviceConfig);
     }
 
@@ -71,7 +70,7 @@ final class AttestedLedgerClient extends AttestedClient {
             throws AttestationException, NetworkException {
         try {
             Logger.i(TAG, "Attest ledger connection");
-            byte[] requestBytes = attestStart(getServiceUri());
+            byte[] requestBytes = attestStart(getCurrentServiceUri());
             FogKeyImageService fogKeyImageService =
                     getAPIManager().getFogKeyImageService(transport);
             ByteString bytes = ByteString.copyFrom(requestBytes);

@@ -24,12 +24,14 @@ import com.mobilecoin.lib.log.Logger;
 import com.mobilecoin.lib.network.TransportProtocol;
 import com.mobilecoin.lib.network.uri.ConsensusUri;
 import com.mobilecoin.lib.network.uri.FogUri;
+import com.mobilecoin.lib.network.uri.MobileCoinUri;
 import com.mobilecoin.lib.util.Result;
 import com.mobilecoin.lib.util.Task;
 import consensus_common.ConsensusCommon;
 import fog_ledger.Ledger;
 import java.math.BigInteger;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -103,19 +105,46 @@ public final class MobileCoinClient implements MobileCoinAccountClient, MobileCo
             @NonNull Uri consensusUri,
             @NonNull ClientConfig clientConfig
     ) throws InvalidUriException {
+        this(accountKey, fogUri, Collections.singletonList(consensusUri), clientConfig);
+    }
+
+    /**
+     * Construct new {@link MobileCoinClient} instance
+     * If the service URIs don't specify the ports explicitly, port 443 will be used by default.
+     *
+     * @param accountKey   user's accountKey
+     * @param fogUri       a complete URI for the fog service
+     * @param consensusUris a list of complete URIs for the consensus service
+     * @param clientConfig fog and blockchain services networking and attestation configuration
+     */
+    public MobileCoinClient(
+        @NonNull AccountKey accountKey,
+        @NonNull Uri fogUri,
+        @NonNull List<Uri> consensusUris,
+        @NonNull ClientConfig clientConfig
+    ) throws InvalidUriException {
         Logger.i(TAG, "Creating MobileCoinClient");
         this.accountKey = accountKey;
         this.clientConfig = clientConfig;
         this.cacheStorage = clientConfig.storageAdapter;
         FogUri normalizedFogUri = new FogUri(fogUri);
-        this.blockchainClient = new BlockchainClient(new ConsensusUri(consensusUri),
-                clientConfig.consensus, clientConfig.minimumFeeCacheTTL);
-        this.viewClient = new AttestedViewClient(normalizedFogUri, clientConfig.fogView);
-        this.ledgerClient = new AttestedLedgerClient(normalizedFogUri, clientConfig.fogLedger);
-        this.consensusClient = new AttestedConsensusClient(new ConsensusUri(consensusUri),
-                clientConfig.consensus);
-        this.fogBlockClient = new FogBlockClient(normalizedFogUri, clientConfig.fogLedger);
-        this.untrustedClient = new FogUntrustedClient(normalizedFogUri, clientConfig.fogLedger);
+        List<MobileCoinUri> normalizedConsensusUris = createNormalizedConsensusUris(consensusUris);
+        this.blockchainClient = new BlockchainClient(
+            RandomLoadBalancer.create(normalizedConsensusUris),
+            clientConfig.consensus,
+            clientConfig.minimumFeeCacheTTL
+        );
+        this.viewClient = new AttestedViewClient(RandomLoadBalancer.create(normalizedFogUri),
+            clientConfig.fogView);
+        this.ledgerClient = new AttestedLedgerClient(RandomLoadBalancer.create(normalizedFogUri),
+            clientConfig.fogLedger);
+        this.consensusClient = new AttestedConsensusClient(
+            RandomLoadBalancer.create(normalizedConsensusUris),
+            clientConfig.consensus);
+        this.fogBlockClient = new FogBlockClient(RandomLoadBalancer.create(normalizedFogUri),
+            clientConfig.fogLedger);
+        this.untrustedClient = new FogUntrustedClient(RandomLoadBalancer.create(normalizedFogUri),
+            clientConfig.fogLedger);
         this.txOutStore = createTxOutStore(accountKey);
         this.fogReportsManager = new FogReportsManager();
         // add client provided log adapter
@@ -123,6 +152,16 @@ public final class MobileCoinClient implements MobileCoinAccountClient, MobileCo
         if (null != logAdapter) {
             Logger.addAdapter(logAdapter);
         }
+    }
+
+    private List<MobileCoinUri> createNormalizedConsensusUris(List<Uri> consensusUris)
+        throws InvalidUriException {
+        List<MobileCoinUri> normalizedConsensusUris = new ArrayList<>();
+        for (Uri consensusUri : consensusUris) {
+          normalizedConsensusUris.add(new ConsensusUri(consensusUri));
+        }
+
+        return normalizedConsensusUris;
     }
 
     private TxOutStore createTxOutStore(AccountKey accountKey) {

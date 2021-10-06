@@ -6,13 +6,14 @@ import androidx.annotation.NonNull;
 
 import com.google.protobuf.ByteString;
 import com.mobilecoin.api.MobileCoinAPI;
+import com.mobilecoin.lib.ClientConfig.Service;
 import com.mobilecoin.lib.exceptions.AttestationException;
 import com.mobilecoin.lib.exceptions.NetworkException;
 import com.mobilecoin.lib.log.Logger;
 import com.mobilecoin.lib.network.services.AttestedService;
 import com.mobilecoin.lib.network.services.ConsensusClientService;
 import com.mobilecoin.lib.network.services.transport.Transport;
-import com.mobilecoin.lib.network.uri.ConsensusUri;
+import com.mobilecoin.lib.network.uri.MobileCoinUri;
 import com.mobilecoin.lib.util.NetworkingCall;
 
 import attest.Attest;
@@ -28,16 +29,15 @@ final class AttestedConsensusClient extends AttestedClient {
 
     /**
      * Creates and initializes an instance of {@link AttestedViewClient}
-     *
-     * @param uri           an address of the service. Example:
+     *  @param loadBalancer           an address of the service. Example:
      *                      mc://consensus.test.mobilecoin.com
      * @param serviceConfig service configuration passed to MobileCoinClient
      */
-    AttestedConsensusClient(@NonNull ConsensusUri uri,
-                            @NonNull ClientConfig.Service serviceConfig) {
-        super(uri, serviceConfig);
+    AttestedConsensusClient(@NonNull LoadBalancer loadBalancer,
+                            @NonNull Service serviceConfig) {
+        super(loadBalancer, serviceConfig);
         Logger.i(TAG, "Created new AttestedConsensusClient", null,
-                "uri:", uri,
+                "loadBalancer:", loadBalancer,
                 "verifier:", serviceConfig);
     }
 
@@ -62,7 +62,7 @@ final class AttestedConsensusClient extends AttestedClient {
             throws AttestationException, NetworkException {
         try {
             Logger.i(TAG, "Attest consensus connection");
-            byte[] requestBytes = attestStart(getServiceUri());
+            byte[] requestBytes = attestStart(getCurrentServiceUri());
             AttestedService attestedService = getAPIManager().getAttestedService(transport);
             ByteString bytes = ByteString.copyFrom(requestBytes);
             Attest.AuthMessage authMessage = Attest.AuthMessage.newBuilder().setData(bytes).build();

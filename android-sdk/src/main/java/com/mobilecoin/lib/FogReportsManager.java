@@ -4,7 +4,6 @@ package com.mobilecoin.lib;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-
 import com.mobilecoin.lib.exceptions.FogReportException;
 import com.mobilecoin.lib.exceptions.MobileCoinException;
 import com.mobilecoin.lib.exceptions.NetworkException;
@@ -12,7 +11,6 @@ import com.mobilecoin.lib.log.Logger;
 import com.mobilecoin.lib.network.uri.FogUri;
 import com.mobilecoin.lib.util.Result;
 import com.mobilecoin.lib.util.Task;
-
 import java.util.HashMap;
 import java.util.Optional;
 import java.util.Set;
@@ -89,8 +87,9 @@ final class FogReportsManager {
                 Task<ReportResponse, Exception> task = new Task<ReportResponse, Exception>() {
                     @Override
                     public ReportResponse execute() throws Exception {
-                        ReportClient reportClient = new ReportClient(fogUri,
-                                serviceConfig);
+                        ReportClient reportClient = new ReportClient(
+                            RandomLoadBalancer.create(fogUri),
+                            serviceConfig);
                         ReportResponse response = reportClient.getReports();
                         reportClient.shutdown();
                         return response;

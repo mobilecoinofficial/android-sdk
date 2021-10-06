@@ -6,6 +6,7 @@ import android.net.Uri;
 
 import androidx.annotation.NonNull;
 
+import com.mobilecoin.lib.ClientConfig.Service;
 import com.mobilecoin.lib.exceptions.AttestationException;
 import com.mobilecoin.lib.exceptions.NetworkException;
 import com.mobilecoin.lib.log.Logger;
@@ -40,7 +41,7 @@ class AnyClient extends Native {
     private final static String TAG = AttestedClient.class.getName();
     // How long to wait for the managed connection to gracefully shutdown in milliseconds
     private final static long MANAGED_CONNECTION_SHUTDOWN_TIME_LIMIT = 1000;
-    private final MobileCoinUri serviceUri;
+    private final LoadBalancer loadBalancer;
     private final ClientConfig.Service serviceConfig;
     private final ServiceAPIManager grpcApiManager;
     private final ServiceAPIManager restApiManager;
@@ -48,24 +49,25 @@ class AnyClient extends Native {
     private RestClient restClient;
     private Transport networkTransport;
     private TransportProtocol transportProtocol;
+    private MobileCoinUri currentServiceUri;
 
     /**
      * Creates and initializes an instance of {@link AttestedClient}
      *
-     * @param uri a complete {@link Uri} of the service including port.
+     * @param loadBalancer a complete {@link Uri} of the service including port.
      */
-    protected AnyClient(@NonNull MobileCoinUri uri, @NonNull ClientConfig.Service serviceConfig) {
-        this.serviceUri = uri;
+    protected AnyClient(@NonNull LoadBalancer loadBalancer, @NonNull Service serviceConfig) {
+        this.loadBalancer = loadBalancer;
         this.serviceConfig = serviceConfig;
         this.grpcApiManager = new GRPCServiceAPIManager();
         this.restApiManager = new RestServiceAPIManager();
         this.transportProtocol = TransportProtocol.forGRPC();
     }
 
-    protected AnyClient(@NonNull MobileCoinUri uri,
+    protected AnyClient(@NonNull LoadBalancer loadBalancer,
                         @NonNull ClientConfig.Service serviceConfig,
                         @NonNull ServiceAPIManager apiManager) {
-        this.serviceUri = uri;
+        this.loadBalancer = loadBalancer;
         this.serviceConfig = serviceConfig;
         this.grpcApiManager = apiManager;
         this.restApiManager = apiManager;
@@ -113,13 +115,17 @@ class AnyClient extends Native {
     }
 
     @NonNull
-    final MobileCoinUri getServiceUri() {
-        return serviceUri;
+    private MobileCoinUri getNextServiceUri() {
+        return loadBalancer.getNextServiceUri();
     }
 
     @NonNull
     final ClientConfig.Service getServiceConfig() {
         return serviceConfig;
+    }
+
+    protected MobileCoinUri getCurrentServiceUri() {
+        return currentServiceUri;
     }
 
     @NonNull
@@ -130,7 +136,8 @@ class AnyClient extends Native {
             if (null == httpRequester) {
                 throw new IllegalArgumentException("HttpRequester was not properly set");
             }
-            restClient = new RestClient(getServiceUri().getUri(), httpRequester);
+            currentServiceUri = getNextServiceUri();
+            restClient = new RestClient(currentServiceUri.getUri(), httpRequester);
         }
         return restClient;
     }
@@ -141,12 +148,13 @@ class AnyClient extends Native {
         try {
             if (null == managedChannel) {
                 Logger.i(TAG, "Managed channel does not exist: creating one");
+                currentServiceUri = getNextServiceUri();
                 OkHttpChannelBuilder managedChannelBuilder = OkHttpChannelBuilder
                         .forAddress(
-                                serviceUri.getUri().getHost(),
-                                serviceUri.getUri().getPort()
+                                currentServiceUri.getUri().getHost(),
+                                currentServiceUri.getUri().getPort()
                         );
-                if (getServiceUri().isTlsEnabled()) {
+                if (currentServiceUri.isTlsEnabled()) {
                     managedChannelBuilder.useTransportSecurity();
                 } else {
                     managedChannelBuilder.usePlaintext();
@@ -249,5 +257,7 @@ class AnyClient extends Native {
             } catch (InterruptedException ignored) { /* */ }
             managedChannel = null;
         }
+
+        restClient = null;
     }
 }

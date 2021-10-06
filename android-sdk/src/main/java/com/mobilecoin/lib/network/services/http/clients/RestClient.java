@@ -119,7 +119,7 @@ public final class RestClient {
     }
 
     @NonNull
-    final Uri getServiceUri() {
+    public final Uri getServiceUri() {
         return serviceUri;
     }
 }
