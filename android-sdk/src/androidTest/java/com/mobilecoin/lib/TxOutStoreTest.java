@@ -2,6 +2,7 @@
 
 package com.mobilecoin.lib;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
@@ -34,6 +35,8 @@ import java.security.SecureRandom;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 
 import fog_common.FogCommon;
@@ -178,52 +181,56 @@ public class TxOutStoreTest {
     }
 
     @Test
-    public void testUpdateRNGs() throws Exception {
+    public void testUpdateRNGsAndTxOuts() throws Exception {
 
         //build AccountKey
         AccountKey accountKey = mock(AccountKey.class);
-        //
-
-        AttestedViewClient viewClient = mock(AttestedViewClient.class);
 
         //build Kex RNG pub key
         KexRng.KexRngPubkey.Builder kexRngPubkey = KexRng.KexRngPubkey.newBuilder();
         kexRngPubkey.setVersion(0);
         kexRngPubkey.setPubkey(ByteString.copyFrom(new byte[32]));
-        //
+
         //build RNG record
         View.RngRecord.Builder rngRecord = View.RngRecord.newBuilder();
         rngRecord.setStartBlock(0L);
         rngRecord.setIngestInvocationId(0L);
         rngRecord.setPubkey(kexRngPubkey.build());//add Kex RNG pub key;
-        //
+
         //build TxOutStoreResult
         View.TxOutSearchResult.Builder searchResult = View.TxOutSearchResult.newBuilder();
         searchResult.setResultCode(View.TxOutSearchResultCode.NotFound_VALUE);
         searchResult.setCiphertext(ByteString.copyFrom(new byte[32]));
         searchResult.setSearchKey(ByteString.copyFrom(new byte[32]));
-        //
+
         //build query responses
         View.QueryResponse.Builder responseBuilder = View.QueryResponse.newBuilder();
         responseBuilder.addRngs(rngRecord.build());//add RNG record
         View.QueryResponse response1 = responseBuilder.build();
         responseBuilder.addTxOutSearchResults(searchResult.build());
         View.QueryResponse response2 = responseBuilder.build();
-        //
+
         //build FogSeed
         FogSeed fogSeed = mock(FogSeed.class);
         when(fogSeed.isObsolete()).thenReturn(false);
         when(fogSeed.getNextN(anyLong())).thenReturn(new byte[1][32]);
         when(fogSeed.getOutput()).thenReturn(new byte[32]);
-        //
+
         //build FogSeedProvider
         FogSeedProvider seedProvider = mock(FogSeedProvider.class);
         when(seedProvider.fogSeedFor(any(), any())).thenReturn(fogSeed);
-        //
+
         //build VersionedCryptoBox
         VersionedCryptoBox cryptoBox = mock(VersionedCryptoBox.class);
+        when(cryptoBox.versionedCryptoBoxDecrypt(any(), any())).thenReturn(new byte[] {17, -93, 2, -81, 7, -62,
+                104, -128, -95, 26, 32, -94, -11, 86, 42, 90, -43, 32, 5, 21, 72, -110, -74, 68, -108, 87, 37,
+                57, -50, 90, 45, -3, -43, 96, -3, 21, -40, 27, -88, -34, -60, 124, 31, 34, 32, 116, -23, -29,
+                103, 10, -31, -32, 21, -95, 68, -10, 95, 125, 65, -124, -106, -80, -93, -52, -121, -89, -5,
+                40, 95, 111, -109, 22, 40, 72, 44, -47, 80, 41, 26, -113, 1, 0, 0, 0, 0, 0, 49, 28, 0, 0,
+                0, 0, 0, 0, 0, 57, 89, 102, 24, 97, 0, 0, 0, 0, 69, 68, 109, -49, -85});
 
         //chain different response scenarios from view client
+        AttestedViewClient viewClient = mock(AttestedViewClient.class);
         when(viewClient.request(any(), eq(Long.valueOf(0L)), eq(Long.valueOf(0L))))
                 .thenReturn(response1)//seed is null
                 .thenReturn(response2)//use new fog seed created in the first iteration of updateRNGsAndTxOuts
@@ -237,6 +244,7 @@ public class TxOutStoreTest {
                 new DefaultFogQueryScalingStrategy(), seedProvider, cryptoBox);
         assertTrue(results.isEmpty());
 
+        // Test all cases where we expect that an exception be thrown
         boolean exceptionThrown = false;
         try {
             uut.updateRNGsAndTxOuts(viewClient,
@@ -253,6 +261,46 @@ public class TxOutStoreTest {
             exceptionThrown = true;
         }
         assertTrue(exceptionThrown);
+        exceptionThrown = false;
+        try {
+            byte[] mismatchedSearchKey = new byte[32];
+            mismatchedSearchKey[0] = 1;
+            when(fogSeed.getOutput()).thenReturn(mismatchedSearchKey).thenReturn(new byte[32]);
+            uut.updateRNGsAndTxOuts(viewClient,
+                    new DefaultFogQueryScalingStrategy(), seedProvider, cryptoBox);
+        } catch (InvalidFogResponse expected) {
+            exceptionThrown = true;
+        }
+        assertTrue(exceptionThrown);
+
+        //build block range
+        FogCommon.BlockRange.Builder blockRange1 = FogCommon.BlockRange.newBuilder()
+                .setStartBlock(1L).setEndBlock(2L);
+        FogCommon.BlockRange.Builder blockRange2 = FogCommon.BlockRange.newBuilder()
+                .setStartBlock(100L).setEndBlock(142L);
+        FogCommon.BlockRange.Builder blockRange3 = FogCommon.BlockRange.newBuilder()
+                .setStartBlock(4L).setEndBlock(10L);
+        //Test missing block ranges returned
+        when(viewClient.request(any(), eq(Long.valueOf(0L)), eq(Long.valueOf(0L))))
+                .thenReturn(responseBuilder.setTxOutSearchResults(0,
+                        searchResult.setResultCode(View.TxOutSearchResultCode.Found_VALUE).build())
+                        .addMissedBlockRanges(blockRange1)
+                        .addMissedBlockRanges(blockRange2).build())
+                .thenReturn(responseBuilder.setTxOutSearchResults(0,
+                        searchResult.setResultCode(View.TxOutSearchResultCode.NotFound_VALUE).build())
+                        .addMissedBlockRanges(blockRange3).build());
+        results = uut.updateRNGsAndTxOuts(viewClient,
+                new DefaultFogQueryScalingStrategy(), seedProvider, cryptoBox);
+
+        assertEquals(results.size(), responseBuilder.getMissedBlockRangesCount());
+
+        Set<BlockRange> expectedRanges = new HashSet<BlockRange>();
+        expectedRanges.add(new BlockRange(blockRange1.build()));
+        expectedRanges.add(new BlockRange(blockRange2.build()));
+        expectedRanges.add(new BlockRange(blockRange3.build()));
+
+        assertTrue(Objects.equals(results, expectedRanges));
+
     }
 
 }
