@@ -35,12 +35,12 @@ final class ReportClient extends AnyClient {
         super(loadBalancer, serviceConfig);
     }
 
-    ReportClient(@NonNull FogUri uri,
+    ReportClient(@NonNull LoadBalancer loadBalancer,
                    @NonNull ClientConfig.Service serviceConfig,
                    @NonNull ServiceAPIManager apiManager) {
-        super(uri, serviceConfig, apiManager);
+        super(loadBalancer, serviceConfig, apiManager);
         Logger.i(TAG, "Created new ReportClient", null,
-                "uri:", uri,
+                "loadBalancer:", loadBalancer,
                 "verifier:", serviceConfig,
                 "apiManager:", apiManager);
     }

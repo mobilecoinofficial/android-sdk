@@ -64,10 +64,10 @@ class AnyClient extends Native {
         this.transportProtocol = TransportProtocol.forGRPC();
     }
 
-    protected AnyClient(@NonNull MobileCoinUri uri,
+    protected AnyClient(@NonNull LoadBalancer loadBalancer,
                         @NonNull ClientConfig.Service serviceConfig,
                         @NonNull ServiceAPIManager apiManager) {
-        this.serviceUri = uri;
+        this.loadBalancer = loadBalancer;
         this.serviceConfig = serviceConfig;
         this.grpcApiManager = apiManager;
         this.restApiManager = apiManager;

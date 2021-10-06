@@ -43,12 +43,12 @@ final class FogBlockClient extends AnyClient {
                 "verifier:", serviceConfig);
     }
 
-    FogBlockClient(@NonNull FogUri uri,
+    FogBlockClient(@NonNull LoadBalancer loadBalancer,
                    @NonNull ClientConfig.Service serviceConfig,
                    @NonNull ServiceAPIManager apiManager) {
-        super(uri, serviceConfig, apiManager);
+        super(loadBalancer, serviceConfig, apiManager);
         Logger.i(TAG, "Created new FogBlockClient", null,
-                "uri:", uri,
+                "loadBalancer:", loadBalancer,
                 "verifier:", serviceConfig,
                 "apiManager:", apiManager);
     }

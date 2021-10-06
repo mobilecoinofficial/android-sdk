@@ -12,6 +12,7 @@ import com.mobilecoin.lib.log.Logger;
 import com.mobilecoin.lib.network.services.FogUntrustedService;
 import com.mobilecoin.lib.network.services.ServiceAPIManager;
 import com.mobilecoin.lib.network.services.transport.Transport;
+import com.mobilecoin.lib.network.uri.FogUri;
 import com.mobilecoin.lib.util.NetworkingCall;
 
 import java.util.Set;
@@ -39,12 +40,12 @@ final class FogUntrustedClient extends AnyClient {
                 "verifier:", serviceConfig);
     }
 
-    FogUntrustedClient(@NonNull FogUri uri,
+    FogUntrustedClient(@NonNull LoadBalancer loadBalancer,
                    @NonNull ClientConfig.Service serviceConfig,
                    @NonNull ServiceAPIManager apiManager) {
-        super(uri, serviceConfig, apiManager);
+        super(loadBalancer, serviceConfig, apiManager);
         Logger.i(TAG, "Created new FogUntrustedClient", null,
-                "uri:", uri,
+                "loadBalancer:", loadBalancer,
                 "verifier:", serviceConfig,
                 "apiManager:", apiManager);
     }

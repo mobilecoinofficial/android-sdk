@@ -7,6 +7,9 @@ import static org.mockito.Mockito.when;
 import com.mobilecoin.lib.network.services.BlockchainService;
 import com.mobilecoin.lib.network.services.ServiceAPIManager;
 import com.mobilecoin.lib.network.uri.ConsensusUri;
+import com.mobilecoin.lib.network.uri.MobileCoinUri;
+import java.util.ArrayList;
+import java.util.List;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -54,7 +57,7 @@ public class BlockchainClientTest {
 
         // Setup blockchain client
         BlockchainClient blockchainClient = new BlockchainClient(
-                new ConsensusUri(Environment.getTestFogConfig().getConsensusUri()),
+                createLoadBalancer(),
                 Environment.getTestFogConfig().getClientConfig().consensus,
                 Duration.ofHours(1),
                 apiManager);
@@ -109,7 +112,7 @@ public class BlockchainClientTest {
 
         // Setup blockchain client
         BlockchainClient blockchainClient = new BlockchainClient(
-                new ConsensusUri(Environment.getTestFogConfig().getConsensusUri()),
+                createLoadBalancer(),
                 Environment.getTestFogConfig().getClientConfig().consensus,
                 Duration.ofMillis(1), apiManager);
 
@@ -122,6 +125,15 @@ public class BlockchainClientTest {
         ConsensusCommon.LastBlockInfoResponse lastBlockInfoResponse2 =
                 blockchainClient.getOrFetchLastBlockInfo();
         Assert.assertNotSame(lastBlockInfoResponse1, lastBlockInfoResponse2);
+    }
+
+    private static LoadBalancer createLoadBalancer() throws Exception {
+        ConsensusUri consensusUri =
+            new ConsensusUri(Environment.getTestFogConfig().getConsensusUri());
+        List<MobileCoinUri> consensusUris = new ArrayList<>();
+        consensusUris.add(consensusUri);
+
+        return RandomLoadBalancer.create(consensusUris);
     }
 
 }
