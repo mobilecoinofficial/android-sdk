@@ -114,7 +114,7 @@ public final class MobileCoinClient implements MobileCoinAccountClient, MobileCo
      *
      * @param accountKey   user's accountKey
      * @param fogUri       a complete URI for the fog service
-     * @param consensusUris a list of complete URI for the consensus service
+     * @param consensusUris a list of complete URIs for the consensus service
      * @param clientConfig fog and blockchain services networking and attestation configuration
      */
     public MobileCoinClient(
