@@ -4,7 +4,6 @@ package com.mobilecoin.lib;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.annotation.VisibleForTesting;
 
 import com.google.protobuf.ByteString;
 import com.google.protobuf.InvalidProtocolBufferException;
@@ -14,7 +13,6 @@ import com.mobilecoin.lib.exceptions.InvalidFogResponse;
 import com.mobilecoin.lib.exceptions.NetworkException;
 import com.mobilecoin.lib.log.Logger;
 import com.mobilecoin.lib.network.services.FogViewService;
-import com.mobilecoin.lib.network.services.ServiceAPIManager;
 import com.mobilecoin.lib.network.services.transport.Transport;
 import com.mobilecoin.lib.util.NetworkingCall;
 
@@ -42,15 +40,6 @@ class AttestedViewClient extends AttestedClient {
         Logger.i(TAG, "Created new AttestedViewClient", null,
                 "loadBalancer:", loadBalancer,
                 "verifier:", serviceConfig);
-    }
-
-    AttestedViewClient(@NonNull FogUri uri,
-                       @NonNull ClientConfig.Service serviceConfig,
-                       @NonNull ServiceAPIManager apiManager) {
-        super(uri, serviceConfig);
-        Logger.i(TAG, "Created new AttestedViewClient", null,
-                "uri:", uri,
-                "verifier:", serviceConfig, apiManager);
     }
 
     /**
