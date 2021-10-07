@@ -3,7 +3,6 @@
 package com.mobilecoin.lib;
 
 import androidx.annotation.NonNull;
-import com.mobilecoin.lib.exceptions.InvalidFogResponse;
 import com.mobilecoin.lib.exceptions.TransactionBuilderException;
 import com.mobilecoin.lib.log.Logger;
 import java.io.ByteArrayInputStream;
@@ -37,22 +36,6 @@ final class Util extends Native {
     }
 
     @NonNull
-    public static byte[] versionedCryptoBoxDecrypt(
-            @NonNull RistrettoPrivate viewKey,
-            @NonNull byte[] cipherText
-    ) throws InvalidFogResponse {
-        Logger.i(TAG, "Decrypting with view key", null, "viewKey public:", viewKey.getPublicKey());
-        try {
-            return versioned_crypto_box_decrypt(
-                    viewKey,
-                    cipherText
-            );
-        } catch (Exception ex) {
-            throw new InvalidFogResponse(ex.getLocalizedMessage(), ex);
-        }
-    }
-
-    @NonNull
     public static RistrettoPublic getSharedSecret(
         @NonNull RistrettoPrivate viewPrivateKey,
         @NonNull RistrettoPublic txOutPublicKey
@@ -77,12 +60,6 @@ final class Util extends Native {
 
     @NonNull
     private native static byte[] attest_verify_report(@NonNull byte[] report);
-
-    @NonNull
-    private native static byte[] versioned_crypto_box_decrypt(
-            @NonNull RistrettoPrivate viewKey,
-            @NonNull byte[] cipherText
-    );
 
     private native static long get_shared_secret(
         @NonNull RistrettoPrivate viewPrivateKey,
