@@ -222,12 +222,7 @@ public class TxOutStoreTest {
 
         //build VersionedCryptoBox
         VersionedCryptoBox cryptoBox = mock(VersionedCryptoBox.class);
-        when(cryptoBox.versionedCryptoBoxDecrypt(any(), any())).thenReturn(new byte[] {17, -93, 2, -81, 7, -62,
-                104, -128, -95, 26, 32, -94, -11, 86, 42, 90, -43, 32, 5, 21, 72, -110, -74, 68, -108, 87, 37,
-                57, -50, 90, 45, -3, -43, 96, -3, 21, -40, 27, -88, -34, -60, 124, 31, 34, 32, 116, -23, -29,
-                103, 10, -31, -32, 21, -95, 68, -10, 95, 125, 65, -124, -106, -80, -93, -52, -121, -89, -5,
-                40, 95, 111, -109, 22, 40, 72, 44, -47, 80, 41, 26, -113, 1, 0, 0, 0, 0, 0, 49, 28, 0, 0,
-                0, 0, 0, 0, 0, 57, 89, 102, 24, 97, 0, 0, 0, 0, 69, 68, 109, -49, -85});
+        when(cryptoBox.versionedCryptoBoxDecrypt(any(), any())).thenReturn(SAMPLE_TXOUT_BYTES);
 
         //chain different response scenarios from view client
         AttestedViewClient viewClient = mock(AttestedViewClient.class);
@@ -302,5 +297,12 @@ public class TxOutStoreTest {
         assertTrue(Objects.equals(results, expectedRanges));
 
     }
+
+    private static final byte[] SAMPLE_TXOUT_BYTES = new byte[] {17, -93, 2, -81, 7, -62,
+            104, -128, -95, 26, 32, -94, -11, 86, 42, 90, -43, 32, 5, 21, 72, -110, -74, 68, -108, 87, 37,
+            57, -50, 90, 45, -3, -43, 96, -3, 21, -40, 27, -88, -34, -60, 124, 31, 34, 32, 116, -23, -29,
+            103, 10, -31, -32, 21, -95, 68, -10, 95, 125, 65, -124, -106, -80, -93, -52, -121, -89, -5,
+            40, 95, 111, -109, 22, 40, 72, 44, -47, 80, 41, 26, -113, 1, 0, 0, 0, 0, 0, 49, 28, 0, 0,
+            0, 0, 0, 0, 0, 57, 89, 102, 24, 97, 0, 0, 0, 0, 69, 68, 109, -49, -85};
 
 }
