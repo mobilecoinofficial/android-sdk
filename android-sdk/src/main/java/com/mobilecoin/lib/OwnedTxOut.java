@@ -2,6 +2,9 @@
 
 package com.mobilecoin.lib;
 
+import android.os.Parcel;
+import android.os.Parcelable;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
@@ -23,7 +26,7 @@ import fog_view.View;
 /**
  * A transaction output that belongs to a {@link AccountKey}
  */
-public class OwnedTxOut implements Serializable {
+public class OwnedTxOut implements Serializable, Parcelable {
     private final static String TAG = OwnedTxOut.class.getName();
 
     // Bump serial version and read/write code if fields change
@@ -179,4 +182,52 @@ public class OwnedTxOut implements Serializable {
         result = 31 * result + Arrays.hashCode(keyImage);
         return result;
     }
+
+    protected OwnedTxOut(Parcel parcel) throws SerializationException {
+        txOutGlobalIndex = parcel.readParcelable(UnsignedLong.class.getClassLoader());
+        receivedBlockIndex = parcel.readParcelable(UnsignedLong.class.getClassLoader());
+        receivedBlockTimestamp = (Date)parcel.readSerializable();
+        spentBlockTimestamp = (Date)parcel.readSerializable();
+        spentBlockIndex = parcel.readParcelable(UnsignedLong.class.getClassLoader());
+        value = (BigInteger)parcel.readSerializable();
+        txOutPublicKey = RistrettoPublic.fromBytes(parcel.createByteArray());
+        keyImage = parcel.createByteArray();
+        keyImageHash = parcel.readInt();
+    }
+
+    @Override
+    public void writeToParcel(Parcel parcel, int flags) {
+        parcel.writeParcelable(txOutGlobalIndex, flags);
+        parcel.writeParcelable(receivedBlockIndex, flags);
+        parcel.writeSerializable(receivedBlockTimestamp);
+        parcel.writeSerializable(spentBlockTimestamp);
+        parcel.writeParcelable(spentBlockIndex, flags);
+        parcel.writeSerializable(value);
+        parcel.writeByteArray(txOutPublicKey.getKeyBytes());
+        parcel.writeByteArray(keyImage);
+        parcel.writeInt(keyImageHash);
+    }
+
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    public static final Creator<OwnedTxOut> CREATOR = new Creator<OwnedTxOut>() {
+        @Override
+        public OwnedTxOut createFromParcel(Parcel parcel) {
+            try {
+                return new OwnedTxOut(parcel);
+            } catch(SerializationException e) {
+                Logger.e(OwnedTxOut.class.getSimpleName(), "Deserialization of OwnedTxOut failed.", e);
+                return null;
+            }
+        }
+
+        @Override
+        public OwnedTxOut[] newArray(int length) {
+            return new OwnedTxOut[length];
+        }
+    };
+
 }
