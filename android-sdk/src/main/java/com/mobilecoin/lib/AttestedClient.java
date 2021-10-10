@@ -13,6 +13,7 @@ import com.mobilecoin.lib.ClientConfig.Service;
 import com.mobilecoin.lib.exceptions.AttestationException;
 import com.mobilecoin.lib.exceptions.NetworkException;
 import com.mobilecoin.lib.log.Logger;
+import com.mobilecoin.lib.network.services.ServiceAPIManager;
 import com.mobilecoin.lib.network.services.http.clients.RestClient;
 import com.mobilecoin.lib.network.services.transport.GRPCTransport;
 import com.mobilecoin.lib.network.services.transport.Transport;

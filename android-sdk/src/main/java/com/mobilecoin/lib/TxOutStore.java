@@ -156,7 +156,8 @@ final class TxOutStore implements Serializable {
         // update RNGs, TxOuts, and fog misses
         Set<BlockRange> fogMisses;
         try {
-            fogMisses = updateRNGsAndTxOuts(viewClient, new DefaultFogQueryScalingStrategy());
+            fogMisses = updateRNGsAndTxOuts(viewClient, new DefaultFogQueryScalingStrategy(),
+                    new DefaultFogSeedProvider(), new DefaultVersionedCryptoBox());
             // Find the first RNG
             Optional<FogSeed> firstRngSeed = seeds.values().stream()
                     .min((o1, o2) -> o1.getStartBlock().compareTo(o2.getStartBlock()));
@@ -187,7 +188,9 @@ final class TxOutStore implements Serializable {
     @NonNull
     synchronized Set<BlockRange> updateRNGsAndTxOuts(
             @NonNull AttestedViewClient viewClient,
-            @NonNull FogQueryScalingStrategy scalingStrategy)
+            @NonNull FogQueryScalingStrategy scalingStrategy,
+            @NonNull FogSeedProvider fogSeedProvider,
+            @NonNull VersionedCryptoBox cryptoBox)
             throws InvalidFogResponse, NetworkException, AttestationException, KexRngException {
         Logger.i(TAG, "Updating owned TxOuts");
 
@@ -228,7 +231,7 @@ final class TxOutStore implements Serializable {
                         Logger.d(TAG, String.format(TAG, "Adding the RNG seed %s",
                                 Hex.toString(rngRecord.getPubkey().getPubkey().toByteArray()))
                         );
-                        FogSeed newSeed = new FogSeed(
+                        FogSeed newSeed = fogSeedProvider.fogSeedFor(
                                 accountKey.getSubAddressViewKey(),
                                 rngRecord
                         );
@@ -259,13 +262,13 @@ final class TxOutStore implements Serializable {
                         case View.TxOutSearchResultCode.Found_VALUE: {
                             // Decrypt the TxOut
                             try {
-                                byte[] plainText = Util.versionedCryptoBoxDecrypt(
+                                byte[] plainText = cryptoBox.versionedCryptoBoxDecrypt(
                                         accountKey.getSubAddressViewKey(),
                                         txResult.getCiphertext().toByteArray()
                                 );
                                 View.TxOutRecord record = View.TxOutRecord.parseFrom(plainText);
                                 // Advance RNG.
-                                seed.addTXO(new OwnedTxOut(
+                                seed.addTXO(cryptoBox.ownedTxOutFor(
                                         record,
                                         accountKey
                                 ));

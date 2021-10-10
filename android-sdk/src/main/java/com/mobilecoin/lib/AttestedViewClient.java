@@ -27,7 +27,7 @@ import io.grpc.StatusRuntimeException;
  * Attested client for a Fog View service Attestation is done automatically by the parent class
  * {@link AttestedClient}
  */
-final class AttestedViewClient extends AttestedClient {
+class AttestedViewClient extends AttestedClient {
     private static final String TAG = AttestedViewClient.class.getName();
 
     /**
