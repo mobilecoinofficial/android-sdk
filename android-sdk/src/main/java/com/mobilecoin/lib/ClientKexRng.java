@@ -12,7 +12,7 @@ import com.mobilecoin.lib.log.Logger;
 import java.io.Serializable;
 import java.util.Arrays;
 
-final class ClientKexRng extends Native implements Serializable, Parcelable {
+final class ClientKexRng extends Native implements Serializable, Parcelable {//TODO: Remove Serializable implementation
     private final static String TAG = ClientKexRng.class.getName();
 
     ClientKexRng(

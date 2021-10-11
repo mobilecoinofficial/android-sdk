@@ -29,13 +29,13 @@ public class FogSeedTest {
                 .setIngestInvocationId(62L)
                 .setStartBlock(4234234L)
                 .build();
-        FogSeed uutInput = new FogSeed(RistrettoPrivate.fromBytes(new byte[32]), rngRecord);
-        uutInput.markObsolete();
+        FogSeed parcelInput = new FogSeed(RistrettoPrivate.fromBytes(new byte[32]), rngRecord);
+        parcelInput.markObsolete();
         Parcel parcel = Parcel.obtain();
-        uutInput.writeToParcel(parcel, 0);
+        parcelInput.writeToParcel(parcel, 0);
         parcel.setDataPosition(0);
-        FogSeed uutOutput = FogSeed.CREATOR.createFromParcel(parcel);
-        assertEquals(uutInput, uutOutput);
+        FogSeed parcelOutput = FogSeed.CREATOR.createFromParcel(parcel);
+        assertEquals(parcelInput, parcelOutput);
     }
 
 }

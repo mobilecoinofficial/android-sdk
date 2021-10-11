@@ -24,7 +24,7 @@ import fog_view.View;
 import java.util.Objects;
 import kex_rng.KexRng.StoredRng;
 
-class FogSeed implements Serializable, Parcelable {
+class FogSeed implements Serializable, Parcelable {//TODO: Remove Serializable implementation
     private final static String TAG = FogSeed.class.getName();
 
     // Bump serial version and read/write code if fields change

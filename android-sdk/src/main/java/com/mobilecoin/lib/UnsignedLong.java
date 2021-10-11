@@ -252,7 +252,7 @@ public final class UnsignedLong extends Number implements Comparable<UnsignedLon
         return UnsignedLong.fromLongBits(remainder(divisor.value));
     }
 
-    public static final Parcelable.Creator<UnsignedLong> CREATOR = new Parcelable.Creator<UnsignedLong>() {
+    public static final Creator<UnsignedLong> CREATOR = new Creator<UnsignedLong>() {
         public UnsignedLong createFromParcel(Parcel parcel) {
             return new UnsignedLong(parcel);
         }

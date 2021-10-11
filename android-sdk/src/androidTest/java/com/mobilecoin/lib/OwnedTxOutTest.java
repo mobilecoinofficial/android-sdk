@@ -40,12 +40,12 @@ public class OwnedTxOutTest {
                 .build();
         AccountKey accountKey = mock(AccountKey.class);
         when(accountKey.getViewKey()).thenReturn(RistrettoPrivate.fromBytes(new byte[32]));
-        OwnedTxOut uutInput = new OwnedTxOut(txOutRecord, accountWithoutFog);
+        OwnedTxOut parcelInput = new OwnedTxOut(txOutRecord, accountWithoutFog);
         Parcel parcel = Parcel.obtain();
-        uutInput.writeToParcel(parcel, 0);
+        parcelInput.writeToParcel(parcel, 0);
         parcel.setDataPosition(0);
-        OwnedTxOut uutOutput = OwnedTxOut.CREATOR.createFromParcel(parcel);
-        assertEquals(uutInput, uutOutput);
+        OwnedTxOut parcelOutput = OwnedTxOut.CREATOR.createFromParcel(parcel);
+        assertEquals(parcelInput, parcelOutput);
     }
 
 }

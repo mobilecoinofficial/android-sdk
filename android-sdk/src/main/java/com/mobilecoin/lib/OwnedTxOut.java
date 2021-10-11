@@ -26,7 +26,7 @@ import fog_view.View;
 /**
  * A transaction output that belongs to a {@link AccountKey}
  */
-public class OwnedTxOut implements Serializable, Parcelable {
+public class OwnedTxOut implements Serializable, Parcelable {//TODO: Remove Serializable implementation
     private final static String TAG = OwnedTxOut.class.getName();
 
     // Bump serial version and read/write code if fields change
