@@ -204,32 +204,24 @@ final class FogSeed implements Serializable, Parcelable {
     }
 
     @Override
-    public void writeToParcel(Parcel parcel, int i) {//TODO: This is incomplete. ArrayList
-        try {
-            parcel.writeByteArray(kexRng.getProtobufBytes());
-            parcel.writeByteArray(nonce);
-            parcel.writeInt(rngVersion);
-            parcel.writeByte((byte) (isObsolete ? 1 : 0));
-            parcel.writeLong(ingestInvocationId);
-            parcel.writeParcelable(startBlock, i);
-            parcel.writeTypedList(utxos);
-        } catch (KexRngException e) {
-            Logger.e(ClientKexRng.class.getSimpleName(), "Failed to serialize FogSeed.", e);
-        }
+    public void writeToParcel(Parcel parcel, int flags) {
+        parcel.writeParcelable(kexRng, flags);
+        parcel.writeByteArray(nonce);
+        parcel.writeInt(rngVersion);
+        parcel.writeByte((byte) (isObsolete ? 1 : 0));
+        parcel.writeLong(ingestInvocationId);
+        parcel.writeParcelable(startBlock, flags);
+        parcel.writeTypedList(utxos);
     }
 
-    protected FogSeed(Parcel parcel) {//TODO: This is incomplete
-        try {
-            kexRng = new ClientKexRng(parcel.createByteArray());
-            nonce = parcel.createByteArray();
-            rngVersion = parcel.readInt();
-            isObsolete = parcel.readByte() != 0;
-            ingestInvocationId = parcel.readLong();
-            startBlock = parcel.readParcelable(UnsignedLong.class.getClassLoader());
-            utxos = parcel.createTypedArrayList(OwnedTxOut.CREATOR);
-        } catch (KexRngException e) {
-            Logger.e(ClientKexRng.class.getSimpleName(), "Failed to de-serialize FogSeed.", e);
-        }
+    private FogSeed(Parcel parcel) {
+        kexRng = parcel.readParcelable(ClientKexRng.class.getClassLoader());
+        nonce = parcel.createByteArray();
+        rngVersion = parcel.readInt();
+        isObsolete = parcel.readByte() != 0;
+        ingestInvocationId = parcel.readLong();
+        startBlock = parcel.readParcelable(UnsignedLong.class.getClassLoader());
+        utxos = parcel.createTypedArrayList(OwnedTxOut.CREATOR);
     }
 
     public static final Creator<FogSeed> CREATOR = new Creator<FogSeed>() {

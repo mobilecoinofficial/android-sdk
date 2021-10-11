@@ -116,8 +116,7 @@ public final class UnsignedLong extends Number implements Comparable<UnsignedLon
      */
     @NonNull
     public BigInteger toBigInteger() {
-        if (value >= 0L)
-            return BigInteger.valueOf(value);
+        if (value >= 0L) return BigInteger.valueOf(value);
         else {
             BigInteger bigInt = BigInteger.valueOf(value & UNSIGNED_MASK);
             bigInt = bigInt.setBit(Long.SIZE - 1);
@@ -270,7 +269,7 @@ public final class UnsignedLong extends Number implements Comparable<UnsignedLon
     }
 
     @Override
-    public void writeToParcel(Parcel parcel, int i) {
+    public void writeToParcel(Parcel parcel, int flags) {
         parcel.writeLong(value);
     }
 

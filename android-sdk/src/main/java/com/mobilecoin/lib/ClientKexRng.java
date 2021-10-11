@@ -2,6 +2,9 @@
 
 package com.mobilecoin.lib;
 
+import android.os.Parcel;
+import android.os.Parcelable;
+
 import androidx.annotation.NonNull;
 
 import com.mobilecoin.lib.exceptions.KexRngException;
@@ -9,7 +12,7 @@ import com.mobilecoin.lib.log.Logger;
 import java.io.Serializable;
 import java.util.Arrays;
 
-final class ClientKexRng extends Native implements Serializable {
+final class ClientKexRng extends Native implements Serializable, Parcelable {
     private final static String TAG = ClientKexRng.class.getName();
 
     ClientKexRng(
@@ -140,5 +143,36 @@ final class ClientKexRng extends Native implements Serializable {
         );
 
         return equal;
+    }
+
+    public static final Creator<ClientKexRng> CREATOR = new Creator<ClientKexRng>() {
+        @Override
+        public ClientKexRng createFromParcel(Parcel parcel) {
+            try {
+                return new ClientKexRng(parcel.createByteArray());
+            } catch (KexRngException e) {
+                Logger.e(ClientKexRng.class.getSimpleName(), "Failed to deserialize ClientKexRng", e);
+            }
+            return null;
+        }
+
+        @Override
+        public ClientKexRng[] newArray(int length) {
+            return new ClientKexRng[length];
+        }
+    };
+
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    @Override
+    public void writeToParcel(Parcel parcel, int flags) {
+        try {
+            parcel.writeByteArray(getProtobufBytes());
+        } catch (KexRngException e) {
+            Logger.e(ClientKexRng.class.getSimpleName(), "Failed to serialize ClientKexRng", e);
+        }
     }
 }

@@ -183,7 +183,7 @@ public class OwnedTxOut implements Serializable, Parcelable {
         return result;
     }
 
-    protected OwnedTxOut(Parcel parcel) throws SerializationException {
+    private OwnedTxOut(Parcel parcel) throws SerializationException {
         txOutGlobalIndex = parcel.readParcelable(UnsignedLong.class.getClassLoader());
         receivedBlockIndex = parcel.readParcelable(UnsignedLong.class.getClassLoader());
         receivedBlockTimestamp = (Date)parcel.readSerializable();
