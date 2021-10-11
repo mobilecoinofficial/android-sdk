@@ -2,6 +2,12 @@
 
 package com.mobilecoin.lib;
 
+import static org.junit.Assert.assertEquals;
+
+import android.content.Intent;
+import android.os.Parcel;
+import android.os.Parcelable;
+
 import com.google.common.collect.ImmutableSet;
 
 import org.junit.Assert;
@@ -44,7 +50,7 @@ public class UnsignedLongTest {
                     (value >= 0)
                             ? BigInteger.valueOf(value)
                             : BigInteger.valueOf(value).add(BigInteger.ZERO.setBit(64));
-            Assert.assertEquals(
+            assertEquals(
                     UnsignedLong.fromLongBits(value).toString(),
                     expected,
                     UnsignedLong.fromLongBits(value).toBigInteger());
@@ -58,7 +64,7 @@ public class UnsignedLongTest {
         for (BigInteger big : TEST_BIG_INTEGERS) {
             boolean expectSuccess = big.compareTo(min) >= 0 && big.compareTo(max) <= 0;
             try {
-                Assert.assertEquals(big, UnsignedLong.valueOf(big).toBigInteger());
+                assertEquals(big, UnsignedLong.valueOf(big).toBigInteger());
                 Assert.assertTrue(expectSuccess);
             } catch (IllegalArgumentException e) {
                 Assert.assertFalse(expectSuccess);
@@ -70,7 +76,7 @@ public class UnsignedLongTest {
     public void test_float_value() {
         for (long value : TEST_LONGS) {
             UnsignedLong unsignedValue = UnsignedLong.fromLongBits(value);
-            Assert.assertEquals(unsignedValue.toBigInteger().floatValue(),
+            assertEquals(unsignedValue.toBigInteger().floatValue(),
                     unsignedValue.floatValue(), 0F);
         }
     }
@@ -79,7 +85,7 @@ public class UnsignedLongTest {
     public void test_double_value() {
         for (long value : TEST_LONGS) {
             UnsignedLong unsignedValue = UnsignedLong.fromLongBits(value);
-            Assert.assertEquals(unsignedValue.toBigInteger().doubleValue(),
+            assertEquals(unsignedValue.toBigInteger().doubleValue(),
                     unsignedValue.doubleValue(), 0D);
         }
     }
@@ -92,7 +98,7 @@ public class UnsignedLongTest {
                 UnsignedLong unsignedB = UnsignedLong.fromLongBits(b);
                 long expected = unsignedA.toBigInteger().add(unsignedB.toBigInteger()).longValue();
                 UnsignedLong unsignedSum = unsignedA.add(unsignedB);
-                Assert.assertEquals(expected, unsignedSum.longValue());
+                assertEquals(expected, unsignedSum.longValue());
             }
         }
     }
@@ -106,7 +112,7 @@ public class UnsignedLongTest {
                 long expected =
                         unsignedA.toBigInteger().subtract(unsignedB.toBigInteger()).longValue();
                 UnsignedLong unsignedSub = unsignedA.sub(unsignedB);
-                Assert.assertEquals(expected, unsignedSub.longValue());
+                assertEquals(expected, unsignedSub.longValue());
             }
         }
     }
@@ -120,7 +126,7 @@ public class UnsignedLongTest {
                 long expected =
                         unsignedA.toBigInteger().multiply(unsignedB.toBigInteger()).longValue();
                 UnsignedLong unsignedMul = unsignedA.mul(unsignedB);
-                Assert.assertEquals(expected, unsignedMul.longValue());
+                assertEquals(expected, unsignedMul.longValue());
             }
         }
     }
@@ -135,7 +141,7 @@ public class UnsignedLongTest {
                     long expected =
                             unsignedA.toBigInteger().divide(unsignedB.toBigInteger()).longValue();
                     UnsignedLong unsignedDiv = unsignedA.divideBy(unsignedB);
-                    Assert.assertEquals(expected, unsignedDiv.longValue());
+                    assertEquals(expected, unsignedDiv.longValue());
                 }
             }
         }
@@ -162,7 +168,7 @@ public class UnsignedLongTest {
                     long expected =
                             unsignedA.toBigInteger().remainder(unsignedB.toBigInteger()).longValue();
                     UnsignedLong unsignedRem = unsignedA.remainder(unsignedB);
-                    Assert.assertEquals(expected, unsignedRem.longValue());
+                    assertEquals(expected, unsignedRem.longValue());
                 }
             }
         }
@@ -185,7 +191,7 @@ public class UnsignedLongTest {
             for (long b : TEST_LONGS) {
                 UnsignedLong unsignedA = UnsignedLong.fromLongBits(a);
                 UnsignedLong unsignedB = UnsignedLong.fromLongBits(b);
-                Assert.assertEquals(
+                assertEquals(
                         unsignedA.toBigInteger().compareTo(unsignedB.toBigInteger()),
                         unsignedA.compareTo(unsignedB));
             }
@@ -199,7 +205,7 @@ public class UnsignedLongTest {
                     ? BigInteger.valueOf(a)
                     : BigInteger.valueOf(a).add(BigInteger.ZERO.setBit(64));
 
-            Assert.assertEquals(UnsignedLong.fromLongBits(a), UnsignedLong.fromBigInteger(big));
+            assertEquals(UnsignedLong.fromLongBits(a), UnsignedLong.fromBigInteger(big));
         }
     }
 
@@ -207,8 +213,21 @@ public class UnsignedLongTest {
     public void test_to_string() {
         for (long value : TEST_LONGS) {
             UnsignedLong unsignedValue = UnsignedLong.fromLongBits(value);
-            Assert.assertEquals(unsignedValue.toBigInteger().toString(),
+            assertEquals(unsignedValue.toBigInteger().toString(),
                     unsignedValue.toString());
         }
     }
+
+    @Test
+    public void test_parcelable() {
+        for(long value : TEST_LONGS) {
+            UnsignedLong uutInput = UnsignedLong.fromLongBits(value);
+            Parcel parcel = Parcel.obtain();
+            uutInput.writeToParcel(parcel, 0);
+            parcel.setDataPosition(0);
+            UnsignedLong uutOutput = UnsignedLong.CREATOR.createFromParcel(parcel);
+            assertEquals(uutInput, uutOutput);
+        }
+    }
+
 }

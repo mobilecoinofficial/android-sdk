@@ -2,9 +2,13 @@
 
 package com.mobilecoin.lib;
 
+import android.os.Parcel;
+import android.os.Parcelable;
+
 import androidx.annotation.NonNull;
 
 import com.mobilecoin.lib.exceptions.KexRngException;
+import com.mobilecoin.lib.exceptions.SerializationException;
 import com.mobilecoin.lib.log.Logger;
 
 import fog_view.View.RngRecord;
@@ -20,7 +24,7 @@ import fog_view.View;
 import java.util.Objects;
 import kex_rng.KexRng.StoredRng;
 
-class FogSeed implements Serializable {
+class FogSeed implements Serializable, Parcelable {//TODO: Remove Serializable implementation
     private final static String TAG = FogSeed.class.getName();
 
     // Bump serial version and read/write code if fields change
@@ -193,4 +197,43 @@ class FogSeed implements Serializable {
             Objects.equals(startBlock, fogSeed.startBlock) &&
             Objects.equals(utxos, fogSeed.utxos);
     }
+
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    @Override
+    public void writeToParcel(Parcel parcel, int flags) {
+        parcel.writeParcelable(kexRng, flags);
+        parcel.writeByteArray(nonce);
+        parcel.writeInt(rngVersion);
+        parcel.writeByte((byte) (isObsolete ? 1 : 0));
+        parcel.writeLong(ingestInvocationId);
+        parcel.writeParcelable(startBlock, flags);
+        parcel.writeTypedList(utxos);
+    }
+
+    private FogSeed(Parcel parcel) {
+        kexRng = parcel.readParcelable(ClientKexRng.class.getClassLoader());
+        nonce = parcel.createByteArray();
+        rngVersion = parcel.readInt();
+        isObsolete = parcel.readByte() != 0;
+        ingestInvocationId = parcel.readLong();
+        startBlock = parcel.readParcelable(UnsignedLong.class.getClassLoader());
+        utxos = parcel.createTypedArrayList(OwnedTxOut.CREATOR);
+    }
+
+    public static final Creator<FogSeed> CREATOR = new Creator<FogSeed>() {
+        @Override
+        public FogSeed createFromParcel(Parcel parcel) {
+            return new FogSeed(parcel);
+        }
+
+        @Override
+        public FogSeed[] newArray(int length) {
+            return new FogSeed[length];
+        }
+    };
+
 }

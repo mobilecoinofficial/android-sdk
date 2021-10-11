@@ -2,13 +2,15 @@
 
 package com.mobilecoin.lib;
 
+import android.os.Parcel;
+import android.os.Parcelable;
+
 import androidx.annotation.NonNull;
 
-import java.io.Serializable;
 import java.math.BigInteger;
 import java.util.Objects;
 
-public final class UnsignedLong extends Number implements Comparable<UnsignedLong>, Serializable {
+public final class UnsignedLong extends Number implements Comparable<UnsignedLong>, Parcelable {
 
     private static final long UNSIGNED_MASK = 0x7fffffffffffffffL;
     private static final long MIN_LONG_VALUE = 0x8000000000000000L;
@@ -114,8 +116,7 @@ public final class UnsignedLong extends Number implements Comparable<UnsignedLon
      */
     @NonNull
     public BigInteger toBigInteger() {
-        if (value >= 0L)
-            return BigInteger.valueOf(value);
+        if (value >= 0L) return BigInteger.valueOf(value);
         else {
             BigInteger bigInt = BigInteger.valueOf(value & UNSIGNED_MASK);
             bigInt = bigInt.setBit(Long.SIZE - 1);
@@ -250,4 +251,30 @@ public final class UnsignedLong extends Number implements Comparable<UnsignedLon
     public UnsignedLong remainder(@NonNull UnsignedLong divisor) {
         return UnsignedLong.fromLongBits(remainder(divisor.value));
     }
+
+    public static final Creator<UnsignedLong> CREATOR = new Creator<UnsignedLong>() {
+        public UnsignedLong createFromParcel(Parcel parcel) {
+            return new UnsignedLong(parcel);
+        }
+
+        @Override
+        public UnsignedLong[] newArray(int length) {
+            return new UnsignedLong[length];
+        }
+    };
+
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    @Override
+    public void writeToParcel(Parcel parcel, int flags) {
+        parcel.writeLong(value);
+    }
+
+    private UnsignedLong(Parcel parcel) {
+        value = parcel.readLong();
+    }
+
 }
