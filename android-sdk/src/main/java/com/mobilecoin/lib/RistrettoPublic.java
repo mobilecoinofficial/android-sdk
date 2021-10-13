@@ -8,7 +8,6 @@ import android.os.Parcelable;
 import androidx.annotation.NonNull;
 
 import com.google.protobuf.ByteString;
-import com.google.protobuf.InvalidProtocolBufferException;
 import com.mobilecoin.api.MobileCoinAPI;
 import com.mobilecoin.lib.exceptions.SerializationException;
 import com.mobilecoin.lib.log.Logger;
@@ -16,7 +15,6 @@ import com.mobilecoin.lib.log.Logger;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-import java.io.Serializable;
 import java.util.Arrays;
 
 /**
@@ -26,7 +24,7 @@ import java.util.Arrays;
  * MobileCoin public addresses consist of two RistrettoPublic keys: view & spend
  * </pre>
  */
-public final class RistrettoPublic extends Native implements Serializable, Parcelable {
+public final class RistrettoPublic extends Native implements Parcelable {
     public static final int PUBLIC_KEY_SIZE = 32;
     private static final long serialVersionUID = 1L;
     private MobileCoinAPI.CompressedRistretto compressedRistretto;

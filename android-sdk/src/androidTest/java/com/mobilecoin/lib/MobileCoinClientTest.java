@@ -637,10 +637,7 @@ public class MobileCoinClientTest {
 
         String txOutStoreStorageKey = TxOutStore.createStorageKey(mobileCoinClient.getAccountKey());
         byte[] serializedTxOutStore = storageAdapter.get(txOutStoreStorageKey);
-        TxOutStore deserializedTxOutStore = TxOutStore.fromBytes(
-            serializedTxOutStore,
-            mobileCoinClient.getAccountKey()
-        );
+        TxOutStore deserializedTxOutStore = TxOutStore.fromBytes(serializedTxOutStore);
 
         Assert.assertEquals(txOutStore, deserializedTxOutStore);
     }

@@ -24,10 +24,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-import java.io.Serializable;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -42,7 +39,7 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
-final class TxOutStore implements Serializable, Parcelable {
+final class TxOutStore implements Parcelable {
     private static final String TAG = TxOutStore.class.getName();
 
     // Bump serial version and read/write code if fields change
@@ -79,33 +76,24 @@ final class TxOutStore implements Serializable, Parcelable {
     }
 
     @NonNull
-    static TxOutStore fromBytes(
-            @NonNull byte[] serialized,
-            @NonNull AccountKey accountKey
-    ) throws SerializationException {
+    static TxOutStore fromBytes(@NonNull byte[] serialized) throws SerializationException {
         Logger.i(TAG, "Deserializing the txo store from bytes");
-        try (ByteArrayInputStream bis = new ByteArrayInputStream(serialized);
-             ObjectInputStream is = new ObjectInputStream(bis)) {
-            TxOutStore store = (TxOutStore) is.readObject();
-            store.setAccountKey(accountKey);
-            return store;
-        } catch (IOException | ClassNotFoundException exception) {
-            Logger.w(TAG, "Unable to deserialize the txo store", exception);
-            throw new SerializationException();
-        }
+        Parcel parcel = Parcel.obtain();
+        parcel.unmarshall(serialized, 0, serialized.length);
+        parcel.setDataPosition(0);
+        TxOutStore deserialized = CREATOR.createFromParcel(parcel);
+        parcel.recycle();
+        return deserialized;
     }
 
     @NonNull
     byte[] toByteArray() throws SerializationException {
         Logger.i(TAG, "Serializing txo store");
-        try (ByteArrayOutputStream bos = new ByteArrayOutputStream();
-             ObjectOutputStream os = new ObjectOutputStream(bos)) {
-            os.writeObject(this);
-            return bos.toByteArray();
-        } catch (IOException exception) {
-            Logger.w(TAG, "Unable to serialize the txo store", exception);
-            throw new SerializationException();
-        }
+        Parcel parcel = Parcel.obtain();
+        writeToParcel(parcel, 0);
+        byte serialized[] = parcel.marshall();
+        parcel.recycle();
+        return serialized;
     }
 
     /**

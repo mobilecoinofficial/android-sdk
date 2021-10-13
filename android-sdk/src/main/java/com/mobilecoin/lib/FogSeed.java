@@ -8,23 +8,19 @@ import android.os.Parcelable;
 import androidx.annotation.NonNull;
 
 import com.mobilecoin.lib.exceptions.KexRngException;
-import com.mobilecoin.lib.exceptions.SerializationException;
 import com.mobilecoin.lib.log.Logger;
 
-import fog_view.View.RngRecord;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
 import fog_view.View;
 import java.util.Objects;
-import kex_rng.KexRng.StoredRng;
 
-class FogSeed implements Serializable, Parcelable {//TODO: Remove Serializable implementation
+class FogSeed implements Parcelable {
     private final static String TAG = FogSeed.class.getName();
 
     // Bump serial version and read/write code if fields change

@@ -74,10 +74,7 @@ public class TxOutStoreTest {
         }
 
         byte[] serialized = store.toByteArray();
-        store = TxOutStore.fromBytes(
-                serialized,
-                accountKey
-        );
+        store = TxOutStore.fromBytes(serialized);
         Set<OwnedTxOut> restoredUtxos = store.getSyncedTxOuts();
         int restoredStoreSize = restoredUtxos.size();
         Assert.assertEquals("Serialized and Deserialized stores sizes must be the same",

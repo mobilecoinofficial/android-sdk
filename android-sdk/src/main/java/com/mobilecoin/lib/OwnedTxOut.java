@@ -14,7 +14,6 @@ import com.mobilecoin.lib.exceptions.SerializationException;
 import com.mobilecoin.lib.exceptions.TransactionBuilderException;
 import com.mobilecoin.lib.log.Logger;
 
-import java.io.Serializable;
 import java.math.BigInteger;
 import java.util.Arrays;
 import java.util.Date;
@@ -26,7 +25,7 @@ import fog_view.View;
 /**
  * A transaction output that belongs to a {@link AccountKey}
  */
-public class OwnedTxOut implements Serializable, Parcelable {//TODO: Remove Serializable implementation
+public class OwnedTxOut implements Parcelable {
     private final static String TAG = OwnedTxOut.class.getName();
 
     // Bump serial version and read/write code if fields change
