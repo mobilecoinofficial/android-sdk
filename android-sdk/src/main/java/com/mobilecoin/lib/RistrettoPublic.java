@@ -2,11 +2,16 @@
 
 package com.mobilecoin.lib;
 
+import android.os.Parcel;
+import android.os.Parcelable;
+
 import androidx.annotation.NonNull;
 
 import com.google.protobuf.ByteString;
+import com.google.protobuf.InvalidProtocolBufferException;
 import com.mobilecoin.api.MobileCoinAPI;
 import com.mobilecoin.lib.exceptions.SerializationException;
+import com.mobilecoin.lib.log.Logger;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -21,7 +26,7 @@ import java.util.Arrays;
  * MobileCoin public addresses consist of two RistrettoPublic keys: view & spend
  * </pre>
  */
-public final class RistrettoPublic extends Native implements Serializable {
+public final class RistrettoPublic extends Native implements Serializable, Parcelable {
     public static final int PUBLIC_KEY_SIZE = 32;
     private static final long serialVersionUID = 1L;
     private MobileCoinAPI.CompressedRistretto compressedRistretto;
@@ -141,4 +146,32 @@ public final class RistrettoPublic extends Native implements Serializable {
 
     @NonNull
     private native byte[] get_bytes();
+
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    @Override
+    public void writeToParcel(Parcel parcel, int flags) {
+        parcel.writeByteArray(compressedRistretto.getData().toByteArray());
+    }
+
+    public static final Creator<RistrettoPublic> CREATOR = new Creator<RistrettoPublic>() {
+        @Override
+        public RistrettoPublic createFromParcel(Parcel parcel) {
+            try {
+                return RistrettoPublic.fromBytes(parcel.createByteArray());
+            } catch (SerializationException e) {
+                Logger.e(RistrettoPublic.class.getSimpleName(), "Failed to deserialize RistrettoPublic", e);
+                return null;
+            }
+        }
+
+        @Override
+        public RistrettoPublic[] newArray(int length) {
+            return new RistrettoPublic[length];
+        }
+    };
+
 }

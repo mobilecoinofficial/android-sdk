@@ -3,6 +3,8 @@
 package com.mobilecoin.lib;
 
 import android.net.Uri;
+import android.os.Parcel;
+import android.os.Parcelable;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -25,7 +27,7 @@ import java.util.Objects;
 /**
  * The {@code AccountKey} class represents an abstraction of view & spent private keys
  */
-public class AccountKey extends Native {
+public class AccountKey extends Native implements Parcelable {
     private final static String TAG = AccountKey.class.getName();
     private final Uri fogReportUri;
     private final String fogReportId;
@@ -540,4 +542,45 @@ public class AccountKey extends Native {
     private native long get_view_key();
 
     private native long get_spend_key();
+
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    @Override
+    public void writeToParcel(Parcel parcel, int flags) {
+        parcel.writeParcelable(fogReportUri, flags);
+        parcel.writeString(fogReportId);
+        parcel.writeByteArray(fogAuthoritySpki);
+        parcel.writeParcelable(subAddressViewKey, flags);
+        parcel.writeParcelable(subAddressSpendKey, flags);
+        parcel.writeParcelable(viewKey, flags);
+        parcel.writeParcelable(spendKey, flags);
+        parcel.writeParcelable(publicAddress, flags);
+    }
+
+    public static final Creator<AccountKey> CREATOR = new Creator<AccountKey>() {
+        @Override
+        public AccountKey createFromParcel(Parcel parcel) {
+            return new AccountKey(parcel);
+        }
+
+        @Override
+        public AccountKey[] newArray(int length) {
+            return new AccountKey[length];
+        }
+    };
+
+    private AccountKey(Parcel parcel) {
+        fogReportUri = parcel.readParcelable(Uri.class.getClassLoader());
+        fogReportId = parcel.readString();
+        fogAuthoritySpki = parcel.createByteArray();
+        subAddressViewKey = parcel.readParcelable(RistrettoPrivate.class.getClassLoader());
+        subAddressSpendKey = parcel.readParcelable(RistrettoPrivate.class.getClassLoader());
+        viewKey = parcel.readParcelable(RistrettoPrivate.class.getClassLoader());
+        spendKey = parcel.readParcelable(RistrettoPrivate.class.getClassLoader());
+        publicAddress = parcel.readParcelable(PublicAddress.class.getClassLoader());
+    }
+
 }

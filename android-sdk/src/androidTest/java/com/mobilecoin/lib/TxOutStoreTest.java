@@ -10,8 +10,11 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import android.os.Parcel;
+
 import com.google.protobuf.ByteString;
 import com.mobilecoin.lib.exceptions.AttestationException;
+import com.mobilecoin.lib.exceptions.BadBip39EntropyException;
 import com.mobilecoin.lib.exceptions.FeeRejectedException;
 import com.mobilecoin.lib.exceptions.FogReportException;
 import com.mobilecoin.lib.exceptions.FragmentedAccountException;
@@ -297,6 +300,19 @@ public class TxOutStoreTest {
 
         assertTrue(Objects.equals(results, expectedRanges));
 
+    }
+
+    @Test
+    public void testParcelable() throws BadBip39EntropyException {
+        AccountTest.AccountTestData accountData = AccountTest.loadAccountTestData().get(0);
+        AccountKey accountWithoutFog = AccountKeyDeriver.deriveAccountKeyFromMnemonic(
+                accountData.mnemonic, accountData.accountIndex);
+        TxOutStore parcelInput = new TxOutStore(accountWithoutFog);
+        Parcel parcel = Parcel.obtain();
+        parcelInput.writeToParcel(parcel, 0);
+        parcel.setDataPosition(0);
+        TxOutStore parcelOutput = TxOutStore.CREATOR.createFromParcel(parcel);
+        assertEquals(parcelInput, parcelOutput);
     }
 
     private static final byte[] SAMPLE_TXOUT_BYTES = new byte[] {17, -93, 2, -81, 7, -62,

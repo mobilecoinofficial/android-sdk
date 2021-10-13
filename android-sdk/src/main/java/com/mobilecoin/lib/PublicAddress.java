@@ -3,6 +3,8 @@
 package com.mobilecoin.lib;
 
 import android.net.Uri;
+import android.os.Parcel;
+import android.os.Parcelable;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -22,7 +24,7 @@ import java.util.Objects;
 /**
  * Represents account's public address to receive coins
  */
-public final class PublicAddress extends Native {
+public final class PublicAddress extends Native implements Parcelable {
     private static final String TAG = PublicAddress.class.getName();
     private final RistrettoPublic viewKey;
     private final RistrettoPublic spendKey;
@@ -335,4 +337,39 @@ public final class PublicAddress extends Native {
 
     @Nullable
     private native String get_report_id();
+
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    @Override
+    public void writeToParcel(Parcel parcel, int flags) {
+        parcel.writeParcelable(viewKey, flags);
+        parcel.writeParcelable(spendKey, flags);
+        parcel.writeParcelable(fogReportUri, flags);
+        parcel.writeString(fogReportId);
+        parcel.writeByteArray(fogAuthoritySig);
+    }
+
+    private PublicAddress(Parcel parcel) {
+        viewKey = parcel.readParcelable(RistrettoPublic.class.getClassLoader());
+        spendKey = parcel.readParcelable(RistrettoPublic.class.getClassLoader());
+        fogReportUri = parcel.readParcelable(Uri.class.getClassLoader());
+        fogReportId = parcel.readString();
+        fogAuthoritySig = parcel.createByteArray();
+    }
+
+    public static final Creator<PublicAddress> CREATOR = new Creator<PublicAddress>() {
+        @Override
+        public PublicAddress createFromParcel(Parcel parcel) {
+            return new PublicAddress(parcel);
+        }
+
+        @Override
+        public PublicAddress[] newArray(int length) {
+            return new PublicAddress[length];
+        }
+    };
+
 }

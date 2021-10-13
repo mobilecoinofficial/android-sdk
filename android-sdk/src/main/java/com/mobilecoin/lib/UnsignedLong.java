@@ -180,26 +180,19 @@ public final class UnsignedLong extends Number implements Comparable<UnsignedLon
      * @throws ArithmeticException if divisor is 0
      */
     public long divideBy(long divisor) {
-        long dividend = value;
-        if (divisor < 0) { // i.e., divisor >= 2^63:
-            if (compareTo(UnsignedLong.fromLongBits(divisor)) < 0) {
-                return 0; // dividend < divisor
-            } else {
-                return 1; // dividend >= divisor
+        long temp = value;
+        if(divisor >= 0) {
+            if(temp >= 0) {
+                return temp / divisor;
             }
+            long quotient = ((temp >>> 1) / divisor) << 1;
+            temp -= quotient * divisor;
+            if((temp < 0) || (temp >= divisor)) {
+                quotient++;
+            }
+            return quotient;
         }
-
-        // signed division if dividend < 2^63
-        if (dividend >= 0) {
-            return dividend / divisor;
-        }
-
-        // use BigInteger for simplicity
-        // use UnsignedLong as an intermediate to not lose the sign
-        // todo: see "Hacker's Delight" for optimal divide and remainder algos
-        BigInteger bigDividend = UnsignedLong.fromLongBits(dividend).toBigInteger();
-        BigInteger bigDivisor = UnsignedLong.fromLongBits(divisor).toBigInteger();
-        return bigDividend.divide(bigDivisor).longValue();
+        return temp >= 0 || temp < divisor ? 0 : 1;
     }
 
     /**
