@@ -11,11 +11,6 @@ import com.mobilecoin.lib.network.TransportProtocol;
 public class Environment {
     public static final TestEnvironment CURRENT_TEST_ENV = TestEnvironment.ALPHA;
 
-    static public MobileCoinClient makeFreshMobileCoinClient() throws InvalidUriException {
-        AccountKey accountKey = TestKeysManager.getNextAccountKey();
-        return makeFreshMobileCoinClient(accountKey);
-    }
-
     static public TestFogConfig getTestFogConfig() {
         return TestFogConfig.getFogConfig(CURRENT_TEST_ENV);
     }
