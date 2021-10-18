@@ -19,11 +19,6 @@ public class Environment {
         return TestFogConfig.getFogConfig(CURRENT_TEST_ENV, storageAdapter);
     }
 
-    static public MobileCoinClient makeFreshMobileCoinClient(AccountKey accountKey) throws InvalidUriException {
-        TestFogConfig fogConfig = getTestFogConfig();
-        return makeFreshMobileCoinClient(fogConfig, accountKey);
-    }
-
     static public MobileCoinClient makeFreshMobileCoinClient(StorageAdapter storageAdapter) throws InvalidUriException { AccountKey accountKey = TestKeysManager.getNextAccountKey();
         TestFogConfig fogConfig = getTestFogConfig(storageAdapter);
         return makeFreshMobileCoinClient(fogConfig, accountKey);

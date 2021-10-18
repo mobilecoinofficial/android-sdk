@@ -374,7 +374,8 @@ public class MobileCoinClientTest {
             TimeoutException, FogReportException, InvalidReceiptException, InvalidUriException {
 
         AccountKey coinSourceKey = TestKeysManager.getNextAccountKey();
-        MobileCoinClient coinSourceClient = Environment.makeFreshMobileCoinClient(coinSourceKey);
+        MobileCoinClient coinSourceClient = MobileCoinClientBuilder.newBuilder()
+            .setAccountKey(coinSourceKey).build();
 
         final int FRAGMENTS_TO_TEST = 20;
         final BigInteger MINIMUM_TX_FEE = coinSourceClient.getOrFetchMinimumTxFee();
@@ -389,7 +390,7 @@ public class MobileCoinClientTest {
         );
 
         MobileCoinClient fragmentedClient =
-                Environment.makeFreshMobileCoinClient(fragmentedAccount);
+            MobileCoinClientBuilder.newBuilder().setAccountKey(fragmentedAccount).build();
 
         // 2a. Send small denomination TxOuts to the test account
         for (int i = 0; i < FRAGMENTS_TO_TEST; ++i) {
