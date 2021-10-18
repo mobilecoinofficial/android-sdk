@@ -75,8 +75,8 @@ public class LedgerTest {
             InvalidTransactionException, InterruptedException, FogReportException,
             InvalidReceiptException, InvalidUriException {
 
-        MobileCoinClient senderClient = Environment.makeFreshMobileCoinClient();
-        MobileCoinClient recipientClient = Environment.makeFreshMobileCoinClient();
+        MobileCoinClient senderClient = MobileCoinClientBuilder.newBuilder().build();
+        MobileCoinClient recipientClient = MobileCoinClientBuilder.newBuilder().build();
 
         // randomize the amount for each test run, up to a 100 picoMob
         BigInteger amount = BigInteger.valueOf(Math.abs(new SecureRandom().nextInt() % 100) + 1);

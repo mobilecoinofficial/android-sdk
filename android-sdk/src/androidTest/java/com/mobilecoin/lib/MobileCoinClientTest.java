@@ -2,6 +2,7 @@
 
 package com.mobilecoin.lib;
 
+import static com.mobilecoin.lib.Environment.CURRENT_TEST_ENV;
 import static com.mobilecoin.lib.Environment.getTestFogConfig;
 import static com.mobilecoin.lib.UtilTest.waitForReceiptStatus;
 import static com.mobilecoin.lib.UtilTest.waitForTransactionStatus;
@@ -64,7 +65,7 @@ public class MobileCoinClientTest {
     @Test
     public void test_balance_consistency()
             throws InvalidFogResponse, NetworkException, AttestationException, InvalidUriException {
-        MobileCoinClient mobileCoinClient = Environment.makeFreshMobileCoinClient();
+        MobileCoinClient mobileCoinClient = MobileCoinClientBuilder.newBuilder().build();
         try {
             Balance balance1 = mobileCoinClient.getBalance();
             Logger.d(
@@ -88,7 +89,7 @@ public class MobileCoinClientTest {
     @Test
     public void test_balance_retrieval()
             throws InvalidFogResponse, NetworkException, AttestationException, InvalidUriException {
-        MobileCoinClient mobileCoinClient = Environment.makeFreshMobileCoinClient();
+        MobileCoinClient mobileCoinClient = MobileCoinClientBuilder.newBuilder().build();
         Balance balance = mobileCoinClient.getBalance();
         Logger.d(
                 TAG,
@@ -111,7 +112,7 @@ public class MobileCoinClientTest {
 
         BigInteger amount = BigInteger.TEN;
 
-        MobileCoinClient mobileCoinClient = Environment.makeFreshMobileCoinClient();
+        MobileCoinClient mobileCoinClient = MobileCoinClientBuilder.newBuilder().build();
         PublicAddress recipient = TestKeysManager.getNextAccountKey().getPublicAddress();
         try {
             BigInteger minimumFee = mobileCoinClient.estimateTotalFee(
@@ -148,7 +149,7 @@ public class MobileCoinClientTest {
             InsufficientFundsException, InvalidFogResponse, FeeRejectedException,
             SerializationException, AttestationException, NetworkException,
             TransactionBuilderException, FogReportException, InvalidUriException {
-        MobileCoinClient mobileCoinClient = Environment.makeFreshMobileCoinClient();
+        MobileCoinClient mobileCoinClient = MobileCoinClientBuilder.newBuilder().build();
         AccountKey recipient = TestKeysManager.getNextAccountKey();
         try {
             byte[] serializedAddress = recipient.getPublicAddress().toByteArray();
@@ -228,7 +229,7 @@ public class MobileCoinClientTest {
             AttestationException, InvalidFogResponse, FeeRejectedException,
             InsufficientFundsException, NetworkException, TransactionBuilderException,
             TimeoutException, FogReportException, InvalidUriException {
-        MobileCoinClient mobileCoinClient = Environment.makeFreshMobileCoinClient();
+        MobileCoinClient mobileCoinClient = MobileCoinClientBuilder.newBuilder().build();
         AccountKey recipient = TestKeysManager.getNextAccountKey();
         try {
             BigInteger amount = BigInteger.TEN;
@@ -262,8 +263,8 @@ public class MobileCoinClientTest {
             InsufficientFundsException, AmountDecoderException, NetworkException,
             TransactionBuilderException, TimeoutException, FogReportException,
             InvalidReceiptException, InvalidUriException {
-        MobileCoinClient senderClient = Environment.makeFreshMobileCoinClient();
-        MobileCoinClient recipientClient = Environment.makeFreshMobileCoinClient();
+        MobileCoinClient senderClient = MobileCoinClientBuilder.newBuilder().build();
+        MobileCoinClient recipientClient = MobileCoinClientBuilder.newBuilder().build();
         try {
             BigInteger amount = BigInteger.TEN;
             BigInteger minimumFee = senderClient.estimateTotalFee(
@@ -309,8 +310,8 @@ public class MobileCoinClientTest {
             AttestationException, NetworkException,
             TransactionBuilderException, InterruptedException, TimeoutException,
             FogReportException, InvalidReceiptException, InvalidUriException {
-        MobileCoinClient senderClient = Environment.makeFreshMobileCoinClient();
-        MobileCoinClient recipientClient = Environment.makeFreshMobileCoinClient();
+        MobileCoinClient senderClient = MobileCoinClientBuilder.newBuilder().build();
+        MobileCoinClient recipientClient = MobileCoinClientBuilder.newBuilder().build();
 
         Balance initialBalance = recipientClient.getBalance();
         try {
@@ -374,7 +375,8 @@ public class MobileCoinClientTest {
             TimeoutException, FogReportException, InvalidReceiptException, InvalidUriException {
 
         AccountKey coinSourceKey = TestKeysManager.getNextAccountKey();
-        MobileCoinClient coinSourceClient = Environment.makeFreshMobileCoinClient(coinSourceKey);
+        MobileCoinClient coinSourceClient = MobileCoinClientBuilder.newBuilder()
+            .setAccountKey(coinSourceKey).build();
 
         final int FRAGMENTS_TO_TEST = 20;
         final BigInteger MINIMUM_TX_FEE = coinSourceClient.getOrFetchMinimumTxFee();
@@ -389,7 +391,7 @@ public class MobileCoinClientTest {
         );
 
         MobileCoinClient fragmentedClient =
-                Environment.makeFreshMobileCoinClient(fragmentedAccount);
+            MobileCoinClientBuilder.newBuilder().setAccountKey(fragmentedAccount).build();
 
         // 2a. Send small denomination TxOuts to the test account
         for (int i = 0; i < FRAGMENTS_TO_TEST; ++i) {
@@ -491,7 +493,7 @@ public class MobileCoinClientTest {
     @Test
     public void test_internal_external_get_owned_tx_outs_api()
             throws InvalidFogResponse, NetworkException, AttestationException, InvalidUriException {
-        MobileCoinClient mobileCoinClient = Environment.makeFreshMobileCoinClient();
+        MobileCoinClient mobileCoinClient = MobileCoinClientBuilder.newBuilder().build();
         TxOutStore store = mobileCoinClient.getTxOutStore();
         store.refresh(
                 mobileCoinClient.viewClient,
@@ -533,8 +535,8 @@ public class MobileCoinClientTest {
             InvalidFogResponse, InvalidTransactionException, TimeoutException,
             InterruptedException, FogReportException, TransactionBuilderException,
             FragmentedAccountException, FeeRejectedException, InvalidReceiptException {
-        MobileCoinClient senderClient = Environment.makeFreshMobileCoinClient();
-        MobileCoinClient recipientClient = Environment.makeFreshMobileCoinClient();
+        MobileCoinClient senderClient = MobileCoinClientBuilder.newBuilder().build();
+        MobileCoinClient recipientClient = MobileCoinClientBuilder.newBuilder().build();
         BigInteger amount = BigInteger.TEN;
         try {
             BigInteger minimumFee = senderClient.estimateTotalFee(
@@ -590,7 +592,7 @@ public class MobileCoinClientTest {
         );
         // send a transaction
         BigInteger amount = BigInteger.valueOf(1234);
-        MobileCoinClient mobileCoinClient = Environment.makeFreshMobileCoinClient();
+        MobileCoinClient mobileCoinClient = MobileCoinClientBuilder.newBuilder().build();
         BigInteger fee = mobileCoinClient.estimateTotalFee(amount);
         PendingTransaction pendingTransaction = mobileCoinClient.prepareTransaction(recipient,
                 amount, fee);
@@ -624,7 +626,9 @@ public class MobileCoinClientTest {
     @Test
     public void test_txOutStore_serialization() throws Exception {
         StorageAdapter storageAdapter = new TestStorageAdapter();
-        MobileCoinClient mobileCoinClient = Environment.makeFreshMobileCoinClient(storageAdapter);
+        TestFogConfig testFogConfig = TestFogConfig.getFogConfig(CURRENT_TEST_ENV, storageAdapter);
+        MobileCoinClient mobileCoinClient = MobileCoinClientBuilder.newBuilder()
+            .setTestFogConfig(testFogConfig).build();
 
         TxOutStore txOutStore = mobileCoinClient.getTxOutStore();
         txOutStore.refresh(
@@ -683,7 +687,7 @@ public class MobileCoinClientTest {
     // Tests RestFogBlockService, RestFogKeyImageService, and RestFogViewService
     @Test
     public void getBalance_afterSetTransportProtocolWithHTTP_retrievesBalance() throws Exception {
-        MobileCoinClient mobileCoinClient = Environment.makeFreshMobileCoinClient();
+        MobileCoinClient mobileCoinClient = MobileCoinClientBuilder.newBuilder().build();
 
         TransportProtocol httpTransportProtocol = TransportProtocol.forHTTP(new SimpleRequester());
         mobileCoinClient.setTransportProtocol(httpTransportProtocol);
@@ -695,7 +699,7 @@ public class MobileCoinClientTest {
     // Tests RestBlockchainService.
     @Test
     public void getOrFetchMinimumTxFee_afterSetTransportProtocolWithHTTP_retrievesTransferableAmount() throws Exception {
-        MobileCoinClient mobileCoinClient = Environment.makeFreshMobileCoinClient();
+        MobileCoinClient mobileCoinClient = MobileCoinClientBuilder.newBuilder().build();
 
         TransportProtocol httpTransportProtocol = TransportProtocol.forHTTP(new SimpleRequester());
         mobileCoinClient.setTransportProtocol(httpTransportProtocol);
@@ -709,7 +713,7 @@ public class MobileCoinClientTest {
     // and RestFogUntrustedService.
     @Test
     public void submitTransaction_afterSetTransportProtocolWithHTTP_submitsTransaction() throws Exception {
-        MobileCoinClient mobileCoinClient = Environment.makeFreshMobileCoinClient();
+        MobileCoinClient mobileCoinClient = MobileCoinClientBuilder.newBuilder().build();
         TransportProtocol httpTransportProtocol = TransportProtocol.forHTTP(new SimpleRequester());
         mobileCoinClient.setTransportProtocol(httpTransportProtocol);
 

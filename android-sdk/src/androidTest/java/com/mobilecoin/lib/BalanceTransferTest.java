@@ -37,12 +37,14 @@ public class BalanceTransferTest {
         // make sure the account is fragmented
         int TEST_FRAGMENTS = UTXOSelector.MAX_INPUTS + 1;
         TestFogConfig fogConfig = Environment.getTestFogConfig();
-        MobileCoinClient mobileCoinClient = Environment.makeFreshMobileCoinClient(testKey);
+        MobileCoinClient mobileCoinClient = MobileCoinClientBuilder.newBuilder()
+            .setAccountKey(testKey).build();
         AccountKey accountKey = AccountKey.createNew(fogConfig.getFogUri(),
                 fogConfig.getFogReportId(),
                 fogConfig.getFogAuthoritySpki()
         );
-        MobileCoinClient balanceAccount = Environment.makeFreshMobileCoinClient(accountKey);
+        MobileCoinClient balanceAccount = MobileCoinClientBuilder.newBuilder()
+            .setAccountKey(accountKey).build();
         BigInteger amount = balanceAccount.getOrFetchMinimumTxFee().multiply(BigInteger.TEN);
         for (int i = 0; i < TEST_FRAGMENTS; ++i) {
             BigInteger fee = mobileCoinClient.estimateTotalFee(amount);

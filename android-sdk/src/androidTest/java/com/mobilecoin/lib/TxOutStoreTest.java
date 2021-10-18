@@ -23,8 +23,6 @@ import com.mobilecoin.lib.exceptions.InvalidUriException;
 import com.mobilecoin.lib.exceptions.NetworkException;
 import com.mobilecoin.lib.exceptions.SerializationException;
 import com.mobilecoin.lib.exceptions.TransactionBuilderException;
-import com.mobilecoin.lib.log.Logger;
-import com.mobilecoin.lib.network.services.ServiceAPIManager;
 import com.mobilecoin.lib.network.uri.FogUri;
 
 import org.junit.Assert;
@@ -32,10 +30,8 @@ import org.junit.Test;
 
 import java.math.BigInteger;
 import java.security.SecureRandom;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
@@ -51,7 +47,8 @@ public class TxOutStoreTest {
             throws SerializationException, InvalidFogResponse, NetworkException,
             AttestationException, InvalidUriException {
         AccountKey accountKey = TestKeysManager.getNextAccountKey();
-        MobileCoinClient mobileCoinClient = Environment.makeFreshMobileCoinClient(accountKey);
+        MobileCoinClient mobileCoinClient = MobileCoinClientBuilder.newBuilder()
+            .setAccountKey(accountKey).build();
         TxOutStore store = new TxOutStore(accountKey);
         store.refresh(
                 mobileCoinClient.viewClient,
@@ -99,8 +96,8 @@ public class TxOutStoreTest {
             FeeRejectedException, InvalidTransactionException, InterruptedException,
             FogReportException, InvalidReceiptException, InvalidUriException {
 
-        MobileCoinClient senderClient = Environment.makeFreshMobileCoinClient();
-        MobileCoinClient recipientClient = Environment.makeFreshMobileCoinClient();
+        MobileCoinClient senderClient = MobileCoinClientBuilder.newBuilder().build();
+        MobileCoinClient recipientClient = MobileCoinClientBuilder.newBuilder().build();
 
         // send a random amount
         BigInteger amount = BigInteger.valueOf(Math.abs(new SecureRandom().nextInt() % 100) + 1);

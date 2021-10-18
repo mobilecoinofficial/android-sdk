@@ -31,7 +31,7 @@ public class AccountSnapshotTest {
             FragmentedAccountException, FeeRejectedException, InvalidTransactionException,
             TimeoutException, InterruptedException, InvalidUriException {
 
-        MobileCoinClient mobileCoinClient = Environment.makeFreshMobileCoinClient();
+        MobileCoinClient mobileCoinClient = MobileCoinClientBuilder.newBuilder().build();
         AccountSnapshot snapshot = mobileCoinClient.getAccountSnapshot();
         Balance balanceBefore = snapshot.getBalance();
         BigInteger amount = BigInteger.valueOf(100);
@@ -60,7 +60,7 @@ public class AccountSnapshotTest {
             InvalidTransactionException, TimeoutException, InterruptedException,
             InvalidUriException {
 
-        MobileCoinClient mobileCoinClient = Environment.makeFreshMobileCoinClient();
+        MobileCoinClient mobileCoinClient = MobileCoinClientBuilder.newBuilder().build();
         AccountSnapshot snapshot = mobileCoinClient.getAccountSnapshot();
         Balance balanceBefore = snapshot.getBalance();
         BigInteger amount = BigInteger.valueOf(100);
@@ -83,7 +83,7 @@ public class AccountSnapshotTest {
             FragmentedAccountException, FeeRejectedException, InvalidTransactionException,
             TimeoutException, InterruptedException, InvalidUriException {
 
-        MobileCoinClient mobileCoinClient = Environment.makeFreshMobileCoinClient();
+        MobileCoinClient mobileCoinClient = MobileCoinClientBuilder.newBuilder().build();
         AccountSnapshot snapshotBefore =
                 mobileCoinClient.getAccountSnapshot();
         BigInteger amount = BigInteger.valueOf(100);
@@ -118,8 +118,8 @@ public class AccountSnapshotTest {
             FragmentedAccountException, FeeRejectedException, InvalidTransactionException,
             TimeoutException, InterruptedException, InvalidUriException, InvalidReceiptException {
 
-        MobileCoinClient senderClient = Environment.makeFreshMobileCoinClient();
-        MobileCoinClient recipientClient = Environment.makeFreshMobileCoinClient();
+        MobileCoinClient senderClient = MobileCoinClientBuilder.newBuilder().build();
+        MobileCoinClient recipientClient = MobileCoinClientBuilder.newBuilder().build();
         AccountSnapshot snapshotBefore =
                 recipientClient.getAccountSnapshot();
         BigInteger amount = BigInteger.valueOf(100);
@@ -150,7 +150,7 @@ public class AccountSnapshotTest {
     @Test
     public void test_null_return() throws InvalidUriException, NetworkException,
             InvalidFogResponse, AttestationException {
-        MobileCoinClient mobileCoinClient = Environment.makeFreshMobileCoinClient();
+        MobileCoinClient mobileCoinClient = MobileCoinClientBuilder.newBuilder().build();
         AccountSnapshot snapshot =
                 mobileCoinClient.getAccountSnapshot(UnsignedLong.MAX_VALUE.sub(UnsignedLong.ONE));
         Assert.assertNull(snapshot);

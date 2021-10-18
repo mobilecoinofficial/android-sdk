@@ -39,8 +39,8 @@ public class ParallelExecutionTest {
 
         ExecutorService executorService = Executors.newFixedThreadPool(TASKS_TO_TEST / 2);
 
-        MobileCoinClient aliceClient = Environment.makeFreshMobileCoinClient();
-        MobileCoinClient bobClient = Environment.makeFreshMobileCoinClient();
+        MobileCoinClient aliceClient = MobileCoinClientBuilder.newBuilder().build();
+        MobileCoinClient bobClient = MobileCoinClientBuilder.newBuilder().build();
 
         for (int i = 0; i < TASKS_TO_TEST; ++i) {
             executorService.submit(() -> {
