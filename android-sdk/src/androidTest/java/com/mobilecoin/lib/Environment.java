@@ -19,30 +19,6 @@ public class Environment {
         return TestFogConfig.getFogConfig(CURRENT_TEST_ENV, storageAdapter);
     }
 
-    static public MobileCoinClient makeFreshMobileCoinClient(StorageAdapter storageAdapter) throws InvalidUriException { AccountKey accountKey = TestKeysManager.getNextAccountKey();
-        TestFogConfig fogConfig = getTestFogConfig(storageAdapter);
-        return makeFreshMobileCoinClient(fogConfig, accountKey);
-    }
-
-    static private MobileCoinClient makeFreshMobileCoinClient(TestFogConfig fogConfig, AccountKey accountKey) throws  InvalidUriException {
-        MobileCoinClient mobileCoinClient = new MobileCoinClient(
-                accountKey,
-                fogConfig.getFogUri(),
-                fogConfig.getConsensusUris(),
-                fogConfig.getClientConfig()
-        );
-        mobileCoinClient.setFogBasicAuthorization(
-                fogConfig.getUsername(),
-                fogConfig.getPassword()
-        );
-        mobileCoinClient.setConsensusBasicAuthorization(
-                fogConfig.getUsername(),
-                fogConfig.getPassword()
-        );
-        mobileCoinClient.setTransportProtocol(TransportProtocol.forHTTP(new SimpleRequester()));
-        return mobileCoinClient;
-    }
-
     enum TestEnvironment {
         MOBILE_DEV("mobiledev"),
         ALPHA("alpha"),

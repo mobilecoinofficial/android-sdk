@@ -2,6 +2,7 @@
 
 package com.mobilecoin.lib;
 
+import static com.mobilecoin.lib.Environment.CURRENT_TEST_ENV;
 import static com.mobilecoin.lib.Environment.getTestFogConfig;
 import static com.mobilecoin.lib.UtilTest.waitForReceiptStatus;
 import static com.mobilecoin.lib.UtilTest.waitForTransactionStatus;
@@ -625,7 +626,9 @@ public class MobileCoinClientTest {
     @Test
     public void test_txOutStore_serialization() throws Exception {
         StorageAdapter storageAdapter = new TestStorageAdapter();
-        MobileCoinClient mobileCoinClient = Environment.makeFreshMobileCoinClient(storageAdapter);
+        TestFogConfig testFogConfig = TestFogConfig.getFogConfig(CURRENT_TEST_ENV, storageAdapter);
+        MobileCoinClient mobileCoinClient = MobileCoinClientBuilder.newBuilder()
+            .setTestFogConfig(testFogConfig).build();
 
         TxOutStore txOutStore = mobileCoinClient.getTxOutStore();
         txOutStore.refresh(
