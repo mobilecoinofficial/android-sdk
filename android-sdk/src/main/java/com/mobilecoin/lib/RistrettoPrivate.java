@@ -190,17 +190,30 @@ public final class RistrettoPrivate extends Native implements Parcelable {
         KEY_BYTES, SEED_BYTES
     }
 
+    /**
+     * @return The flags needed to write and read this object to or from a parcel
+     */
     @Override
     public int describeContents() {
         return 0;
     }
 
+    /**
+     * Writes this object to the provided parcel
+     * @param parcel The parcel to write the object to
+     * @param flags The flags describing the contents of this object
+     */
     @Override
     public void writeToParcel(Parcel parcel, int flags) {
         parcel.writeByteArray(getKeyBytes());
     }
 
     public static final Creator<RistrettoPrivate> CREATOR = new Creator<RistrettoPrivate>() {
+        /**
+         * Create RistrettoPrivate from the provided Parcel
+         * @param parcel The parcel containing a RistrettoPrivate
+         * @return The RistrettoPrivate contained in the provided Parcel
+         */
         @Override
         public RistrettoPrivate createFromParcel(Parcel parcel) {
             try {
@@ -211,6 +224,9 @@ public final class RistrettoPrivate extends Native implements Parcelable {
             }
         }
 
+        /**
+         * Used by Creator to deserialize an array of RistrettoPrivates
+         */
         @Override
         public RistrettoPrivate[] newArray(int length) {
             return new RistrettoPrivate[length];

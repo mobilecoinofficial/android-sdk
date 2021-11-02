@@ -145,6 +145,11 @@ final class ClientKexRng extends Native implements Parcelable {
     }
 
     public static final Creator<ClientKexRng> CREATOR = new Creator<ClientKexRng>() {
+        /**
+         * Create ClientKexRng from the provided Parcel
+         * @param parcel The parcel containing a ClientKexRng
+         * @return The ClientKexRng contained in the provided Parcel
+         */
         @Override
         public ClientKexRng createFromParcel(Parcel parcel) {
             try {
@@ -155,17 +160,28 @@ final class ClientKexRng extends Native implements Parcelable {
             return null;
         }
 
+        /**
+         * Used by Creator to deserialize an array of ClientKexRngs
+         */
         @Override
         public ClientKexRng[] newArray(int length) {
             return new ClientKexRng[length];
         }
     };
 
+    /**
+     * @return The flags needed to write and read this object to or from a parcel
+     */
     @Override
     public int describeContents() {
         return 0;
     }
 
+    /**
+     * Writes this object to the provided parcel
+     * @param parcel The parcel to write the object to
+     * @param flags The flags describing the contents of this object
+     */
     @Override
     public void writeToParcel(Parcel parcel, int flags) {
         try {

@@ -195,11 +195,19 @@ class FogSeed implements Parcelable {
             Objects.equals(utxos, fogSeed.utxos);
     }
 
+    /**
+     * @return The flags needed to write and read this object to or from a parcel
+     */
     @Override
     public int describeContents() {
         return 0;
     }
 
+    /**
+     * Writes this object to the provided parcel
+     * @param parcel The parcel to write the object to
+     * @param flags The flags describing the contents of this object
+     */
     @Override
     public void writeToParcel(Parcel parcel, int flags) {
         parcel.writeParcelable(kexRng, flags);
@@ -211,6 +219,10 @@ class FogSeed implements Parcelable {
         parcel.writeTypedList(utxos);
     }
 
+    /**
+     * Creates a FogSeed from the provided parcel
+     * @param parcel The parcel that contains a FogSeed
+     */
     private FogSeed(Parcel parcel) {
         kexRng = parcel.readParcelable(ClientKexRng.class.getClassLoader());
         nonce = parcel.createByteArray();
@@ -222,11 +234,19 @@ class FogSeed implements Parcelable {
     }
 
     public static final Creator<FogSeed> CREATOR = new Creator<FogSeed>() {
+        /**
+         * Create FogSeed from the provided Parcel
+         * @param parcel The parcel containing a FogSeed
+         * @return The FogSeed contained in the provided Parcel
+         */
         @Override
         public FogSeed createFromParcel(Parcel parcel) {
             return new FogSeed(parcel);
         }
 
+        /**
+         * Used by Creator to deserialize an array of FogSeeds
+         */
         @Override
         public FogSeed[] newArray(int length) {
             return new FogSeed[length];

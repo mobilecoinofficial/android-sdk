@@ -309,6 +309,7 @@ public class TxOutStoreTest {
         parcelInput.writeToParcel(parcel, 0);
         parcel.setDataPosition(0);
         TxOutStore parcelOutput = TxOutStore.CREATOR.createFromParcel(parcel);
+        parcelOutput.setAccountKey(accountWithoutFog);
         assertEquals(parcelInput, parcelOutput);
     }
 

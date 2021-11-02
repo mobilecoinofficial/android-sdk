@@ -424,11 +424,19 @@ final class TxOutStore implements Parcelable {
             Objects.equals(accountKey, that.accountKey);
     }
 
+    /**
+     * @return The flags needed to write and read this object to or from a parcel
+     */
     @Override
     public int describeContents() {
         return 0;
     }
 
+    /**
+     * Writes this object to the provided parcel
+     * @param parcel The parcel to write the object to
+     * @param flags The flags describing the contents of this object
+     */
     @Override
     public void writeToParcel(Parcel parcel, int flags) {
         parcel.writeInt(seeds.size());
@@ -440,7 +448,6 @@ final class TxOutStore implements Parcelable {
         for(Long id : decommissionedIngestInvocationIds) {
             parcel.writeLong(id);
         }
-        parcel.writeParcelable(accountKey, flags);
         parcel.writeParcelable(ledgerBlockIndex, flags);
         parcel.writeParcelable(viewBlockIndex, flags);
         parcel.writeLong(lastKnownFogViewEventId);
@@ -452,17 +459,29 @@ final class TxOutStore implements Parcelable {
     }
 
     public static final Creator<TxOutStore> CREATOR = new Creator<TxOutStore>() {
+        /**
+         * Create TxOutStore from the provided Parcel
+         * @param parcel The parcel containing a TxOutStore
+         * @return The TxOutStore contained in the provided Parcel
+         */
         @Override
         public TxOutStore createFromParcel(Parcel parcel) {
             return new TxOutStore(parcel);
         }
 
+        /**
+         * Used by Creator to deserialize an array of TxOutStores
+         */
         @Override
         public TxOutStore[] newArray(int length) {
             return new TxOutStore[length];
         }
     };
 
+    /**
+     * Creates a TxOutStore from the provided parcel
+     * @param parcel The parcel that contains a TxOutStore
+     */
     private TxOutStore(Parcel parcel) {
         seeds = new HashMap<Integer, FogSeed>();
         int seedSize = parcel.readInt();
@@ -476,7 +495,6 @@ final class TxOutStore implements Parcelable {
         for(int i = 0; i < decommIdSize; i++) {
             decommissionedIngestInvocationIds.add(parcel.readLong());
         }
-        accountKey = parcel.readParcelable(AccountKey.class.getClassLoader());
         ledgerBlockIndex = parcel.readParcelable(UnsignedLong.class.getClassLoader());
         viewBlockIndex = parcel.readParcelable(UnsignedLong.class.getClassLoader());
         lastKnownFogViewEventId = parcel.readLong();

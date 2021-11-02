@@ -543,11 +543,19 @@ public class AccountKey extends Native implements Parcelable {
 
     private native long get_spend_key();
 
+    /**
+     * @return The flags needed to write and read this object to or from a parcel
+     */
     @Override
     public int describeContents() {
         return 0;
     }
 
+    /**
+     * Writes this object to the provided parcel
+     * @param parcel The parcel to write the object to
+     * @param flags The flags describing the contents of this object
+     */
     @Override
     public void writeToParcel(Parcel parcel, int flags) {
         parcel.writeParcelable(fogReportUri, flags);
@@ -561,17 +569,31 @@ public class AccountKey extends Native implements Parcelable {
     }
 
     public static final Creator<AccountKey> CREATOR = new Creator<AccountKey>() {
+        /**
+         * Create AccountKey from the provided Parcel
+         * @param parcel The parcel containing an AccountKey
+         * @return The AccountKey contained in the provided Parcel
+         */
         @Override
         public AccountKey createFromParcel(Parcel parcel) {
             return new AccountKey(parcel);
         }
 
+        /**
+         * Used by Creator to deserialize an array of AccountKeys
+         * @param length
+         * @return
+         */
         @Override
         public AccountKey[] newArray(int length) {
             return new AccountKey[length];
         }
     };
 
+    /**
+     * Creates an AccountKey from the provided parcel
+     * @param parcel The parcel that contains an AccountKey
+     */
     private AccountKey(Parcel parcel) {
         fogReportUri = parcel.readParcelable(Uri.class.getClassLoader());
         fogReportId = parcel.readString();

@@ -249,26 +249,46 @@ public final class UnsignedLong extends Number implements Comparable<UnsignedLon
     }
 
     public static final Creator<UnsignedLong> CREATOR = new Creator<UnsignedLong>() {
+        /**
+         * Create an UnsignedLong from the provided Parcel
+         * @param parcel The parcel containing an UnsignedLong
+         * @return The UnsignedLong contained in the provided Parcel
+         */
         public UnsignedLong createFromParcel(Parcel parcel) {
             return new UnsignedLong(parcel);
         }
 
+        /**
+         * Used by Creator to deserialize an array of UnsignedLongs
+         */
         @Override
         public UnsignedLong[] newArray(int length) {
             return new UnsignedLong[length];
         }
     };
 
+    /**
+     * @return The flags needed to write and read this object to or from a parcel
+     */
     @Override
     public int describeContents() {
         return 0;
     }
 
+    /**
+     * Writes this object to the provided parcel
+     * @param parcel The parcel to write the object to
+     * @param flags The flags describing the contents of this object
+     */
     @Override
     public void writeToParcel(Parcel parcel, int flags) {
         parcel.writeLong(value);
     }
 
+    /**
+     * Creates an UnsignedLong from the provided parcel
+     * @param parcel The parcel that contains an UnsignedLong
+     */
     private UnsignedLong(Parcel parcel) {
         value = parcel.readLong();
     }

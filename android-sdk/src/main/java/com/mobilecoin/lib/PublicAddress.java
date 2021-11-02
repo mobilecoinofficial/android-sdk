@@ -338,11 +338,19 @@ public final class PublicAddress extends Native implements Parcelable {
     @Nullable
     private native String get_report_id();
 
+    /**
+     * @return The flags needed to write and read this object to or from a parcel
+     */
     @Override
     public int describeContents() {
         return 0;
     }
 
+    /**
+     * Writes this object to the provided parcel
+     * @param parcel The parcel to write the object to
+     * @param flags The flags describing the contents of this object
+     */
     @Override
     public void writeToParcel(Parcel parcel, int flags) {
         parcel.writeParcelable(viewKey, flags);
@@ -352,6 +360,10 @@ public final class PublicAddress extends Native implements Parcelable {
         parcel.writeByteArray(fogAuthoritySig);
     }
 
+    /**
+     * Creates a PublicAddress from the provided parcel
+     * @param parcel The parcel that contains a PublicAddress
+     */
     private PublicAddress(Parcel parcel) {
         viewKey = parcel.readParcelable(RistrettoPublic.class.getClassLoader());
         spendKey = parcel.readParcelable(RistrettoPublic.class.getClassLoader());
@@ -361,11 +373,19 @@ public final class PublicAddress extends Native implements Parcelable {
     }
 
     public static final Creator<PublicAddress> CREATOR = new Creator<PublicAddress>() {
+        /**
+         * Create PublicAddress from the provided Parcel
+         * @param parcel The parcel containing a PublicAddress
+         * @return The PublicAddress contained in the provided Parcel
+         */
         @Override
         public PublicAddress createFromParcel(Parcel parcel) {
             return new PublicAddress(parcel);
         }
 
+        /**
+         * Used by Creator to deserialize an array of PublicAddresses
+         */
         @Override
         public PublicAddress[] newArray(int length) {
             return new PublicAddress[length];

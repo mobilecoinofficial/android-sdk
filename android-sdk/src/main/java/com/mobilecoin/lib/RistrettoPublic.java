@@ -145,17 +145,30 @@ public final class RistrettoPublic extends Native implements Parcelable {
     @NonNull
     private native byte[] get_bytes();
 
+    /**
+     * @return The flags needed to write and read this object to or from a parcel
+     */
     @Override
     public int describeContents() {
         return 0;
     }
 
+    /**
+     * Writes this object to the provided parcel
+     * @param parcel The parcel to write the object to
+     * @param flags The flags describing the contents of this object
+     */
     @Override
     public void writeToParcel(Parcel parcel, int flags) {
         parcel.writeByteArray(compressedRistretto.getData().toByteArray());
     }
 
     public static final Creator<RistrettoPublic> CREATOR = new Creator<RistrettoPublic>() {
+        /**
+         * Create RistrettoPublic from the provided Parcel
+         * @param parcel The parcel containing a RistrettoPublic
+         * @return The RistrettoPublic contained in the provided Parcel
+         */
         @Override
         public RistrettoPublic createFromParcel(Parcel parcel) {
             try {
@@ -166,6 +179,9 @@ public final class RistrettoPublic extends Native implements Parcelable {
             }
         }
 
+        /**
+         * Used by Creator to deserialize an array of RistrettoPublics
+         */
         @Override
         public RistrettoPublic[] newArray(int length) {
             return new RistrettoPublic[length];
