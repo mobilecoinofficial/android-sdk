@@ -14,7 +14,6 @@ import com.mobilecoin.lib.exceptions.SerializationException;
 import com.mobilecoin.lib.exceptions.TransactionBuilderException;
 import com.mobilecoin.lib.log.Logger;
 
-import java.io.Serializable;
 import java.math.BigInteger;
 import java.util.Arrays;
 import java.util.Date;
@@ -26,7 +25,7 @@ import fog_view.View;
 /**
  * A transaction output that belongs to a {@link AccountKey}
  */
-public class OwnedTxOut implements Serializable, Parcelable {//TODO: Remove Serializable implementation
+public class OwnedTxOut implements Parcelable {
     private final static String TAG = OwnedTxOut.class.getName();
 
     // Bump serial version and read/write code if fields change
@@ -183,6 +182,10 @@ public class OwnedTxOut implements Serializable, Parcelable {//TODO: Remove Seri
         return result;
     }
 
+    /**
+     * Creates an OwnedTxOut from the provided parcel
+     * @param parcel The parcel that contains na OwnedTxOut
+     */
     private OwnedTxOut(Parcel parcel) throws SerializationException {
         txOutGlobalIndex = parcel.readParcelable(UnsignedLong.class.getClassLoader());
         receivedBlockIndex = parcel.readParcelable(UnsignedLong.class.getClassLoader());
@@ -195,6 +198,11 @@ public class OwnedTxOut implements Serializable, Parcelable {//TODO: Remove Seri
         keyImageHash = parcel.readInt();
     }
 
+    /**
+     * Writes this object to the provided parcel
+     * @param parcel The parcel to write the object to
+     * @param flags The flags describing the contents of this object
+     */
     @Override
     public void writeToParcel(Parcel parcel, int flags) {
         parcel.writeParcelable(txOutGlobalIndex, flags);
@@ -208,12 +216,20 @@ public class OwnedTxOut implements Serializable, Parcelable {//TODO: Remove Seri
         parcel.writeInt(keyImageHash);
     }
 
+    /**
+     * @return The flags needed to write and read this object to or from a parcel
+     */
     @Override
     public int describeContents() {
         return 0;
     }
 
     public static final Creator<OwnedTxOut> CREATOR = new Creator<OwnedTxOut>() {
+        /**
+         * Create OwnedTxOut from the provided Parcel
+         * @param parcel The parcel containing an OwnedTxOut
+         * @return The OwnedTxOut contained in the provided Parcel
+         */
         @Override
         public OwnedTxOut createFromParcel(Parcel parcel) {
             try {
@@ -224,6 +240,11 @@ public class OwnedTxOut implements Serializable, Parcelable {//TODO: Remove Seri
             }
         }
 
+        /**
+         * Used by Creator to deserialize an array of OwnedTxOut
+         * @param length
+         * @return
+         */
         @Override
         public OwnedTxOut[] newArray(int length) {
             return new OwnedTxOut[length];

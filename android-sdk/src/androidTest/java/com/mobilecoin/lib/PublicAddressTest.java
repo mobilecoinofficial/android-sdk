@@ -2,7 +2,10 @@
 
 package com.mobilecoin.lib;
 
+import static org.junit.Assert.assertEquals;
+
 import android.net.Uri;
+import android.os.Parcel;
 
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 
@@ -107,7 +110,7 @@ public class PublicAddressTest {
                 fogConfig.getFogAuthoritySpki(),
                 fogConfig.getFogReportId()
         );
-        Assert.assertEquals(
+        assertEquals(
                 "Equal objects must have equal hashes",
                 first.hashCode(),
                 second.hashCode()
@@ -175,7 +178,7 @@ public class PublicAddressTest {
                 fogConfig.getFogAuthoritySpki(),
                 fogConfig.getFogReportId()
         );
-        Assert.assertEquals(
+        assertEquals(
                 "Public addresses with copied keys must be equal",
                 first,
                 second
@@ -254,7 +257,7 @@ public class PublicAddressTest {
         );
         byte[] serialized = address1.toByteArray();
         PublicAddress address2 = PublicAddress.fromBytes(serialized);
-        Assert.assertEquals(
+        assertEquals(
                 "Serialized and restored objects must be equal",
                 address1,
                 address2
@@ -284,4 +287,20 @@ public class PublicAddressTest {
             );
         }
     }
+
+    @Test
+    public void test_parcelable() {
+        PublicAddress parcelInput = new PublicAddress(key1,
+                key2,
+                fogConfig.getFogUri(),
+                fogConfig.getFogAuthoritySpki(),
+                fogConfig.getFogReportId()
+        );
+        Parcel parcel = Parcel.obtain();
+        parcelInput.writeToParcel(parcel, 0);
+        parcel.setDataPosition(0);
+        PublicAddress parcelOutput = PublicAddress.CREATOR.createFromParcel(parcel);
+        assertEquals(parcelInput, parcelOutput);
+    }
+
 }

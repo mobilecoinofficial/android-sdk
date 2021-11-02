@@ -180,26 +180,13 @@ public final class UnsignedLong extends Number implements Comparable<UnsignedLon
      * @throws ArithmeticException if divisor is 0
      */
     public long divideBy(long divisor) {
-        long dividend = value;
-        if (divisor < 0) { // i.e., divisor >= 2^63:
-            if (compareTo(UnsignedLong.fromLongBits(divisor)) < 0) {
-                return 0; // dividend < divisor
-            } else {
-                return 1; // dividend >= divisor
-            }
+        /* See openjdk and Hacker's Delight (2nd ed), section 9.3 */
+        if (divisor >= 0) {
+            final long q = (value >>> 1) / divisor << 1;
+            final long r = value - q * divisor;
+            return q + ((r | ~(r - divisor)) >>> (Long.SIZE - 1));
         }
-
-        // signed division if dividend < 2^63
-        if (dividend >= 0) {
-            return dividend / divisor;
-        }
-
-        // use BigInteger for simplicity
-        // use UnsignedLong as an intermediate to not lose the sign
-        // todo: see "Hacker's Delight" for optimal divide and remainder algos
-        BigInteger bigDividend = UnsignedLong.fromLongBits(dividend).toBigInteger();
-        BigInteger bigDivisor = UnsignedLong.fromLongBits(divisor).toBigInteger();
-        return bigDividend.divide(bigDivisor).longValue();
+        return (value & ~(value - divisor)) >>> (Long.SIZE - 1);
     }
 
     /**
@@ -220,24 +207,33 @@ public final class UnsignedLong extends Number implements Comparable<UnsignedLon
      * @throws ArithmeticException if divisor is 0
      */
     public long remainder(long divisor) {
-        if (divisor < 0) { // i.e., divisor >= 2^63:
-            if (compareTo(UnsignedLong.fromLongBits(divisor)) < 0) {
-                return value; // dividend < divisor
-            } else {
-                return value - divisor; // dividend >= divisor
-            }
+        /* See openjdk and Hacker's Delight (2nd ed), section 9.3 */
+        if (divisor >= 0) {
+            final long q = (value >>> 1) / divisor << 1;
+            final long r = value - q * divisor;
+            /*
+             * Here, 0 <= r < 2 * divisor
+             * (1) When 0 <= r < divisor, the remainder is simply r.
+             * (2) Otherwise the remainder is r - divisor.
+             *
+             * In case (1), r - divisor < 0. Applying ~ produces a long with
+             * sign bit 0, so >> produces 0. The returned value is thus r.
+             *
+             * In case (2), a similar reasoning shows that >> produces -1,
+             * so the returned value is r - divisor.
+             */
+            return r - ((~(r - divisor) >> (Long.SIZE - 1)) & divisor);
         }
-
-        // use signed modulus if dividend < 2^63
-        if (value >= 0) {
-            return value % divisor;
-        }
-        // use BigInteger for simplicity
-        // use UnsignedLong as an intermediate to not lose the sign
-        // todo: see "Hacker's Delight" for optimal divide and remainder algos
-        BigInteger bigDivisor = UnsignedLong.fromLongBits(divisor).toBigInteger();
-        BigInteger bigResult = toBigInteger().remainder(bigDivisor);
-        return bigResult.longValue();
+        /*
+         * (1) When dividend >= 0, the remainder is dividend.
+         * (2) Otherwise
+         *      (2.1) When dividend < divisor, the remainder is dividend.
+         *      (2.2) Otherwise the remainder is dividend - divisor
+         *
+         * A reasoning similar to the above shows that the returned value
+         * is as expected.
+         */
+        return value - (((value & ~(value - divisor)) >> (Long.SIZE - 1)) & divisor);
     }
 
     /**
@@ -253,26 +249,46 @@ public final class UnsignedLong extends Number implements Comparable<UnsignedLon
     }
 
     public static final Creator<UnsignedLong> CREATOR = new Creator<UnsignedLong>() {
+        /**
+         * Create an UnsignedLong from the provided Parcel
+         * @param parcel The parcel containing an UnsignedLong
+         * @return The UnsignedLong contained in the provided Parcel
+         */
         public UnsignedLong createFromParcel(Parcel parcel) {
             return new UnsignedLong(parcel);
         }
 
+        /**
+         * Used by Creator to deserialize an array of UnsignedLongs
+         */
         @Override
         public UnsignedLong[] newArray(int length) {
             return new UnsignedLong[length];
         }
     };
 
+    /**
+     * @return The flags needed to write and read this object to or from a parcel
+     */
     @Override
     public int describeContents() {
         return 0;
     }
 
+    /**
+     * Writes this object to the provided parcel
+     * @param parcel The parcel to write the object to
+     * @param flags The flags describing the contents of this object
+     */
     @Override
     public void writeToParcel(Parcel parcel, int flags) {
         parcel.writeLong(value);
     }
 
+    /**
+     * Creates an UnsignedLong from the provided parcel
+     * @param parcel The parcel that contains an UnsignedLong
+     */
     private UnsignedLong(Parcel parcel) {
         value = parcel.readLong();
     }

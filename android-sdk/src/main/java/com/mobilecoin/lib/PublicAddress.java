@@ -3,6 +3,8 @@
 package com.mobilecoin.lib;
 
 import android.net.Uri;
+import android.os.Parcel;
+import android.os.Parcelable;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -22,7 +24,7 @@ import java.util.Objects;
 /**
  * Represents account's public address to receive coins
  */
-public final class PublicAddress extends Native {
+public final class PublicAddress extends Native implements Parcelable {
     private static final String TAG = PublicAddress.class.getName();
     private final RistrettoPublic viewKey;
     private final RistrettoPublic spendKey;
@@ -335,4 +337,59 @@ public final class PublicAddress extends Native {
 
     @Nullable
     private native String get_report_id();
+
+    /**
+     * @return The flags needed to write and read this object to or from a parcel
+     */
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    /**
+     * Writes this object to the provided parcel
+     * @param parcel The parcel to write the object to
+     * @param flags The flags describing the contents of this object
+     */
+    @Override
+    public void writeToParcel(Parcel parcel, int flags) {
+        parcel.writeParcelable(viewKey, flags);
+        parcel.writeParcelable(spendKey, flags);
+        parcel.writeParcelable(fogReportUri, flags);
+        parcel.writeString(fogReportId);
+        parcel.writeByteArray(fogAuthoritySig);
+    }
+
+    /**
+     * Creates a PublicAddress from the provided parcel
+     * @param parcel The parcel that contains a PublicAddress
+     */
+    private PublicAddress(Parcel parcel) {
+        viewKey = parcel.readParcelable(RistrettoPublic.class.getClassLoader());
+        spendKey = parcel.readParcelable(RistrettoPublic.class.getClassLoader());
+        fogReportUri = parcel.readParcelable(Uri.class.getClassLoader());
+        fogReportId = parcel.readString();
+        fogAuthoritySig = parcel.createByteArray();
+    }
+
+    public static final Creator<PublicAddress> CREATOR = new Creator<PublicAddress>() {
+        /**
+         * Create PublicAddress from the provided Parcel
+         * @param parcel The parcel containing a PublicAddress
+         * @return The PublicAddress contained in the provided Parcel
+         */
+        @Override
+        public PublicAddress createFromParcel(Parcel parcel) {
+            return new PublicAddress(parcel);
+        }
+
+        /**
+         * Used by Creator to deserialize an array of PublicAddresses
+         */
+        @Override
+        public PublicAddress[] newArray(int length) {
+            return new PublicAddress[length];
+        }
+    };
+
 }

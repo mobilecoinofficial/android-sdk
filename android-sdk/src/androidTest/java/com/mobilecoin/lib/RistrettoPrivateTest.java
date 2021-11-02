@@ -12,6 +12,8 @@ import java.security.SecureRandom;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 
+import android.os.Parcel;
+
 public class RistrettoPrivateTest {
 
     @Test
@@ -107,4 +109,15 @@ public class RistrettoPrivateTest {
             Assert.fail("Cloned keys must be equal");
         }
     }
+
+    @Test
+    public void test_parcelable() throws SerializationException {
+        RistrettoPrivate parcelInput = RistrettoPrivate.fromBytes(new byte[32]);
+        Parcel parcel = Parcel.obtain();
+        parcelInput.writeToParcel(parcel, 0);
+        parcel.setDataPosition(0);
+        RistrettoPrivate parcelOutput = RistrettoPrivate.CREATOR.createFromParcel(parcel);
+        assertEquals(parcelInput, parcelOutput);
+    }
+
 }

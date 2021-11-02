@@ -2,16 +2,19 @@
 
 package com.mobilecoin.lib;
 
+import android.os.Parcel;
+import android.os.Parcelable;
+
 import androidx.annotation.NonNull;
 
 import com.google.protobuf.ByteString;
 import com.mobilecoin.api.MobileCoinAPI;
 import com.mobilecoin.lib.exceptions.SerializationException;
+import com.mobilecoin.lib.log.Logger;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-import java.io.Serializable;
 import java.util.Arrays;
 
 /**
@@ -21,7 +24,7 @@ import java.util.Arrays;
  * MobileCoin public addresses consist of two RistrettoPublic keys: view & spend
  * </pre>
  */
-public final class RistrettoPublic extends Native implements Serializable {
+public final class RistrettoPublic extends Native implements Parcelable {
     public static final int PUBLIC_KEY_SIZE = 32;
     private static final long serialVersionUID = 1L;
     private MobileCoinAPI.CompressedRistretto compressedRistretto;
@@ -141,4 +144,48 @@ public final class RistrettoPublic extends Native implements Serializable {
 
     @NonNull
     private native byte[] get_bytes();
+
+    /**
+     * @return The flags needed to write and read this object to or from a parcel
+     */
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    /**
+     * Writes this object to the provided parcel
+     * @param parcel The parcel to write the object to
+     * @param flags The flags describing the contents of this object
+     */
+    @Override
+    public void writeToParcel(Parcel parcel, int flags) {
+        parcel.writeByteArray(compressedRistretto.getData().toByteArray());
+    }
+
+    public static final Creator<RistrettoPublic> CREATOR = new Creator<RistrettoPublic>() {
+        /**
+         * Create RistrettoPublic from the provided Parcel
+         * @param parcel The parcel containing a RistrettoPublic
+         * @return The RistrettoPublic contained in the provided Parcel
+         */
+        @Override
+        public RistrettoPublic createFromParcel(Parcel parcel) {
+            try {
+                return RistrettoPublic.fromBytes(parcel.createByteArray());
+            } catch (SerializationException e) {
+                Logger.e(RistrettoPublic.class.getSimpleName(), "Failed to deserialize RistrettoPublic", e);
+                return null;
+            }
+        }
+
+        /**
+         * Used by Creator to deserialize an array of RistrettoPublics
+         */
+        @Override
+        public RistrettoPublic[] newArray(int length) {
+            return new RistrettoPublic[length];
+        }
+    };
+
 }

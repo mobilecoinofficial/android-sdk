@@ -2,12 +2,16 @@
 
 package com.mobilecoin.lib;
 
+import android.os.Parcel;
+import android.os.Parcelable;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.google.protobuf.ByteString;
 import com.mobilecoin.api.MobileCoinAPI;
 import com.mobilecoin.lib.exceptions.SerializationException;
+import com.mobilecoin.lib.log.Logger;
 
 import java.security.SecureRandom;
 import java.util.Arrays;
@@ -19,7 +23,7 @@ import java.util.Arrays;
  * MobileCoin accounts consist of two RistrettoPrivate keys: view & spend
  * </pre>
  */
-public final class RistrettoPrivate extends Native {
+public final class RistrettoPrivate extends Native implements Parcelable {
     private final byte[] keyBytes;
 
     private RistrettoPrivate(long existingRustObj) {
@@ -185,4 +189,48 @@ public final class RistrettoPrivate extends Native {
     private enum PayloadType {
         KEY_BYTES, SEED_BYTES
     }
+
+    /**
+     * @return The flags needed to write and read this object to or from a parcel
+     */
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    /**
+     * Writes this object to the provided parcel
+     * @param parcel The parcel to write the object to
+     * @param flags The flags describing the contents of this object
+     */
+    @Override
+    public void writeToParcel(Parcel parcel, int flags) {
+        parcel.writeByteArray(getKeyBytes());
+    }
+
+    public static final Creator<RistrettoPrivate> CREATOR = new Creator<RistrettoPrivate>() {
+        /**
+         * Create RistrettoPrivate from the provided Parcel
+         * @param parcel The parcel containing a RistrettoPrivate
+         * @return The RistrettoPrivate contained in the provided Parcel
+         */
+        @Override
+        public RistrettoPrivate createFromParcel(Parcel parcel) {
+            try {
+                return new RistrettoPrivate(parcel.createByteArray(), PayloadType.KEY_BYTES);
+            } catch (SerializationException e) {
+                Logger.e(RistrettoPrivate.class.getSimpleName(), "Failed to deserialize RistrettoPrivate", e);
+                return null;
+            }
+        }
+
+        /**
+         * Used by Creator to deserialize an array of RistrettoPrivates
+         */
+        @Override
+        public RistrettoPrivate[] newArray(int length) {
+            return new RistrettoPrivate[length];
+        }
+    };
+
 }

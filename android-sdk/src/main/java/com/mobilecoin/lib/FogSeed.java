@@ -11,20 +11,17 @@ import com.mobilecoin.lib.exceptions.KexRngException;
 import com.mobilecoin.lib.exceptions.SerializationException;
 import com.mobilecoin.lib.log.Logger;
 
-import fog_view.View.RngRecord;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
 import fog_view.View;
 import java.util.Objects;
-import kex_rng.KexRng.StoredRng;
 
-class FogSeed implements Serializable, Parcelable {//TODO: Remove Serializable implementation
+class FogSeed implements Parcelable {
     private final static String TAG = FogSeed.class.getName();
 
     // Bump serial version and read/write code if fields change
@@ -198,11 +195,19 @@ class FogSeed implements Serializable, Parcelable {//TODO: Remove Serializable i
             Objects.equals(utxos, fogSeed.utxos);
     }
 
+    /**
+     * @return The flags needed to write and read this object to or from a parcel
+     */
     @Override
     public int describeContents() {
         return 0;
     }
 
+    /**
+     * Writes this object to the provided parcel
+     * @param parcel The parcel to write the object to
+     * @param flags The flags describing the contents of this object
+     */
     @Override
     public void writeToParcel(Parcel parcel, int flags) {
         parcel.writeParcelable(kexRng, flags);
@@ -214,6 +219,10 @@ class FogSeed implements Serializable, Parcelable {//TODO: Remove Serializable i
         parcel.writeTypedList(utxos);
     }
 
+    /**
+     * Creates a FogSeed from the provided parcel
+     * @param parcel The parcel that contains a FogSeed
+     */
     private FogSeed(Parcel parcel) {
         kexRng = parcel.readParcelable(ClientKexRng.class.getClassLoader());
         nonce = parcel.createByteArray();
@@ -225,11 +234,19 @@ class FogSeed implements Serializable, Parcelable {//TODO: Remove Serializable i
     }
 
     public static final Creator<FogSeed> CREATOR = new Creator<FogSeed>() {
+        /**
+         * Create FogSeed from the provided Parcel
+         * @param parcel The parcel containing a FogSeed
+         * @return The FogSeed contained in the provided Parcel
+         */
         @Override
         public FogSeed createFromParcel(Parcel parcel) {
             return new FogSeed(parcel);
         }
 
+        /**
+         * Used by Creator to deserialize an array of FogSeeds
+         */
         @Override
         public FogSeed[] newArray(int length) {
             return new FogSeed[length];

@@ -2,6 +2,13 @@
 
 package com.mobilecoin.lib;
 
+import static org.junit.Assert.assertEquals;
+
+import android.os.Parcel;
+
+import com.mobilecoin.lib.exceptions.KexRngException;
+import com.mobilecoin.lib.exceptions.SerializationException;
+
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -53,4 +60,19 @@ public class ClientKexRngTest {
             Assert.fail("RNG outputs are not equal! e: " + e.getLocalizedMessage());
         }
     }
+
+    @Test
+    public void test_parcelable() throws SerializationException, KexRngException {
+        ClientKexRng parcelInput = new ClientKexRng(
+                RistrettoPrivate.fromBytes(new byte[32]),
+                new byte[32],
+                0);
+        Parcel parcel = Parcel.obtain();
+        parcelInput.writeToParcel(parcel, 0);
+        parcel.setDataPosition(0);
+        ClientKexRng parcelOutput = ClientKexRng.CREATOR.createFromParcel(parcel);
+        assertEquals(parcelInput, parcelOutput);
+    }
+
+
 }

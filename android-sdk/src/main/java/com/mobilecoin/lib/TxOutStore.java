@@ -2,6 +2,9 @@
 
 package com.mobilecoin.lib;
 
+import android.os.Parcel;
+import android.os.Parcelable;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import com.google.protobuf.InvalidProtocolBufferException;
@@ -21,13 +24,13 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-import java.io.Serializable;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
@@ -36,7 +39,7 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
-final class TxOutStore implements Serializable {
+final class TxOutStore implements Parcelable {
     private static final String TAG = TxOutStore.class.getName();
 
     // Bump serial version and read/write code if fields change
@@ -73,33 +76,24 @@ final class TxOutStore implements Serializable {
     }
 
     @NonNull
-    static TxOutStore fromBytes(
-            @NonNull byte[] serialized,
-            @NonNull AccountKey accountKey
-    ) throws SerializationException {
+    static TxOutStore fromBytes(@NonNull byte[] serialized) throws SerializationException {
         Logger.i(TAG, "Deserializing the txo store from bytes");
-        try (ByteArrayInputStream bis = new ByteArrayInputStream(serialized);
-             ObjectInputStream is = new ObjectInputStream(bis)) {
-            TxOutStore store = (TxOutStore) is.readObject();
-            store.setAccountKey(accountKey);
-            return store;
-        } catch (IOException | ClassNotFoundException exception) {
-            Logger.w(TAG, "Unable to deserialize the txo store", exception);
-            throw new SerializationException();
-        }
+        Parcel parcel = Parcel.obtain();
+        parcel.unmarshall(serialized, 0, serialized.length);
+        parcel.setDataPosition(0);
+        TxOutStore deserialized = CREATOR.createFromParcel(parcel);
+        parcel.recycle();
+        return deserialized;
     }
 
     @NonNull
     byte[] toByteArray() throws SerializationException {
         Logger.i(TAG, "Serializing txo store");
-        try (ByteArrayOutputStream bos = new ByteArrayOutputStream();
-             ObjectOutputStream os = new ObjectOutputStream(bos)) {
-            os.writeObject(this);
-            return bos.toByteArray();
-        } catch (IOException exception) {
-            Logger.w(TAG, "Unable to serialize the txo store", exception);
-            throw new SerializationException();
-        }
+        Parcel parcel = Parcel.obtain();
+        writeToParcel(parcel, 0);
+        byte serialized[] = parcel.marshall();
+        parcel.recycle();
+        return serialized;
     }
 
     /**
@@ -429,4 +423,87 @@ final class TxOutStore implements Serializable {
             Arrays.equals(recoveredTxOuts.toArray(), that.recoveredTxOuts.toArray()) &&
             Objects.equals(accountKey, that.accountKey);
     }
+
+    /**
+     * @return The flags needed to write and read this object to or from a parcel
+     */
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    /**
+     * Writes this object to the provided parcel
+     * @param parcel The parcel to write the object to
+     * @param flags The flags describing the contents of this object
+     */
+    @Override
+    public void writeToParcel(Parcel parcel, int flags) {
+        parcel.writeInt(seeds.size());
+        for(Map.Entry<Integer, FogSeed> entry : this.seeds.entrySet()) {
+            parcel.writeInt(entry.getKey());
+            parcel.writeParcelable(entry.getValue(), flags);
+        }
+        parcel.writeInt(decommissionedIngestInvocationIds.size());
+        for(Long id : decommissionedIngestInvocationIds) {
+            parcel.writeLong(id);
+        }
+        parcel.writeParcelable(ledgerBlockIndex, flags);
+        parcel.writeParcelable(viewBlockIndex, flags);
+        parcel.writeLong(lastKnownFogViewEventId);
+        parcel.writeParcelable(ledgerTotalTxCount, flags);
+        parcel.writeInt(recoveredTxOuts.size());
+        for(OwnedTxOut otxo : recoveredTxOuts) {
+            parcel.writeParcelable(otxo, flags);
+        }
+    }
+
+    public static final Creator<TxOutStore> CREATOR = new Creator<TxOutStore>() {
+        /**
+         * Create TxOutStore from the provided Parcel
+         * @param parcel The parcel containing a TxOutStore
+         * @return The TxOutStore contained in the provided Parcel
+         */
+        @Override
+        public TxOutStore createFromParcel(Parcel parcel) {
+            return new TxOutStore(parcel);
+        }
+
+        /**
+         * Used by Creator to deserialize an array of TxOutStores
+         */
+        @Override
+        public TxOutStore[] newArray(int length) {
+            return new TxOutStore[length];
+        }
+    };
+
+    /**
+     * Creates a TxOutStore from the provided parcel
+     * @param parcel The parcel that contains a TxOutStore
+     */
+    private TxOutStore(Parcel parcel) {
+        seeds = new HashMap<Integer, FogSeed>();
+        int seedSize = parcel.readInt();
+        for(int i = 0; i < seedSize; i++) {
+            Integer key = parcel.readInt();
+            FogSeed value = parcel.readParcelable(FogSeed.class.getClassLoader());
+            seeds.put(key, value);
+        }
+        int decommIdSize = parcel.readInt();
+        decommissionedIngestInvocationIds = new HashSet<Long>();
+        for(int i = 0; i < decommIdSize; i++) {
+            decommissionedIngestInvocationIds.add(parcel.readLong());
+        }
+        ledgerBlockIndex = parcel.readParcelable(UnsignedLong.class.getClassLoader());
+        viewBlockIndex = parcel.readParcelable(UnsignedLong.class.getClassLoader());
+        lastKnownFogViewEventId = parcel.readLong();
+        ledgerTotalTxCount = parcel.readParcelable(UnsignedLong.class.getClassLoader());
+        int otxoSize = parcel.readInt();
+        recoveredTxOuts = new ConcurrentLinkedQueue<OwnedTxOut>();
+        for(int i = 0; i < otxoSize; i++) {
+            recoveredTxOuts.add(parcel.readParcelable(OwnedTxOut.class.getClassLoader()));
+        }
+    }
+
 }

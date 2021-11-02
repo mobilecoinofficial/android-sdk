@@ -168,15 +168,15 @@ public final class MobileCoinClient implements MobileCoinAccountClient, MobileCo
         String txOutStoreStorageKey = TxOutStore.createStorageKey(accountKey);
         if(cacheStorage != null && cacheStorage.has(txOutStoreStorageKey)) {
             byte[] serializedTxOutStore = cacheStorage.get(txOutStoreStorageKey);
-            return deserializeTxOutStore(serializedTxOutStore, accountKey);
+            return deserializeTxOutStore(serializedTxOutStore);
         }
 
         return new TxOutStore(accountKey);
     }
 
-    private TxOutStore deserializeTxOutStore(byte[] serializedTxOutStore, AccountKey accountKey) {
+    private TxOutStore deserializeTxOutStore(byte[] serializedTxOutStore) {
         try {
-            return TxOutStore.fromBytes(serializedTxOutStore, accountKey);
+            return TxOutStore.fromBytes(serializedTxOutStore);
         } catch (SerializationException e) {
             Logger.i(TAG, "Failed to deserialize the serialized TxOutStore:" + e.getMessage());
             return new TxOutStore(accountKey);
