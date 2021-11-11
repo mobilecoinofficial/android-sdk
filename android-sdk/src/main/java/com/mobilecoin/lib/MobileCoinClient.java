@@ -754,6 +754,8 @@ public final class MobileCoinClient implements MobileCoinAccountClient, MobileCo
         ledgerClient.setTransportProtocol(protocol);
         consensusClient.setTransportProtocol(protocol);
         blockchainClient.setTransportProtocol(protocol);
+        fogBlockClient.setTransportProtocol(protocol);
+        untrustedClient.setTransportProtocol(protocol);
     }
 
     @Override
@@ -772,6 +774,9 @@ public final class MobileCoinClient implements MobileCoinAccountClient, MobileCo
         }
         if (null != blockchainClient) {
             blockchainClient.shutdown();
+        }
+        if (null != untrustedClient) {
+            untrustedClient.shutdown();
         }
     }
 
