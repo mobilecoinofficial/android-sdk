@@ -109,7 +109,7 @@ public class PrintableWrapperTest {
                 fogConfig.getFogAuthoritySpki()
         );
         RistrettoPublic publicKey = accountKey.getViewKey().getPublicKey();
-        TransferPayload transferPayload = new TransferPayload(rootEntropy,
+        TransferPayload transferPayload = TransferPayload.fromRootEntropy(rootEntropy,
                 publicKey,
                 MEMO
         );
