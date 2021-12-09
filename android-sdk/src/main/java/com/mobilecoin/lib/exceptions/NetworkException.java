@@ -5,17 +5,17 @@ package com.mobilecoin.lib.exceptions;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import io.grpc.StatusRuntimeException;
+import com.mobilecoin.lib.network.ApiResult;
 
-public final class NetworkException extends MobileCoinException {
+public final class CheckedNetworkException extends MobileCoinException {
     public final int statusCode;
 
-    public NetworkException(int statusCode, @Nullable String message, @Nullable Throwable throwable) {
+    public CheckedNetworkException(int statusCode, @Nullable String message, @Nullable Throwable throwable) {
         super(message, throwable);
         this.statusCode = statusCode;
     }
 
-    public NetworkException(
+    public CheckedNetworkException(
             int statusCode,
             @Nullable String message
     ) {
@@ -23,9 +23,8 @@ public final class NetworkException extends MobileCoinException {
         this.statusCode = statusCode;
     }
 
-    public NetworkException(@NonNull StatusRuntimeException ex) {
-        super(ex);
-        switch (ex.getStatus().getCode()) {
+    public CheckedNetworkException(@NonNull ApiResult.ResultCode resultCode) {
+        switch (resultCode) {
             case OK:
                 statusCode = 200;
                 break;
