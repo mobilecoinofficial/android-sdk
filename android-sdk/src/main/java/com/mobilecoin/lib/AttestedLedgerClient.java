@@ -4,6 +4,7 @@ package com.mobilecoin.lib;
 
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 import com.google.protobuf.ByteString;
 import com.google.protobuf.InvalidProtocolBufferException;
@@ -13,8 +14,12 @@ import com.mobilecoin.lib.exceptions.AttestationException;
 import com.mobilecoin.lib.exceptions.InvalidFogResponse;
 import com.mobilecoin.lib.exceptions.NetworkException;
 import com.mobilecoin.lib.log.Logger;
+import com.mobilecoin.lib.network.NetworkResult;
+import com.mobilecoin.lib.network.TransportProtocol;
 import com.mobilecoin.lib.network.services.FogKeyImageService;
 import com.mobilecoin.lib.network.services.FogMerkleProofService;
+import com.mobilecoin.lib.network.services.GRPCServiceAPIManager;
+import com.mobilecoin.lib.network.services.RestServiceAPIManager;
 import com.mobilecoin.lib.network.services.transport.Transport;
 import com.mobilecoin.lib.util.NetworkingCall;
 
@@ -26,8 +31,6 @@ import java.util.stream.Collectors;
 
 import attest.Attest;
 import fog_ledger.Ledger;
-import io.grpc.Status;
-import io.grpc.StatusRuntimeException;
 
 /**
  * Attested client for a ledger service Attestation is done automatically by the parent class {@link
@@ -42,8 +45,10 @@ class AttestedLedgerClient extends AttestedClient {
      *                      fog://fog.test.mobilecoin.com
      * @param serviceConfig service configuration passed to MobileCoinClient
      */
-    AttestedLedgerClient(@NonNull LoadBalancer loadBalancer, @NonNull Service serviceConfig) {
-        super(loadBalancer, serviceConfig);
+    AttestedLedgerClient(@NonNull LoadBalancer loadBalancer,
+                         @NonNull Service serviceConfig,
+                         @NonNull TransportProtocol transportProtocol) {
+        super(loadBalancer, serviceConfig, transportProtocol);
         Logger.i(TAG, "Created new AttestedLedgerClient", null,
                 "loadBalancer:", loadBalancer,
                 "verifier:", serviceConfig);
@@ -77,17 +82,16 @@ class AttestedLedgerClient extends AttestedClient {
             Attest.AuthMessage authMessage = Attest.AuthMessage.newBuilder().setData(bytes).build();
             Attest.AuthMessage response = fogKeyImageService.auth(authMessage);
             attestFinish(response.getData().toByteArray(), getServiceConfig().getVerifier());
-        } catch (StatusRuntimeException exception) {
+        } catch (NetworkException exception) {
             attestReset();
-            if (exception.getStatus().getCode() == Status.Code.INTERNAL) {
+            if (exception.getResult().getCode() == NetworkResult.ResultCode.INTERNAL) {
                 AttestationException attestationException =
-                        new AttestationException(exception.getStatus().getDescription(), exception);
+                        new AttestationException(exception.getResult().getDescription(), exception);
                 Util.logException(TAG, attestationException);
                 throw attestationException;
             }
-            NetworkException networkException = new NetworkException(exception);
-            Util.logException(TAG, networkException);
-            throw networkException;
+            Util.logException(TAG, exception);
+            throw exception;
         } catch (Exception exception) {
             AttestationException attestationException = new AttestationException("Failed to " +
                     "attest the ledger connection", exception);
@@ -121,9 +125,9 @@ class AttestedLedgerClient extends AttestedClient {
                         Attest.Message responseMessage = fogMerkleProofService.getOutputs(message);
                         Attest.Message response = decryptMessage(responseMessage);
                         return Ledger.GetOutputsResponse.parseFrom(response.getData());
-                    } catch (StatusRuntimeException exception) {
+                    } catch (NetworkException exception) {
                         attestReset();
-                        throw new NetworkException(exception);
+                        throw exception;
                     } catch (InvalidProtocolBufferException exception) {
                         attestReset();
                         throw new InvalidFogResponse("GetOutputsResponse contains invalid data",
@@ -175,9 +179,9 @@ class AttestedLedgerClient extends AttestedClient {
                         attestReset();
                         throw new InvalidFogResponse(
                                 "CheckKeyImagesResponse contains invalid data", exception);
-                    } catch (StatusRuntimeException exception) {
+                    } catch (NetworkException exception) {
                         attestReset();
-                        throw new NetworkException(exception);
+                        throw exception;
                     }
                 });
         try {

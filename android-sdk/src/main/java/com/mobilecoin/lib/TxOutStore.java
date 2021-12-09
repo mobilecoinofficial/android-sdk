@@ -19,8 +19,6 @@ import fog_common.FogCommon;
 import fog_ledger.Ledger;
 import fog_view.View;
 import fog_view.View.DecommissionedIngestInvocation;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;

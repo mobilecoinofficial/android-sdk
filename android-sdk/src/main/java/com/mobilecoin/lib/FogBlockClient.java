@@ -4,15 +4,17 @@ package com.mobilecoin.lib;
 
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 import com.mobilecoin.api.MobileCoinAPI;
 import com.mobilecoin.lib.ClientConfig.Service;
 import com.mobilecoin.lib.exceptions.AttestationException;
 import com.mobilecoin.lib.exceptions.NetworkException;
 import com.mobilecoin.lib.log.Logger;
+import com.mobilecoin.lib.network.TransportProtocol;
 import com.mobilecoin.lib.network.services.FogBlockService;
-import com.mobilecoin.lib.network.services.ServiceAPIManager;
-import com.mobilecoin.lib.network.uri.FogUri;
+import com.mobilecoin.lib.network.services.GRPCServiceAPIManager;
+import com.mobilecoin.lib.network.services.RestServiceAPIManager;
 import com.mobilecoin.lib.util.NetworkingCall;
 
 import java.util.ArrayList;
@@ -21,7 +23,6 @@ import java.util.Locale;
 
 import fog_ledger.Ledger;
 import fog_view.View;
-import io.grpc.StatusRuntimeException;
 
 /**
  * Attested client for a ledger service Attestation is done automatically by the parent class {@link
@@ -36,21 +37,13 @@ final class FogBlockClient extends AnyClient {
      *                      fog://fog.test.mobilecoin.com
      * @param serviceConfig service configuration passed to MobileCoinClient
      */
-    FogBlockClient(@NonNull LoadBalancer loadBalancer, @NonNull Service serviceConfig) {
-        super(loadBalancer, serviceConfig);
+    FogBlockClient(@NonNull LoadBalancer loadBalancer,
+                   @NonNull Service serviceConfig,
+                   @NonNull TransportProtocol transportProtocol) {
+        super(loadBalancer, serviceConfig, transportProtocol);
         Logger.i(TAG, "Created new FogBlockClient", null,
                 "loadBalancer:", loadBalancer,
                 "verifier:", serviceConfig);
-    }
-
-    FogBlockClient(@NonNull LoadBalancer loadBalancer,
-                   @NonNull ClientConfig.Service serviceConfig,
-                   @NonNull ServiceAPIManager apiManager) {
-        super(loadBalancer, serviceConfig, apiManager);
-        Logger.i(TAG, "Created new FogBlockClient", null,
-                "loadBalancer:", loadBalancer,
-                "verifier:", serviceConfig,
-                "apiManager:", apiManager);
     }
 
 
@@ -104,9 +97,9 @@ final class FogBlockClient extends AnyClient {
                     new NetworkingCall<>(() -> {
                         try {
                             return fogBlockService.getBlocks(request);
-                        } catch (StatusRuntimeException exception) {
+                        } catch (NetworkException exception) {
                             Logger.w(TAG, "Unable to post transaction with consensus", exception);
-                            throw new NetworkException(exception);
+                            throw exception;
                         }
                     });
         } catch (AttestationException exception) {

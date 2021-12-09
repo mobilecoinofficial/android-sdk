@@ -1,12 +1,10 @@
 package com.mobilecoin.lib.network;
 
-import com.google.protobuf.Api;
-
 import java.util.Objects;
 
 import io.grpc.Status;
 
-public class ApiResult {
+public class NetworkResult {
 
 
     public enum ResultCode {
@@ -54,86 +52,86 @@ public class ApiResult {
 
     }
 
-    public ApiResult(ResultCode code) {
+    public NetworkResult(ResultCode code) {
         this(code, null, null);
     }
 
-    public ApiResult(ResultCode code, String description, Throwable cause) {
+    public NetworkResult(ResultCode code, String description, Throwable cause) {
         this.code = code;
         this.description = description;
         this.cause = cause;
     }
 
-    public ApiResult withDescription(String description) {
+    public NetworkResult withDescription(String description) {
         if(!Objects.equals(description, this.description)) {
             return this;
         }
         else {
-            return new ApiResult(this.code, description, this.cause);
+            return new NetworkResult(this.code, description, this.cause);
         }
     }
 
-    public ApiResult withCause(Throwable cause) {
+    public NetworkResult withCause(Throwable cause) {
         if (!Objects.equals(cause, this.cause)) {
             return this;
         } else {
-            return new ApiResult(this.code, this.description, cause);
+            return new NetworkResult(this.code, this.description, cause);
         }
     }
 
-    public static ApiResult from(Status status) {
-        ApiResult apiResult;
+    public static NetworkResult from(Status status) {
+        NetworkResult networkResult;
         switch (status.getCode()) {
             case OK:
-                apiResult = ApiResult.OK;
+                networkResult = NetworkResult.OK;
                 break;
             case INVALID_ARGUMENT:
-                apiResult = ApiResult.INVALID_ARGUMENT;
+                networkResult = NetworkResult.INVALID_ARGUMENT;
                 break;
             case FAILED_PRECONDITION:
-                apiResult = ApiResult.FAILED_PRECONDITION;
+                networkResult = NetworkResult.FAILED_PRECONDITION;
                 break;
             case OUT_OF_RANGE:
-                apiResult = ApiResult.OUT_OF_RANGE;
+                networkResult = NetworkResult.OUT_OF_RANGE;
                 break;
             case UNAUTHENTICATED:
-                apiResult = ApiResult.UNAUTHENTICATED;
+                networkResult = NetworkResult.UNAUTHENTICATED;
                 break;
             case PERMISSION_DENIED:
-                apiResult = ApiResult.PERMISSION_DENIED;
+                networkResult = NetworkResult.PERMISSION_DENIED;
                 break;
             case NOT_FOUND:
-                apiResult = ApiResult.NOT_FOUND;
+                networkResult = NetworkResult.NOT_FOUND;
                 break;
             case ABORTED:
-                apiResult = ApiResult.ABORTED;
+                networkResult = NetworkResult.ABORTED;
                 break;
             case ALREADY_EXISTS:
-                apiResult = ApiResult.ALREADY_EXISTS;
+                networkResult = NetworkResult.ALREADY_EXISTS;
                 break;
             case RESOURCE_EXHAUSTED:
-                apiResult = ApiResult.RESOURCE_EXHAUSTED;
+                networkResult = NetworkResult.RESOURCE_EXHAUSTED;
                 break;
             case CANCELLED:
-                apiResult = ApiResult.CANCELED;
+                networkResult = NetworkResult.CANCELED;
                 break;
             case DATA_LOSS:
-                apiResult = ApiResult.DATA_LOSS;
+                networkResult = NetworkResult.DATA_LOSS;
                 break;
             case INTERNAL:
-                apiResult = ApiResult.INTERNAL;
+                networkResult = NetworkResult.INTERNAL;
                 break;
             case UNAVAILABLE:
-                apiResult = ApiResult.UNAVAILABLE;
+                networkResult = NetworkResult.UNAVAILABLE;
                 break;
             case DEADLINE_EXCEEDED:
-                apiResult = ApiResult.DEADLINE_EXCEEDED;
+                networkResult = NetworkResult.DEADLINE_EXCEEDED;
                 break;
             default:
                 // UNIMPLEMENTED
-                apiResult = ApiResult.UNKNOWN;
+                networkResult = NetworkResult.UNKNOWN;
         }
-        return apiResult.withDescription(status.getDescription())
+        return networkResult.withDescription(status.getDescription())
                         .withCause(status.getCause());
     }
 
@@ -153,22 +151,22 @@ public class ApiResult {
     private final String description;
     private final Throwable cause;
 
-    public static final ApiResult OK = new ApiResult(ResultCode.OK);
-    public static final ApiResult CANCELED = new ApiResult(ResultCode.CANCELLED);
-    public static final ApiResult UNKNOWN = new ApiResult(ResultCode.UNKNOWN);
-    public static final ApiResult INVALID_ARGUMENT = new ApiResult(ResultCode.INVALID_ARGUMENT);
-    public static final ApiResult DEADLINE_EXCEEDED = new ApiResult(ResultCode.DEADLINE_EXCEEDED);
-    public static final ApiResult NOT_FOUND = new ApiResult(ResultCode.NOT_FOUND);
-    public static final ApiResult ALREADY_EXISTS = new ApiResult(ResultCode.ALREADY_EXISTS);
-    public static final ApiResult PERMISSION_DENIED = new ApiResult(ResultCode.PERMISSION_DENIED);
-    public static final ApiResult RESOURCE_EXHAUSTED = new ApiResult(ResultCode.RESOURCE_EXHAUSTED);
-    public static final ApiResult FAILED_PRECONDITION = new ApiResult(ResultCode.FAILED_PRECONDITION);
-    public static final ApiResult ABORTED = new ApiResult(ResultCode.ABORTED);
-    public static final ApiResult OUT_OF_RANGE = new ApiResult(ResultCode.OUT_OF_RANGE);
-    public static final ApiResult UNIMPLEMENTED = new ApiResult(ResultCode.UNIMPLEMENTED);
-    public static final ApiResult INTERNAL = new ApiResult(ResultCode.INTERNAL);
-    public static final ApiResult UNAVAILABLE = new ApiResult(ResultCode.UNAVAILABLE);
-    public static final ApiResult DATA_LOSS = new ApiResult(ResultCode.DATA_LOSS);
-    public static final ApiResult UNAUTHENTICATED = new ApiResult(ResultCode.UNAUTHENTICATED);
+    public static final NetworkResult OK = new NetworkResult(ResultCode.OK);
+    public static final NetworkResult CANCELED = new NetworkResult(ResultCode.CANCELLED);
+    public static final NetworkResult UNKNOWN = new NetworkResult(ResultCode.UNKNOWN);
+    public static final NetworkResult INVALID_ARGUMENT = new NetworkResult(ResultCode.INVALID_ARGUMENT);
+    public static final NetworkResult DEADLINE_EXCEEDED = new NetworkResult(ResultCode.DEADLINE_EXCEEDED);
+    public static final NetworkResult NOT_FOUND = new NetworkResult(ResultCode.NOT_FOUND);
+    public static final NetworkResult ALREADY_EXISTS = new NetworkResult(ResultCode.ALREADY_EXISTS);
+    public static final NetworkResult PERMISSION_DENIED = new NetworkResult(ResultCode.PERMISSION_DENIED);
+    public static final NetworkResult RESOURCE_EXHAUSTED = new NetworkResult(ResultCode.RESOURCE_EXHAUSTED);
+    public static final NetworkResult FAILED_PRECONDITION = new NetworkResult(ResultCode.FAILED_PRECONDITION);
+    public static final NetworkResult ABORTED = new NetworkResult(ResultCode.ABORTED);
+    public static final NetworkResult OUT_OF_RANGE = new NetworkResult(ResultCode.OUT_OF_RANGE);
+    public static final NetworkResult UNIMPLEMENTED = new NetworkResult(ResultCode.UNIMPLEMENTED);
+    public static final NetworkResult INTERNAL = new NetworkResult(ResultCode.INTERNAL);
+    public static final NetworkResult UNAVAILABLE = new NetworkResult(ResultCode.UNAVAILABLE);
+    public static final NetworkResult DATA_LOSS = new NetworkResult(ResultCode.DATA_LOSS);
+    public static final NetworkResult UNAUTHENTICATED = new NetworkResult(ResultCode.UNAUTHENTICATED);
 
 }

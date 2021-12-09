@@ -29,6 +29,8 @@ import com.mobilecoin.lib.exceptions.SerializationException;
 import com.mobilecoin.lib.exceptions.TransactionBuilderException;
 import com.mobilecoin.lib.log.Logger;
 import com.mobilecoin.lib.network.TransportProtocol;
+import com.mobilecoin.lib.network.services.GRPCServiceAPIManager;
+import com.mobilecoin.lib.network.services.RestServiceAPIManager;
 import com.mobilecoin.lib.network.uri.FogUri;
 
 import java.util.HashMap;
@@ -177,16 +179,10 @@ public class MobileCoinClientTest {
         ClientConfig clientConfig = fogConfig.getClientConfig();
         // change fog verifier to make balance call fail
         clientConfig.fogView = clientConfig.consensus;
-        MobileCoinClient mobileCoinClient = new MobileCoinClient(
-                TestKeysManager.getNextAccountKey(),
-                fogConfig.getFogUri(),
-                fogConfig.getConsensusUri(),
-                clientConfig
-        );
-        mobileCoinClient.setFogBasicAuthorization(
-                fogConfig.getUsername(),
-                fogConfig.getPassword()
-        );
+        MobileCoinClient mobileCoinClient = MobileCoinClientBuilder.newBuilder()
+                .setAccountKey(TestKeysManager.getNextAccountKey())
+                .setTestFogConfig(fogConfig)
+                .build();
         try {
             mobileCoinClient.getBalance();
             Assert.fail("Invalid verifier must fail the test");
@@ -204,20 +200,14 @@ public class MobileCoinClientTest {
         byte[] certificateBytes = Base64.decode(wrongTrustRootBase64, Base64.DEFAULT);
         Set<X509Certificate> certs = Util.makeCertificatesFromData(certificateBytes);
         clientConfig.fogView.withTrustRoots(certs);
-        MobileCoinClient mobileCoinClient = new MobileCoinClient(
-                TestKeysManager.getNextAccountKey(),
-                fogConfig.getFogUri(),
-                fogConfig.getConsensusUri(),
-                clientConfig
-        );
-        mobileCoinClient.setFogBasicAuthorization(
-                fogConfig.getUsername(),
-                fogConfig.getPassword()
-        );
+        MobileCoinClient mobileCoinClient = MobileCoinClientBuilder.newBuilder()
+                .setAccountKey(TestKeysManager.getNextAccountKey())
+                .setTestFogConfig(fogConfig)
+                .build();
         try {
             mobileCoinClient.getBalance();
             Assert.fail("Invalid trust root must fail the test");
-        } catch (NetworkException ex) {
+        } catch (NetworkException | AttestationException ex) {
             // success
         }
     }
@@ -603,8 +593,10 @@ public class MobileCoinClientTest {
 
         UnsignedLong txBlockIndex = txStatus.getBlockIndex();
         FogUri fogUri = new FogUri(fogConfig.getFogUri());
-        FogBlockClient blockClient = new FogBlockClient(RandomLoadBalancer.create(fogUri),
-                ClientConfig.defaultConfig().fogLedger);
+        FogBlockClient blockClient = new FogBlockClient(
+                RandomLoadBalancer.create(fogUri),
+                ClientConfig.defaultConfig().fogLedger,
+                TransportProtocol.forGRPC());
         blockClient.setAuthorization(fogConfig.getUsername(), fogConfig.getPassword());
         List<OwnedTxOut> txOuts = blockClient.scanForTxOutsInBlockRange(
                 new BlockRange(

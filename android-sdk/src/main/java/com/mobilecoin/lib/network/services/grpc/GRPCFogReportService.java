@@ -2,6 +2,7 @@ package com.mobilecoin.lib.network.services.grpc;
 
 import androidx.annotation.NonNull;
 
+import com.mobilecoin.lib.exceptions.NetworkException;
 import com.mobilecoin.lib.network.AuthInterceptor;
 import com.mobilecoin.lib.network.CookieInterceptor;
 import com.mobilecoin.lib.network.services.FogReportService;
@@ -9,6 +10,7 @@ import com.mobilecoin.lib.network.services.FogReportService;
 import java.util.concurrent.ExecutorService;
 
 import io.grpc.ManagedChannel;
+import io.grpc.StatusRuntimeException;
 import report.ReportAPIGrpc;
 import report.ReportOuterClass;
 
@@ -29,7 +31,11 @@ public class GRPCFogReportService
     }
 
     @Override
-    public ReportOuterClass.ReportResponse getReports(ReportOuterClass.ReportRequest request) {
-        return getApiBlockingStub().getReports(request);
+    public ReportOuterClass.ReportResponse getReports(ReportOuterClass.ReportRequest request) throws NetworkException {
+        try {
+            return getApiBlockingStub().getReports(request);
+        } catch (StatusRuntimeException e) {
+            throw new NetworkException(e.getStatus());
+        }
     }
 }

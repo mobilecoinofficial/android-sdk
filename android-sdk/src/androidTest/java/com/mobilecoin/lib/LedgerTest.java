@@ -15,6 +15,9 @@ import com.mobilecoin.lib.exceptions.InvalidTransactionException;
 import com.mobilecoin.lib.exceptions.InvalidUriException;
 import com.mobilecoin.lib.exceptions.NetworkException;
 import com.mobilecoin.lib.exceptions.TransactionBuilderException;
+import com.mobilecoin.lib.network.TransportProtocol;
+import com.mobilecoin.lib.network.services.GRPCServiceAPIManager;
+import com.mobilecoin.lib.network.services.RestServiceAPIManager;
 import com.mobilecoin.lib.network.uri.FogUri;
 
 import org.junit.Assert;
@@ -43,7 +46,8 @@ public class LedgerTest {
         FogUri fogUri = new FogUri(fogConfig.getFogUri());
         FogBlockClient blockClient = new FogBlockClient(
                 RandomLoadBalancer.create(fogUri),
-                fogConfig.getClientConfig().fogLedger
+                fogConfig.getClientConfig().fogLedger,
+                TransportProtocol.forGRPC()
         );
 
         blockClient.setAuthorization(
@@ -110,7 +114,8 @@ public class LedgerTest {
         FogUri fogUri = new FogUri(fogConfig.getFogUri());
         FogBlockClient blockClient = new FogBlockClient(
                 RandomLoadBalancer.create(fogUri),
-                fogConfig.getClientConfig().fogLedger
+                fogConfig.getClientConfig().fogLedger,
+                TransportProtocol.forGRPC()
         );
 
         blockClient.setAuthorization(

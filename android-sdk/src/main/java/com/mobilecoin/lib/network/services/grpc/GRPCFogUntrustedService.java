@@ -2,6 +2,7 @@ package com.mobilecoin.lib.network.services.grpc;
 
 import androidx.annotation.NonNull;
 
+import com.mobilecoin.lib.exceptions.NetworkException;
 import com.mobilecoin.lib.network.AuthInterceptor;
 import com.mobilecoin.lib.network.CookieInterceptor;
 import com.mobilecoin.lib.network.services.FogUntrustedService;
@@ -11,6 +12,7 @@ import java.util.concurrent.ExecutorService;
 import fog_ledger.FogUntrustedTxOutApiGrpc;
 import fog_ledger.Ledger;
 import io.grpc.ManagedChannel;
+import io.grpc.StatusRuntimeException;
 
 public class GRPCFogUntrustedService
         extends GRPCService<FogUntrustedTxOutApiGrpc.FogUntrustedTxOutApiBlockingStub>
@@ -32,7 +34,11 @@ public class GRPCFogUntrustedService
     }
 
     @Override
-    public Ledger.TxOutResponse getTxOuts(Ledger.TxOutRequest request) {
-        return getApiBlockingStub().getTxOuts(request);
+    public Ledger.TxOutResponse getTxOuts(Ledger.TxOutRequest request) throws NetworkException {
+        try {
+            return getApiBlockingStub().getTxOuts(request);
+        } catch (StatusRuntimeException e) {
+            throw new NetworkException(e.getStatus());
+        }
     }
 }

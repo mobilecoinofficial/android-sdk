@@ -4,7 +4,10 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import com.mobilecoin.lib.network.TransportProtocol;
 import com.mobilecoin.lib.network.services.BlockchainService;
+import com.mobilecoin.lib.network.services.GRPCServiceAPIManager;
+import com.mobilecoin.lib.network.services.RestServiceAPIManager;
 import com.mobilecoin.lib.network.services.ServiceAPIManager;
 import com.mobilecoin.lib.network.uri.ConsensusUri;
 import com.mobilecoin.lib.network.uri.MobileCoinUri;
@@ -25,7 +28,8 @@ public class BlockchainClientTest {
         BlockchainClient blockchainClient = new BlockchainClient(
                 RandomLoadBalancer.create(consensusUri),
                 Environment.getTestFogConfig().getClientConfig().consensus,
-                Duration.ofHours(1));
+                Duration.ofHours(1),
+                TransportProtocol.forGRPC());
         blockchainClient.setAuthorization(
                 Environment.getTestFogConfig().getUsername(),
                 Environment.getTestFogConfig().getPassword()
@@ -60,7 +64,7 @@ public class BlockchainClientTest {
                 createLoadBalancer(),
                 Environment.getTestFogConfig().getClientConfig().consensus,
                 Duration.ofHours(1),
-                apiManager);
+                TransportProtocol.forGRPC());
 
         // Get initial block response and cache it
         ConsensusCommon.LastBlockInfoResponse lastBlockInfoResponse1 =
@@ -79,7 +83,8 @@ public class BlockchainClientTest {
         BlockchainClient blockchainClient = new BlockchainClient(
                 RandomLoadBalancer.create(consensusUri),
                 Environment.getTestFogConfig().getClientConfig().consensus,
-                Duration.ofMillis(1));
+                Duration.ofMillis(1),
+                TransportProtocol.forGRPC());
         blockchainClient.setAuthorization(
                 Environment.getTestFogConfig().getUsername(),
                 Environment.getTestFogConfig().getPassword()
@@ -114,7 +119,8 @@ public class BlockchainClientTest {
         BlockchainClient blockchainClient = new BlockchainClient(
                 createLoadBalancer(),
                 Environment.getTestFogConfig().getClientConfig().consensus,
-                Duration.ofMillis(1), apiManager);
+                Duration.ofMillis(1),
+                TransportProtocol.forGRPC());
 
         // Get initial block response and cache it
         ConsensusCommon.LastBlockInfoResponse lastBlockInfoResponse1 =

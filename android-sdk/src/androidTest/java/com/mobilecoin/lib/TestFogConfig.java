@@ -6,6 +6,9 @@ import android.util.Base64;
 import androidx.annotation.NonNull;
 
 import com.mobilecoin.lib.exceptions.AttestationException;
+import com.mobilecoin.lib.network.TransportProtocol;
+import com.mobilecoin.lib.network.services.GRPCServiceAPIManager;
+import com.mobilecoin.lib.network.services.RestServiceAPIManager;
 import com.mobilecoin.lib.util.Hex;
 
 import io.grpc.Context.Storage;
@@ -29,9 +32,12 @@ public class TestFogConfig {
     private final ClientConfig clientConfig;
     private final byte[] fogAuthoritySpki;
     private final String fogReportId;
+    private final TransportProtocol transportProtocol;
+    private final GRPCServiceAPIManager grpcServiceAPIManager;
+    private final RestServiceAPIManager restServiceAPIManager;
 
-    private static final String TEST_USERNAME = "REPLACE_TEST_DEV_USER_STRING";
-    private static final String TEST_PASSWORD = "REPLACE_TEST_DEV_PASSWORD_STRING";
+    private static final String TEST_USERNAME = "user1";
+    private static final String TEST_PASSWORD = "user1:1633631239:d3688a93516c24f5091f";
 
     private static final byte[] mobiledevFogAuthoritySpki = Base64.decode("MIICIjANBgkqhkiG9w0BAQEFAAOCAg8AMIICCgKCAgEAxABZ75QZv9uH9/E823VTTmpWiOiehoqksZMqsDARqYdDexAQb1Y+qyT6Hlp5QMUHQlkomFKLnhe/0+wxZ1/uTqnhy2FRhrlclpOvczT10Smcx9RkKACpxCW095MWxeFwtMmLpqkXfl4KeMptxdHRASHuLlKL+FXwOqKw3J2nw5q2DpBsg1ONkdW4m55ZFdimX3M7T/Wur5WlB+ntBpKFU/5T+rdD3OUm/tExbYk7C58XmYW08TnFR9JOMekFZMmTfl5d1ee3koyzz225QfNEupUJDVMXcg4whp826arxQIXrM2DfgwZnxFqS617dNsOPNjIoAYSEFPczYTw9WHR7O3UISnYwYvCsXxGwLZLXFkgUBM5GKItvEHDbUh3C7ZjyM51A04EJg47G3nI1A6q9EVnmwGaZFxq8bJAzosn5zaSrbUA25hRff25C4BYNjydBI133PjSflLaGjnJYPruLO4XpzB3wszqKm3tiWN39sgC4sMWZfSlxlWox3SzY2XVl8Q9RqMO8LMUPNhwmTfpEXDW5+NqH+vMiH9UmnsiEwybFche4sE23NJTeO2Xytt55VfoD2Gidte/Sqt5AJUPu6nfK8QloOCZ1N99MrpWpcZPHittqaYHZ5lWXHKthp/im672hXPl8bNxMUoREqomZdD9mdj/P6w9zFeTkr7P9XQUCAwEAAQ==", Base64.DEFAULT);
     private static final byte[] alphaFogAuthoritySpki = Base64.decode("MIICIjANBgkqhkiG9w0BAQEFAAOCAg8AMIICCgKCAgEAyFOockvCEc9TcO1NvsiUfFVzvtDsR64UIRRUl3tBM2Bh8KBA932/Up86RtgJVnbslxuUCrTJZCV4dgd5hAo/mzuJOy9lAGxUTpwWWG0zZJdpt8HJRVLX76CBpWrWEt7JMoEmduvsCR8q7WkSNgT0iIoSXgT/hfWnJ8KGZkN4WBzzTH7hPrAcxPrzMI7TwHqUFfmOX7/gc+bDV5ZyRORrpuu+OR2BVObkocgFJLGmcz7KRuN7/dYtdYFpiKearGvbYqBrEjeo/15chI0Bu/9oQkjPBtkvMBYjyJPrD7oPP67i0ZfqV6xCj4nWwAD3bVjVqsw9cCBHgaykW8ArFFa0VCMdLy7UymYU5SQsfXrw/mHpr27Pp2Z0/7wpuFgJHL+0ARU48OiUzkXSHX+sBLov9X6f9tsh4q/ZRorXhcJi7FnUoagBxewvlfwQfcnLX3hp1wqoRFC4w1DC+ki93vIHUqHkNnayRsf1n48fSu5DwaFfNvejap7HCDIOpCCJmRVR8mVuxi6jgjOUa4Vhb/GCzxfNIn5ZYym1RuoE0TsFO+TPMzjed3tQvG7KemGFz3pQIryb43SbG7Q+EOzIigxYDytzcxOO5Jx7r9i+amQEiIcjBICwyFoEUlVJTgSpqBZGNpznoQ4I2m+uJzM+wMFsinTZN3mp4FU5UHjQsHKG+ZMCAwEAAQ==", Base64.DEFAULT);
@@ -39,7 +45,10 @@ public class TestFogConfig {
 
     private TestFogConfig(@NonNull Uri fogUri, @NonNull List<Uri> consensusUris, @NonNull String username,
                           @NonNull String password, @NonNull ClientConfig clientConfig,
-                          @NonNull byte[] fogAuthoritySpki, @NonNull String fogReportId) {
+                          @NonNull byte[] fogAuthoritySpki, @NonNull String fogReportId,
+                          @NonNull TransportProtocol transportProtocol,
+                          @NonNull GRPCServiceAPIManager grpcServiceAPIManager,
+                          @NonNull RestServiceAPIManager restServiceAPIManager) {
         this.fogUri = fogUri;
         this.consensusUris = consensusUris;
         this.username = username;
@@ -47,6 +56,9 @@ public class TestFogConfig {
         this.clientConfig = clientConfig;
         this.fogAuthoritySpki = fogAuthoritySpki;
         this.fogReportId = fogReportId;
+        this.transportProtocol = transportProtocol;
+        this.grpcServiceAPIManager = grpcServiceAPIManager;
+        this.restServiceAPIManager = restServiceAPIManager;
     }
 
     @NonNull
@@ -90,6 +102,21 @@ public class TestFogConfig {
     }
 
     @NonNull
+    public TransportProtocol getTransportProtocol() {
+        return transportProtocol;
+    }
+
+    @NonNull
+    public GRPCServiceAPIManager getGrpcServiceAPIManager() {
+        return grpcServiceAPIManager;
+    }
+
+    @NonNull
+    public RestServiceAPIManager getRestServiceAPIManager() {
+        return restServiceAPIManager;
+    }
+
+    @NonNull
     static TestFogConfig getFogConfig(Environment.TestEnvironment testEnvironment, StorageAdapter storageAdapter) {
         return getFogConfig(testEnvironment, Optional.of(storageAdapter));
     }
@@ -123,15 +150,18 @@ public class TestFogConfig {
             case MOBILE_DEV:
                 return new TestFogConfig(fogUri, consensusUris, TEST_USERNAME,
                         TEST_PASSWORD, getDevClientConfig(storageAdapter),
-                        mobiledevFogAuthoritySpki, "");
+                        mobiledevFogAuthoritySpki, "", TransportProtocol.forGRPC(),
+                        new GRPCServiceAPIManager(), new RestServiceAPIManager());
             case ALPHA:
                 return new TestFogConfig(fogUri, consensusUris, TEST_USERNAME,
                         TEST_PASSWORD, getDevClientConfig(storageAdapter),
-                        alphaFogAuthoritySpki, "");
+                        alphaFogAuthoritySpki, "", TransportProtocol.forGRPC(),
+                        new GRPCServiceAPIManager(), new RestServiceAPIManager());
             case TEST_NET:
                 return new TestFogConfig(fogUri, consensusUris, TEST_USERNAME,
                         TEST_PASSWORD, getTestNetClientConfig(storageAdapter),
-                        testNetFogAuthoritySpki, "");
+                        testNetFogAuthoritySpki, "", TransportProtocol.forGRPC(),
+                        new GRPCServiceAPIManager(), new RestServiceAPIManager());
         }
         throw new UnsupportedOperationException("Requested config does not exist");
     }

@@ -30,7 +30,7 @@ public class NetworkingCall<T> {
                 return callable.call();
             } catch (NetworkException exception) {
                 // handle exception
-                if (Arrays.stream(retryPolicy.statusCodes).anyMatch(i -> i == exception.statusCode)) {
+                if (Arrays.stream(retryPolicy.statusCodes).anyMatch(i -> i == exception.getResultCode())) {
                     if (++count == retryPolicy.retryCount) throw exception;
                 } else {
                     throw exception;

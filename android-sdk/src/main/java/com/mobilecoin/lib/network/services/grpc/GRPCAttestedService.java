@@ -2,6 +2,7 @@ package com.mobilecoin.lib.network.services.grpc;
 
 import androidx.annotation.NonNull;
 
+import com.mobilecoin.lib.exceptions.NetworkException;
 import com.mobilecoin.lib.network.AuthInterceptor;
 import com.mobilecoin.lib.network.CookieInterceptor;
 import com.mobilecoin.lib.network.services.AttestedService;
@@ -11,6 +12,7 @@ import java.util.concurrent.ExecutorService;
 import attest.Attest;
 import attest.AttestedApiGrpc;
 import io.grpc.ManagedChannel;
+import io.grpc.StatusRuntimeException;
 
 public class GRPCAttestedService
         extends GRPCService<AttestedApiGrpc.AttestedApiBlockingStub>
@@ -29,7 +31,11 @@ public class GRPCAttestedService
     }
 
     @Override
-    public Attest.AuthMessage auth(Attest.AuthMessage authMessage) {
-        return getApiBlockingStub().auth(authMessage);
+    public Attest.AuthMessage auth(Attest.AuthMessage authMessage) throws NetworkException {
+        try {
+            return getApiBlockingStub().auth(authMessage);
+        } catch (StatusRuntimeException e) {
+            throw new NetworkException(e.getStatus());
+        }
     }
 }

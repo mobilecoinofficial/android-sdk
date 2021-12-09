@@ -3,7 +3,7 @@
 package com.mobilecoin.lib;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.VisibleForTesting;
+import androidx.annotation.Nullable;
 
 import com.google.protobuf.ByteString;
 import com.mobilecoin.api.MobileCoinAPI;
@@ -11,16 +11,17 @@ import com.mobilecoin.lib.ClientConfig.Service;
 import com.mobilecoin.lib.exceptions.AttestationException;
 import com.mobilecoin.lib.exceptions.NetworkException;
 import com.mobilecoin.lib.log.Logger;
+import com.mobilecoin.lib.network.NetworkResult;
+import com.mobilecoin.lib.network.TransportProtocol;
 import com.mobilecoin.lib.network.services.AttestedService;
 import com.mobilecoin.lib.network.services.ConsensusClientService;
+import com.mobilecoin.lib.network.services.GRPCServiceAPIManager;
+import com.mobilecoin.lib.network.services.RestServiceAPIManager;
 import com.mobilecoin.lib.network.services.transport.Transport;
-import com.mobilecoin.lib.network.uri.MobileCoinUri;
 import com.mobilecoin.lib.util.NetworkingCall;
 
 import attest.Attest;
 import consensus_common.ConsensusCommon;
-import io.grpc.Status;
-import io.grpc.StatusRuntimeException;
 
 /**
  * Attested client for a consensus service
@@ -35,8 +36,9 @@ class AttestedConsensusClient extends AttestedClient {
      * @param serviceConfig service configuration passed to MobileCoinClient
      */
     AttestedConsensusClient(@NonNull LoadBalancer loadBalancer,
-                            @NonNull Service serviceConfig) {
-        super(loadBalancer, serviceConfig);
+                            @NonNull Service serviceConfig,
+                            @NonNull TransportProtocol transportProtocol) {
+        super(loadBalancer, serviceConfig, transportProtocol);
         Logger.i(TAG, "Created new AttestedConsensusClient", null,
                 "loadBalancer:", loadBalancer,
                 "verifier:", serviceConfig);
@@ -69,17 +71,16 @@ class AttestedConsensusClient extends AttestedClient {
             Attest.AuthMessage authMessage = Attest.AuthMessage.newBuilder().setData(bytes).build();
             Attest.AuthMessage response = attestedService.auth(authMessage);
             attestFinish(response.getData().toByteArray(), getServiceConfig().getVerifier());
-        } catch (StatusRuntimeException exception) {
+        } catch (NetworkException exception) {
             attestReset();
-            if (exception.getStatus().getCode() == Status.Code.INTERNAL) {
+            if (exception.getResult().getCode() == NetworkResult.ResultCode.INTERNAL) {
                 AttestationException attestationException =
-                        new AttestationException(exception.getStatus().getDescription(), exception);
+                        new AttestationException(exception.getResult().getDescription(), exception);
                 Util.logException(TAG, attestationException);
                 throw attestationException;
             }
-            NetworkException networkException = new NetworkException(exception);
-            Util.logException(TAG, networkException);
-            throw networkException;
+            Util.logException(TAG, exception);
+            throw exception;
         } catch (Exception exception) {
             attestReset();
             AttestationException attestationException = new AttestationException("Failed to" +
@@ -101,12 +102,7 @@ class AttestedConsensusClient extends AttestedClient {
                             ConsensusClientService consensusClientService =
                                     getAPIManager().getConsensusClientService(getNetworkTransport());
                             Attest.Message encryptedRequest = encryptMessage(tx);
-                            try {
-                                return consensusClientService.clientTxPropose(encryptedRequest);
-                            } catch (StatusRuntimeException exception) {
-                                attestReset();
-                                throw new NetworkException(exception);
-                            }
+                            return consensusClientService.clientTxPropose(encryptedRequest);
                         }
                 );
         try {

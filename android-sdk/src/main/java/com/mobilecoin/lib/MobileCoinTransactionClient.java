@@ -76,7 +76,7 @@ public interface MobileCoinTransactionClient {
   @NonNull
   Transaction.Status getTransactionStatus(@NonNull Transaction transaction)
       throws InvalidFogResponse, AttestationException,
-      NetworkException;
+          NetworkException;
 
   /**
    * Estimates the minimum fee required to send a transaction with the specified amount. The account

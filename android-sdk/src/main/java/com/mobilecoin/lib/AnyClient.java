@@ -5,11 +5,13 @@ package com.mobilecoin.lib;
 import android.net.Uri;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 import com.mobilecoin.lib.ClientConfig.Service;
 import com.mobilecoin.lib.exceptions.AttestationException;
 import com.mobilecoin.lib.exceptions.NetworkException;
 import com.mobilecoin.lib.log.Logger;
+import com.mobilecoin.lib.network.NetworkResult;
 import com.mobilecoin.lib.network.TransportProtocol;
 import com.mobilecoin.lib.network.services.GRPCServiceAPIManager;
 import com.mobilecoin.lib.network.services.RestServiceAPIManager;
@@ -43,8 +45,8 @@ class AnyClient extends Native {
     private final static long MANAGED_CONNECTION_SHUTDOWN_TIME_LIMIT = 1000;
     private final LoadBalancer loadBalancer;
     private final ClientConfig.Service serviceConfig;
-    private final ServiceAPIManager grpcApiManager;
-    private final ServiceAPIManager restApiManager;
+    private ServiceAPIManager grpcApiManager;
+    private ServiceAPIManager restApiManager;
     private ManagedChannel managedChannel;
     private RestClient restClient;
     private Transport networkTransport;
@@ -56,22 +58,12 @@ class AnyClient extends Native {
      *
      * @param loadBalancer a complete {@link Uri} of the service including port.
      */
-    protected AnyClient(@NonNull LoadBalancer loadBalancer, @NonNull Service serviceConfig) {
-        this.loadBalancer = loadBalancer;
-        this.serviceConfig = serviceConfig;
-        this.grpcApiManager = new GRPCServiceAPIManager();
-        this.restApiManager = new RestServiceAPIManager();
-        this.transportProtocol = TransportProtocol.forGRPC();
-    }
-
     protected AnyClient(@NonNull LoadBalancer loadBalancer,
-                        @NonNull ClientConfig.Service serviceConfig,
-                        @NonNull ServiceAPIManager apiManager) {
+                        @NonNull Service serviceConfig,
+                        @NonNull TransportProtocol transportProtocol) {
         this.loadBalancer = loadBalancer;
         this.serviceConfig = serviceConfig;
-        this.grpcApiManager = apiManager;
-        this.restApiManager = apiManager;
-        this.transportProtocol = TransportProtocol.forGRPC();
+        this.setTransportProtocol(transportProtocol);
     }
 
     @NonNull
@@ -89,6 +81,18 @@ class AnyClient extends Native {
     synchronized void setTransportProtocol(@NonNull TransportProtocol protocol) {
         this.transportProtocol = protocol;
         this.networkTransport = null;
+        switch(protocol.getTransportType()) {
+            case GRPC:
+                if(this.grpcApiManager == null) {
+                    this.grpcApiManager = new GRPCServiceAPIManager();
+                }
+                break;
+            case HTTP:
+                if(this.restApiManager == null) {
+                    this.restApiManager = new RestServiceAPIManager();
+                }
+                break;
+        }
     }
 
     @NonNull
@@ -170,8 +174,9 @@ class AnyClient extends Native {
                 Logger.i(TAG, "Managed channel exists: using existing");
             }
         } catch (Exception ex) {
-            NetworkException exception = new NetworkException(500, "Unable to create managed " +
-                    "channel", ex);
+            NetworkException exception = new NetworkException(NetworkResult.UNKNOWN
+                    .withDescription("Unable to create managed channel")
+                    .withCause(ex));
             String message = exception.getMessage();
             if (null == message) {
                 message = "";
@@ -260,4 +265,5 @@ class AnyClient extends Native {
 
         restClient = null;
     }
+
 }

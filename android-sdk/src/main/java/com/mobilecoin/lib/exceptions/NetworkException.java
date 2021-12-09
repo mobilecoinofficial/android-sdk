@@ -5,67 +5,81 @@ package com.mobilecoin.lib.exceptions;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import com.mobilecoin.lib.network.ApiResult;
+import com.mobilecoin.lib.network.NetworkResult;
 
-public final class CheckedNetworkException extends MobileCoinException {
-    public final int statusCode;
+import io.grpc.Status;
 
-    public CheckedNetworkException(int statusCode, @Nullable String message, @Nullable Throwable throwable) {
-        super(message, throwable);
-        this.statusCode = statusCode;
+public final class NetworkException extends MobileCoinException {
+
+    public final NetworkResult result;
+    public final int resultCode;
+
+    public NetworkException(@NonNull NetworkResult result) {
+        this(result, null);
     }
 
-    public CheckedNetworkException(
-            int statusCode,
-            @Nullable String message
-    ) {
-        super(message);
-        this.statusCode = statusCode;
-    }
-
-    public CheckedNetworkException(@NonNull ApiResult.ResultCode resultCode) {
-        switch (resultCode) {
+    public NetworkException(@NonNull NetworkResult result, @Nullable Throwable throwable) {
+        super(result.getCode().toString(), throwable);
+        this.result = result;
+        switch (result.getCode()) {
             case OK:
-                statusCode = 200;
+                resultCode = 200;
                 break;
             case INVALID_ARGUMENT:
             case FAILED_PRECONDITION:
             case OUT_OF_RANGE:
-                statusCode = 400;
+                resultCode = 400;
                 break;
             case UNAUTHENTICATED:
-                statusCode = 401;
+                resultCode = 401;
                 break;
             case PERMISSION_DENIED:
-                statusCode = 403;
+                resultCode = 403;
                 break;
             case NOT_FOUND:
-                statusCode = 404;
+                resultCode = 404;
                 break;
             case ABORTED:
             case ALREADY_EXISTS:
-                statusCode = 409;
+                resultCode = 409;
                 break;
             case RESOURCE_EXHAUSTED:
-                statusCode = 429;
+                resultCode = 429;
                 break;
             case CANCELLED:
-                statusCode = 499;
+                resultCode = 499;
                 break;
             case DATA_LOSS:
             case UNKNOWN:
             case INTERNAL:
-                statusCode = 500;
+                resultCode = 500;
                 break;
             case UNAVAILABLE:
-                statusCode = 503;
+                resultCode = 503;
                 break;
             case DEADLINE_EXCEEDED:
-                statusCode = 504;
+                resultCode = 504;
                 break;
             default:
                 // UNIMPLEMENTED
-                statusCode = 501;
+                resultCode = 501;
         }
     }
+
+    public NetworkException(@NonNull Status status) {
+        this(status, null);
+    }
+
+    public NetworkException(@NonNull Status status, Throwable throwable) {
+        this(NetworkResult.from(status), throwable);
+    }
+
+    public NetworkResult getResult() {
+        return this.result;
+    }
+
+    public int getResultCode() {
+        return this.resultCode;
+    }
+
 }

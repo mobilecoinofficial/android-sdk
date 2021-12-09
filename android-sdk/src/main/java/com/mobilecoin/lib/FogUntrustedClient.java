@@ -4,21 +4,22 @@ package com.mobilecoin.lib;
 
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 import com.mobilecoin.lib.ClientConfig.Service;
 import com.mobilecoin.lib.exceptions.AttestationException;
 import com.mobilecoin.lib.exceptions.NetworkException;
 import com.mobilecoin.lib.log.Logger;
+import com.mobilecoin.lib.network.TransportProtocol;
 import com.mobilecoin.lib.network.services.FogUntrustedService;
-import com.mobilecoin.lib.network.services.ServiceAPIManager;
+import com.mobilecoin.lib.network.services.GRPCServiceAPIManager;
+import com.mobilecoin.lib.network.services.RestServiceAPIManager;
 import com.mobilecoin.lib.network.services.transport.Transport;
-import com.mobilecoin.lib.network.uri.FogUri;
 import com.mobilecoin.lib.util.NetworkingCall;
 
 import java.util.Set;
 
 import fog_ledger.Ledger;
-import io.grpc.StatusRuntimeException;
 
 /**
  * Attested client for a ledger service Attestation is done automatically by the parent class {@link
@@ -33,21 +34,13 @@ final class FogUntrustedClient extends AnyClient {
      *                      fog://fog.test.mobilecoin.com
      * @param serviceConfig service configuration passed to MobileCoinClient
      */
-    FogUntrustedClient(@NonNull LoadBalancer loadBalancer, @NonNull Service serviceConfig) {
-        super(loadBalancer, serviceConfig);
+    FogUntrustedClient(@NonNull LoadBalancer loadBalancer,
+                       @NonNull Service serviceConfig,
+                       @NonNull TransportProtocol transportProtocol) {
+        super(loadBalancer, serviceConfig, transportProtocol);
         Logger.i(TAG, "Created new FogUntrustedClient", null,
                 "uri:", loadBalancer,
                 "verifier:", serviceConfig);
-    }
-
-    FogUntrustedClient(@NonNull LoadBalancer loadBalancer,
-                   @NonNull ClientConfig.Service serviceConfig,
-                   @NonNull ServiceAPIManager apiManager) {
-        super(loadBalancer, serviceConfig, apiManager);
-        Logger.i(TAG, "Created new FogUntrustedClient", null,
-                "loadBalancer:", loadBalancer,
-                "verifier:", serviceConfig,
-                "apiManager:", apiManager);
     }
 
     /**
@@ -74,10 +67,10 @@ final class FogUntrustedClient extends AnyClient {
                 new NetworkingCall<>(() -> {
                     try {
                         return fogService.getTxOuts(requestBuilder.build());
-                    } catch (StatusRuntimeException exception) {
+                    } catch (NetworkException exception) {
                         Logger.w(TAG, "Unable to fetch TxOuts from the untrusted service",
                                 exception);
-                        throw new NetworkException(exception);
+                        throw exception;
                     }
                 });
         try {
