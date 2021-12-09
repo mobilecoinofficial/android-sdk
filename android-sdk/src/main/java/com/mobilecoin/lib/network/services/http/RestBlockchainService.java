@@ -27,7 +27,7 @@ public class RestBlockchainService extends RestService implements BlockchainServ
             );
             return ConsensusCommon.LastBlockInfoResponse.parseFrom(responseData);
         } catch (InvalidProtocolBufferException exception) {
-            throw new NetworkException(NetworkResult.INVALID_ARGUMENT);
+            throw new NetworkException(NetworkResult.INVALID_ARGUMENT, exception);
         }
     }
 }

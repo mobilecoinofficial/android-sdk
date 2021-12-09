@@ -35,7 +35,7 @@ public class GRPCFogBlockService
         try {
             return getApiBlockingStub().getBlocks(request);
         } catch (StatusRuntimeException e) {
-            throw new NetworkException(e.getStatus());
+            throw new NetworkException(e.getStatus(), e);
         }
     }
 }

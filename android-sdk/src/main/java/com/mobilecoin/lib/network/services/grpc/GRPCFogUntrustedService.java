@@ -38,7 +38,7 @@ public class GRPCFogUntrustedService
         try {
             return getApiBlockingStub().getTxOuts(request);
         } catch (StatusRuntimeException e) {
-            throw new NetworkException(e.getStatus());
+            throw new NetworkException(e.getStatus(), e);
         }
     }
 }

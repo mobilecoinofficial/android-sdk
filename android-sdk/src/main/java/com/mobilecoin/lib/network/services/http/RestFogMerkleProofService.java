@@ -26,7 +26,7 @@ public class RestFogMerkleProofService extends RestService implements FogMerkleP
             );
             return Attest.Message.parseFrom(responseData);
         } catch (InvalidProtocolBufferException exception) {
-            throw new NetworkException(NetworkResult.INVALID_ARGUMENT);
+            throw new NetworkException(NetworkResult.INVALID_ARGUMENT, exception);
         }
     }
 }

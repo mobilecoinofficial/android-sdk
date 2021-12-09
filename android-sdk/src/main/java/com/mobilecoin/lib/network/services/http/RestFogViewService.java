@@ -25,7 +25,7 @@ public class RestFogViewService extends RestService implements FogViewService {
             );
             return Attest.AuthMessage.parseFrom(responseData);
         } catch (InvalidProtocolBufferException exception) {
-            throw new NetworkException(NetworkResult.INVALID_ARGUMENT);
+            throw new NetworkException(NetworkResult.INVALID_ARGUMENT, exception);
         }
     }
 
@@ -37,7 +37,7 @@ public class RestFogViewService extends RestService implements FogViewService {
             );
             return Attest.Message.parseFrom(responseData);
         } catch (InvalidProtocolBufferException exception) {
-            throw new NetworkException(NetworkResult.INVALID_ARGUMENT);
+            throw new NetworkException(NetworkResult.INVALID_ARGUMENT, exception);
         }
     }
 }

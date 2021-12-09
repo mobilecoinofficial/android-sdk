@@ -36,7 +36,7 @@ public class GRPCBlockchainService
         try {
             return getApiBlockingStub().getLastBlockInfo(request);
         } catch (StatusRuntimeException e) {
-            throw new NetworkException(e.getStatus());
+            throw new NetworkException(e.getStatus(), e);
         }
     }
 }

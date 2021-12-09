@@ -74,7 +74,8 @@ public class NetworkResult {
     public NetworkResult withCause(Throwable cause) {
         if (!Objects.equals(cause, this.cause)) {
             return this;
-        } else {
+        }
+        else {
             return new NetworkResult(this.code, this.description, cause);
         }
     }

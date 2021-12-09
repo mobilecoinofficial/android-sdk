@@ -36,7 +36,7 @@ public class GRPCConsensusClientService
         try {
             return getApiBlockingStub().clientTxPropose(message);
         } catch(StatusRuntimeException e) {
-            throw new NetworkException(e.getStatus());
+            throw new NetworkException(e.getStatus(), e);
         }
     }
 }

@@ -100,7 +100,7 @@ public final class RestClient {
             }
             return response.getResponseData();
         } catch (IOException exception) {
-            throw new NetworkException(NetworkResult.UNAVAILABLE);
+            throw new NetworkException(NetworkResult.UNAVAILABLE, exception);
         }
     }
 

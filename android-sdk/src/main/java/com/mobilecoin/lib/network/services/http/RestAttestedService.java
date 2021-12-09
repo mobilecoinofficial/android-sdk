@@ -26,7 +26,7 @@ public class RestAttestedService extends RestService implements AttestedService 
                 );
                 return Attest.AuthMessage.parseFrom(responseData);
             } catch (InvalidProtocolBufferException exception) {
-                throw new NetworkException(NetworkResult.INVALID_ARGUMENT);
+                throw new NetworkException(NetworkResult.INVALID_ARGUMENT, exception);
             }
         }
 }

@@ -37,7 +37,7 @@ public class GRPCFogMerkleProofService
         try {
             return getApiBlockingStub().getOutputs(request);
         } catch (StatusRuntimeException e) {
-            throw new NetworkException(e.getStatus());
+            throw new NetworkException(e.getStatus(), e);
         }
     }
 }

@@ -26,7 +26,7 @@ public class RestFogKeyImageService extends RestService implements FogKeyImageSe
             );
             return Attest.AuthMessage.parseFrom(responseData);
         } catch (InvalidProtocolBufferException exception) {
-            throw new NetworkException(NetworkResult.INVALID_ARGUMENT);
+            throw new NetworkException(NetworkResult.INVALID_ARGUMENT, exception);
         }
     }
 
@@ -39,7 +39,7 @@ public class RestFogKeyImageService extends RestService implements FogKeyImageSe
             );
             return Attest.Message.parseFrom(responseData);
         } catch (InvalidProtocolBufferException exception) {
-            throw new NetworkException(NetworkResult.INVALID_ARGUMENT);
+            throw new NetworkException(NetworkResult.INVALID_ARGUMENT, exception);
         }
     }
 }

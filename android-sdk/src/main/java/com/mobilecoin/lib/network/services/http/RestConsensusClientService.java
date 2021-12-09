@@ -27,7 +27,7 @@ public class RestConsensusClientService extends RestService implements Consensus
             );
             return ConsensusCommon.ProposeTxResponse.parseFrom(responseData);
         } catch (InvalidProtocolBufferException exception) {
-            throw new NetworkException(NetworkResult.INVALID_ARGUMENT);
+            throw new NetworkException(NetworkResult.INVALID_ARGUMENT, exception);
         }
     }
 }

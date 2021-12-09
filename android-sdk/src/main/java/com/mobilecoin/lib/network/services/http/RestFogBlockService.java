@@ -26,7 +26,7 @@ public class RestFogBlockService extends RestService implements FogBlockService 
             );
             return Ledger.BlockResponse.parseFrom(responseData);
         } catch (InvalidProtocolBufferException exception) {
-            throw new NetworkException(NetworkResult.INVALID_ARGUMENT);
+            throw new NetworkException(NetworkResult.INVALID_ARGUMENT, exception);
         }
     }
 }

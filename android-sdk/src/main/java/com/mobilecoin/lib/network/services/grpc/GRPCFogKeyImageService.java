@@ -37,7 +37,7 @@ public class GRPCFogKeyImageService
         try {
             return getApiBlockingStub().auth(authMessage);
         } catch (StatusRuntimeException e) {
-            throw new NetworkException(e.getStatus());
+            throw new NetworkException(e.getStatus(), e);
         }
     }
 

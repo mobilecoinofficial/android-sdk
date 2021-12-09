@@ -26,7 +26,7 @@ public class RestFogReportService extends RestService implements FogReportServic
             );
             return ReportOuterClass.ReportResponse.parseFrom(responseData);
         } catch (InvalidProtocolBufferException exception) {
-            throw new NetworkException(NetworkResult.INVALID_ARGUMENT);
+            throw new NetworkException(NetworkResult.INVALID_ARGUMENT, exception);
         }
     }
 }
