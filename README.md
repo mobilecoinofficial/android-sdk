@@ -41,6 +41,7 @@ Please check your country's laws before downloading or using this software.
 
 |Directory |Description |
 | :-- | :-- |
+| [docs](./docs) | Integration Guide for the Android SDK. |
 | [main](./android-sdk/src/main/java/com/mobilecoin) | Sources for the MobileCoin Android SDK. |
 | [androidTest](./android-sdk/src/androidTest/java/com/mobilecoin) | Tests. |
 | [testApp](./testApp) | Test application using the Android SDK. |
@@ -57,7 +58,7 @@ For more information about the cryptocurrency, see [MobileCoinFoundation/MobileC
 
 ## Binary Distribution
 
-The MobileCoin Android SDK will be available on JCenter and Maven Central after the public release. Meanwhile, add 
+The MobileCoin Android SDK will be available on JCenter and Maven Central after the public release. Meanwhile, add
 the MobileCoin repository to the list of repositories in the root `build.gradle` file.
 
 ```
@@ -101,6 +102,8 @@ Run **`gradle cAT`** to run the tests on the physically connected device or an e
 
 ## Usage
 
+For more details, see the Integration Guide.
+
 ### Get Balance
 
 Existing accounts can be created with entropy and new accounts generated with `Account.createNew`
@@ -112,9 +115,9 @@ private static final Uri CONSENSUS_URI = Uri.parse("mc://CONSENSUS-URI");
 
 String bip39Entropy = { /*
                       32 bytes of randomness generated using a
-                      cryptographically strong random number 
+                      cryptographically strong random number
                       generator like SecureRandom.
-                      ACCOUNT ENTROPY IS A SENSITIVE INFORMATION AND 
+                      ACCOUNT ENTROPY IS A SENSITIVE INFORMATION AND
                       MUST NOT BE SHARED WITH ANYONE, AS USER'S PRIVATE
                       KEYS ARE DETERMINISTICALLY GENERATED FROM IT
                  */ }

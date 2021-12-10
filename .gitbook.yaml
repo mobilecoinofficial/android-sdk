@@ -1,0 +1,5 @@
+root: ./docs/
+
+structure:
+  readme: ./docs/integration-guide.md
+  summary: ./docs/SUMMARY.md
