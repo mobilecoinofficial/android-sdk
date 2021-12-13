@@ -4,7 +4,6 @@ package com.mobilecoin.lib;
 
 
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 
 import com.google.protobuf.ByteString;
 import com.google.protobuf.InvalidProtocolBufferException;
@@ -18,8 +17,6 @@ import com.mobilecoin.lib.network.NetworkResult;
 import com.mobilecoin.lib.network.TransportProtocol;
 import com.mobilecoin.lib.network.services.FogKeyImageService;
 import com.mobilecoin.lib.network.services.FogMerkleProofService;
-import com.mobilecoin.lib.network.services.GRPCServiceAPIManager;
-import com.mobilecoin.lib.network.services.RestServiceAPIManager;
 import com.mobilecoin.lib.network.services.transport.Transport;
 import com.mobilecoin.lib.util.NetworkingCall;
 

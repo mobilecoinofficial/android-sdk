@@ -3,8 +3,10 @@
 package com.mobilecoin.lib;
 
 import android.net.Uri;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+
 import com.mobilecoin.api.MobileCoinAPI;
 import com.mobilecoin.lib.exceptions.AttestationException;
 import com.mobilecoin.lib.exceptions.FeeRejectedException;
@@ -23,15 +25,12 @@ import com.mobilecoin.lib.log.LogAdapter;
 import com.mobilecoin.lib.log.Logger;
 import com.mobilecoin.lib.network.NetworkResult;
 import com.mobilecoin.lib.network.TransportProtocol;
-import com.mobilecoin.lib.network.services.GRPCServiceAPIManager;
-import com.mobilecoin.lib.network.services.RestServiceAPIManager;
 import com.mobilecoin.lib.network.uri.ConsensusUri;
 import com.mobilecoin.lib.network.uri.FogUri;
 import com.mobilecoin.lib.network.uri.MobileCoinUri;
 import com.mobilecoin.lib.util.Result;
 import com.mobilecoin.lib.util.Task;
-import consensus_common.ConsensusCommon;
-import fog_ledger.Ledger;
+
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -47,6 +46,9 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeoutException;
 import java.util.stream.Collectors;
+
+import consensus_common.ConsensusCommon;
+import fog_ledger.Ledger;
 
 /**
  * <pre>

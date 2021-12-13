@@ -1,7 +1,6 @@
 package com.mobilecoin.lib;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 
 import com.google.protobuf.Empty;
 import com.mobilecoin.lib.ClientConfig.Service;
@@ -10,8 +9,6 @@ import com.mobilecoin.lib.exceptions.NetworkException;
 import com.mobilecoin.lib.log.Logger;
 import com.mobilecoin.lib.network.TransportProtocol;
 import com.mobilecoin.lib.network.services.BlockchainService;
-import com.mobilecoin.lib.network.services.GRPCServiceAPIManager;
-import com.mobilecoin.lib.network.services.RestServiceAPIManager;
 import com.mobilecoin.lib.util.NetworkingCall;
 
 import java.math.BigInteger;

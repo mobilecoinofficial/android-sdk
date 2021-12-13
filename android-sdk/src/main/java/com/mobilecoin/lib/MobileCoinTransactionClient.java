@@ -1,6 +1,7 @@
 package com.mobilecoin.lib;
 
 import androidx.annotation.NonNull;
+
 import com.mobilecoin.lib.exceptions.AttestationException;
 import com.mobilecoin.lib.exceptions.FeeRejectedException;
 import com.mobilecoin.lib.exceptions.FogReportException;
@@ -11,6 +12,7 @@ import com.mobilecoin.lib.exceptions.InvalidReceiptException;
 import com.mobilecoin.lib.exceptions.InvalidTransactionException;
 import com.mobilecoin.lib.exceptions.NetworkException;
 import com.mobilecoin.lib.exceptions.TransactionBuilderException;
+
 import java.math.BigInteger;
 
 /**

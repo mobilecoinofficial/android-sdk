@@ -4,15 +4,17 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 
 import android.net.Uri;
+
 import androidx.test.ext.junit.runners.AndroidJUnit4;
+
 import com.mobilecoin.lib.network.uri.ConsensusUri;
 import com.mobilecoin.lib.network.uri.MobileCoinUri;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import org.junit.Assert;
+
 import org.junit.Test;
 import org.junit.runner.RunWith;
+
+import java.util.Arrays;
+import java.util.List;
 
 
 @RunWith(AndroidJUnit4.class)

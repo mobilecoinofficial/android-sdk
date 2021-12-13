@@ -1,5 +1,14 @@
 package com.mobilecoin.lib.network.services.http.clients;
 
+import static com.mobilecoin.lib.network.NetworkResult.DEADLINE_EXCEEDED;
+import static com.mobilecoin.lib.network.NetworkResult.INTERNAL;
+import static com.mobilecoin.lib.network.NetworkResult.NOT_FOUND;
+import static com.mobilecoin.lib.network.NetworkResult.OK;
+import static com.mobilecoin.lib.network.NetworkResult.PERMISSION_DENIED;
+import static com.mobilecoin.lib.network.NetworkResult.UNAUTHENTICATED;
+import static com.mobilecoin.lib.network.NetworkResult.UNAVAILABLE;
+import static com.mobilecoin.lib.network.NetworkResult.UNIMPLEMENTED;
+
 import android.net.Uri;
 
 import androidx.annotation.NonNull;
@@ -7,7 +16,6 @@ import androidx.annotation.Nullable;
 
 import com.mobilecoin.lib.exceptions.NetworkException;
 import com.mobilecoin.lib.network.NetworkResult;
-import static com.mobilecoin.lib.network.NetworkResult.*;
 import com.mobilecoin.lib.network.services.http.Requester;
 
 import java.io.IOException;

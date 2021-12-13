@@ -4,17 +4,17 @@ package com.mobilecoin.lib;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+
 import com.mobilecoin.lib.exceptions.FogReportException;
 import com.mobilecoin.lib.exceptions.MobileCoinException;
 import com.mobilecoin.lib.exceptions.NetworkException;
 import com.mobilecoin.lib.log.Logger;
 import com.mobilecoin.lib.network.NetworkResult;
 import com.mobilecoin.lib.network.TransportProtocol;
-import com.mobilecoin.lib.network.services.GRPCServiceAPIManager;
-import com.mobilecoin.lib.network.services.RestServiceAPIManager;
 import com.mobilecoin.lib.network.uri.FogUri;
 import com.mobilecoin.lib.util.Result;
 import com.mobilecoin.lib.util.Task;
+
 import java.util.HashMap;
 import java.util.Optional;
 import java.util.Set;

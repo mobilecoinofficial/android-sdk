@@ -6,17 +6,16 @@ import static org.mockito.Mockito.when;
 
 import com.mobilecoin.lib.network.TransportProtocol;
 import com.mobilecoin.lib.network.services.BlockchainService;
-import com.mobilecoin.lib.network.services.GRPCServiceAPIManager;
-import com.mobilecoin.lib.network.services.RestServiceAPIManager;
 import com.mobilecoin.lib.network.services.ServiceAPIManager;
 import com.mobilecoin.lib.network.uri.ConsensusUri;
 import com.mobilecoin.lib.network.uri.MobileCoinUri;
-import java.util.ArrayList;
-import java.util.List;
+
 import org.junit.Assert;
 import org.junit.Test;
 
 import java.time.Duration;
+import java.util.ArrayList;
+import java.util.List;
 
 import consensus_common.ConsensusCommon;
 

@@ -7,6 +7,7 @@ import android.os.Parcelable;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.mobilecoin.lib.exceptions.AttestationException;
 import com.mobilecoin.lib.exceptions.InvalidFogResponse;
@@ -15,10 +16,7 @@ import com.mobilecoin.lib.exceptions.NetworkException;
 import com.mobilecoin.lib.exceptions.SerializationException;
 import com.mobilecoin.lib.log.Logger;
 import com.mobilecoin.lib.util.Hex;
-import fog_common.FogCommon;
-import fog_ledger.Ledger;
-import fog_view.View;
-import fog_view.View.DecommissionedIngestInvocation;
+
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -36,6 +34,11 @@ import java.util.Stack;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
+
+import fog_common.FogCommon;
+import fog_ledger.Ledger;
+import fog_view.View;
+import fog_view.View.DecommissionedIngestInvocation;
 
 final class TxOutStore implements Parcelable {
     private static final String TAG = TxOutStore.class.getName();

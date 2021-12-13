@@ -2,6 +2,10 @@
 
 package com.mobilecoin.lib;
 
+import androidx.annotation.Nullable;
+
+import com.mobilecoin.lib.network.CookieInterceptor;
+
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -13,10 +17,6 @@ import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
-
-import androidx.annotation.Nullable;
-
-import com.mobilecoin.lib.network.CookieInterceptor;
 
 import io.grpc.CallOptions;
 import io.grpc.Channel;

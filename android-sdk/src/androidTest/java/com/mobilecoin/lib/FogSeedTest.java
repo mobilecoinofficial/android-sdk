@@ -2,9 +2,7 @@ package com.mobilecoin.lib;
 
 import static org.junit.Assert.assertEquals;
 
-import android.content.Intent;
 import android.os.Parcel;
-import android.os.Parcelable;
 
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 

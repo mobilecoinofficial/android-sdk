@@ -3,7 +3,6 @@
 package com.mobilecoin.lib;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 
 import com.google.protobuf.ByteString;
 import com.mobilecoin.api.MobileCoinAPI;
@@ -15,8 +14,6 @@ import com.mobilecoin.lib.network.NetworkResult;
 import com.mobilecoin.lib.network.TransportProtocol;
 import com.mobilecoin.lib.network.services.AttestedService;
 import com.mobilecoin.lib.network.services.ConsensusClientService;
-import com.mobilecoin.lib.network.services.GRPCServiceAPIManager;
-import com.mobilecoin.lib.network.services.RestServiceAPIManager;
 import com.mobilecoin.lib.network.services.transport.Transport;
 import com.mobilecoin.lib.util.NetworkingCall;
 

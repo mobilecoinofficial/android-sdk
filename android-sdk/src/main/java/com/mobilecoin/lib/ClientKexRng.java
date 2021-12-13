@@ -9,6 +9,7 @@ import androidx.annotation.NonNull;
 
 import com.mobilecoin.lib.exceptions.KexRngException;
 import com.mobilecoin.lib.log.Logger;
+
 import java.util.Arrays;
 
 final class ClientKexRng extends Native implements Parcelable {

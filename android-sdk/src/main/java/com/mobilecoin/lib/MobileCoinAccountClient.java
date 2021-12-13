@@ -2,6 +2,7 @@ package com.mobilecoin.lib;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+
 import com.mobilecoin.lib.exceptions.AttestationException;
 import com.mobilecoin.lib.exceptions.FogReportException;
 import com.mobilecoin.lib.exceptions.InsufficientFundsException;
@@ -11,6 +12,7 @@ import com.mobilecoin.lib.exceptions.NetworkException;
 import com.mobilecoin.lib.exceptions.SerializationException;
 import com.mobilecoin.lib.exceptions.StorageNotFoundException;
 import com.mobilecoin.lib.exceptions.TransactionBuilderException;
+
 import java.io.IOException;
 import java.math.BigInteger;
 import java.security.InvalidKeyException;
@@ -18,6 +20,7 @@ import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.UnrecoverableEntryException;
 import java.util.concurrent.TimeoutException;
+
 import javax.crypto.BadPaddingException;
 import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;

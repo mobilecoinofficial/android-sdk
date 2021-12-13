@@ -4,7 +4,6 @@ package com.mobilecoin.lib;
 
 
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 
 import com.mobilecoin.lib.ClientConfig.Service;
 import com.mobilecoin.lib.exceptions.AttestationException;
@@ -12,8 +11,6 @@ import com.mobilecoin.lib.exceptions.NetworkException;
 import com.mobilecoin.lib.log.Logger;
 import com.mobilecoin.lib.network.TransportProtocol;
 import com.mobilecoin.lib.network.services.FogUntrustedService;
-import com.mobilecoin.lib.network.services.GRPCServiceAPIManager;
-import com.mobilecoin.lib.network.services.RestServiceAPIManager;
 import com.mobilecoin.lib.network.services.transport.Transport;
 import com.mobilecoin.lib.util.NetworkingCall;
 

@@ -15,8 +15,6 @@ import com.mobilecoin.lib.log.Logger;
 import com.mobilecoin.lib.network.NetworkResult;
 import com.mobilecoin.lib.network.TransportProtocol;
 import com.mobilecoin.lib.network.services.FogViewService;
-import com.mobilecoin.lib.network.services.GRPCServiceAPIManager;
-import com.mobilecoin.lib.network.services.RestServiceAPIManager;
 import com.mobilecoin.lib.network.services.transport.Transport;
 import com.mobilecoin.lib.util.NetworkingCall;
 
