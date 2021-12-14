@@ -22,16 +22,17 @@ import consensus_common.ConsensusCommon;
 public class BlockchainClientTest {
     @Test
     public void clientCachesLastBlockInfo() throws Exception {
+        TestFogConfig fogConfig = Environment.getTestFogConfig();
         ConsensusUri consensusUri = new ConsensusUri(
-            Environment.getTestFogConfig().getConsensusUri());
+                fogConfig.getConsensusUri());
         BlockchainClient blockchainClient = new BlockchainClient(
                 RandomLoadBalancer.create(consensusUri),
-                Environment.getTestFogConfig().getClientConfig().consensus,
+                fogConfig.getClientConfig().consensus,
                 Duration.ofHours(1),
-                TransportProtocol.forGRPC());
+                fogConfig.getTransportProtocol());
         blockchainClient.setAuthorization(
-                Environment.getTestFogConfig().getUsername(),
-                Environment.getTestFogConfig().getPassword()
+                fogConfig.getUsername(),
+                fogConfig.getPassword()
         );
         ConsensusCommon.LastBlockInfoResponse lastBlockInfoResponse1 =
                 blockchainClient.getOrFetchLastBlockInfo();
@@ -58,12 +59,13 @@ public class BlockchainClientTest {
         );
         when(apiManager.getBlockchainService(any())).thenReturn(blockchainService);
 
+        TestFogConfig fogConfig = Environment.getTestFogConfig();
         // Setup blockchain client
         BlockchainClient blockchainClient = new BlockchainClient(
                 createLoadBalancer(),
-                Environment.getTestFogConfig().getClientConfig().consensus,
+                fogConfig.getClientConfig().consensus,
                 Duration.ofHours(1),
-                TransportProtocol.forGRPC());
+                fogConfig.getTransportProtocol());
 
         // Get initial block response and cache it
         ConsensusCommon.LastBlockInfoResponse lastBlockInfoResponse1 =
@@ -77,16 +79,17 @@ public class BlockchainClientTest {
 
     @Test
     public void clientRespectsCacheTTL() throws Exception {
+        TestFogConfig fogConfig = Environment.getTestFogConfig();
         ConsensusUri consensusUri = new ConsensusUri(
-            Environment.getTestFogConfig().getConsensusUri());
+                fogConfig.getConsensusUri());
         BlockchainClient blockchainClient = new BlockchainClient(
                 RandomLoadBalancer.create(consensusUri),
-                Environment.getTestFogConfig().getClientConfig().consensus,
+                fogConfig.getClientConfig().consensus,
                 Duration.ofMillis(1),
-                TransportProtocol.forGRPC());
+                fogConfig.getTransportProtocol());
         blockchainClient.setAuthorization(
-                Environment.getTestFogConfig().getUsername(),
-                Environment.getTestFogConfig().getPassword()
+                fogConfig.getUsername(),
+                fogConfig.getPassword()
         );
         ConsensusCommon.LastBlockInfoResponse lastBlockInfoResponse1 =
                 blockchainClient.getOrFetchLastBlockInfo();
@@ -115,11 +118,12 @@ public class BlockchainClientTest {
         when(apiManager.getBlockchainService(any())).thenReturn(blockchainService);
 
         // Setup blockchain client
+        TestFogConfig fogConfig = Environment.getTestFogConfig();
         BlockchainClient blockchainClient = new BlockchainClient(
                 createLoadBalancer(),
-                Environment.getTestFogConfig().getClientConfig().consensus,
+                fogConfig.getClientConfig().consensus,
                 Duration.ofMillis(1),
-                TransportProtocol.forGRPC());
+                fogConfig.getTransportProtocol());
 
         // Get initial block response and cache it
         ConsensusCommon.LastBlockInfoResponse lastBlockInfoResponse1 =

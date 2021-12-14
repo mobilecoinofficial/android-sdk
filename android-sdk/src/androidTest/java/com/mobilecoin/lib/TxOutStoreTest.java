@@ -134,7 +134,7 @@ public class TxOutStoreTest {
         FogBlockClient blockClient = new FogBlockClient(
                 RandomLoadBalancer.create(fogUri),
                 fogConfig.getClientConfig().fogLedger,
-                TransportProtocol.forGRPC()
+                fogConfig.getTransportProtocol()
         );
 
         blockClient.setAuthorization(

@@ -594,7 +594,7 @@ public class MobileCoinClientTest {
         FogBlockClient blockClient = new FogBlockClient(
                 RandomLoadBalancer.create(fogUri),
                 ClientConfig.defaultConfig().fogLedger,
-                TransportProtocol.forGRPC());
+                fogConfig.getTransportProtocol());
         blockClient.setAuthorization(fogConfig.getUsername(), fogConfig.getPassword());
         List<OwnedTxOut> txOuts = blockClient.scanForTxOutsInBlockRange(
                 new BlockRange(

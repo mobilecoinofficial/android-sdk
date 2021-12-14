@@ -12,10 +12,11 @@ public final class MobileCoinClientBuilder {
 
   /** Returns a {@link MobileCoinClientBuilder} with sensible defaults. */
   public static MobileCoinClientBuilder newBuilder() {
+    TestFogConfig fogConfig = TestFogConfig.getFogConfig(Environment.CURRENT_TEST_ENV);
     return new MobileCoinClientBuilder(
             TestKeysManager.getNextAccountKey(),
-            TestFogConfig.getFogConfig(Environment.CURRENT_TEST_ENV),
-            TransportProtocol.forGRPC());
+            fogConfig,
+            fogConfig.getTransportProtocol());
   }
 
   private MobileCoinClientBuilder(AccountKey accountKey,
@@ -33,6 +34,11 @@ public final class MobileCoinClientBuilder {
 
   public MobileCoinClientBuilder setAccountKey(AccountKey accountKey) {
     this.accountKey = accountKey;
+    return this;
+  }
+
+  public MobileCoinClientBuilder setTransportProtocol(TransportProtocol transportProtocol) {
+    this.transportProtocol = transportProtocol;
     return this;
   }
 
