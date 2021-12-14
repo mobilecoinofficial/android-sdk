@@ -205,7 +205,7 @@ public class MobileCoinClientTest {
         try {
             mobileCoinClient.getBalance();
             Assert.fail("Invalid trust root must fail the test");
-        } catch (NetworkException | AttestationException ex) {
+        } catch (NetworkException ex) {
             // success
         }
     }

@@ -7,8 +7,6 @@ import androidx.annotation.NonNull;
 
 import com.mobilecoin.lib.exceptions.AttestationException;
 import com.mobilecoin.lib.network.TransportProtocol;
-import com.mobilecoin.lib.network.services.GRPCServiceAPIManager;
-import com.mobilecoin.lib.network.services.RestServiceAPIManager;
 import com.mobilecoin.lib.util.Hex;
 
 import java.security.cert.X509Certificate;
