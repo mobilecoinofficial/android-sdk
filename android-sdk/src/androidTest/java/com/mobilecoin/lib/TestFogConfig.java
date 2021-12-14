@@ -32,8 +32,6 @@ public class TestFogConfig {
     private final byte[] fogAuthoritySpki;
     private final String fogReportId;
     private final TransportProtocol transportProtocol;
-    private final GRPCServiceAPIManager grpcServiceAPIManager;
-    private final RestServiceAPIManager restServiceAPIManager;
 
     private static final String TEST_USERNAME = "REPLACE_TEST_DEV_USER_STRING";
     private static final String TEST_PASSWORD = "REPLACE_TEST_DEV_PASSWORD_STRING";
@@ -45,9 +43,7 @@ public class TestFogConfig {
     private TestFogConfig(@NonNull Uri fogUri, @NonNull List<Uri> consensusUris, @NonNull String username,
                           @NonNull String password, @NonNull ClientConfig clientConfig,
                           @NonNull byte[] fogAuthoritySpki, @NonNull String fogReportId,
-                          @NonNull TransportProtocol transportProtocol,
-                          @NonNull GRPCServiceAPIManager grpcServiceAPIManager,
-                          @NonNull RestServiceAPIManager restServiceAPIManager) {
+                          @NonNull TransportProtocol transportProtocol) {
         this.fogUri = fogUri;
         this.consensusUris = consensusUris;
         this.username = username;
@@ -56,8 +52,6 @@ public class TestFogConfig {
         this.fogAuthoritySpki = fogAuthoritySpki;
         this.fogReportId = fogReportId;
         this.transportProtocol = transportProtocol;
-        this.grpcServiceAPIManager = grpcServiceAPIManager;
-        this.restServiceAPIManager = restServiceAPIManager;
     }
 
     @NonNull
@@ -106,16 +100,6 @@ public class TestFogConfig {
     }
 
     @NonNull
-    public GRPCServiceAPIManager getGrpcServiceAPIManager() {
-        return grpcServiceAPIManager;
-    }
-
-    @NonNull
-    public RestServiceAPIManager getRestServiceAPIManager() {
-        return restServiceAPIManager;
-    }
-
-    @NonNull
     static TestFogConfig getFogConfig(Environment.TestEnvironment testEnvironment, StorageAdapter storageAdapter) {
         return getFogConfig(testEnvironment, Optional.of(storageAdapter));
     }
@@ -149,18 +133,15 @@ public class TestFogConfig {
             case MOBILE_DEV:
                 return new TestFogConfig(fogUri, consensusUris, TEST_USERNAME,
                         TEST_PASSWORD, getDevClientConfig(storageAdapter),
-                        mobiledevFogAuthoritySpki, "", TransportProtocol.forGRPC(),
-                        new GRPCServiceAPIManager(), new RestServiceAPIManager());
+                        mobiledevFogAuthoritySpki, "", TransportProtocol.forGRPC());
             case ALPHA:
                 return new TestFogConfig(fogUri, consensusUris, TEST_USERNAME,
                         TEST_PASSWORD, getDevClientConfig(storageAdapter),
-                        alphaFogAuthoritySpki, "", TransportProtocol.forGRPC(),
-                        new GRPCServiceAPIManager(), new RestServiceAPIManager());
+                        alphaFogAuthoritySpki, "", TransportProtocol.forGRPC());
             case TEST_NET:
                 return new TestFogConfig(fogUri, consensusUris, TEST_USERNAME,
                         TEST_PASSWORD, getTestNetClientConfig(storageAdapter),
-                        testNetFogAuthoritySpki, "", TransportProtocol.forGRPC(),
-                        new GRPCServiceAPIManager(), new RestServiceAPIManager());
+                        testNetFogAuthoritySpki, "", TransportProtocol.forGRPC());
         }
         throw new UnsupportedOperationException("Requested config does not exist");
     }
