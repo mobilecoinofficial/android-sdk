@@ -1,18 +1,26 @@
 package com.mobilecoin.lib.network.services.http.clients;
 
+import static com.mobilecoin.lib.network.NetworkResult.DEADLINE_EXCEEDED;
+import static com.mobilecoin.lib.network.NetworkResult.INTERNAL;
+import static com.mobilecoin.lib.network.NetworkResult.NOT_FOUND;
+import static com.mobilecoin.lib.network.NetworkResult.OK;
+import static com.mobilecoin.lib.network.NetworkResult.PERMISSION_DENIED;
+import static com.mobilecoin.lib.network.NetworkResult.UNAUTHENTICATED;
+import static com.mobilecoin.lib.network.NetworkResult.UNAVAILABLE;
+import static com.mobilecoin.lib.network.NetworkResult.UNIMPLEMENTED;
+
 import android.net.Uri;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import com.mobilecoin.lib.exceptions.NetworkException;
+import com.mobilecoin.lib.network.NetworkResult;
 import com.mobilecoin.lib.network.services.http.Requester;
 
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
-
-import io.grpc.Status;
-import io.grpc.StatusRuntimeException;
 
 public final class RestClient {
     public final static String METHOD = "POST";
@@ -32,7 +40,7 @@ public final class RestClient {
 
     @NonNull
     public byte[] makeRequest(@NonNull String apiPath,
-                              @NonNull byte[] requestBytes) {
+                              @NonNull byte[] requestBytes) throws NetworkException {
         try {
             Uri uri = new Uri.Builder()
                     .scheme(SCHEME)
@@ -47,48 +55,48 @@ public final class RestClient {
                             requestBytes,
                             CONTENT_TYPE
                     );
-            Status status;
+            NetworkResult status;
             switch (response.getResponseCode()) {
                 case 200:
-                    status = Status.OK;
+                    status = OK;
                     break;
                 case 401:
-                    status = Status.UNAUTHENTICATED.withDescription(
+                    status = UNAUTHENTICATED.withDescription(
                             new String(response.getResponseData())
                     );
                     break;
                 case 403:
-                    status = Status.PERMISSION_DENIED.withDescription(
+                    status = PERMISSION_DENIED.withDescription(
                             new String(response.getResponseData())
                     );
                     break;
                 case 404:
-                    status = Status.NOT_FOUND.withDescription(
+                    status = NOT_FOUND.withDescription(
                             new String(response.getResponseData())
                     );
                     break;
                 case 500:
-                    status = Status.INTERNAL.withDescription(
+                    status = INTERNAL.withDescription(
                             new String(response.getResponseData())
                     );
                     break;
                 case 501:
-                    status = Status.UNIMPLEMENTED.withDescription(
+                    status = UNIMPLEMENTED.withDescription(
                             new String(response.getResponseData())
                     );
                     break;
                 case 504:
-                    status = Status.DEADLINE_EXCEEDED.withDescription(
+                    status = DEADLINE_EXCEEDED.withDescription(
                             new String(response.getResponseData())
                     );
                     break;
                 default:
-                    status = Status.UNAVAILABLE.withDescription(
+                    status = UNAVAILABLE.withDescription(
                             new String(response.getResponseData())
                     );
             }
-            if (status != Status.OK) {
-                throw new StatusRuntimeException(status);
+            if (status.getCode() != OK.getCode()) {
+                throw new NetworkException(status);
             }
             Map<String, String> headers = response.getResponseHeaders();
             String cookie = headers.get(SET_COOKIE_KEY);
@@ -100,7 +108,7 @@ public final class RestClient {
             }
             return response.getResponseData();
         } catch (IOException exception) {
-            throw new StatusRuntimeException(Status.UNAVAILABLE.withCause(exception));
+            throw new NetworkException(NetworkResult.UNAVAILABLE, exception);
         }
     }
 

@@ -2,6 +2,7 @@ package com.mobilecoin.lib.network.services.grpc;
 
 import androidx.annotation.NonNull;
 
+import com.mobilecoin.lib.exceptions.NetworkException;
 import com.mobilecoin.lib.network.AuthInterceptor;
 import com.mobilecoin.lib.network.CookieInterceptor;
 import com.mobilecoin.lib.network.services.ConsensusClientService;
@@ -12,6 +13,7 @@ import attest.Attest;
 import consensus_client.ConsensusClientAPIGrpc;
 import consensus_common.ConsensusCommon;
 import io.grpc.ManagedChannel;
+import io.grpc.StatusRuntimeException;
 
 public class GRPCConsensusClientService
         extends GRPCService<ConsensusClientAPIGrpc.ConsensusClientAPIBlockingStub>
@@ -30,7 +32,11 @@ public class GRPCConsensusClientService
     }
 
     @Override
-    public ConsensusCommon.ProposeTxResponse clientTxPropose(Attest.Message message) {
-        return getApiBlockingStub().clientTxPropose(message);
+    public ConsensusCommon.ProposeTxResponse clientTxPropose(Attest.Message message) throws NetworkException {
+        try {
+            return getApiBlockingStub().clientTxPropose(message);
+        } catch(StatusRuntimeException e) {
+            throw new NetworkException(e.getStatus(), e);
+        }
     }
 }

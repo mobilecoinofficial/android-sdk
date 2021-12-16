@@ -2,6 +2,7 @@ package com.mobilecoin.lib.network.services.grpc;
 
 import androidx.annotation.NonNull;
 
+import com.mobilecoin.lib.exceptions.NetworkException;
 import com.mobilecoin.lib.network.AuthInterceptor;
 import com.mobilecoin.lib.network.CookieInterceptor;
 import com.mobilecoin.lib.network.services.FogMerkleProofService;
@@ -11,6 +12,7 @@ import java.util.concurrent.ExecutorService;
 import attest.Attest;
 import fog_ledger.FogMerkleProofAPIGrpc;
 import io.grpc.ManagedChannel;
+import io.grpc.StatusRuntimeException;
 
 public class GRPCFogMerkleProofService
         extends GRPCService<FogMerkleProofAPIGrpc.FogMerkleProofAPIBlockingStub>
@@ -31,7 +33,11 @@ public class GRPCFogMerkleProofService
     }
 
     @Override
-    public Attest.Message getOutputs(Attest.Message request) {
-        return getApiBlockingStub().getOutputs(request);
+    public Attest.Message getOutputs(Attest.Message request) throws NetworkException {
+        try {
+            return getApiBlockingStub().getOutputs(request);
+        } catch (StatusRuntimeException e) {
+            throw new NetworkException(e.getStatus(), e);
+        }
     }
 }

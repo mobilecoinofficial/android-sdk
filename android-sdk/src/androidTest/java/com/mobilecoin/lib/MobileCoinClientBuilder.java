@@ -8,16 +8,23 @@ public final class MobileCoinClientBuilder {
 
   private AccountKey accountKey;
   private TestFogConfig testFogConfig;
+  private TransportProtocol transportProtocol;
 
   /** Returns a {@link MobileCoinClientBuilder} with sensible defaults. */
   public static MobileCoinClientBuilder newBuilder() {
-    return new MobileCoinClientBuilder(TestKeysManager.getNextAccountKey(),
-        TestFogConfig.getFogConfig(Environment.CURRENT_TEST_ENV));
+    TestFogConfig fogConfig = TestFogConfig.getFogConfig(Environment.CURRENT_TEST_ENV);
+    return new MobileCoinClientBuilder(
+            TestKeysManager.getNextAccountKey(),
+            fogConfig,
+            fogConfig.getTransportProtocol());
   }
 
-  private MobileCoinClientBuilder(AccountKey accountKey, TestFogConfig testFogConfig) {
+  private MobileCoinClientBuilder(AccountKey accountKey,
+                                  TestFogConfig testFogConfig,
+                                  TransportProtocol transportProtocol) {
     this.accountKey = accountKey;
     this.testFogConfig = testFogConfig;
+    this.transportProtocol = transportProtocol;
   }
 
   public MobileCoinClientBuilder setTestFogConfig(TestFogConfig testFogConfig) {
@@ -30,13 +37,19 @@ public final class MobileCoinClientBuilder {
     return this;
   }
 
+  public MobileCoinClientBuilder setTransportProtocol(TransportProtocol transportProtocol) {
+    this.transportProtocol = transportProtocol;
+    return this;
+  }
+
   /** Constructs a {@link MobileCoinClient} based on the supplied arguments. */
   public MobileCoinClient build() throws InvalidUriException {
     MobileCoinClient mobileCoinClient = new MobileCoinClient(
         accountKey,
         testFogConfig.getFogUri(),
         testFogConfig.getConsensusUris(),
-        testFogConfig.getClientConfig()
+        testFogConfig.getClientConfig(),
+        testFogConfig.getTransportProtocol()
     );
     mobileCoinClient.setFogBasicAuthorization(
         testFogConfig.getUsername(),
@@ -46,7 +59,6 @@ public final class MobileCoinClientBuilder {
         testFogConfig.getUsername(),
         testFogConfig.getPassword()
     );
-    mobileCoinClient.setTransportProtocol(TransportProtocol.forHTTP(new SimpleRequester()));
 
     return mobileCoinClient;
   }

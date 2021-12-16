@@ -12,6 +12,8 @@ import com.mobilecoin.lib.exceptions.AttestationException;
 import com.mobilecoin.lib.exceptions.InvalidFogResponse;
 import com.mobilecoin.lib.exceptions.NetworkException;
 import com.mobilecoin.lib.log.Logger;
+import com.mobilecoin.lib.network.NetworkResult;
+import com.mobilecoin.lib.network.TransportProtocol;
 import com.mobilecoin.lib.network.services.FogViewService;
 import com.mobilecoin.lib.network.services.transport.Transport;
 import com.mobilecoin.lib.util.NetworkingCall;
@@ -20,8 +22,6 @@ import java.util.List;
 
 import attest.Attest;
 import fog_view.View;
-import io.grpc.Status;
-import io.grpc.StatusRuntimeException;
 
 /**
  * Attested client for a Fog View service Attestation is done automatically by the parent class
@@ -35,8 +35,10 @@ class AttestedViewClient extends AttestedClient {
      *  @param loadBalancer           an address of the service
      * @param serviceConfig service configuration passed to MobileCoinClient
      */
-    AttestedViewClient(@NonNull LoadBalancer loadBalancer, @NonNull Service serviceConfig) {
-        super(loadBalancer, serviceConfig);
+    AttestedViewClient(@NonNull LoadBalancer loadBalancer,
+                       @NonNull Service serviceConfig,
+                       @NonNull TransportProtocol transportProtocol) {
+        super(loadBalancer, serviceConfig, transportProtocol);
         Logger.i(TAG, "Created new AttestedViewClient", null,
                 "loadBalancer:", loadBalancer,
                 "verifier:", serviceConfig);
@@ -69,16 +71,16 @@ class AttestedViewClient extends AttestedClient {
             Attest.AuthMessage authMessage = Attest.AuthMessage.newBuilder().setData(bytes).build();
             Attest.AuthMessage response = fogViewService.auth(authMessage);
             attestFinish(response.getData().toByteArray(), getServiceConfig().getVerifier());
-        } catch (StatusRuntimeException exception) {
+        } catch (NetworkException exception) {
             attestReset();
-            if (exception.getStatus().getCode() == Status.Code.INTERNAL) {
+            if (exception.getResult().getCode() == NetworkResult.ResultCode.INTERNAL) {
                 AttestationException attestationException =
-                        new AttestationException(exception.getStatus().getDescription(), exception);
+                        new AttestationException(exception.getResult().getDescription(), exception);
                 Util.logException(TAG, attestationException);
                 throw attestationException;
             }
             Logger.w(TAG, "Failed to attest the fog view connection", exception);
-            throw new NetworkException(exception);
+            throw exception;
         } catch (Exception exception) {
             attestReset();
             AttestationException attestationException =
@@ -122,9 +124,6 @@ class AttestedViewClient extends AttestedClient {
                         "contains invalid data", exception);
                 Util.logException(TAG, invalidFogResponse);
                 throw invalidFogResponse;
-            } catch (StatusRuntimeException exception) {
-                attestReset();
-                throw new NetworkException(exception);
             }
         });
         try {

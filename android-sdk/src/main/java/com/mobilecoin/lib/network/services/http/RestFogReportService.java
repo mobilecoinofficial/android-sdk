@@ -3,11 +3,11 @@ package com.mobilecoin.lib.network.services.http;
 import androidx.annotation.NonNull;
 
 import com.google.protobuf.InvalidProtocolBufferException;
+import com.mobilecoin.lib.exceptions.NetworkException;
+import com.mobilecoin.lib.network.NetworkResult;
 import com.mobilecoin.lib.network.services.FogReportService;
 import com.mobilecoin.lib.network.services.http.clients.RestClient;
 
-import io.grpc.Status;
-import io.grpc.StatusRuntimeException;
 import report.ReportOuterClass;
 
 public class RestFogReportService extends RestService implements FogReportService {
@@ -18,7 +18,7 @@ public class RestFogReportService extends RestService implements FogReportServic
     }
 
     @Override
-    public ReportOuterClass.ReportResponse getReports(ReportOuterClass.ReportRequest request) {
+    public ReportOuterClass.ReportResponse getReports(ReportOuterClass.ReportRequest request) throws NetworkException {
         try {
             byte[] responseData = getRestClient().makeRequest(
                     PREFIX + SERVICE_NAME + "/" + "GetReports",
@@ -26,7 +26,7 @@ public class RestFogReportService extends RestService implements FogReportServic
             );
             return ReportOuterClass.ReportResponse.parseFrom(responseData);
         } catch (InvalidProtocolBufferException exception) {
-            throw new StatusRuntimeException(Status.INVALID_ARGUMENT);
+            throw new NetworkException(NetworkResult.INVALID_ARGUMENT, exception);
         }
     }
 }

@@ -10,14 +10,12 @@ import com.mobilecoin.lib.exceptions.AttestationException;
 import com.mobilecoin.lib.exceptions.InvalidFogResponse;
 import com.mobilecoin.lib.exceptions.NetworkException;
 import com.mobilecoin.lib.log.Logger;
+import com.mobilecoin.lib.network.TransportProtocol;
 import com.mobilecoin.lib.network.services.FogReportService;
-import com.mobilecoin.lib.network.services.ServiceAPIManager;
-import com.mobilecoin.lib.network.uri.FogUri;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import io.grpc.StatusRuntimeException;
 import report.ReportOuterClass;
 
 /**
@@ -31,18 +29,10 @@ final class ReportClient extends AnyClient {
      *
      * @param loadBalancer address of the service.
      */
-    ReportClient(@NonNull LoadBalancer loadBalancer, @NonNull Service serviceConfig) {
-        super(loadBalancer, serviceConfig);
-    }
-
     ReportClient(@NonNull LoadBalancer loadBalancer,
-                   @NonNull ClientConfig.Service serviceConfig,
-                   @NonNull ServiceAPIManager apiManager) {
-        super(loadBalancer, serviceConfig, apiManager);
-        Logger.i(TAG, "Created new ReportClient", null,
-                "loadBalancer:", loadBalancer,
-                "verifier:", serviceConfig,
-                "apiManager:", apiManager);
+                 @NonNull Service serviceConfig,
+                 @NonNull TransportProtocol transportProtocol) {
+        super(loadBalancer, serviceConfig, transportProtocol);
     }
 
     /**
@@ -78,9 +68,9 @@ final class ReportClient extends AnyClient {
                 chain[i] = chainList.get(i).toByteArray();
             }
             return new ReportResponse(reports, chain, response.getSignature().toByteArray());
-        } catch (StatusRuntimeException exception) {
+        } catch (NetworkException exception) {
             Logger.w(TAG, "Error retrieving the fog public key", exception);
-            throw new NetworkException(exception);
+            throw exception;
         } catch (Throwable throwable) {
             Logger.w(TAG, "Error retrieving the fog reports", throwable);
             throw new InvalidFogResponse("Unable to retrieve the fog report", throwable);

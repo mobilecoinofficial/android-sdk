@@ -4,13 +4,17 @@ package com.mobilecoin.lib;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+
 import com.mobilecoin.lib.exceptions.FogReportException;
 import com.mobilecoin.lib.exceptions.MobileCoinException;
 import com.mobilecoin.lib.exceptions.NetworkException;
 import com.mobilecoin.lib.log.Logger;
+import com.mobilecoin.lib.network.NetworkResult;
+import com.mobilecoin.lib.network.TransportProtocol;
 import com.mobilecoin.lib.network.uri.FogUri;
 import com.mobilecoin.lib.util.Result;
 import com.mobilecoin.lib.util.Task;
+
 import java.util.HashMap;
 import java.util.Optional;
 import java.util.Set;
@@ -27,8 +31,11 @@ final class FogReportsManager {
     private static final int MAX_WAIT_TIME_SECONDS = 300;
     private final HashMap<FogUri, ReportResponse> cachedResponses;
 
-    FogReportsManager() {
+    private TransportProtocol transportProtocol;
+
+    FogReportsManager(@NonNull TransportProtocol transportProtocol) {
         cachedResponses = new HashMap<>();
+        this.transportProtocol = transportProtocol;
     }
 
     @Nullable
@@ -89,7 +96,9 @@ final class FogReportsManager {
                     public ReportResponse execute() throws Exception {
                         ReportClient reportClient = new ReportClient(
                             RandomLoadBalancer.create(fogUri),
-                            serviceConfig);
+                            serviceConfig,
+                            transportProtocol);
+                        reportClient.setTransportProtocol(FogReportsManager.this.transportProtocol);
                         ReportResponse response = reportClient.getReports();
                         reportClient.shutdown();
                         return response;
@@ -130,7 +139,9 @@ final class FogReportsManager {
             }
         } catch (InterruptedException | ExecutionException exception) {
             NetworkException networkException =
-                    new NetworkException(504, "Timeout fetching fog reports", exception);
+                    new NetworkException(NetworkResult.DEADLINE_EXCEEDED
+                            .withDescription("Timeout fetching fog reports")
+                            .withCause(exception));
             Util.logException(TAG, networkException);
             throw networkException;
         } catch (MobileCoinException | RuntimeException exception) {
@@ -144,4 +155,13 @@ final class FogReportsManager {
         }
         return fogReportResponses;
     }
+
+    public void setTransportProtocol(TransportProtocol transportProtocol) {
+        this.transportProtocol = transportProtocol;
+    }
+
+    public TransportProtocol getTransportProtocol() {
+        return this.transportProtocol;
+    }
+
 }

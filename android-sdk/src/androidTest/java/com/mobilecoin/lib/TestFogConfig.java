@@ -6,9 +6,9 @@ import android.util.Base64;
 import androidx.annotation.NonNull;
 
 import com.mobilecoin.lib.exceptions.AttestationException;
+import com.mobilecoin.lib.network.TransportProtocol;
 import com.mobilecoin.lib.util.Hex;
 
-import io.grpc.Context.Storage;
 import java.security.cert.X509Certificate;
 import java.util.Arrays;
 import java.util.List;
@@ -29,6 +29,7 @@ public class TestFogConfig {
     private final ClientConfig clientConfig;
     private final byte[] fogAuthoritySpki;
     private final String fogReportId;
+    private final TransportProtocol transportProtocol;
 
     private static final String TEST_USERNAME = "REPLACE_TEST_DEV_USER_STRING";
     private static final String TEST_PASSWORD = "REPLACE_TEST_DEV_PASSWORD_STRING";
@@ -39,7 +40,8 @@ public class TestFogConfig {
 
     private TestFogConfig(@NonNull Uri fogUri, @NonNull List<Uri> consensusUris, @NonNull String username,
                           @NonNull String password, @NonNull ClientConfig clientConfig,
-                          @NonNull byte[] fogAuthoritySpki, @NonNull String fogReportId) {
+                          @NonNull byte[] fogAuthoritySpki, @NonNull String fogReportId,
+                          @NonNull TransportProtocol transportProtocol) {
         this.fogUri = fogUri;
         this.consensusUris = consensusUris;
         this.username = username;
@@ -47,6 +49,7 @@ public class TestFogConfig {
         this.clientConfig = clientConfig;
         this.fogAuthoritySpki = fogAuthoritySpki;
         this.fogReportId = fogReportId;
+        this.transportProtocol = transportProtocol;
     }
 
     @NonNull
@@ -90,6 +93,11 @@ public class TestFogConfig {
     }
 
     @NonNull
+    public TransportProtocol getTransportProtocol() {
+        return transportProtocol;
+    }
+
+    @NonNull
     static TestFogConfig getFogConfig(Environment.TestEnvironment testEnvironment, StorageAdapter storageAdapter) {
         return getFogConfig(testEnvironment, Optional.of(storageAdapter));
     }
@@ -123,15 +131,15 @@ public class TestFogConfig {
             case MOBILE_DEV:
                 return new TestFogConfig(fogUri, consensusUris, TEST_USERNAME,
                         TEST_PASSWORD, getDevClientConfig(storageAdapter),
-                        mobiledevFogAuthoritySpki, "");
+                        mobiledevFogAuthoritySpki, "", TransportProtocol.forGRPC());
             case ALPHA:
                 return new TestFogConfig(fogUri, consensusUris, TEST_USERNAME,
                         TEST_PASSWORD, getDevClientConfig(storageAdapter),
-                        alphaFogAuthoritySpki, "");
+                        alphaFogAuthoritySpki, "", TransportProtocol.forGRPC());
             case TEST_NET:
                 return new TestFogConfig(fogUri, consensusUris, TEST_USERNAME,
                         TEST_PASSWORD, getTestNetClientConfig(storageAdapter),
-                        testNetFogAuthoritySpki, "");
+                        testNetFogAuthoritySpki, "", TransportProtocol.forGRPC());
         }
         throw new UnsupportedOperationException("Requested config does not exist");
     }

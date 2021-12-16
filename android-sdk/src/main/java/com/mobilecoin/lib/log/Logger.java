@@ -99,6 +99,10 @@ public final class Logger {
         e(tag, message, null);
     }
 
+    public static void e(@NonNull String tag, @NonNull Throwable throwable, Object... metadata) {
+        e(tag, throwable.getMessage(), throwable, metadata);
+    }
+
     /**
      * What a Terrible Failure: Report a condition that should never happen.
      */

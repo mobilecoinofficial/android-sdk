@@ -8,8 +8,8 @@ public class MobileCoinException extends Exception {
     public MobileCoinException() {
 
     }
-    public MobileCoinException(@NonNull Exception exception) {
-        super(exception);
+    public MobileCoinException(@NonNull Throwable throwable) {
+        super(throwable);
     }
 
     public MobileCoinException(@Nullable String message) {

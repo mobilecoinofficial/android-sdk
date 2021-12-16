@@ -3,8 +3,10 @@
 package com.mobilecoin.lib;
 
 import androidx.annotation.NonNull;
+
 import com.mobilecoin.lib.exceptions.TransactionBuilderException;
 import com.mobilecoin.lib.log.Logger;
+
 import java.io.ByteArrayInputStream;
 import java.math.BigInteger;
 import java.security.cert.Certificate;

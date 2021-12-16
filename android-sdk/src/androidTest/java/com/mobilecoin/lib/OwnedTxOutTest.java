@@ -7,16 +7,12 @@ import static org.mockito.Mockito.when;
 import android.os.Parcel;
 
 import com.google.protobuf.ByteString;
-import com.google.protobuf.InvalidProtocolBufferException;
 import com.mobilecoin.lib.exceptions.BadBip39EntropyException;
 import com.mobilecoin.lib.exceptions.SerializationException;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
-
-import java.nio.charset.StandardCharsets;
-import java.util.Random;
 
 import fog_view.View;
 

@@ -1,8 +1,11 @@
 package com.mobilecoin.lib;
 
 import android.net.Uri;
+
 import androidx.annotation.NonNull;
+
 import com.mobilecoin.lib.network.uri.MobileCoinUri;
+
 import java.util.Collections;
 import java.util.List;
 import java.util.Random;

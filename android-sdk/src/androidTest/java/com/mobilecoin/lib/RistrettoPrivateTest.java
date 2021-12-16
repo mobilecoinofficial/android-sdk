@@ -2,17 +2,17 @@
 
 package com.mobilecoin.lib;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
+
+import android.os.Parcel;
+
 import com.mobilecoin.lib.exceptions.SerializationException;
 
 import org.junit.Assert;
 import org.junit.Test;
 
 import java.security.SecureRandom;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotEquals;
-
-import android.os.Parcel;
 
 public class RistrettoPrivateTest {
 

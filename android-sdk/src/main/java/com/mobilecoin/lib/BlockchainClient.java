@@ -7,9 +7,8 @@ import com.mobilecoin.lib.ClientConfig.Service;
 import com.mobilecoin.lib.exceptions.AttestationException;
 import com.mobilecoin.lib.exceptions.NetworkException;
 import com.mobilecoin.lib.log.Logger;
+import com.mobilecoin.lib.network.TransportProtocol;
 import com.mobilecoin.lib.network.services.BlockchainService;
-import com.mobilecoin.lib.network.services.ServiceAPIManager;
-import com.mobilecoin.lib.network.uri.ConsensusUri;
 import com.mobilecoin.lib.util.NetworkingCall;
 
 import java.math.BigInteger;
@@ -17,7 +16,6 @@ import java.time.Duration;
 import java.time.LocalDateTime;
 
 import consensus_common.ConsensusCommon;
-import io.grpc.StatusRuntimeException;
 
 final class BlockchainClient extends AnyClient {
     private static final String TAG = BlockchainClient.class.getName();
@@ -34,21 +32,10 @@ final class BlockchainClient extends AnyClient {
      */
     BlockchainClient(@NonNull LoadBalancer loadBalancer,
                      @NonNull Service serviceConfig,
-                     @NonNull Duration minimumFeeCacheTTL) {
-        super(loadBalancer, serviceConfig);
+                     @NonNull Duration minimumFeeCacheTTL,
+                     @NonNull TransportProtocol transportProtocol) {
+        super(loadBalancer, serviceConfig, transportProtocol);
         this.minimumFeeCacheTTL = minimumFeeCacheTTL;
-    }
-
-    BlockchainClient(@NonNull LoadBalancer loadBalancer,
-                   @NonNull ClientConfig.Service serviceConfig,
-                   @NonNull Duration minimumFeeCacheTTL,
-                   @NonNull ServiceAPIManager apiManager) {
-        super(loadBalancer, serviceConfig, apiManager);
-        this.minimumFeeCacheTTL = minimumFeeCacheTTL;
-        Logger.i(TAG, "Created new BlockchainClient", null,
-                "loadBalancer:", loadBalancer,
-                "verifier:", serviceConfig,
-                "apiManager:", apiManager);
     }
 
     /**
@@ -102,9 +89,9 @@ final class BlockchainClient extends AnyClient {
             networkingCall = new NetworkingCall<>(() -> {
                 try {
                     return blockchainService.getLastBlockInfo(Empty.newBuilder().build());
-                } catch (StatusRuntimeException exception) {
+                } catch (NetworkException exception) {
                     Logger.w(TAG, "Unable to post transaction with consensus", exception);
-                    throw new NetworkException(exception);
+                    throw exception;
                 }
             });
         } catch (AttestationException exception) {

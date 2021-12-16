@@ -3,8 +3,10 @@
 package com.mobilecoin.lib;
 
 import android.net.Uri;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+
 import com.mobilecoin.api.MobileCoinAPI;
 import com.mobilecoin.lib.exceptions.AttestationException;
 import com.mobilecoin.lib.exceptions.FeeRejectedException;
@@ -21,14 +23,14 @@ import com.mobilecoin.lib.exceptions.StorageNotFoundException;
 import com.mobilecoin.lib.exceptions.TransactionBuilderException;
 import com.mobilecoin.lib.log.LogAdapter;
 import com.mobilecoin.lib.log.Logger;
+import com.mobilecoin.lib.network.NetworkResult;
 import com.mobilecoin.lib.network.TransportProtocol;
 import com.mobilecoin.lib.network.uri.ConsensusUri;
 import com.mobilecoin.lib.network.uri.FogUri;
 import com.mobilecoin.lib.network.uri.MobileCoinUri;
 import com.mobilecoin.lib.util.Result;
 import com.mobilecoin.lib.util.Task;
-import consensus_common.ConsensusCommon;
-import fog_ledger.Ledger;
+
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -44,6 +46,9 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeoutException;
 import java.util.stream.Collectors;
+
+import consensus_common.ConsensusCommon;
+import fog_ledger.Ledger;
 
 /**
  * <pre>
@@ -85,9 +90,10 @@ public final class MobileCoinClient implements MobileCoinAccountClient, MobileCo
     public MobileCoinClient(
             @NonNull AccountKey accountKey,
             @NonNull Uri fogUri,
-            @NonNull Uri consensusUri
+            @NonNull Uri consensusUri,
+            @NonNull TransportProtocol transportProtocol
     ) throws InvalidUriException {
-        this(accountKey, fogUri, consensusUri, ClientConfig.defaultConfig());
+        this(accountKey, fogUri, consensusUri, ClientConfig.defaultConfig(), transportProtocol);
     }
 
     /**
@@ -103,9 +109,10 @@ public final class MobileCoinClient implements MobileCoinAccountClient, MobileCo
             @NonNull AccountKey accountKey,
             @NonNull Uri fogUri,
             @NonNull Uri consensusUri,
-            @NonNull ClientConfig clientConfig
+            @NonNull ClientConfig clientConfig,
+            @NonNull TransportProtocol transportProtocol
     ) throws InvalidUriException {
-        this(accountKey, fogUri, Collections.singletonList(consensusUri), clientConfig);
+        this(accountKey, fogUri, Collections.singletonList(consensusUri), clientConfig, transportProtocol);
     }
 
     /**
@@ -121,7 +128,8 @@ public final class MobileCoinClient implements MobileCoinAccountClient, MobileCo
         @NonNull AccountKey accountKey,
         @NonNull Uri fogUri,
         @NonNull List<Uri> consensusUris,
-        @NonNull ClientConfig clientConfig
+        @NonNull ClientConfig clientConfig,
+        @Nullable TransportProtocol transportProtocol
     ) throws InvalidUriException {
         Logger.i(TAG, "Creating MobileCoinClient");
         this.accountKey = accountKey;
@@ -132,21 +140,22 @@ public final class MobileCoinClient implements MobileCoinAccountClient, MobileCo
         this.blockchainClient = new BlockchainClient(
             RandomLoadBalancer.create(normalizedConsensusUris),
             clientConfig.consensus,
-            clientConfig.minimumFeeCacheTTL
+            clientConfig.minimumFeeCacheTTL,
+            transportProtocol
         );
         this.viewClient = new AttestedViewClient(RandomLoadBalancer.create(normalizedFogUri),
-            clientConfig.fogView);
+            clientConfig.fogView, transportProtocol);
         this.ledgerClient = new AttestedLedgerClient(RandomLoadBalancer.create(normalizedFogUri),
-            clientConfig.fogLedger);
+            clientConfig.fogLedger, transportProtocol);
         this.consensusClient = new AttestedConsensusClient(
             RandomLoadBalancer.create(normalizedConsensusUris),
-            clientConfig.consensus);
+            clientConfig.consensus, transportProtocol);
         this.fogBlockClient = new FogBlockClient(RandomLoadBalancer.create(normalizedFogUri),
-            clientConfig.fogLedger);
+            clientConfig.fogLedger, transportProtocol);
         this.untrustedClient = new FogUntrustedClient(RandomLoadBalancer.create(normalizedFogUri),
-            clientConfig.fogLedger);
+            clientConfig.fogLedger, transportProtocol);
         this.txOutStore = createTxOutStore(accountKey);
-        this.fogReportsManager = new FogReportsManager();
+        this.fogReportsManager = new FogReportsManager(transportProtocol);
         // add client provided log adapter
         LogAdapter logAdapter = clientConfig.logAdapter;
         if (null != logAdapter) {
@@ -377,7 +386,9 @@ public final class MobileCoinClient implements MobileCoinAccountClient, MobileCo
             throw exception;
         } catch (InterruptedException | ExecutionException exception) {
             NetworkException networkException =
-                    new NetworkException(504, "Timeout fetching fog reports", exception);
+                    new NetworkException(NetworkResult.DEADLINE_EXCEEDED
+                            .withDescription("Timeout fetching fog reports")
+                            .withCause(exception));
             Util.logException(TAG, networkException);
             throw networkException;
         } catch (Exception exception) {
@@ -756,6 +767,7 @@ public final class MobileCoinClient implements MobileCoinAccountClient, MobileCo
         blockchainClient.setTransportProtocol(protocol);
         fogBlockClient.setTransportProtocol(protocol);
         untrustedClient.setTransportProtocol(protocol);
+        fogReportsManager.setTransportProtocol(protocol);
     }
 
     @Override

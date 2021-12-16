@@ -4,9 +4,6 @@ package com.mobilecoin.lib;
 
 import androidx.annotation.VisibleForTesting;
 
-import com.mobilecoin.lib.exceptions.InvalidUriException;
-import com.mobilecoin.lib.network.TransportProtocol;
-
 @VisibleForTesting
 public class Environment {
     public static final TestEnvironment CURRENT_TEST_ENV = TestEnvironment.ALPHA;

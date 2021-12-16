@@ -8,7 +8,6 @@ import android.os.Parcelable;
 import androidx.annotation.NonNull;
 
 import com.mobilecoin.lib.exceptions.KexRngException;
-import com.mobilecoin.lib.exceptions.SerializationException;
 import com.mobilecoin.lib.log.Logger;
 
 import java.io.IOException;
@@ -17,9 +16,9 @@ import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 
 import fog_view.View;
-import java.util.Objects;
 
 class FogSeed implements Parcelable {
     private final static String TAG = FogSeed.class.getName();

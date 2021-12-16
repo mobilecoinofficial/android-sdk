@@ -43,7 +43,8 @@ public class LedgerTest {
         FogUri fogUri = new FogUri(fogConfig.getFogUri());
         FogBlockClient blockClient = new FogBlockClient(
                 RandomLoadBalancer.create(fogUri),
-                fogConfig.getClientConfig().fogLedger
+                fogConfig.getClientConfig().fogLedger,
+                fogConfig.getTransportProtocol()
         );
 
         blockClient.setAuthorization(
@@ -110,7 +111,8 @@ public class LedgerTest {
         FogUri fogUri = new FogUri(fogConfig.getFogUri());
         FogBlockClient blockClient = new FogBlockClient(
                 RandomLoadBalancer.create(fogUri),
-                fogConfig.getClientConfig().fogLedger
+                fogConfig.getClientConfig().fogLedger,
+                fogConfig.getTransportProtocol()
         );
 
         blockClient.setAuthorization(
