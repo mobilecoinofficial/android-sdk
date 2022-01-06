@@ -5,7 +5,6 @@ import androidx.annotation.NonNull;
 import com.mobilecoin.lib.ClientConfig;
 import com.mobilecoin.lib.exceptions.NetworkException;
 import com.mobilecoin.lib.network.TransportProtocol;
-import com.mobilecoin.lib.network.services.http.clients.RestClient;
 import com.mobilecoin.lib.network.uri.MobileCoinUri;
 
 public abstract class Transport {
@@ -18,7 +17,7 @@ public abstract class Transport {
             case GRPC:
                 return new GRPCTransport(currentUri, serviceConfig);
             case HTTP:
-                return new RestTransport(new RestClient(currentUri.getUri(), transportProtocol.getHttpRequester()));
+                return new RestTransport(transportProtocol, currentUri);
             default:
                 throw new UnsupportedOperationException("Unsupported protocol");
         }
