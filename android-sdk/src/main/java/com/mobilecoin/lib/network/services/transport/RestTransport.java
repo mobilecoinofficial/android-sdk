@@ -21,4 +21,8 @@ public class RestTransport extends Transport {
     public TransportType getTransportType() {
         return TransportType.HTTP;
     }
+
+    @Override
+    public void shutdown() {/*  */}
+
 }

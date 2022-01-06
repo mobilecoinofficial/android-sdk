@@ -677,7 +677,8 @@ public class MobileCoinClientTest {
     public void getBalance_afterSetTransportProtocolWithHTTP_retrievesBalance() throws Exception {
         MobileCoinClient mobileCoinClient = MobileCoinClientBuilder.newBuilder().build();
 
-        TransportProtocol httpTransportProtocol = TransportProtocol.forHTTP(new SimpleRequester());
+        TestFogConfig config = Environment.getTestFogConfig();
+        TransportProtocol httpTransportProtocol = TransportProtocol.forHTTP(new SimpleRequester(config.getUsername(), config.getPassword()));
         mobileCoinClient.setTransportProtocol(httpTransportProtocol);
 
         Balance balance = mobileCoinClient.getBalance();
@@ -689,7 +690,8 @@ public class MobileCoinClientTest {
     public void getOrFetchMinimumTxFee_afterSetTransportProtocolWithHTTP_retrievesTransferableAmount() throws Exception {
         MobileCoinClient mobileCoinClient = MobileCoinClientBuilder.newBuilder().build();
 
-        TransportProtocol httpTransportProtocol = TransportProtocol.forHTTP(new SimpleRequester());
+        TestFogConfig config = Environment.getTestFogConfig();
+        TransportProtocol httpTransportProtocol = TransportProtocol.forHTTP(new SimpleRequester(config.getUsername(), config.getPassword()));
         mobileCoinClient.setTransportProtocol(httpTransportProtocol);
 
         BigInteger minimumTxFee = mobileCoinClient.getOrFetchMinimumTxFee();
@@ -702,7 +704,8 @@ public class MobileCoinClientTest {
     @Test
     public void submitTransaction_afterSetTransportProtocolWithHTTP_submitsTransaction() throws Exception {
         MobileCoinClient mobileCoinClient = MobileCoinClientBuilder.newBuilder().build();
-        TransportProtocol httpTransportProtocol = TransportProtocol.forHTTP(new SimpleRequester());
+        TestFogConfig config = Environment.getTestFogConfig();
+        TransportProtocol httpTransportProtocol = TransportProtocol.forHTTP(new SimpleRequester(config.getUsername(), config.getPassword()));
         mobileCoinClient.setTransportProtocol(httpTransportProtocol);
 
         AccountKey recipient = TestKeysManager.getNextAccountKey();
