@@ -28,12 +28,9 @@ public class SimpleRequester implements Requester {
 
     private final OkHttpClient httpClient;
 
-    public SimpleRequester() {
+    public SimpleRequester(String username, String password) {
         httpClient = new OkHttpClient();
-        final String credential = Credentials.basic(
-                Environment.getTestFogConfig().getUsername(),
-                Environment.getTestFogConfig().getPassword()
-        );
+        final String credential = Credentials.basic(username, password);
         httpClient.setAuthenticator(new Authenticator() {
             @Override
             public Request authenticate(Proxy proxy, Response response) throws IOException {

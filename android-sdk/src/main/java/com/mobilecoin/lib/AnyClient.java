@@ -10,44 +10,19 @@ import com.mobilecoin.lib.ClientConfig.Service;
 import com.mobilecoin.lib.exceptions.AttestationException;
 import com.mobilecoin.lib.exceptions.NetworkException;
 import com.mobilecoin.lib.log.Logger;
-import com.mobilecoin.lib.network.NetworkResult;
 import com.mobilecoin.lib.network.TransportProtocol;
 import com.mobilecoin.lib.network.services.GRPCServiceAPIManager;
 import com.mobilecoin.lib.network.services.RestServiceAPIManager;
 import com.mobilecoin.lib.network.services.ServiceAPIManager;
-import com.mobilecoin.lib.network.services.http.Requester;
-import com.mobilecoin.lib.network.services.http.clients.RestClient;
 import com.mobilecoin.lib.network.services.transport.Transport;
 import com.mobilecoin.lib.network.uri.MobileCoinUri;
 
-import java.io.IOException;
-import java.security.KeyManagementException;
-import java.security.KeyStore;
-import java.security.KeyStoreException;
-import java.security.NoSuchAlgorithmException;
-import java.security.SecureRandom;
-import java.security.cert.CertificateException;
-import java.security.cert.X509Certificate;
-import java.util.Set;
-import java.util.concurrent.TimeUnit;
-
-import javax.net.ssl.SSLContext;
-import javax.net.ssl.SSLSocketFactory;
-import javax.net.ssl.TrustManagerFactory;
-
-import io.grpc.ManagedChannel;
-import io.grpc.okhttp.OkHttpChannelBuilder;
-
 class AnyClient extends Native {
     private final static String TAG = AttestedClient.class.getName();
-    // How long to wait for the managed connection to gracefully shutdown in milliseconds
-    private final static long MANAGED_CONNECTION_SHUTDOWN_TIME_LIMIT = 1000;
+
     private final LoadBalancer loadBalancer;
     private final ClientConfig.Service serviceConfig;
-    private ServiceAPIManager grpcApiManager;
-    private ServiceAPIManager restApiManager;
-    private ManagedChannel managedChannel;
-    private RestClient restClient;
+    private ServiceAPIManager serviceAPIManager;
     private Transport networkTransport;
     private TransportProtocol transportProtocol;
     private MobileCoinUri currentServiceUri;
@@ -67,48 +42,29 @@ class AnyClient extends Native {
 
     @NonNull
     final ServiceAPIManager getAPIManager() {
-        switch (transportProtocol.getTransportType()) {
-            case HTTP:
-                return restApiManager;
-            case GRPC:
-                return grpcApiManager;
-            default:
-                throw new UnsupportedOperationException("Unimplemented");
-        }
+        return this.serviceAPIManager;
     }
 
     synchronized void setTransportProtocol(@NonNull TransportProtocol protocol) {
         this.transportProtocol = protocol;
-        this.networkTransport = null;
+        this.resetNetworkTransport();
         switch(protocol.getTransportType()) {
             case GRPC:
-                if(this.grpcApiManager == null) {
-                    this.grpcApiManager = new GRPCServiceAPIManager();
-                }
+                this.serviceAPIManager = new GRPCServiceAPIManager();
                 break;
             case HTTP:
-                if(this.restApiManager == null) {
-                    this.restApiManager = new RestServiceAPIManager();
-                }
+                this.serviceAPIManager = new RestServiceAPIManager();
                 break;
+            default:
+                throw new UnsupportedOperationException("Unsupported");
         }
     }
 
     @NonNull
     synchronized Transport getNetworkTransport() throws NetworkException, AttestationException {
-        if (null == networkTransport) {
-            switch (transportProtocol.getTransportType()) {
-                case GRPC: {
-                    networkTransport = Transport.fromManagedChannel(getManagedChannel());
-                }
-                break;
-                case HTTP: {
-                    networkTransport = Transport.fromRestClient(getRestClient());
-                }
-                break;
-                default:
-                    throw new UnsupportedOperationException("Unimplemented");
-            }
+        if(null == this.networkTransport) {
+            this.currentServiceUri = getNextServiceUri();
+            this.networkTransport = Transport.forConfig(this.transportProtocol, this.currentServiceUri, this.serviceConfig);
         }
         return networkTransport;
     }
@@ -129,99 +85,6 @@ class AnyClient extends Native {
 
     protected MobileCoinUri getCurrentServiceUri() {
         return currentServiceUri;
-    }
-
-    @NonNull
-    protected synchronized RestClient getRestClient() throws NetworkException,
-            AttestationException {
-        if (null == restClient) {
-            Requester httpRequester = transportProtocol.getHttpRequester();
-            if (null == httpRequester) {
-                throw new IllegalArgumentException("HttpRequester was not properly set");
-            }
-            currentServiceUri = getNextServiceUri();
-            restClient = new RestClient(currentServiceUri.getUri(), httpRequester);
-        }
-        return restClient;
-    }
-
-    @NonNull
-    protected synchronized ManagedChannel getManagedChannel()
-            throws AttestationException, NetworkException {
-        try {
-            if (null == managedChannel) {
-                Logger.i(TAG, "Managed channel does not exist: creating one");
-                currentServiceUri = getNextServiceUri();
-                OkHttpChannelBuilder managedChannelBuilder = OkHttpChannelBuilder
-                        .forAddress(
-                                currentServiceUri.getUri().getHost(),
-                                currentServiceUri.getUri().getPort()
-                        );
-                if (currentServiceUri.isTlsEnabled()) {
-                    managedChannelBuilder.useTransportSecurity();
-                } else {
-                    managedChannelBuilder.usePlaintext();
-                }
-                Set<X509Certificate> trustRoots = getServiceConfig().getTrustRoots();
-                if (trustRoots != null && trustRoots.size() > 0) {
-                    KeyStore caKeyStore = getTrustRootsKeyStore(trustRoots);
-                    SSLSocketFactory sslSocketFactory = getTrustedSSLSocketFactory(caKeyStore);
-                    managedChannelBuilder.sslSocketFactory(sslSocketFactory);
-                }
-                managedChannel = managedChannelBuilder.build();
-            } else {
-                Logger.i(TAG, "Managed channel exists: using existing");
-            }
-        } catch (Exception ex) {
-            NetworkException exception = new NetworkException(NetworkResult.UNKNOWN
-                    .withDescription("Unable to create managed channel")
-                    .withCause(ex));
-            String message = exception.getMessage();
-            if (null == message) {
-                message = "";
-            }
-            Logger.w(TAG, message, exception);
-        }
-        return managedChannel;
-    }
-
-    /**
-     * Create a new SSLSocketFactory
-     *
-     * @param trustRootsKeyStore keystore containing the trust anchors
-     */
-    @NonNull
-    static SSLSocketFactory getTrustedSSLSocketFactory(@NonNull KeyStore trustRootsKeyStore)
-            throws NoSuchAlgorithmException, KeyStoreException, KeyManagementException {
-
-        // initialize trust manager from certs keystore
-        TrustManagerFactory tmf =
-                TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
-        tmf.init(trustRootsKeyStore);
-
-        // initialize SSL context from trust manager factory
-        SSLContext context = SSLContext.getInstance("TLS");
-        if (context == null) {
-            throw new NoSuchAlgorithmException("TLS is not supported");
-        }
-        context.init(null, tmf.getTrustManagers(), new SecureRandom());
-
-        // return socket factory from the SSL context
-        return context.getSocketFactory();
-    }
-
-    /**
-     * Load CA anchors into a KeyStore
-     */
-    @NonNull
-    static KeyStore getTrustRootsKeyStore(@NonNull Set<X509Certificate> trustRoots)
-            throws KeyStoreException, NoSuchAlgorithmException, IOException, CertificateException {
-        KeyStore ks = KeyStore.getInstance(KeyStore.getDefaultType());
-        ks.load(null, null);
-        for (X509Certificate trustRoot : trustRoots) {
-            ks.setCertificateEntry(trustRoot.toString(), trustRoot);
-        }
-        return ks;
     }
 
     /**
@@ -249,20 +112,10 @@ class AnyClient extends Native {
      */
     void shutdown() {
         Logger.i(TAG, "Client shutdown");
-        if (null != managedChannel) {
-            try {
-                managedChannel.shutdown();
-                Logger.i(TAG, "Shutting down the managed channel, awaiting for termination...");
-                managedChannel.awaitTermination(
-                        MANAGED_CONNECTION_SHUTDOWN_TIME_LIMIT,
-                        TimeUnit.MILLISECONDS
-                );
-                Logger.i(TAG, "The managed channel has been shut down");
-            } catch (InterruptedException ignored) { /* */ }
-            managedChannel = null;
+        if(null != this.networkTransport) {
+            this.networkTransport.shutdown();
+            this.networkTransport = null;
         }
-
-        restClient = null;
     }
 
 }

@@ -127,19 +127,20 @@ public class TestFogConfig {
         ));
 
         List<Uri> consensusUris = Arrays.asList(consensusUri1, consensusUri2, consensusUri3);
+        TransportProtocol transportProtocol = TransportProtocol.forGRPC();
         switch (testEnvironment) {
             case MOBILE_DEV:
                 return new TestFogConfig(fogUri, consensusUris, TEST_USERNAME,
                         TEST_PASSWORD, getDevClientConfig(storageAdapter),
-                        mobiledevFogAuthoritySpki, "", TransportProtocol.forGRPC());
+                        mobiledevFogAuthoritySpki, "", transportProtocol);
             case ALPHA:
                 return new TestFogConfig(fogUri, consensusUris, TEST_USERNAME,
                         TEST_PASSWORD, getDevClientConfig(storageAdapter),
-                        alphaFogAuthoritySpki, "", TransportProtocol.forGRPC());
+                        alphaFogAuthoritySpki, "", transportProtocol);
             case TEST_NET:
                 return new TestFogConfig(fogUri, consensusUris, TEST_USERNAME,
                         TEST_PASSWORD, getTestNetClientConfig(storageAdapter),
-                        testNetFogAuthoritySpki, "", TransportProtocol.forGRPC());
+                        testNetFogAuthoritySpki, "", transportProtocol);
         }
         throw new UnsupportedOperationException("Requested config does not exist");
     }

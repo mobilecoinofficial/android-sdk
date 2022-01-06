@@ -14,13 +14,10 @@ import com.mobilecoin.lib.exceptions.AttestationException;
 import com.mobilecoin.lib.exceptions.NetworkException;
 import com.mobilecoin.lib.log.Logger;
 import com.mobilecoin.lib.network.TransportProtocol;
-import com.mobilecoin.lib.network.services.http.clients.RestClient;
-import com.mobilecoin.lib.network.services.transport.GRPCTransport;
 import com.mobilecoin.lib.network.services.transport.Transport;
 import com.mobilecoin.lib.network.uri.MobileCoinUri;
 
 import attest.Attest;
-import io.grpc.ManagedChannel;
 
 /**
  * Base class for attested communication with View/Ledger/Consensus servers
@@ -39,34 +36,6 @@ abstract class AttestedClient extends AnyClient {
                              @NonNull Service serviceConfig,
                              @NonNull TransportProtocol transportProtocol) {
         super(loadBalancer, serviceConfig, transportProtocol);
-    }
-
-    /**
-     * Subclasses must use this method to get access to a managed channel. The connection will be
-     * automatically attested during this call
-     *
-     * @return {@link ManagedChannel}
-     */
-    @NonNull
-    @Override
-    protected synchronized ManagedChannel getManagedChannel()
-            throws AttestationException, NetworkException {
-        ManagedChannel managedChannel = super.getManagedChannel();
-        if (!isAttested()) {
-            attest(GRPCTransport.fromManagedChannel(managedChannel));
-        }
-        return managedChannel;
-    }
-
-    @NonNull
-    @Override
-    protected synchronized RestClient getRestClient()
-            throws NetworkException, AttestationException {
-        RestClient restClient = super.getRestClient();
-        if (!isAttested()) {
-            attest(Transport.fromRestClient(restClient));
-        }
-        return restClient;
     }
 
     /**
@@ -120,6 +89,16 @@ abstract class AttestedClient extends AnyClient {
                 .setChannelId(ByteString.copyFrom(getBinding()))
                 .setAad(ByteString.copyFrom(aad))
                 .build();
+    }
+
+    @Override
+    @NonNull
+    synchronized Transport getNetworkTransport() throws NetworkException, AttestationException {
+        Transport transport = super.getNetworkTransport();
+        if(!isAttested()) {
+            attest(transport);
+        }
+        return transport;
     }
 
     @NonNull
