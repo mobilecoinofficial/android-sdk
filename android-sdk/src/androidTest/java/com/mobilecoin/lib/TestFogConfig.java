@@ -23,6 +23,7 @@ public class TestFogConfig {
     public static final short FOG_REPORT_PRODUCT_ID = 4;
 
     private final Uri fogUri;
+    private final Uri shortFogUri;
     private final List<Uri> consensusUris;
     private final String username;
     private final String password;
@@ -38,11 +39,14 @@ public class TestFogConfig {
     private static final byte[] alphaFogAuthoritySpki = Base64.decode("MIICIjANBgkqhkiG9w0BAQEFAAOCAg8AMIICCgKCAgEAyFOockvCEc9TcO1NvsiUfFVzvtDsR64UIRRUl3tBM2Bh8KBA932/Up86RtgJVnbslxuUCrTJZCV4dgd5hAo/mzuJOy9lAGxUTpwWWG0zZJdpt8HJRVLX76CBpWrWEt7JMoEmduvsCR8q7WkSNgT0iIoSXgT/hfWnJ8KGZkN4WBzzTH7hPrAcxPrzMI7TwHqUFfmOX7/gc+bDV5ZyRORrpuu+OR2BVObkocgFJLGmcz7KRuN7/dYtdYFpiKearGvbYqBrEjeo/15chI0Bu/9oQkjPBtkvMBYjyJPrD7oPP67i0ZfqV6xCj4nWwAD3bVjVqsw9cCBHgaykW8ArFFa0VCMdLy7UymYU5SQsfXrw/mHpr27Pp2Z0/7wpuFgJHL+0ARU48OiUzkXSHX+sBLov9X6f9tsh4q/ZRorXhcJi7FnUoagBxewvlfwQfcnLX3hp1wqoRFC4w1DC+ki93vIHUqHkNnayRsf1n48fSu5DwaFfNvejap7HCDIOpCCJmRVR8mVuxi6jgjOUa4Vhb/GCzxfNIn5ZYym1RuoE0TsFO+TPMzjed3tQvG7KemGFz3pQIryb43SbG7Q+EOzIigxYDytzcxOO5Jx7r9i+amQEiIcjBICwyFoEUlVJTgSpqBZGNpznoQ4I2m+uJzM+wMFsinTZN3mp4FU5UHjQsHKG+ZMCAwEAAQ==", Base64.DEFAULT);
     private static final byte[] testNetFogAuthoritySpki = Base64.decode("MIICIjANBgkqhkiG9w0BAQEFAAOCAg8AMIICCgKCAgEAvnB9wTbTOT5uoizRYaYbw7XIEkInl8E7MGOAQj+xnC+F1rIXiCnc/t1+5IIWjbRGhWzo7RAwI5sRajn2sT4rRn9NXbOzZMvIqE4hmhmEzy1YQNDnfALAWNQ+WBbYGW+Vqm3IlQvAFFjVN1YYIdYhbLjAPdkgeVsWfcLDforHn6rR3QBZYZIlSBQSKRMY/tywTxeTCvK2zWcS0kbbFPtBcVth7VFFVPAZXhPi9yy1AvnldO6n7KLiupVmojlEMtv4FQkk604nal+j/dOplTATV8a9AJBbPRBZ/yQg57EG2Y2MRiHOQifJx0S5VbNyMm9bkS8TD7Goi59aCW6OT1gyeotWwLg60JRZTfyJ7lYWBSOzh0OnaCytRpSWtNZ6barPUeOnftbnJtE8rFhF7M4F66et0LI/cuvXYecwVwykovEVBKRF4HOK9GgSm17mQMtzrD7c558TbaucOWabYR04uhdAc3s10MkuONWG0wIQhgIChYVAGnFLvSpp2/aQEq3xrRSETxsixUIjsZyWWROkuA0IFnc8d7AmcnUBvRW7FT/5thWyk5agdYUGZ+7C1o69ihR1YxmoGh69fLMPIEOhYh572+3ckgl2SaV4uo9Gvkz8MMGRBcMIMlRirSwhCfozV2RyT5Wn1NgPpyc8zJL7QdOhL7Qxb+5WjnCVrQYHI2cCAwEAAQ==", Base64.DEFAULT);
 
-    private TestFogConfig(@NonNull Uri fogUri, @NonNull List<Uri> consensusUris, @NonNull String username,
+    private TestFogConfig(@NonNull Uri fogUri, @NonNull Uri shortFogUri,
+                          @NonNull List<Uri> consensusUris,
+                          @NonNull String username,
                           @NonNull String password, @NonNull ClientConfig clientConfig,
                           @NonNull byte[] fogAuthoritySpki, @NonNull String fogReportId,
                           @NonNull TransportProtocol transportProtocol) {
         this.fogUri = fogUri;
+        this.shortFogUri = shortFogUri;
         this.consensusUris = consensusUris;
         this.username = username;
         this.password = password;
@@ -55,6 +59,11 @@ public class TestFogConfig {
     @NonNull
     public Uri getFogUri() {
         return fogUri;
+    }
+
+    @NonNull
+    public Uri getShortFogUri() {
+        return shortFogUri;
     }
 
     @NonNull
@@ -113,6 +122,7 @@ public class TestFogConfig {
                 "fog://fog.%s.mobilecoin.com",
                 testEnvironment.getName()
         ));
+        final Uri shortFogUri = Uri.parse(testEnvironment == Environment.TestEnvironment.TEST_NET ? "fog://fog-rpt-stg.namda.net" : "");
         final Uri consensusUri1 = Uri.parse(String.format(
                 "mc://node1.%s.mobilecoin.com",
                 testEnvironment.getName()
@@ -130,15 +140,15 @@ public class TestFogConfig {
         TransportProtocol transportProtocol = TransportProtocol.forGRPC();
         switch (testEnvironment) {
             case MOBILE_DEV:
-                return new TestFogConfig(fogUri, consensusUris, TEST_USERNAME,
+                return new TestFogConfig(fogUri, shortFogUri, consensusUris, TEST_USERNAME,
                         TEST_PASSWORD, getDevClientConfig(storageAdapter),
                         mobiledevFogAuthoritySpki, "", transportProtocol);
             case ALPHA:
-                return new TestFogConfig(fogUri, consensusUris, TEST_USERNAME,
+                return new TestFogConfig(fogUri, shortFogUri, consensusUris, TEST_USERNAME,
                         TEST_PASSWORD, getDevClientConfig(storageAdapter),
                         alphaFogAuthoritySpki, "", transportProtocol);
             case TEST_NET:
-                return new TestFogConfig(fogUri, consensusUris, TEST_USERNAME,
+                return new TestFogConfig(fogUri, shortFogUri, consensusUris, TEST_USERNAME,
                         TEST_PASSWORD, getTestNetClientConfig(storageAdapter),
                         testNetFogAuthoritySpki, "", transportProtocol);
         }

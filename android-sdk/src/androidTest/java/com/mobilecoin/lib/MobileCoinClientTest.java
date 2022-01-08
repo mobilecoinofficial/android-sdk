@@ -675,11 +675,12 @@ public class MobileCoinClientTest {
     // Tests RestFogBlockService, RestFogKeyImageService, and RestFogViewService
     @Test
     public void getBalance_afterSetTransportProtocolWithHTTP_retrievesBalance() throws Exception {
-        MobileCoinClient mobileCoinClient = MobileCoinClientBuilder.newBuilder().build();
-
         TestFogConfig config = Environment.getTestFogConfig();
         TransportProtocol httpTransportProtocol = TransportProtocol.forHTTP(new SimpleRequester(config.getUsername(), config.getPassword()));
-        mobileCoinClient.setTransportProtocol(httpTransportProtocol);
+
+        MobileCoinClient mobileCoinClient = MobileCoinClientBuilder.newBuilder()
+                .setTransportProtocol(httpTransportProtocol)
+                .build();
 
         Balance balance = mobileCoinClient.getBalance();
         Assert.assertNotNull(balance);
@@ -688,11 +689,12 @@ public class MobileCoinClientTest {
     // Tests RestBlockchainService.
     @Test
     public void getOrFetchMinimumTxFee_afterSetTransportProtocolWithHTTP_retrievesTransferableAmount() throws Exception {
-        MobileCoinClient mobileCoinClient = MobileCoinClientBuilder.newBuilder().build();
-
         TestFogConfig config = Environment.getTestFogConfig();
         TransportProtocol httpTransportProtocol = TransportProtocol.forHTTP(new SimpleRequester(config.getUsername(), config.getPassword()));
-        mobileCoinClient.setTransportProtocol(httpTransportProtocol);
+
+        MobileCoinClient mobileCoinClient = MobileCoinClientBuilder.newBuilder()
+                .setTransportProtocol(httpTransportProtocol)
+                .build();
 
         BigInteger minimumTxFee = mobileCoinClient.getOrFetchMinimumTxFee();
 
@@ -703,10 +705,12 @@ public class MobileCoinClientTest {
     // and RestFogUntrustedService.
     @Test
     public void submitTransaction_afterSetTransportProtocolWithHTTP_submitsTransaction() throws Exception {
-        MobileCoinClient mobileCoinClient = MobileCoinClientBuilder.newBuilder().build();
         TestFogConfig config = Environment.getTestFogConfig();
         TransportProtocol httpTransportProtocol = TransportProtocol.forHTTP(new SimpleRequester(config.getUsername(), config.getPassword()));
-        mobileCoinClient.setTransportProtocol(httpTransportProtocol);
+
+        MobileCoinClient mobileCoinClient = MobileCoinClientBuilder.newBuilder()
+                .setTransportProtocol(httpTransportProtocol)
+                .build();
 
         AccountKey recipient = TestKeysManager.getNextAccountKey();
         try {
