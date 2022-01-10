@@ -28,8 +28,7 @@ public class FogReportsManagerTest {
     public void testShortFogUri() throws InvalidUriException, NetworkException, FogReportException {
         FogReportsManager reportsManager = new FogReportsManager(Environment.getTestFogConfig().getTransportProtocol());
         Set<FogUri> fogUris = new HashSet<FogUri>();
-        TestFogConfig testNetConfig = TestFogConfig.getFogConfig(Environment.TestEnvironment.TEST_NET);
-        fogUris.add(new FogUri(testNetConfig.getShortFogUri()));
+        fogUris.add(new FogUri("fog://fog-rpt-stg.namda.net"));
         reportsManager.fetchReports(fogUris, UnsignedLong.MAX_VALUE, TestFogConfig.getFogConfig(Environment.CURRENT_TEST_ENV).getClientConfig().report);
     }
 
