@@ -5,6 +5,7 @@ import androidx.annotation.NonNull;
 import com.mobilecoin.lib.exceptions.NetworkException;
 import com.mobilecoin.lib.network.AuthInterceptor;
 import com.mobilecoin.lib.network.CookieInterceptor;
+import com.mobilecoin.lib.network.NetworkResult;
 import com.mobilecoin.lib.network.services.ConsensusClientService;
 
 import java.util.concurrent.ExecutorService;
@@ -36,7 +37,7 @@ public class GRPCConsensusClientService
         try {
             return getApiBlockingStub().clientTxPropose(message);
         } catch(StatusRuntimeException e) {
-            throw new NetworkException(e.getStatus(), e);
+            throw new NetworkException(NetworkResult.from(e.getStatus()), e);
         }
     }
 }

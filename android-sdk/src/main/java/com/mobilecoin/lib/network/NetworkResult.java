@@ -8,23 +8,23 @@ public class NetworkResult {
 
 
     public enum ResultCode {
-        OK(0),
-        CANCELLED(1),
-        UNKNOWN(2),
-        INVALID_ARGUMENT(3),
-        DEADLINE_EXCEEDED(4),
-        NOT_FOUND(5),
-        ALREADY_EXISTS(6),
-        PERMISSION_DENIED(7),
-        RESOURCE_EXHAUSTED(8),
-        FAILED_PRECONDITION(9),
-        ABORTED(10),
-        OUT_OF_RANGE(11),
-        UNIMPLEMENTED(12),
-        INTERNAL(13),
-        UNAVAILABLE(14),
-        DATA_LOSS(15),
-        UNAUTHENTICATED(16);
+        OK(0, 200),
+        CANCELLED(1, 499),
+        UNKNOWN(2, 500),
+        INVALID_ARGUMENT(3, 400),
+        DEADLINE_EXCEEDED(4, 504),
+        NOT_FOUND(5, 404),
+        ALREADY_EXISTS(6, 409),
+        PERMISSION_DENIED(7, 403),
+        RESOURCE_EXHAUSTED(8, 429),
+        FAILED_PRECONDITION(9, 400),
+        ABORTED(10, 409),
+        OUT_OF_RANGE(11, 400),
+        UNIMPLEMENTED(12, 501),
+        INTERNAL(13, 500),
+        UNAVAILABLE(14, 503),
+        DATA_LOSS(15, 500),
+        UNAUTHENTICATED(16, 401);
 
         private static final ResultCode LOOKUP[] = {OK,
                 CANCELLED,
@@ -44,11 +44,21 @@ public class NetworkResult {
                 DATA_LOSS,
                 UNAUTHENTICATED};
 
-        ResultCode(int code){
+        ResultCode(int id, int code){
+            this.id = id;
             this.code = code;
         }
 
+        private final int id;
         private final int code;
+
+        public final int getId() {
+            return this.id;
+        }
+
+        public final int intValue() {
+            return this.code;
+        }
 
     }
 
@@ -133,7 +143,7 @@ public class NetworkResult {
                 networkResult = NetworkResult.UNKNOWN;
         }
         return networkResult.withDescription(status.getDescription())
-                        .withCause(status.getCause());
+                .withCause(status.getCause());
     }
 
     public ResultCode getCode() {
