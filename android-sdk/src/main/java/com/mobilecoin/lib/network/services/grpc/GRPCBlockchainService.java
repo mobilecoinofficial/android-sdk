@@ -6,6 +6,7 @@ import com.google.protobuf.Empty;
 import com.mobilecoin.lib.exceptions.NetworkException;
 import com.mobilecoin.lib.network.AuthInterceptor;
 import com.mobilecoin.lib.network.CookieInterceptor;
+import com.mobilecoin.lib.network.NetworkResult;
 import com.mobilecoin.lib.network.services.BlockchainService;
 
 import java.util.concurrent.ExecutorService;
@@ -36,7 +37,7 @@ public class GRPCBlockchainService
         try {
             return getApiBlockingStub().getLastBlockInfo(request);
         } catch (StatusRuntimeException e) {
-            throw new NetworkException(e.getStatus(), e);
+            throw new NetworkException(NetworkResult.from(e.getStatus()), e);
         }
     }
 }
