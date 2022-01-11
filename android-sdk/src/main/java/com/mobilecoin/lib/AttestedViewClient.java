@@ -73,7 +73,7 @@ class AttestedViewClient extends AttestedClient {
             attestFinish(response.getData().toByteArray(), getServiceConfig().getVerifier());
         } catch (NetworkException exception) {
             attestReset();
-            if (exception.getResult().getCode() == NetworkResult.ResultCode.INTERNAL) {
+            if (exception.getResult().getResultCode() == NetworkResult.ResultCode.INTERNAL) {
                 AttestationException attestationException =
                         new AttestationException(exception.getResult().getDescription(), exception);
                 Util.logException(TAG, attestationException);

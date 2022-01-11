@@ -16,7 +16,7 @@ public final class NetworkException extends MobileCoinException {
     }
 
     public NetworkException(@NonNull NetworkResult result, @Nullable Throwable throwable) {
-        super(result.getCode().toString(), throwable);
+        super(result.getResultCode().toString(), throwable);
         this.result = result;
     }
 
@@ -25,7 +25,7 @@ public final class NetworkException extends MobileCoinException {
     }
 
     public int getResultCode() {
-        return this.result.getCode().intValue();
+        return this.result.getResultCode().intValue();
     }
 
 }
