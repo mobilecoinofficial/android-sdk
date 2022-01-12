@@ -4,7 +4,7 @@ package com.mobilecoin.lib;
 
 import androidx.annotation.Nullable;
 
-import com.mobilecoin.lib.network.CookieInterceptor;
+import com.mobilecoin.lib.network.grpc.CookieInterceptor;
 
 import org.junit.Assert;
 import org.junit.Test;

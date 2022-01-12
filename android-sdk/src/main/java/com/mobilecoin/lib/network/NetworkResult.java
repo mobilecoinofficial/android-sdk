@@ -5,8 +5,6 @@ import androidx.annotation.Nullable;
 
 import java.util.Objects;
 
-import io.grpc.Status;
-
 public class NetworkResult implements NetworkStatusResponse {
 
     public enum ResultCode {

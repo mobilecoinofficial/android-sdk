@@ -1,6 +1,6 @@
 // Copyright (c) 2020-2021 MobileCoin. All rights reserved.
 
-package com.mobilecoin.lib.network;
+package com.mobilecoin.lib.network.grpc;
 
 import com.mobilecoin.lib.log.Logger;
 

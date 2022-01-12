@@ -2,8 +2,8 @@ package com.mobilecoin.lib.network.services.grpc;
 
 import androidx.annotation.NonNull;
 
-import com.mobilecoin.lib.network.AuthInterceptor;
-import com.mobilecoin.lib.network.CookieInterceptor;
+import com.mobilecoin.lib.network.grpc.AuthInterceptor;
+import com.mobilecoin.lib.network.grpc.CookieInterceptor;
 import com.mobilecoin.lib.network.services.ApiService;
 
 import java.util.concurrent.ExecutorService;
