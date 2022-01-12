@@ -1,16 +1,17 @@
-package com.mobilecoin.lib.network.services;
+package com.mobilecoin.lib.network.services.http;
 
 import androidx.annotation.NonNull;
 
-import com.mobilecoin.lib.network.services.http.RestAttestedService;
-import com.mobilecoin.lib.network.services.http.RestBlockchainService;
-import com.mobilecoin.lib.network.services.http.RestConsensusClientService;
-import com.mobilecoin.lib.network.services.http.RestFogBlockService;
-import com.mobilecoin.lib.network.services.http.RestFogKeyImageService;
-import com.mobilecoin.lib.network.services.http.RestFogMerkleProofService;
-import com.mobilecoin.lib.network.services.http.RestFogReportService;
-import com.mobilecoin.lib.network.services.http.RestFogUntrustedService;
-import com.mobilecoin.lib.network.services.http.RestFogViewService;
+import com.mobilecoin.lib.network.services.AttestedService;
+import com.mobilecoin.lib.network.services.BlockchainService;
+import com.mobilecoin.lib.network.services.ConsensusClientService;
+import com.mobilecoin.lib.network.services.FogBlockService;
+import com.mobilecoin.lib.network.services.FogKeyImageService;
+import com.mobilecoin.lib.network.services.FogMerkleProofService;
+import com.mobilecoin.lib.network.services.FogReportService;
+import com.mobilecoin.lib.network.services.FogUntrustedService;
+import com.mobilecoin.lib.network.services.FogViewService;
+import com.mobilecoin.lib.network.services.ServiceAPIManager;
 import com.mobilecoin.lib.network.services.http.clients.RestClient;
 import com.mobilecoin.lib.network.services.transport.RestTransport;
 import com.mobilecoin.lib.network.services.transport.Transport;

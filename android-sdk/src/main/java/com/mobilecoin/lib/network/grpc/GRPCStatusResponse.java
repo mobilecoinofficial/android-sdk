@@ -1,4 +1,4 @@
-package com.mobilecoin.lib.network.services.grpc;
+package com.mobilecoin.lib.network.grpc;
 
 import com.mobilecoin.lib.network.NetworkResult;
 import com.mobilecoin.lib.network.NetworkStatusResponse;

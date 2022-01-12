@@ -1,22 +1,23 @@
 // Copyright (c) 2020-2021 MobileCoin. All rights reserved.
 
-package com.mobilecoin.lib.network.services;
+package com.mobilecoin.lib.network.services.grpc;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.mobilecoin.lib.log.Logger;
-import com.mobilecoin.lib.network.AuthInterceptor;
-import com.mobilecoin.lib.network.CookieInterceptor;
-import com.mobilecoin.lib.network.services.grpc.GRPCAttestedService;
-import com.mobilecoin.lib.network.services.grpc.GRPCBlockchainService;
-import com.mobilecoin.lib.network.services.grpc.GRPCConsensusClientService;
-import com.mobilecoin.lib.network.services.grpc.GRPCFogBlockService;
-import com.mobilecoin.lib.network.services.grpc.GRPCFogKeyImageService;
-import com.mobilecoin.lib.network.services.grpc.GRPCFogMerkleProofService;
-import com.mobilecoin.lib.network.services.grpc.GRPCFogReportService;
-import com.mobilecoin.lib.network.services.grpc.GRPCFogUntrustedService;
-import com.mobilecoin.lib.network.services.grpc.GRPCFogViewService;
+import com.mobilecoin.lib.network.grpc.AuthInterceptor;
+import com.mobilecoin.lib.network.grpc.CookieInterceptor;
+import com.mobilecoin.lib.network.services.AttestedService;
+import com.mobilecoin.lib.network.services.BlockchainService;
+import com.mobilecoin.lib.network.services.ConsensusClientService;
+import com.mobilecoin.lib.network.services.FogBlockService;
+import com.mobilecoin.lib.network.services.FogKeyImageService;
+import com.mobilecoin.lib.network.services.FogMerkleProofService;
+import com.mobilecoin.lib.network.services.FogReportService;
+import com.mobilecoin.lib.network.services.FogUntrustedService;
+import com.mobilecoin.lib.network.services.FogViewService;
+import com.mobilecoin.lib.network.services.ServiceAPIManager;
 import com.mobilecoin.lib.network.services.transport.GRPCTransport;
 import com.mobilecoin.lib.network.services.transport.Transport;
 

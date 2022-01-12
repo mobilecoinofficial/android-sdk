@@ -4,9 +4,10 @@ import androidx.annotation.NonNull;
 
 import com.google.protobuf.Empty;
 import com.mobilecoin.lib.exceptions.NetworkException;
-import com.mobilecoin.lib.network.AuthInterceptor;
-import com.mobilecoin.lib.network.CookieInterceptor;
+import com.mobilecoin.lib.network.grpc.AuthInterceptor;
+import com.mobilecoin.lib.network.grpc.CookieInterceptor;
 import com.mobilecoin.lib.network.NetworkResult;
+import com.mobilecoin.lib.network.grpc.GRPCStatusResponse;
 import com.mobilecoin.lib.network.services.BlockchainService;
 
 import java.util.concurrent.ExecutorService;
