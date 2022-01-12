@@ -95,7 +95,7 @@ public final class RestClient {
                             new String(response.getResponseData())
                     );
             }
-            if (status.getCode() != OK.getCode()) {
+            if (status.getResultCode() != OK.getResultCode()) {
                 throw new NetworkException(status);
             }
             Map<String, String> headers = response.getResponseHeaders();

@@ -35,7 +35,7 @@ public class GRPCFogViewService extends GRPCService<FogViewAPIGrpc.FogViewAPIBlo
         try {
             return getApiBlockingStub().auth(authMessage);
         } catch (StatusRuntimeException e) {
-            throw new NetworkException(NetworkResult.from(e.getStatus()), e);
+            throw new NetworkException(new NetworkResult(new GRPCStatusResponse(e.getStatus())), e);
         }
     }
 
@@ -44,7 +44,7 @@ public class GRPCFogViewService extends GRPCService<FogViewAPIGrpc.FogViewAPIBlo
         try {
             return getApiBlockingStub().query(message);
         } catch (StatusRuntimeException e) {
-            throw new NetworkException(NetworkResult.from(e.getStatus()), e);
+            throw new NetworkException(new NetworkResult(new GRPCStatusResponse(e.getStatus())), e);
         }
     }
 }

@@ -1,15 +1,17 @@
 package com.mobilecoin.lib.network;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+
 import java.util.Objects;
 
 import io.grpc.Status;
 
-public class NetworkResult {
-
+public class NetworkResult implements NetworkStatusResponse {
 
     public enum ResultCode {
         OK(0, 200),
-        CANCELLED(1, 499),
+        CANCELED(1, 499),
         UNKNOWN(2, 500),
         INVALID_ARGUMENT(3, 400),
         DEADLINE_EXCEEDED(4, 504),
@@ -26,8 +28,9 @@ public class NetworkResult {
         DATA_LOSS(15, 500),
         UNAUTHENTICATED(16, 401);
 
-        private static final ResultCode LOOKUP[] = {OK,
-                CANCELLED,
+        private static final ResultCode LOOKUP[] = {
+                OK,
+                CANCELED,
                 UNKNOWN,
                 INVALID_ARGUMENT,
                 DEADLINE_EXCEEDED,
@@ -62,11 +65,15 @@ public class NetworkResult {
 
     }
 
-    public NetworkResult(ResultCode code) {
+    public NetworkResult(@NonNull NetworkStatusResponse code) {
+        this(code.getResultCode());
+    }
+
+    public NetworkResult(@NonNull ResultCode code) {
         this(code, null, null);
     }
 
-    public NetworkResult(ResultCode code, String description, Throwable cause) {
+    public NetworkResult(@NonNull ResultCode code, @Nullable String description, @Nullable Throwable cause) {
         this.code = code;
         this.description = description;
         this.cause = cause;
@@ -90,63 +97,8 @@ public class NetworkResult {
         }
     }
 
-    public static NetworkResult from(Status status) {
-        NetworkResult networkResult;
-        switch (status.getCode()) {
-            case OK:
-                networkResult = NetworkResult.OK;
-                break;
-            case INVALID_ARGUMENT:
-                networkResult = NetworkResult.INVALID_ARGUMENT;
-                break;
-            case FAILED_PRECONDITION:
-                networkResult = NetworkResult.FAILED_PRECONDITION;
-                break;
-            case OUT_OF_RANGE:
-                networkResult = NetworkResult.OUT_OF_RANGE;
-                break;
-            case UNAUTHENTICATED:
-                networkResult = NetworkResult.UNAUTHENTICATED;
-                break;
-            case PERMISSION_DENIED:
-                networkResult = NetworkResult.PERMISSION_DENIED;
-                break;
-            case NOT_FOUND:
-                networkResult = NetworkResult.NOT_FOUND;
-                break;
-            case ABORTED:
-                networkResult = NetworkResult.ABORTED;
-                break;
-            case ALREADY_EXISTS:
-                networkResult = NetworkResult.ALREADY_EXISTS;
-                break;
-            case RESOURCE_EXHAUSTED:
-                networkResult = NetworkResult.RESOURCE_EXHAUSTED;
-                break;
-            case CANCELLED:
-                networkResult = NetworkResult.CANCELED;
-                break;
-            case DATA_LOSS:
-                networkResult = NetworkResult.DATA_LOSS;
-                break;
-            case INTERNAL:
-                networkResult = NetworkResult.INTERNAL;
-                break;
-            case UNAVAILABLE:
-                networkResult = NetworkResult.UNAVAILABLE;
-                break;
-            case DEADLINE_EXCEEDED:
-                networkResult = NetworkResult.DEADLINE_EXCEEDED;
-                break;
-            default:
-                // UNIMPLEMENTED
-                networkResult = NetworkResult.UNKNOWN;
-        }
-        return networkResult.withDescription(status.getDescription())
-                .withCause(status.getCause());
-    }
-
-    public ResultCode getCode() {
+    @Override
+    public ResultCode getResultCode() {
         return this.code;
     }
 
@@ -163,7 +115,7 @@ public class NetworkResult {
     private final Throwable cause;
 
     public static final NetworkResult OK = new NetworkResult(ResultCode.OK);
-    public static final NetworkResult CANCELED = new NetworkResult(ResultCode.CANCELLED);
+    public static final NetworkResult CANCELED = new NetworkResult(ResultCode.CANCELED);
     public static final NetworkResult UNKNOWN = new NetworkResult(ResultCode.UNKNOWN);
     public static final NetworkResult INVALID_ARGUMENT = new NetworkResult(ResultCode.INVALID_ARGUMENT);
     public static final NetworkResult DEADLINE_EXCEEDED = new NetworkResult(ResultCode.DEADLINE_EXCEEDED);
