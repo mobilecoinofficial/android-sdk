@@ -44,10 +44,10 @@ jobs:
       - run: make build
       # - run: make deploy
 
-  bindings-release:
-    machine:
-      image: ubuntu-2004:202010-01
-    steps:
+  # bindings-release:
+  #   machine:
+  #     image: ubuntu-2004:202010-01
+  #   steps:
 
 workflows:
   version: 2
