@@ -57,14 +57,12 @@ workflows:
       - test
 
   android-sdk-release:
-    triggers:
-      - schedule:
+    jobs:
+      - android-release
           filters:
             branches:
               only:
                 - ci
-    jobs:
-      - android-release
 
   # android-bindings-release:
   #   triggers:
