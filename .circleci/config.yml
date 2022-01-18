@@ -9,7 +9,7 @@ jobs:
       - run:
           name: Store Google Service Account
           command: echo $GCLOUD_SERVICE_KEY > service-key.json
-      
+
       - run:
           name: Provide Dev credentials
           command: sed -i 's/REPLACE_TEST_DEV_USER_STRING/'"$TEST_DEV_USER"'/g' android-sdk/src/androidTest/java/com/mobilecoin/lib/TestFogConfig.java && sed -i 's/REPLACE_TEST_DEV_PASSWORD_STRING/'"$TEST_DEV_PASSWORD"'/g' android-sdk/src/androidTest/java/com/mobilecoin/lib/TestFogConfig.java
@@ -23,12 +23,12 @@ jobs:
           command: echo $TEST_NET_MNEMONICS > android-sdk/src/androidTest/res/raw/test_net_mnemonics
 
       - run:
-          name: Provide DevNet entropies 
+          name: Provide DevNet entropies
           command: echo $DEV_NET_TEST_ENTROPIES > android-sdk/src/androidTest/res/raw/dev_net_root_entropies
 
       - run: make setup
       - run: make build
-      - run: 
+      - run:
           name: make tests
           command: make tests
           no_output_timeout: 20m
@@ -59,12 +59,12 @@ workflows:
   android-sdk-release:
     triggers:
       - schedule:
-        filters:
-          branches:
-            only:
-              - ci
-      jobs:
-        - android-release
+          filters:
+            branches:
+              only:
+                - ci
+    jobs:
+      - android-release
 
   # android-bindings-release:
   #   triggers:
