@@ -58,7 +58,7 @@ workflows:
 
   android-sdk-release:
     jobs:
-      - android-release
+      - android-release:
           filters:
             branches:
               only:
