@@ -40,6 +40,29 @@ deployLocal: setup
 		android-build:android-gradle \
 		gradle publishToMavenLocal
 
+publish: setup
+# Check if we are in the CircleCI environment
+	@if [ -z "${MAVEN_USER}" ]; then \
+		docker run \
+			-it \
+			-v $(pwd):/home/gradle/ \
+			-w /home/gradle/ android-build:android-gradle \
+			gradle clean \
+			gradle assemble \
+			gradle publish; \
+	else \
+		echo "Running CI Publish"; \
+		docker run \
+			-it \
+			-v $(pwd):/home/gradle/ \
+			-e MAVEN_USER \
+			-e MAVEN_PASSWORD \
+			-w /home/gradle/ android-build:android-gradle \
+			gradle clean \
+			gradle assemble \
+			gradle publish; \
+	fi
+
 bash: setup
 	docker run \
 		-it \
@@ -47,8 +70,7 @@ bash: setup
 		-v $(maven_repo):/root/.m2/ \
 		-w /home/gradle/ android-build:android-gradle \
 		bash
-
+	
 setup: dockerImage
 
 all: setup clean build deployLocal
-

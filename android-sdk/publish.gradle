@@ -1,6 +1,7 @@
 apply plugin: 'maven-publish'
 
-version '1.2.0-pre0'
+// version '1.2.0-pre0'
+version '0.0.1-pre001'
 group 'com.mobilecoin'
 
 Properties properties = new Properties()
@@ -36,10 +37,15 @@ publishing {
             url = "https://maven.cloudsmith.io/mobilecoin/mobilecoin/"
             def releasesRepoUrl = "https://maven.cloudsmith.io/mobilecoin/mobilecoin/"
             def snapshotsRepoUrl = "https://maven.cloudsmith.io/mobilecoin/mobilecoin/"
+            def localMavenUser = properties.getProperty("maven.user")
+            def localMavenPassword = properties.getProperty("maven.apikey")
+            // CI - Get Maven Creds from Env Vars if no local.properties
+            def mavenUser =  localMavenUser != null ? localMavenUser : System.getenv('MAVEN_USER')
+            def mavenPassword = localMavenPassword != null ? localMavenPassword : System.getenv('MAVEN_PASSWORD')
             url = version.endsWith('SNAPSHOT') ? snapshotsRepoUrl : releasesRepoUrl
             credentials {
-                username = properties.getProperty("maven.user")
-                password = properties.getProperty("maven.apikey")
+                username = mavenUser
+                password = mavenPassword
             }
         }
     }

@@ -41,21 +41,18 @@ jobs:
     machine:
       image: ubuntu-2004:202010-01
     steps:
-      - run: make build
-      # - run: make deploy
-
-  # bindings-release:
-  #   machine:
-  #     image: ubuntu-2004:202010-01
-  #   steps:
+      - checkout
+      - run: make publish
 
 workflows:
   version: 2
-
   run-tests:
     jobs:
-      - test
-
+      - test:
+          filters:
+            branches:
+              ignore:
+                - ci
   android-sdk-release:
     jobs:
       - android-release:
@@ -63,13 +60,3 @@ workflows:
             branches:
               only:
                 - ci
-
-  # android-bindings-release:
-  #   triggers:
-  #   - schedule:
-  #     filters:
-  #       branches:
-  #         only:
-  #           - ci
-  #   jobs:
-  #     - bindings-release

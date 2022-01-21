@@ -96,3 +96,6 @@ lint/outputs/
 lint/tmp/
 # lint/reports/
 
+# VSCode Dev Containers & Settings
+.devcontainer/
+.vscode/
