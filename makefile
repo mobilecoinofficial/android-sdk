@@ -47,9 +47,7 @@ publish: setup
 			-it \
 			-v $(pwd):/home/gradle/ \
 			-w /home/gradle/ android-build:android-gradle \
-			gradle clean \
-			gradle assemble \
-			gradle publish; \
+			-c "gradle clean; gradle assemble; gradle publish"; \
 	else \
 		echo "Running CI Publish"; \
 		docker run \
@@ -58,9 +56,7 @@ publish: setup
 			-e MAVEN_USER \
 			-e MAVEN_PASSWORD \
 			-w /home/gradle/ android-build:android-gradle \
-			gradle clean \
-			gradle assemble \
-			gradle publish; \
+			-c "gradle clean; gradle assemble; gradle publish"; \
 	fi
 
 bash: setup
