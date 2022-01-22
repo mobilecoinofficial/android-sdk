@@ -42,6 +42,8 @@ deployLocal: setup
 
 publish: setup
 # Check if we are in the CircleCI environment
+# If not in CI env then use local.properties values to publish
+# May not need this but it allows publishing from local if needed
 	@if [ -z "${MAVEN_USER}" ]; then \
 		docker run \
 			-it \

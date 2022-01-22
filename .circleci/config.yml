@@ -48,15 +48,13 @@ workflows:
   version: 2
   run-tests:
     jobs:
-      - test:
-          filters:
-            branches:
-              ignore:
-                - ci
+      - test
   android-sdk-release:
     jobs:
       - android-release:
           filters:
             branches:
               only:
-                - ci
+                - master
+            tags:
+              only: /^v.*/
