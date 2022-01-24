@@ -54,7 +54,6 @@ workflows:
       - android-release:
           filters:
             branches:
-              only:
-                - master
+              ignore: /.*/
             tags:
               only: /^v.*/
