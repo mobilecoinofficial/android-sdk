@@ -18,7 +18,7 @@ import com.mobilecoin.lib.network.services.FogReportService;
 import com.mobilecoin.lib.network.services.FogUntrustedService;
 import com.mobilecoin.lib.network.services.FogViewService;
 import com.mobilecoin.lib.network.services.ServiceAPIManager;
-import com.mobilecoin.lib.network.services.transport.GRPCTransport;
+import com.mobilecoin.lib.network.services.transport.grpc.GRPCTransport;
 import com.mobilecoin.lib.network.services.transport.Transport;
 
 import java.util.concurrent.ExecutorService;

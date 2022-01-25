@@ -5,6 +5,7 @@ import androidx.annotation.NonNull;
 import com.mobilecoin.lib.ClientConfig;
 import com.mobilecoin.lib.exceptions.NetworkException;
 import com.mobilecoin.lib.network.TransportProtocol;
+import com.mobilecoin.lib.network.services.transport.http.RestTransport;
 import com.mobilecoin.lib.network.uri.MobileCoinUri;
 
 public abstract class Transport {
@@ -14,8 +15,6 @@ public abstract class Transport {
                                                    @NonNull ClientConfig.Service serviceConfig)
                                                 throws NetworkException {
         switch(transportProtocol.getTransportType()) {
-            case GRPC:
-                return new GRPCTransport(currentUri, serviceConfig);
             case HTTP:
                 return new RestTransport(transportProtocol, currentUri);
             default:

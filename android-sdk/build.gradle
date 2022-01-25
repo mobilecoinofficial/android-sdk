@@ -28,7 +28,11 @@ protobuf {
                 java { option "lite" }
             }
             task.plugins {
-                grpc { option 'lite' }
+                //if (getGradle().getStartParameter().getTaskRequests().toString().toLowerCase().contains("grpc") && flavor.ext.enableGrpc) {
+                if(getGradle().getStartParameter().getTaskRequests()
+                        .toString().contains("Grpc")) {
+                    grpc { option 'lite' }
+                }
             }
         }
     }
@@ -64,6 +68,44 @@ android {
         sourceCompatibility JavaVersion.VERSION_1_8
         targetCompatibility JavaVersion.VERSION_1_8
     }
+
+    flavorDimensions 'transport'
+    productFlavors {
+        http {
+            dimension 'transport'
+            versionNameSuffix '-http'
+            ext.enableGrpc = false
+        }
+        grpc {
+            dimension 'transport'
+            ext.enableGrpc = true
+        }
+    }
+}
+
+sourceSets {
+    http {
+        java {
+        }
+    }
+    grpc {
+        java {
+            srcDirs += 'src/grpcTest'
+        }
+    }
+}
+
+task printSourceSetInfo(){
+    doLast{
+        sourceSets.each { srcSet ->
+            println "[" + srcSet.name + "]"
+            print "src: " + srcSet.allJava.srcDirs + "\n"
+            print "output: " + srcSet.output.classesDirs.files + "\n"
+            srcSet.allJava.each {f ->
+                println "\tFile: " + f.getName()
+            }
+        }
+    }
 }
 
 dependencies {
@@ -79,10 +121,10 @@ dependencies {
     coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:1.1.5'
 
     // GRPC
-    implementation "io.grpc:grpc-okhttp:${grpcVersion}"
-    implementation "io.grpc:grpc-stub:${grpcVersion}"
+    grpcImplementation ("io.grpc:grpc-okhttp:${grpcVersion}")
+    grpcImplementation ("io.grpc:grpc-stub:${grpcVersion}")
+    grpcImplementation ("io.grpc:grpc-protobuf-lite:${grpcVersion}")
 
-    implementation "io.grpc:grpc-protobuf-lite:${grpcVersion}"
     implementation "com.google.protobuf:protobuf-javalite:${protobufVersion}"
 
     // Tests
@@ -95,5 +137,5 @@ dependencies {
     androidTestImplementation 'androidx.test:rules:1.3.0'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.3.0'
     androidTestImplementation 'com.android.support.test:rules:1.0.2'
-    androidTestImplementation "com.squareup.okio:okio:1.17.5"
+    androidTestImplementation 'com.squareup.okhttp:okhttp:2.7.4'
 }

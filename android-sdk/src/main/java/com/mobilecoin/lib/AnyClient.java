@@ -11,8 +11,7 @@ import com.mobilecoin.lib.exceptions.AttestationException;
 import com.mobilecoin.lib.exceptions.NetworkException;
 import com.mobilecoin.lib.log.Logger;
 import com.mobilecoin.lib.network.TransportProtocol;
-import com.mobilecoin.lib.network.services.grpc.GRPCServiceAPIManager;
-import com.mobilecoin.lib.network.services.http.RestServiceAPIManager;
+import com.mobilecoin.lib.network.services.APIManagerFactory;
 import com.mobilecoin.lib.network.services.ServiceAPIManager;
 import com.mobilecoin.lib.network.services.transport.Transport;
 import com.mobilecoin.lib.network.uri.MobileCoinUri;
@@ -38,6 +37,7 @@ class AnyClient extends Native {
         this.loadBalancer = loadBalancer;
         this.serviceConfig = serviceConfig;
         this.setTransportProtocol(transportProtocol);
+        this.serviceAPIManager = APIManagerFactory.forProtocol(transportProtocol);
     }
 
     @NonNull
@@ -48,25 +48,20 @@ class AnyClient extends Native {
     synchronized void setTransportProtocol(@NonNull TransportProtocol protocol) {
         this.transportProtocol = protocol;
         this.resetNetworkTransport();
-        switch(protocol.getTransportType()) {
-            case GRPC:
-                this.serviceAPIManager = new GRPCServiceAPIManager();
-                break;
-            case HTTP:
-                this.serviceAPIManager = new RestServiceAPIManager();
-                break;
-            default:
-                throw new UnsupportedOperationException("Unsupported");
-        }
+        this.serviceAPIManager = APIManagerFactory.forProtocol(transportProtocol);
     }
 
     @NonNull
     synchronized Transport getNetworkTransport() throws NetworkException, AttestationException {
         if(null == this.networkTransport) {
-            this.currentServiceUri = getNextServiceUri();
-            this.networkTransport = Transport.forConfig(this.transportProtocol, this.currentServiceUri, this.serviceConfig);
+            this.initTransport();
         }
         return networkTransport;
+    }
+
+    private synchronized void initTransport() throws NetworkException, AttestationException {
+        this.currentServiceUri = getNextServiceUri();
+        this.networkTransport = Transport.forConfig(this.transportProtocol, this.currentServiceUri, this.serviceConfig);
     }
 
     protected synchronized void resetNetworkTransport() {

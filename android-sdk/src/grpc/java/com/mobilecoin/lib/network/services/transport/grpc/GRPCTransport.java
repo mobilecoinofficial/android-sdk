@@ -1,4 +1,4 @@
-package com.mobilecoin.lib.network.services.transport;
+package com.mobilecoin.lib.network.services.transport.grpc;
 
 import androidx.annotation.NonNull;
 
@@ -6,6 +6,7 @@ import com.mobilecoin.lib.ClientConfig;
 import com.mobilecoin.lib.exceptions.NetworkException;
 import com.mobilecoin.lib.log.Logger;
 import com.mobilecoin.lib.network.NetworkResult;
+import com.mobilecoin.lib.network.services.transport.Transport;
 import com.mobilecoin.lib.network.uri.MobileCoinUri;
 
 import java.io.IOException;
@@ -33,7 +34,7 @@ public class GRPCTransport extends Transport {
 
     private final ManagedChannel managedChannel;
 
-    GRPCTransport(@NonNull MobileCoinUri uri, @NonNull ClientConfig.Service serviceConfiguration) throws NetworkException {
+    public GRPCTransport(@NonNull MobileCoinUri uri, @NonNull ClientConfig.Service serviceConfiguration) throws NetworkException {
         try {
             Logger.i(TAG, "Managed channel does not exist: creating one");
             OkHttpChannelBuilder managedChannelBuilder = OkHttpChannelBuilder
