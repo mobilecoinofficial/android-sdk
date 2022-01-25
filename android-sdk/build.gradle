@@ -28,7 +28,7 @@ protobuf {
                 java { option "lite" }
             }
             task.plugins {
-                if(!getGradle().getStartParameter().getTaskRequests().toString().contains("Http")) {
+                if(getGradle().getStartParameter().getTaskRequests().toString().contains("Grpc")) {
                     grpc { option 'lite' }
                 }
             }
@@ -72,11 +72,9 @@ android {
         http {
             dimension 'transport'
             versionNameSuffix '-http'
-            ext.enableGrpc = false
         }
         grpc {
             dimension 'transport'
-            ext.enableGrpc = true
         }
     }
 }
