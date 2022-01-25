@@ -28,7 +28,6 @@ protobuf {
                 java { option "lite" }
             }
             task.plugins {
-                //if (getGradle().getStartParameter().getTaskRequests().toString().toLowerCase().contains("grpc") && flavor.ext.enableGrpc) {
                 if(getGradle().getStartParameter().getTaskRequests()
                         .toString().contains("Grpc")) {
                     grpc { option 'lite' }
