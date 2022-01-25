@@ -28,7 +28,7 @@ protobuf {
                 java { option "lite" }
             }
             task.plugins {
-                if(getGradle().getStartParameter().getTaskRequests().toString().contains("Grpc")) {
+                if(!getGradle().getStartParameter().getTaskRequests().toString().contains("Http")) {
                     grpc { option 'lite' }
                 }
             }
