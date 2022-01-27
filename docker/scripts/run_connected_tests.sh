@@ -1,6 +1,6 @@
 #!/bin/bash
 gradle :testApp:assembleDebug
-gradle :android-sdk:assembleDebugAndroidTest
+gradle :android-sdk:assembleGrpcDebugAndroidTest
 
 gcloud config set project mobilecoin-60c
 gcloud auth activate-service-account \
@@ -11,4 +11,4 @@ gcloud firebase test android run \
     --type instrumentation \
     --device model=Nexus5X,version=24 \
     --app testApp/build/outputs/apk/debug/testApp-debug.apk \
-    --test android-sdk/build/outputs/apk/androidTest/debug/android-sdk-debug-androidTest.apk
+    --test android-sdk/build/outputs/apk/androidTest/grpc/debug/android-sdk-grpc-debug-androidTest.apk

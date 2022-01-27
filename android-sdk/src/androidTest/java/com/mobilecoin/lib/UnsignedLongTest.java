@@ -6,40 +6,35 @@ import static org.junit.Assert.assertEquals;
 
 import android.os.Parcel;
 
-import com.google.common.collect.ImmutableSet;
-
 import org.junit.Assert;
 import org.junit.Test;
 
 import java.math.BigInteger;
+import java.util.HashSet;
+import java.util.Set;
 
 public class UnsignedLongTest {
-    private static final ImmutableSet<Long> TEST_LONGS;
-    private static final ImmutableSet<BigInteger> TEST_BIG_INTEGERS;
-
-    static {
-        ImmutableSet.Builder<Long> testLongsBuilder = ImmutableSet.builder();
-        ImmutableSet.Builder<BigInteger> testBigIntegersBuilder = ImmutableSet.builder();
-        for (long i = -3; i <= 3; i++) {
-            testLongsBuilder
-                    .add(i)
-                    .add(Long.MAX_VALUE + i)
-                    .add(Long.MIN_VALUE + i)
-                    .add(Integer.MIN_VALUE + i)
-                    .add(Integer.MAX_VALUE + i);
-            BigInteger bigI = BigInteger.valueOf(i);
-            testBigIntegersBuilder
-                    .add(bigI)
-                    .add(BigInteger.valueOf(Long.MAX_VALUE).add(bigI))
-                    .add(BigInteger.valueOf(Long.MIN_VALUE).add(bigI))
-                    .add(BigInteger.valueOf(Integer.MAX_VALUE).add(bigI))
-                    .add(BigInteger.valueOf(Integer.MIN_VALUE).add(bigI))
-                    .add(BigInteger.ONE.shiftLeft(63).add(bigI))
-                    .add(BigInteger.ONE.shiftLeft(64).add(bigI));
+    public static final Set<Long>  TEST_LONGS = new HashSet<Long>() {{
+        for(long i = -3; i <= 3; i++) {
+            add(i);
+            add(Long.MAX_VALUE + i);
+            add(Long.MIN_VALUE + i);
+            add(Integer.MIN_VALUE + i);
+            add(Integer.MAX_VALUE + i);
         }
-        TEST_LONGS = testLongsBuilder.build();
-        TEST_BIG_INTEGERS = testBigIntegersBuilder.build();
-    }
+    }};
+    public static final Set<BigInteger>  TEST_BIG_INTEGERS = new HashSet<BigInteger>() {{
+        for(long i = -3; i <= 3; i++) {
+            BigInteger bigI = BigInteger.valueOf(i);
+            add(bigI);
+            add(BigInteger.valueOf(Long.MAX_VALUE).add(bigI));
+            add(BigInteger.valueOf(Long.MIN_VALUE).add(bigI));
+            add(BigInteger.valueOf(Integer.MAX_VALUE).add(bigI));
+            add(BigInteger.valueOf(Integer.MIN_VALUE).add(bigI));
+            add(BigInteger.ONE.shiftLeft(63).add(bigI));
+            add(BigInteger.ONE.shiftLeft(64).add(bigI));
+        }
+    }};
 
     @Test
     public void test_big_integers() {

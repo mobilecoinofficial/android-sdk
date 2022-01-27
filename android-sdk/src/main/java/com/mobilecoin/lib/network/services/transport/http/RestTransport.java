@@ -1,9 +1,10 @@
-package com.mobilecoin.lib.network.services.transport;
+package com.mobilecoin.lib.network.services.transport.http;
 
 import androidx.annotation.NonNull;
 
 import com.mobilecoin.lib.network.TransportProtocol;
 import com.mobilecoin.lib.network.services.http.clients.RestClient;
+import com.mobilecoin.lib.network.services.transport.Transport;
 import com.mobilecoin.lib.network.uri.MobileCoinUri;
 
 public class RestTransport extends Transport {

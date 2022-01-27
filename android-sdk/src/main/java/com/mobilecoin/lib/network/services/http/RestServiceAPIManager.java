@@ -13,7 +13,7 @@ import com.mobilecoin.lib.network.services.FogUntrustedService;
 import com.mobilecoin.lib.network.services.FogViewService;
 import com.mobilecoin.lib.network.services.ServiceAPIManager;
 import com.mobilecoin.lib.network.services.http.clients.RestClient;
-import com.mobilecoin.lib.network.services.transport.RestTransport;
+import com.mobilecoin.lib.network.services.transport.http.RestTransport;
 import com.mobilecoin.lib.network.services.transport.Transport;
 
 public class RestServiceAPIManager implements ServiceAPIManager {
