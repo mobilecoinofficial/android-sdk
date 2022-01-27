@@ -27,8 +27,8 @@ protobuf {
             task.builtins {
                 java { option "lite" }
             }
-            task.plugins {
-                if(getGradle().getStartParameter().getTaskRequests().toString().contains("Grpc")) {
+            if(task.getName().contains('Grpc')) {
+                task.plugins {
                     grpc { option 'lite' }
                 }
             }
