@@ -1,6 +1,6 @@
 #!/bin/bash
 gradle :testApp:assembleDebug
-gradle :android-sdk:assembleDebugAndroidTest
+gradle :android-sdk:assembleGrpcDebugAndroidTest
 
 gcloud config set project mobilecoin-60c
 gcloud auth activate-service-account \
