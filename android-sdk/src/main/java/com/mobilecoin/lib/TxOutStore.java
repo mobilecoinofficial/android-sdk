@@ -227,7 +227,7 @@ final class TxOutStore implements Parcelable {
                                 Hex.toString(rngRecord.getPubkey().getPubkey().toByteArray()))
                         );
                         FogSeed newSeed = fogSeedProvider.fogSeedFor(
-                                accountKey.getSubAddressViewKey(),
+                                accountKey.getDefaultSubAddressViewKey(),
                                 rngRecord
                         );
                         seeds.put(
@@ -258,7 +258,7 @@ final class TxOutStore implements Parcelable {
                             // Decrypt the TxOut
                             try {
                                 byte[] plainText = cryptoBox.versionedCryptoBoxDecrypt(
-                                        accountKey.getSubAddressViewKey(),
+                                        accountKey.getDefaultSubAddressViewKey(),
                                         txResult.getCiphertext().toByteArray()
                                 );
                                 View.TxOutRecord record = View.TxOutRecord.parseFrom(plainText);

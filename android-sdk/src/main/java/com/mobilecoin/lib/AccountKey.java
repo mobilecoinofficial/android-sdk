@@ -32,8 +32,10 @@ public class AccountKey extends Native implements Parcelable {
     private final Uri fogReportUri;
     private final String fogReportId;
     private final byte[] fogAuthoritySpki;
-    private final RistrettoPrivate subAddressViewKey;
-    private final RistrettoPrivate subAddressSpendKey;
+    private final RistrettoPrivate defaultSubAddressViewKey;
+    private final RistrettoPrivate defaultSubAddressSpendKey;
+    private final RistrettoPrivate changeSubAddressViewKey;
+    private final RistrettoPrivate changeSubAddressSpendKey;
     private final RistrettoPrivate viewKey;
     private final RistrettoPrivate spendKey;
     private final PublicAddress publicAddress;
@@ -78,8 +80,10 @@ public class AccountKey extends Native implements Parcelable {
             this.fogAuthoritySpki = fogAuthoritySpki;
             this.viewKey = viewKey;
             this.spendKey = spendKey;
-            this.subAddressViewKey = RistrettoPrivate.fromJNI(get_default_subaddress_view_key());
-            this.subAddressSpendKey = RistrettoPrivate.fromJNI(get_default_subaddress_spend_key());
+            this.defaultSubAddressViewKey = RistrettoPrivate.fromJNI(get_default_subaddress_view_key());
+            this.defaultSubAddressSpendKey = RistrettoPrivate.fromJNI(get_default_subaddress_spend_key());
+            this.changeSubAddressViewKey = RistrettoPrivate.fromJNI(get_change_subaddress_view_key());
+            this.changeSubAddressSpendKey = RistrettoPrivate.fromJNI(get_change_subaddress_spend_key());
             this.publicAddress = PublicAddress.fromJNI(get_public_address());
             Logger.i(TAG, "AccountKey created from view/spend keys");
         } catch (Exception ex) {
@@ -126,8 +130,10 @@ public class AccountKey extends Native implements Parcelable {
             this.fogAuthoritySpki = fogAuthoritySpki;
             this.viewKey = RistrettoPrivate.fromJNI(get_view_key());
             this.spendKey = RistrettoPrivate.fromJNI(get_spend_key());
-            this.subAddressViewKey = RistrettoPrivate.fromJNI(get_default_subaddress_view_key());
-            this.subAddressSpendKey = RistrettoPrivate.fromJNI(get_default_subaddress_spend_key());
+            this.defaultSubAddressViewKey = RistrettoPrivate.fromJNI(get_default_subaddress_view_key());
+            this.defaultSubAddressSpendKey = RistrettoPrivate.fromJNI(get_default_subaddress_spend_key());
+            this.changeSubAddressViewKey = RistrettoPrivate.fromJNI(get_change_subaddress_view_key());
+            this.changeSubAddressSpendKey = RistrettoPrivate.fromJNI(get_change_subaddress_spend_key());
             this.publicAddress = PublicAddress.fromJNI(get_public_address());
             Logger.i(TAG, "AccountKey created from the root entropy");
         } catch (Exception ex) {
@@ -153,8 +159,10 @@ public class AccountKey extends Native implements Parcelable {
         this.fogAuthoritySpki = get_fog_authority_spki();
         this.viewKey = RistrettoPrivate.fromJNI(get_view_key());
         this.spendKey = RistrettoPrivate.fromJNI(get_spend_key());
-        this.subAddressViewKey = RistrettoPrivate.fromJNI(get_default_subaddress_view_key());
-        this.subAddressSpendKey = RistrettoPrivate.fromJNI(get_default_subaddress_spend_key());
+        this.defaultSubAddressViewKey = RistrettoPrivate.fromJNI(get_default_subaddress_view_key());
+        this.defaultSubAddressSpendKey = RistrettoPrivate.fromJNI(get_default_subaddress_spend_key());
+        this.changeSubAddressViewKey = RistrettoPrivate.fromJNI(get_change_subaddress_view_key());
+        this.changeSubAddressSpendKey = RistrettoPrivate.fromJNI(get_change_subaddress_spend_key());
         this.publicAddress = PublicAddress.fromJNI(get_public_address());
     }
 
@@ -404,16 +412,32 @@ public class AccountKey extends Native implements Parcelable {
      * @return account's default subaddress private spend key as {@link RistrettoPrivate}
      */
     @NonNull
-    RistrettoPrivate getSubAddressSpendKey() {
-        return subAddressSpendKey;
+    RistrettoPrivate getDefaultSubAddressSpendKey() {
+        return defaultSubAddressSpendKey;
     }
 
     /**
      * @return account's default subaddress private view key as {@link RistrettoPrivate}
      */
     @NonNull
-    RistrettoPrivate getSubAddressViewKey() {
-        return subAddressViewKey;
+    RistrettoPrivate getDefaultSubAddressViewKey() {
+        return defaultSubAddressViewKey;
+    }
+
+    /**
+     * @return account's change subaddress private spend key as {@link RistrettoPrivate}
+     */
+    @NonNull
+    RistrettoPrivate getChangeSubAddressSpendKey() {
+        return changeSubAddressSpendKey;
+    }
+
+    /**
+     * @return account's change subaddress private view key as {@link RistrettoPrivate}
+     */
+    @NonNull
+    RistrettoPrivate getChangeSubAddressViewKey() {
+        return changeSubAddressViewKey;
     }
 
     /**
@@ -469,8 +493,10 @@ public class AccountKey extends Native implements Parcelable {
                 Arrays.equals(fogAuthoritySpki, that.fogAuthoritySpki) &&
                 viewKey.equals(that.viewKey) &&
                 spendKey.equals(that.spendKey) &&
-                subAddressViewKey.equals(that.subAddressViewKey) &&
-                subAddressSpendKey.equals(that.subAddressSpendKey);
+                defaultSubAddressViewKey.equals(that.defaultSubAddressViewKey) &&
+                defaultSubAddressSpendKey.equals(that.defaultSubAddressSpendKey) &&
+                changeSubAddressViewKey.equals(that.changeSubAddressViewKey) &&
+                changeSubAddressSpendKey.equals(that.changeSubAddressSpendKey);
     }
 
     @Override
@@ -483,15 +509,18 @@ public class AccountKey extends Native implements Parcelable {
                 Arrays.equals(fogAuthoritySpki, that.fogAuthoritySpki) &&
                 viewKey.equals(that.viewKey) &&
                 spendKey.equals(that.spendKey) &&
-                subAddressViewKey.equals(that.subAddressViewKey) &&
-                subAddressSpendKey.equals(that.subAddressSpendKey);
+                defaultSubAddressViewKey.equals(that.defaultSubAddressViewKey) &&
+                defaultSubAddressSpendKey.equals(that.defaultSubAddressSpendKey) &&
+                changeSubAddressViewKey.equals(that.changeSubAddressViewKey) &&
+                changeSubAddressSpendKey.equals(that.changeSubAddressSpendKey);
     }
 
     @Override
     public int hashCode() {
         int result = Objects.hash(fogReportId, fogReportUri,
                 viewKey, spendKey,
-                subAddressViewKey, subAddressSpendKey
+                defaultSubAddressViewKey, defaultSubAddressSpendKey,
+                changeSubAddressViewKey, changeSubAddressSpendKey
         );
         result = 31 * result + Arrays.hashCode(fogAuthoritySpki);
         return result;
@@ -525,6 +554,10 @@ public class AccountKey extends Native implements Parcelable {
     private native long get_default_subaddress_view_key();
 
     private native long get_default_subaddress_spend_key();
+
+    private native long get_change_subaddress_view_key();
+
+    private native long get_change_subaddress_spend_key();
 
     private native void finalize_jni();
 
@@ -561,8 +594,10 @@ public class AccountKey extends Native implements Parcelable {
         parcel.writeParcelable(fogReportUri, flags);
         parcel.writeString(fogReportId);
         parcel.writeByteArray(fogAuthoritySpki);
-        parcel.writeParcelable(subAddressViewKey, flags);
-        parcel.writeParcelable(subAddressSpendKey, flags);
+        parcel.writeParcelable(defaultSubAddressViewKey, flags);
+        parcel.writeParcelable(defaultSubAddressSpendKey, flags);
+        parcel.writeParcelable(changeSubAddressViewKey, flags);
+        parcel.writeParcelable(changeSubAddressSpendKey, flags);
         parcel.writeParcelable(viewKey, flags);
         parcel.writeParcelable(spendKey, flags);
         parcel.writeParcelable(publicAddress, flags);
@@ -598,8 +633,10 @@ public class AccountKey extends Native implements Parcelable {
         fogReportUri = parcel.readParcelable(Uri.class.getClassLoader());
         fogReportId = parcel.readString();
         fogAuthoritySpki = parcel.createByteArray();
-        subAddressViewKey = parcel.readParcelable(RistrettoPrivate.class.getClassLoader());
-        subAddressSpendKey = parcel.readParcelable(RistrettoPrivate.class.getClassLoader());
+        defaultSubAddressViewKey = parcel.readParcelable(RistrettoPrivate.class.getClassLoader());
+        defaultSubAddressSpendKey = parcel.readParcelable(RistrettoPrivate.class.getClassLoader());
+        changeSubAddressViewKey = parcel.readParcelable(RistrettoPrivate.class.getClassLoader());
+        changeSubAddressSpendKey = parcel.readParcelable(RistrettoPrivate.class.getClassLoader());
         viewKey = parcel.readParcelable(RistrettoPrivate.class.getClassLoader());
         spendKey = parcel.readParcelable(RistrettoPrivate.class.getClassLoader());
         publicAddress = parcel.readParcelable(PublicAddress.class.getClassLoader());
