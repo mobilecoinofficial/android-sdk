@@ -246,11 +246,11 @@ public class AccountTest {
 
         Assert.assertEquals(
                 restoredViewPublicKey,
-                accountKey.getSubAddressViewKey().getPublicKey()
+                accountKey.getDefaultSubAddressViewKey().getPublicKey()
         );
         Assert.assertEquals(
                 restoredSpendPublicKey,
-                accountKey.getSubAddressSpendKey().getPublicKey()
+                accountKey.getDefaultSubAddressSpendKey().getPublicKey()
         );
     }
 

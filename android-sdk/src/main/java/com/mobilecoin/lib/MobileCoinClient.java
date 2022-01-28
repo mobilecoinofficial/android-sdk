@@ -407,7 +407,7 @@ public final class MobileCoinClient implements MobileCoinAccountClient, MobileCo
 
             RistrettoPrivate onetimePrivateKey = Util.recoverOnetimePrivateKey(utxo.getPublicKey(),
                     viewKey,
-                    accountKey.getSubAddressSpendKey()
+                    accountKey.getDefaultSubAddressSpendKey()
             );
 
             txBuilder.addInput(ring.getNativeTxOuts(),
