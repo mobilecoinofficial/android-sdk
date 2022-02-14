@@ -1,8 +1,13 @@
 package com.mobilecoin.lib;
 
+import static org.junit.Assert.assertEquals;
+
 import android.net.Uri;
+import android.os.Parcel;
+
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import com.mobilecoin.api.MobileCoinAPI;
+import com.mobilecoin.lib.exceptions.InvalidTxOutMemoException;
 import com.mobilecoin.lib.util.Hex;
 import org.junit.Assert;
 import org.junit.Test;
@@ -43,7 +48,7 @@ public class DestinationMemoTest {
 
   @Test
   public void create_memoDataLength_createsDestinationMemo() {
-    byte[] memoData = new byte[44];
+    byte[] memoData = new byte[TxOutMemo.TX_OUT_MEMO_DATA_SIZE_BYTES];
 
     DestinationMemo.create(null, null, memoData);
   }
@@ -71,12 +76,35 @@ public class DestinationMemoTest {
     PublicAddress memoDestinationPublicAddress = PublicAddress.fromBytes(Hex.toByteArray(memoDestinationAddressHexProtoBytes));
     AddressHash expectedAddressHash = memoDestinationPublicAddress.calculateAddressHash();
 
-    Assert.assertEquals(expectedAddressHash, destinationMemoData.getAddressHash());
+    assertEquals(expectedAddressHash, destinationMemoData.getAddressHash());
     // The default value for this field is 1. The rust code that generated this test data used the
     // default value.
-    Assert.assertEquals(1, destinationMemoData.getNumberOfRecipients());
-    Assert.assertEquals(UnsignedLong.valueOf(13), destinationMemoData.getFee());
-    Assert.assertEquals(UnsignedLong.valueOf(12), destinationMemoData.getTotalOutlay());
+    assertEquals(1, destinationMemoData.getNumberOfRecipients());
+    assertEquals(UnsignedLong.valueOf(13), destinationMemoData.getFee());
+    assertEquals(UnsignedLong.valueOf(12), destinationMemoData.getTotalOutlay());
+  }
+
+  @Test
+  public void testParcelable() throws Exception {
+    byte[] memoData = Hex.toByteArray(validMemoDataHexBytes);
+    RistrettoPrivate viewKey = createRistrettoPrivate(senderViewPrivateKeyHexProtoBytes);
+    RistrettoPrivate spendKey = createRistrettoPrivate(senderSpendPrivateKeyHexProtoBytes);
+    Uri fogUri = Uri.parse("fog://some-test-uri");
+    TestFogConfig fogConfig = Environment.getTestFogConfig();
+    AccountKey accountKey = new AccountKey(
+            viewKey,
+            spendKey,
+            fogUri,
+            fogConfig.getFogReportId(),
+            fogConfig.getFogAuthoritySpki()
+    );
+    TxOut txOut = TxOut.fromBytes(Hex.toByteArray(txOutHexProtoBytes));
+    DestinationMemo destinationMemo = DestinationMemo.create(accountKey, txOut, memoData);
+    Parcel parcel = Parcel.obtain();
+    destinationMemo.writeToParcel(parcel, 0);
+    parcel.setDataPosition(0);
+    assertEquals(destinationMemo, DestinationMemo.CREATOR.createFromParcel(parcel));
+    parcel.recycle();
   }
 
   private static RistrettoPrivate createRistrettoPrivate(String hexProtoBytes) throws Exception {

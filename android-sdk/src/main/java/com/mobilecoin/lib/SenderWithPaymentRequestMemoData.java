@@ -1,5 +1,7 @@
 package com.mobilecoin.lib;
 
+import android.os.Parcel;
+
 import androidx.annotation.NonNull;
 import java.util.Objects;
 
@@ -9,9 +11,9 @@ import java.util.Objects;
  * <p>The data has been validated, which means that we've verified that the correct sender
  * wrote the memo and that the data has not been corrupted.
  **/
-public final class SenderWithPaymentRequestMemoData {
+public final class SenderWithPaymentRequestMemoData extends MemoData {
 
-  private final AddressHash addressHash;
+  @NonNull
   private final UnsignedLong paymentRequestId;
 
   /**
@@ -24,15 +26,12 @@ public final class SenderWithPaymentRequestMemoData {
     return new SenderWithPaymentRequestMemoData(addressHash, paymentRequestId);
   }
 
-  private SenderWithPaymentRequestMemoData(AddressHash addressHash, UnsignedLong paymentRequestId) {
-    this.addressHash = addressHash;
+  private SenderWithPaymentRequestMemoData(@NonNull AddressHash addressHash, @NonNull UnsignedLong paymentRequestId) {
+    super(addressHash);
     this.paymentRequestId = paymentRequestId;
   }
 
-  public AddressHash getAddressHash() {
-    return addressHash;
-  }
-
+  @NonNull
   public UnsignedLong getPaymentRequestId() {
     return paymentRequestId;
   }
@@ -55,4 +54,28 @@ public final class SenderWithPaymentRequestMemoData {
   public int hashCode() {
     return Objects.hash(addressHash, paymentRequestId);
   }
+
+  private SenderWithPaymentRequestMemoData(@NonNull Parcel parcel) {
+    super(parcel.readParcelable(AddressHash.class.getClassLoader()));
+    paymentRequestId = parcel.readParcelable(UnsignedLong.class.getClassLoader());
+  }
+
+  @Override
+  public void writeToParcel(@NonNull Parcel parcel, int flags) {
+    super.writeToParcel(parcel, flags);
+    parcel.writeParcelable(paymentRequestId, flags);
+  }
+
+  public static final Creator<SenderWithPaymentRequestMemoData> CREATOR = new Creator<SenderWithPaymentRequestMemoData>() {
+    @Override
+    public SenderWithPaymentRequestMemoData createFromParcel(@NonNull Parcel parcel) {
+      return new SenderWithPaymentRequestMemoData(parcel);
+    }
+
+    @Override
+    public SenderWithPaymentRequestMemoData[] newArray(int length) {
+      return new SenderWithPaymentRequestMemoData[length];
+    }
+  };
+
 }

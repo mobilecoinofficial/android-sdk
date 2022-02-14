@@ -1,5 +1,7 @@
 package com.mobilecoin.lib;
 
+import com.mobilecoin.lib.exceptions.InvalidTxOutMemoException;
+
 import java.util.Arrays;
 
 /** Helps parse TxOutMemo payloads. */
@@ -14,29 +16,36 @@ final class TxOutMemoParser {
    **/
   public static TxOutMemo parseTxOutMemo(byte[] decryptedMemoPayload,
       AccountKey recipientAccountKey,
-      TxOut nativeTxOut) {
+      TxOut nativeTxOut) throws InvalidTxOutMemoException {
     if (decryptedMemoPayload.length == 0) {
-      return () -> TxOutMemoType.NOT_SET;
+      return new EmptyMemo(TxOutMemoType.NOT_SET);
     }
 
-    byte[] memoType = Arrays.copyOfRange(decryptedMemoPayload, 0, 2);
-    byte[] memoData =
-        Arrays.copyOfRange(decryptedMemoPayload, 2, decryptedMemoPayload.length);
+    byte[] memoType = Arrays.copyOfRange(
+            decryptedMemoPayload,
+            0,
+            TxOutMemo.TX_OUT_MEMO_TYPE_SIZE_BYTES
+    );
+    byte[] memoData = Arrays.copyOfRange(
+            decryptedMemoPayload,
+            TxOutMemo.TX_OUT_MEMO_TYPE_SIZE_BYTES,
+            decryptedMemoPayload.length
+    );
     TxOutMemoType txOutMemoType = TxOutMemoType.fromBytes(memoType);
 
     switch (txOutMemoType) {
       case UNUSED:
-        return () -> TxOutMemoType.UNUSED;
+        return new EmptyMemo(TxOutMemoType.UNUSED);
       case SENDER:
         return SenderMemo
-            .create(recipientAccountKey.getDefaultSubAddressViewKey(), nativeTxOut.getPubKey(), memoData);
+            .create(nativeTxOut.getPubKey(), memoData);
       case DESTINATION:
         return DestinationMemo.create(recipientAccountKey, nativeTxOut, memoData);
       case SENDER_WITH_PAYMENT_REQUEST:
         return SenderWithPaymentRequestMemo
-            .create(recipientAccountKey.getDefaultSubAddressViewKey(), nativeTxOut.getPubKey(), memoData);
+            .create(nativeTxOut.getPubKey(), memoData);
       case UNKNOWN:
-        return () -> TxOutMemoType.UNKNOWN;
+        return new EmptyMemo(TxOutMemoType.UNKNOWN);
       default:
         throw new IllegalArgumentException(
             "Unexpected error when parsing TxOutMemoType. Shouldn't be reached.");

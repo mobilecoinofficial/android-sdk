@@ -98,7 +98,7 @@ public class OwnedTxOutTest {
 
     TxOutMemo txOutMemo = ownedTxOut.getTxOutMemo();
     SenderMemoData senderMemoData = ((SenderMemo) txOutMemo)
-        .getSenderMemoData(senderAccountKey.getPublicAddress());
+        .getSenderMemoData(senderAccountKey.getPublicAddress(), receiverAccountKey.getDefaultSubAddressViewKey());
 
     AddressHash expectedAddressHash = senderAccountKey.getPublicAddress().calculateAddressHash();
     Assert.assertEquals(expectedAddressHash,senderMemoData.getAddressHash());
@@ -148,7 +148,7 @@ public class OwnedTxOutTest {
 
     TxOutMemo txOutMemo = ownedTxOut.getTxOutMemo();
     SenderWithPaymentRequestMemoData senderWithPaymentRequestMemoData = ((SenderWithPaymentRequestMemo) txOutMemo)
-        .getSenderWithPaymentRequestMemoData(senderAccountKey.getPublicAddress());
+        .getSenderWithPaymentRequestMemoData(senderAccountKey.getPublicAddress(), receiverAccountKey.getDefaultSubAddressViewKey());
 
     AddressHash expectedAddressHash = senderAccountKey.getPublicAddress().calculateAddressHash();
     Assert.assertEquals(expectedAddressHash, senderWithPaymentRequestMemoData.getAddressHash());

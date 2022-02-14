@@ -1,48 +1,48 @@
 package com.mobilecoin.lib;
 
+import android.os.Parcel;
+
 import androidx.annotation.NonNull;
 import java.util.Objects;
 
 /** Contains data associated with a destination memo. */
-public final class DestinationMemoData {
+public final class DestinationMemoData extends MemoData {
 
-  private final AddressHash addressHash;
+  @NonNull
+  private final UnsignedLong fee, totalOutlay;
+
   private final int numberOfRecipients;
-  private final UnsignedLong fee;
-  private final UnsignedLong totalOutlay;
 
   /** Creates a {@link DestinationMemoData} instance with all of the expected fields. */
   public static DestinationMemoData create(
       @NonNull AddressHash addressHash,
-      @NonNull int numberOfRecipients,
+      int numberOfRecipients,
       @NonNull UnsignedLong fee,
       @NonNull UnsignedLong totalOutlay) {
     return new DestinationMemoData(addressHash, numberOfRecipients, fee, totalOutlay);
   }
 
   private DestinationMemoData(
-      AddressHash addressHash,
+      @NonNull AddressHash addressHash,
       int numberOfRecipients,
-      UnsignedLong fee,
-      UnsignedLong totalOutlay) {
-    this.addressHash = addressHash;
+      @NonNull UnsignedLong fee,
+      @NonNull UnsignedLong totalOutlay) {
+    super(addressHash);
     this.numberOfRecipients = numberOfRecipients;
     this.fee = fee;
     this.totalOutlay = totalOutlay;
-  }
-
-  public AddressHash getAddressHash() {
-    return addressHash;
   }
 
   public int getNumberOfRecipients() {
     return numberOfRecipients;
   }
 
+  @NonNull
   public UnsignedLong getFee() {
     return fee;
   }
 
+  @NonNull
   public UnsignedLong getTotalOutlay() {
     return totalOutlay;
   }
@@ -66,4 +66,32 @@ public final class DestinationMemoData {
   public int hashCode() {
     return Objects.hash(addressHash, numberOfRecipients, fee, totalOutlay);
   }
+
+  private DestinationMemoData(@NonNull Parcel parcel) {
+    super(parcel.readParcelable(AddressHash.class.getClassLoader()));
+    fee = parcel.readParcelable(UnsignedLong.class.getClassLoader());
+    totalOutlay = parcel.readParcelable(UnsignedLong.class.getClassLoader());
+    numberOfRecipients = parcel.readInt();
+  }
+
+  @Override
+  public void writeToParcel(@NonNull Parcel parcel, int flags) {
+    super.writeToParcel(parcel, flags);
+    parcel.writeParcelable(fee, flags);
+    parcel.writeParcelable(totalOutlay, flags);
+    parcel.writeInt(numberOfRecipients);
+  }
+
+  public static final Creator<DestinationMemoData> CREATOR = new Creator<DestinationMemoData>() {
+    @Override
+    public DestinationMemoData createFromParcel(@NonNull Parcel parcel) {
+      return new DestinationMemoData(parcel);
+    }
+
+    @Override
+    public DestinationMemoData[] newArray(int length) {
+      return new DestinationMemoData[length];
+    }
+  };
+
 }

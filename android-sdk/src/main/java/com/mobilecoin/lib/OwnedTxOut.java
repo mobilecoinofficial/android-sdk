@@ -9,6 +9,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.mobilecoin.lib.exceptions.AmountDecoderException;
+import com.mobilecoin.lib.exceptions.InvalidTxOutMemoException;
 import com.mobilecoin.lib.exceptions.SerializationException;
 import com.mobilecoin.lib.exceptions.TransactionBuilderException;
 import com.mobilecoin.lib.log.Logger;
@@ -36,18 +37,15 @@ public class OwnedTxOut implements Parcelable {
 
     //  The global index of this TxOut in the entire block chain.
     private final UnsignedLong txOutGlobalIndex;
-    private final byte[] decryptedMemoPayload;
 
     // The block index at which this TxOut appeared.
     private final UnsignedLong receivedBlockIndex;
-    private final AccountKey accountKey;
-    private final TxOut nativeTxOut;
 
     private final Date receivedBlockTimestamp;
     private Date spentBlockTimestamp;
     private UnsignedLong spentBlockIndex;
 
-    private TxOutMemo cachedTxOutMemo;
+    private final TxOutMemo cachedTxOutMemo;
 
     private final BigInteger value;
     private final RistrettoPublic txOutPublicKey;
@@ -59,7 +57,6 @@ public class OwnedTxOut implements Parcelable {
             @NonNull AccountKey accountKey
     ) {
         try {
-            this.accountKey = accountKey;
             txOutGlobalIndex = UnsignedLong.fromLongBits(txOutRecord.getTxOutGlobalIndex());
             long longTimestampSeconds = txOutRecord.getTimestamp();
             // when the timestamp is missing U64::MAX is returned
@@ -98,11 +95,14 @@ public class OwnedTxOut implements Parcelable {
                     .setData(txOutRecord.getTxOutEMemoData()).build();
                 txOutProtoBuilder.setEMemo(encryptedMemo);
             }
+
             // Calculated fields
-            nativeTxOut = TxOut.fromProtoBufObject(txOutProtoBuilder.build());
-            decryptedMemoPayload = nativeTxOut.decryptMemoPayload(accountKey);
+            TxOut nativeTxOut = TxOut.fromProtoBufObject(txOutProtoBuilder.build());
+            byte decryptedMemoPayload[] = nativeTxOut.decryptMemoPayload(accountKey);
             keyImage = nativeTxOut.computeKeyImage(accountKey);
-        } catch (SerializationException | AmountDecoderException | TransactionBuilderException e) {
+            cachedTxOutMemo = TxOutMemoParser
+                    .parseTxOutMemo(decryptedMemoPayload, accountKey, nativeTxOut);
+        } catch (SerializationException | AmountDecoderException | TransactionBuilderException | InvalidTxOutMemoException e) {
             IllegalArgumentException illegalArgumentException =
                     new IllegalArgumentException("Unable to decode the TxOutRecord", e);
             Util.logException(TAG, illegalArgumentException);
@@ -111,12 +111,8 @@ public class OwnedTxOut implements Parcelable {
     }
 
     /** Retrieves the {@link TxOutMemo} for the given TxOut. */
+    @NonNull
     public TxOutMemo getTxOutMemo() {
-        if (cachedTxOutMemo == null) {
-            cachedTxOutMemo = TxOutMemoParser
-                .parseTxOutMemo(decryptedMemoPayload, accountKey, nativeTxOut);
-        }
-
         return cachedTxOutMemo;
     }
 
@@ -190,27 +186,31 @@ public class OwnedTxOut implements Parcelable {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         OwnedTxOut that = (OwnedTxOut) o;
-        return Objects.equals(txOutGlobalIndex, that.txOutGlobalIndex) &&
-               Objects.equals(receivedBlockIndex, that.receivedBlockIndex) &&
-               Objects.equals(spentBlockIndex, that.spentBlockIndex) &&
-               Objects.equals(value, that.value) &&
-               Objects.equals(txOutPublicKey, that.txOutPublicKey) &&
-               Arrays.equals(keyImage, that.keyImage);
+        return Objects.equals(this.txOutGlobalIndex, that.txOutGlobalIndex) &&
+               Objects.equals(this.receivedBlockIndex, that.receivedBlockIndex) &&
+               Objects.equals(this.receivedBlockTimestamp, that.receivedBlockTimestamp) &&
+               Objects.equals(this.spentBlockTimestamp, that.spentBlockTimestamp) &&
+               Objects.equals(this.spentBlockIndex, that.spentBlockIndex) &&
+               Objects.equals(this.value, that.value) &&
+               Objects.equals(this.txOutPublicKey, that.txOutPublicKey) &&
+               Arrays.equals(this.keyImage, that.keyImage) &&
+               this.keyImageHash == that.keyImageHash &&
+               Objects.equals(this.cachedTxOutMemo, that.cachedTxOutMemo);
     }
 
     @Override
     public int hashCode() {
         int result = Objects.hash(txOutGlobalIndex, receivedBlockIndex,
-                spentBlockIndex, value, txOutPublicKey);
-        result = 31 * result + Arrays.hashCode(keyImage);
+                receivedBlockTimestamp, spentBlockTimestamp, spentBlockIndex, value, txOutPublicKey,
+                Arrays.hashCode(keyImage), keyImageHash, cachedTxOutMemo);
         return result;
     }
 
     /**
      * Creates an OwnedTxOut from the provided parcel
-     * @param parcel The parcel that contains na OwnedTxOut
+     * @param parcel The parcel that contains an OwnedTxOut
      */
-    private OwnedTxOut(Parcel parcel) throws SerializationException {
+    private OwnedTxOut(@NonNull Parcel parcel) throws SerializationException {
         txOutGlobalIndex = parcel.readParcelable(UnsignedLong.class.getClassLoader());
         receivedBlockIndex = parcel.readParcelable(UnsignedLong.class.getClassLoader());
         receivedBlockTimestamp = (Date)parcel.readSerializable();
@@ -220,12 +220,7 @@ public class OwnedTxOut implements Parcelable {
         txOutPublicKey = RistrettoPublic.fromBytes(parcel.createByteArray());
         keyImage = parcel.createByteArray();
         keyImageHash = parcel.readInt();
-
-        //TODO:
-        decryptedMemoPayload = null;
-        accountKey = null;
-        nativeTxOut = null;
-        //TODO:
+        cachedTxOutMemo = parcel.readParcelable(TxOutMemo.class.getClassLoader());
     }
 
     /**
@@ -234,7 +229,7 @@ public class OwnedTxOut implements Parcelable {
      * @param flags The flags describing the contents of this object
      */
     @Override
-    public void writeToParcel(Parcel parcel, int flags) {
+    public void writeToParcel(@NonNull Parcel parcel, int flags) {
         parcel.writeParcelable(txOutGlobalIndex, flags);
         parcel.writeParcelable(receivedBlockIndex, flags);
         parcel.writeSerializable(receivedBlockTimestamp);
@@ -244,6 +239,7 @@ public class OwnedTxOut implements Parcelable {
         parcel.writeByteArray(txOutPublicKey.getKeyBytes());
         parcel.writeByteArray(keyImage);
         parcel.writeInt(keyImageHash);
+        parcel.writeParcelable(cachedTxOutMemo, flags);
     }
 
     /**
@@ -261,7 +257,7 @@ public class OwnedTxOut implements Parcelable {
          * @return The OwnedTxOut contained in the provided Parcel
          */
         @Override
-        public OwnedTxOut createFromParcel(Parcel parcel) {
+        public OwnedTxOut createFromParcel(@NonNull Parcel parcel) {
             try {
                 return new OwnedTxOut(parcel);
             } catch(SerializationException e) {

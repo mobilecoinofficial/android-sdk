@@ -1,45 +1,41 @@
 package com.mobilecoin.lib;
 
+import android.os.Parcel;
+
 import androidx.annotation.NonNull;
 import com.mobilecoin.lib.exceptions.InvalidTxOutMemoException;
 
+import java.util.Objects;
+
 /** Represents a sender memo, which corresponds to the "AuthenticatedSenderMemo" specificatoin. */
-public final class SenderMemo extends Native implements TxOutMemo {
+public final class SenderMemo extends TxOutMemo {
 
   private static final String TAG = SenderMemo.class.getSimpleName();
 
-  private final RistrettoPrivate receiverSubaddressViewKey;
   private final RistrettoPublic txOutPublicKey;
-
-  private SenderMemoData senderMemoData;
+  private final SenderMemoData senderMemoData;
 
   /**
    * Creates a {@link SenderMemo} from a decrypted memo data that hasn't been validated yet.
    *
-   * @param memoData - The 44 bytes that correspond to the memo payload.
+   * @param memoData - The {@value TxOutMemo#TX_OUT_MEMO_DATA_SIZE_BYTES} bytes that correspond to the memo payload.
    **/
   static SenderMemo create(
-      @NonNull RistrettoPrivate receiverSubaddressViewKey,
       @NonNull RistrettoPublic txOutPublicKey,
       @NonNull byte[] memoData
   ) {
-    if (memoData.length != 44) {
-      throw new IllegalArgumentException("Memo data byte array must have a lenght of 44. Instead, the length was: " + memoData.length);
+    if (memoData.length != TxOutMemo.TX_OUT_MEMO_DATA_SIZE_BYTES) {
+      throw new IllegalArgumentException("Memo data byte array must have a length of " +
+              TxOutMemo.TX_OUT_MEMO_DATA_SIZE_BYTES + ". Instead, the length was: " + memoData.length);
     }
-    return new SenderMemo(receiverSubaddressViewKey, txOutPublicKey, memoData);
-  }
-
-  @Override
-  public TxOutMemoType getTxOutMemoType() {
-    return TxOutMemoType.SENDER;
+    return new SenderMemo(txOutPublicKey, memoData);
   }
 
   private SenderMemo(
-      @NonNull RistrettoPrivate receiverSubaddressViewKey,
       @NonNull RistrettoPublic txOutPublicKey,
       @NonNull byte[] memoData
   ) {
-    this.receiverSubaddressViewKey = receiverSubaddressViewKey;
+    super(TxOutMemoType.SENDER);
     this.txOutPublicKey = txOutPublicKey;
     try {
       init_jni_from_memo_data(memoData);
@@ -49,8 +45,8 @@ public final class SenderMemo extends Native implements TxOutMemo {
       Util.logException(TAG, illegalArgumentException);
       throw illegalArgumentException;
     }
+    senderMemoData = SenderMemoData.create(getAddressHash());
   }
-
 
   /**
    * Retrieves the {@link AddressHash} that hasn't been validated yet.
@@ -74,22 +70,59 @@ public final class SenderMemo extends Native implements TxOutMemo {
    * If the {@link PublicAddress} is not known by the user, then do not call this method because the
    * memo is automatically invalid.
    **/
-  public SenderMemoData getSenderMemoData(@NonNull PublicAddress senderPublicAddress)
-      throws InvalidTxOutMemoException {
-    if (senderMemoData != null) {
-      return senderMemoData;
+  public SenderMemoData getSenderMemoData(
+          @NonNull PublicAddress senderPublicAddress,
+          @NonNull RistrettoPrivate receiverSubaddressViewKey) throws InvalidTxOutMemoException {
+    if(!this.validated) {
+      if (!(this.validated = is_valid(
+              senderPublicAddress,
+              receiverSubaddressViewKey,
+              txOutPublicKey)
+      )) {
+        throw new InvalidTxOutMemoException("The sender memo is invalid.");
+      }
     }
-
-    if (!is_valid(
-        senderPublicAddress,
-        receiverSubaddressViewKey,
-        txOutPublicKey
-    )) {
-      throw new InvalidTxOutMemoException("The sender memo is invalid.");
-    }
-
-    senderMemoData = SenderMemoData.create(getAddressHash());
     return senderMemoData;
+  }
+
+  private SenderMemo(@NonNull Parcel parcel) {
+    super(TxOutMemoType.SENDER);
+    txOutPublicKey = parcel.readParcelable(RistrettoPublic.class.getClassLoader());
+    senderMemoData = parcel.readParcelable(SenderMemoData.class.getClassLoader());
+  }
+
+  @Override
+  public void writeToParcel(@NonNull Parcel parcel, int flags) {
+    parcel.writeParcelable(txOutPublicKey, flags);
+    parcel.writeParcelable(senderMemoData, flags);
+  }
+
+  public static final Creator<SenderMemo> CREATOR = new Creator<SenderMemo>() {
+    @Override
+    public SenderMemo createFromParcel(@NonNull Parcel parcel) {
+      return new SenderMemo(parcel);
+    }
+
+    @Override
+    public SenderMemo[] newArray(int length) {
+      return new SenderMemo[length];
+    }
+  };
+
+  @Override
+  public boolean equals(Object o) {
+    if(o instanceof SenderMemo) {
+      SenderMemo that = (SenderMemo)o;
+      return Objects.equals(this.memoType, that.memoType) &&
+             Objects.equals(this.txOutPublicKey, that.txOutPublicKey) &&
+             Objects.equals(this.senderMemoData, that.senderMemoData);
+    }
+    return false;
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(memoType, txOutPublicKey, senderMemoData);
   }
 
   private native void init_jni_from_memo_data(byte[] memoData);

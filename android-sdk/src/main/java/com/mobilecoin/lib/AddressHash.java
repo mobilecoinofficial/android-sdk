@@ -1,5 +1,10 @@
 package com.mobilecoin.lib;
 
+import android.os.Parcel;
+import android.os.Parcelable;
+
+import androidx.annotation.NonNull;
+
 import java.util.Arrays;
 
 /**
@@ -8,7 +13,7 @@ import java.util.Arrays;
  * <p>Used in the memo verification process for recoverable transaction history memos.
  *
  **/
-public final class AddressHash {
+public final class AddressHash implements Parcelable {
 
   private final byte[] hashData;
 
@@ -44,4 +49,31 @@ public final class AddressHash {
         "hashData= " + Arrays.toString(hashData) +
         "}";
   }
+
+  private AddressHash(@NonNull Parcel parcel) {
+    hashData = parcel.createByteArray();
+  }
+
+  @Override
+  public void writeToParcel(@NonNull Parcel parcel, int flags) {
+    parcel.writeByteArray(hashData);
+  }
+
+  @Override
+  public int describeContents() {
+    return 0;
+  }
+
+  public static final Creator<AddressHash> CREATOR = new Creator<AddressHash>() {
+    @Override
+    public AddressHash createFromParcel(@NonNull Parcel parcel) {
+      return new AddressHash(parcel);
+    }
+
+    @Override
+    public AddressHash[] newArray(int length) {
+      return new AddressHash[length];
+    }
+  };
+
 }

@@ -115,7 +115,7 @@ public class TxOutMemoIntegrationTest {
         .parseTxOutMemo(sentMemoPayload, recipientAccountKey, sentTxOut);
     assertEquals(senderAddressHash, senderMemo.getUnvalidatedAddressHash());
     SenderMemoData senderMemoData = senderMemo
-        .getSenderMemoData(senderAccountKey.getPublicAddress());
+        .getSenderMemoData(senderAccountKey.getPublicAddress(), recipientAccountKey.getDefaultSubAddressViewKey());
 
     assertEquals(senderAddressHash, senderMemoData.getAddressHash());
   }
@@ -225,7 +225,7 @@ public class TxOutMemoIntegrationTest {
         .parseTxOutMemo(sentWithPaymentRequestMemoPayload, recipientAccountKey, sentTxOut);
     assertEquals(senderAddressHash, senderWithPaymentRequestMemo.getUnvalidatedAddressHash());
     SenderWithPaymentRequestMemoData senderWithPaymentRequestMemoData = senderWithPaymentRequestMemo
-        .getSenderWithPaymentRequestMemoData(senderAccountKey.getPublicAddress());
+        .getSenderWithPaymentRequestMemoData(senderAccountKey.getPublicAddress(), recipientAccountKey.getDefaultSubAddressViewKey());
 
     assertEquals(senderAddressHash, senderWithPaymentRequestMemoData.getAddressHash());
     assertEquals(paymentRequestId, senderWithPaymentRequestMemoData.getPaymentRequestId());

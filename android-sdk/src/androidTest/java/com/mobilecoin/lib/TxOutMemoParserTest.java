@@ -2,6 +2,8 @@ package com.mobilecoin.lib;
 
 
 import android.util.Log;
+
+import com.mobilecoin.lib.exceptions.InvalidTxOutMemoException;
 import com.mobilecoin.lib.util.Hex;
 import org.junit.Assert;
 import org.junit.BeforeClass;
@@ -29,7 +31,7 @@ public class TxOutMemoParserTest {
 
 
   @Test
-  public void parseTxOutMemo_emptyDecryptedPayload_ReturnsNotSet() {
+  public void parseTxOutMemo_emptyDecryptedPayload_ReturnsNotSet() throws InvalidTxOutMemoException {
     byte[] emptyDecryptedMemoPayload = new byte[] {};
     TxOutMemo txOutMemo = TxOutMemoParser
         .parseTxOutMemo(emptyDecryptedMemoPayload, null, null);

@@ -1,38 +1,39 @@
 package com.mobilecoin.lib;
 
+import android.os.Parcel;
+
 import androidx.annotation.NonNull;
 import com.mobilecoin.lib.exceptions.InvalidTxOutMemoException;
 
+import java.util.Objects;
+
 /** Represents a destination memo, which corresponds to the "DestinationMemo" specification. */
-public final class DestinationMemo extends Native implements TxOutMemo {
+public final class DestinationMemo extends TxOutMemo {
 
   private static final String TAG = SenderMemo.class.getSimpleName();
 
-  private final AccountKey accountKey;
-  private final TxOut txOut;
-
-  private DestinationMemoData destinationMemoData;
+  private final DestinationMemoData destinationMemoData;
 
   /**
    * Creates a {@link DestinationMemo} from decrypted memo data that hasn't been validated yet.
    *
    * @param accountKey
    * @param txOut
-   * @param memoData - The 44 bytes that correspond to the memo payload.
+   * @param memoData - The {@value TxOutMemo#TX_OUT_MEMO_DATA_SIZE_BYTES} bytes that correspond to the memo payload.
    **/
   static DestinationMemo create(
       @NonNull AccountKey accountKey,
       @NonNull TxOut txOut,
       @NonNull byte[] memoData) {
-    if (memoData.length != 44) {
-      throw new IllegalArgumentException("Memo data byte array must have a lenght of 44. Instead, the length was: " + memoData.length);
+    if (memoData.length != TxOutMemo.TX_OUT_MEMO_DATA_SIZE_BYTES) {
+      throw new IllegalArgumentException("Memo data byte array must have a length of " +
+              TxOutMemo.TX_OUT_MEMO_DATA_SIZE_BYTES + ". Instead, the length was: " + memoData.length);
     }
     return new DestinationMemo(accountKey, txOut, memoData);
   }
 
   private DestinationMemo(AccountKey accountKey, TxOut txOut, byte[] memoData) {
-    this.accountKey = accountKey;
-    this.txOut = txOut;
+    super(TxOutMemoType.DESTINATION);
     try {
       init_jni_from_memo_data(memoData);
     } catch(Exception e) {
@@ -41,34 +42,61 @@ public final class DestinationMemo extends Native implements TxOutMemo {
       Util.logException(TAG, illegalArgumentException);
       throw illegalArgumentException;
     }
-  }
-
-  /** Validates then retrieves the destination memo data. **/
-  public DestinationMemoData getDestinationMemoData() throws InvalidTxOutMemoException {
-    if (destinationMemoData != null) {
-      return destinationMemoData;
-    }
-
-    if (!is_valid(accountKey, txOut)) {
-      throw new InvalidTxOutMemoException("The sender memo is invalid.");
-    }
-
+    validated = is_valid(accountKey, txOut);
     AddressHash addressHash = AddressHash.createAddressHash(get_address_hash_data());
     UnsignedLong fee = UnsignedLong.fromLongBits(get_fee());
     UnsignedLong totalOutlay = UnsignedLong.fromLongBits(get_total_outlay());
     destinationMemoData = DestinationMemoData.create(
-        addressHash,
-        get_number_of_recipients(),
-        fee,
-        totalOutlay
+            addressHash,
+            get_number_of_recipients(),
+            fee,
+            totalOutlay
     );
+  }
 
+  /** Retrieves the destination memo data. **/
+  public DestinationMemoData getDestinationMemoData() throws InvalidTxOutMemoException {
+    if(!validated) {
+      throw new InvalidTxOutMemoException("The sender memo is invalid.");
+    }
     return destinationMemoData;
   }
 
+  private DestinationMemo(@NonNull Parcel parcel) {
+    super(TxOutMemoType.DESTINATION);
+    destinationMemoData = parcel.readParcelable(DestinationMemo.class.getClassLoader());
+  }
+
   @Override
-  public TxOutMemoType getTxOutMemoType() {
-    return TxOutMemoType.DESTINATION;
+  public void writeToParcel(@NonNull Parcel parcel, int flags) {
+    parcel.writeParcelable(destinationMemoData, flags);
+  }
+
+  public static Creator<DestinationMemo> CREATOR = new Creator<DestinationMemo>() {
+    @Override
+    public DestinationMemo createFromParcel(@NonNull Parcel parcel) {
+      return new DestinationMemo(parcel);
+    }
+
+    @Override
+    public DestinationMemo[] newArray(int length) {
+      return new DestinationMemo[length];
+    }
+  };
+
+  @Override
+  public boolean equals(Object o) {
+    if(o instanceof DestinationMemo) {
+      DestinationMemo that = (DestinationMemo)o;
+      return Objects.equals(this.memoType, that.memoType) &&
+             Objects.equals(this.destinationMemoData, that.destinationMemoData);
+    }
+    return false;
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(memoType, destinationMemoData);
   }
 
   private native void init_jni_from_memo_data(byte[] memoData);

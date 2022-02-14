@@ -4,6 +4,8 @@ import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
+import android.os.Parcel;
+
 import com.mobilecoin.api.MobileCoinAPI;
 import com.mobilecoin.lib.util.Hex;
 import org.junit.Test;
@@ -21,14 +23,14 @@ public class SenderWithPaymentRequestMemoTest {
   public void create_memoDataIncorrectLength() {
     byte[] memoData = new byte[1];
 
-    SenderWithPaymentRequestMemo.create(null, null, memoData);
+    SenderWithPaymentRequestMemo.create(null, memoData);
   }
 
   @Test
   public void create_memoDataLength_createsSenderWithPaymentRequestMemo() {
-    byte[] memoData = new byte[44];
+    byte[] memoData = new byte[TxOutMemo.TX_OUT_MEMO_DATA_SIZE_BYTES];
 
-    SenderWithPaymentRequestMemo.create(null, null, memoData);
+    SenderWithPaymentRequestMemo.create(null, memoData);
   }
 
   @Test
@@ -38,7 +40,6 @@ public class SenderWithPaymentRequestMemoTest {
     RistrettoPublic txOutPublicKey = createRistrettoPublic(txOutPublicKeyHexProtoBytes);
     byte[] memoData = Hex.toByteArray(validMemoDataHexBytes);
     SenderWithPaymentRequestMemo senderWithPaymentRequestMemo = SenderWithPaymentRequestMemo.create(
-        receiverSubaddressViewKey,
         txOutPublicKey,
         memoData
     );
@@ -47,7 +48,7 @@ public class SenderWithPaymentRequestMemoTest {
         PublicAddress.fromBytes(Hex.toByteArray(senderPublicAddressHexProtoBytes));
 
     SenderWithPaymentRequestMemoData senderWithPaymentRequestMemoData =
-        senderWithPaymentRequestMemo.getSenderWithPaymentRequestMemoData(senderPublicAddress);
+        senderWithPaymentRequestMemo.getSenderWithPaymentRequestMemoData(senderPublicAddress, receiverSubaddressViewKey);
 
     assertNotNull(senderWithPaymentRequestMemoData);
     assertArrayEquals(
@@ -61,9 +62,24 @@ public class SenderWithPaymentRequestMemoTest {
 
   @Test
   public void getUnvalidatedAddressHash_returnsAddressHash() {
-    SenderMemo senderMemo = SenderMemo.create(null, null, new byte[44]);
+    SenderMemo senderMemo = SenderMemo.create(null, new byte[TxOutMemo.TX_OUT_MEMO_DATA_SIZE_BYTES]);
 
     senderMemo.getUnvalidatedAddressHash();
+  }
+
+  @Test
+  public void testParcelable() throws Exception {
+    RistrettoPublic txOutPublicKey = createRistrettoPublic(txOutPublicKeyHexProtoBytes);
+    byte[] memoData = Hex.toByteArray(validMemoDataHexBytes);
+    SenderWithPaymentRequestMemo senderWithPaymentRequestMemo = SenderWithPaymentRequestMemo.create(
+            txOutPublicKey,
+            memoData
+    );
+    Parcel parcel = Parcel.obtain();
+    senderWithPaymentRequestMemo.writeToParcel(parcel, 0);
+    parcel.setDataPosition(0);
+    assertEquals(senderWithPaymentRequestMemo, SenderWithPaymentRequestMemo.CREATOR.createFromParcel(parcel));
+    parcel.recycle();
   }
 
   private static RistrettoPrivate createRistrettoPrivate(String hexProtoBytes) throws Exception {

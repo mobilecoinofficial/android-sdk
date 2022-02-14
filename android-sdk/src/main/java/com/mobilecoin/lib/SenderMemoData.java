@@ -1,5 +1,7 @@
 package com.mobilecoin.lib;
 
+import android.os.Parcel;
+
 import androidx.annotation.NonNull;
 import java.util.Objects;
 
@@ -9,21 +11,15 @@ import java.util.Objects;
  * <p>The data has been validated, which means that we've verified that the correct sender
  * wrote the memo and that the data has not been corrupted.
  **/
-public final class SenderMemoData {
-
-  private final AddressHash addressHash;
+public final class SenderMemoData extends MemoData {
 
   /** Creates a {@link SenderMemoData} instance with all of the expected fields. */
   public static SenderMemoData create(@NonNull AddressHash addressHash) {
     return new SenderMemoData(addressHash);
   }
 
-  private SenderMemoData(AddressHash addressHash) {
-    this.addressHash = addressHash;
-  }
-
-  public AddressHash getAddressHash() {
-    return addressHash;
+  private SenderMemoData(@NonNull AddressHash addressHash) {
+    super(addressHash);
   }
 
   @Override
@@ -42,4 +38,26 @@ public final class SenderMemoData {
   public int hashCode() {
     return Objects.hash(addressHash);
   }
+
+  private SenderMemoData(@NonNull Parcel parcel) {
+    super(parcel.readParcelable(AddressHash.class.getClassLoader()));
+  }
+
+  @Override
+  public void writeToParcel(@NonNull Parcel parcel, int flags) {
+    super.writeToParcel(parcel, flags);
+  }
+
+  public static final Creator<SenderMemoData> CREATOR = new Creator<SenderMemoData>() {
+    @Override
+    public SenderMemoData createFromParcel(@NonNull Parcel parcel) {
+      return new SenderMemoData(parcel);
+    }
+
+    @Override
+    public SenderMemoData[] newArray(int length) {
+      return new SenderMemoData[length];
+    }
+  };
+
 }
