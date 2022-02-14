@@ -10,7 +10,7 @@ import java.math.BigInteger;
 
 /**
  * Wrapper for the Transaction and Receipt objects obtained via {@link
- * MobileCoinClient#prepareTransaction(PublicAddress recipient, BigInteger amount, BigInteger fee)}
+ * MobileCoinTransactionClient#prepareTransaction(PublicAddress, BigInteger, BigInteger, TxOutMemoBuilder)}
  */
 public final class PendingTransaction {
     private final static String TAG = PendingTransaction.class.getName();

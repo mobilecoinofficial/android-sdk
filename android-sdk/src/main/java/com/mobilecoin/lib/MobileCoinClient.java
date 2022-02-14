@@ -263,9 +263,10 @@ public final class MobileCoinClient implements MobileCoinAccountClient, MobileCo
     @Override
     @NonNull
     public PendingTransaction prepareTransaction(
-            @NonNull final PublicAddress recipient,
-            @NonNull final BigInteger amount,
-            @NonNull final BigInteger fee
+        @NonNull final PublicAddress recipient,
+        @NonNull final BigInteger amount,
+        @NonNull final BigInteger fee,
+        @NonNull TxOutMemoBuilder txOutMemoBuilder
     ) throws InsufficientFundsException, FragmentedAccountException, FeeRejectedException,
             InvalidFogResponse, AttestationException, NetworkException,
             TransactionBuilderException, FogReportException {
@@ -293,16 +294,18 @@ public final class MobileCoinClient implements MobileCoinAccountClient, MobileCo
                 recipient,
                 amount,
                 selection.txOuts,
-                fee
+                fee,
+                txOutMemoBuilder
         );
     }
 
     @NonNull
     PendingTransaction prepareTransaction(
-            @NonNull final PublicAddress recipient,
-            @NonNull final BigInteger amount,
-            @NonNull final List<OwnedTxOut> txOuts,
-            @NonNull final BigInteger fee
+        @NonNull final PublicAddress recipient,
+        @NonNull final BigInteger amount,
+        @NonNull final List<OwnedTxOut> txOuts,
+        @NonNull final BigInteger fee,
+        TxOutMemoBuilder txOutMemoBuilder
     ) throws InvalidFogResponse, AttestationException, NetworkException,
             TransactionBuilderException, FogReportException {
         Logger.i(TAG, "PrepareTransaction with TxOuts call", null,
@@ -399,7 +402,7 @@ public final class MobileCoinClient implements MobileCoinAccountClient, MobileCo
         Logger.d(TAG, "Report + Rings fetch time: " + (endTime - startTime) + "ms");
         FogResolver fogResolver = new FogResolver(fogReportResponses,
                 clientConfig.report.getVerifier());
-        TransactionBuilder txBuilder = new TransactionBuilder(fogResolver);
+        TransactionBuilder txBuilder = new TransactionBuilder(fogResolver, txOutMemoBuilder);
         BigInteger totalAmount = BigInteger.valueOf(0);
         for (Ring ring : rings) {
             OwnedTxOut utxo = ring.utxo;
@@ -425,13 +428,9 @@ public final class MobileCoinClient implements MobileCoinAccountClient, MobileCo
 
         BigInteger finalAmount = amount.add(fee);
 
-        if (totalAmount.compareTo(finalAmount) > 0) { // if total amount > finalAmount
-            BigInteger change = totalAmount.subtract(finalAmount);
-            txBuilder.addOutput(change,
-                    accountKey.getPublicAddress(),
-                    null
-            );
-        }
+        BigInteger change = totalAmount.subtract(finalAmount);
+        txBuilder.addChangeOutput(change, accountKey, null);
+
         txBuilder.setTombstoneBlockIndex(tombstoneBlockIndex);
         txBuilder.setFee(fee.longValue());
 
@@ -501,13 +500,16 @@ public final class MobileCoinClient implements MobileCoinAccountClient, MobileCo
 
     @Override
     public void defragmentAccount(
-            @NonNull BigInteger amountToSend,
-            @NonNull DefragmentationDelegate delegate
-    ) throws InvalidFogResponse, AttestationException, NetworkException, InsufficientFundsException,
+        @NonNull BigInteger amountToSend,
+        @NonNull DefragmentationDelegate delegate,
+        boolean shouldWriteRTHMemos) throws InvalidFogResponse, AttestationException, NetworkException, InsufficientFundsException,
             TransactionBuilderException, InvalidTransactionException,
             FogReportException, TimeoutException {
         delegate.onStart();
         UTXOSelector.Selection<OwnedTxOut> inputSelectionForAmount = null;
+        TxOutMemoBuilder txOutMemoBuilder = shouldWriteRTHMemos ? TxOutMemoBuilder
+            .createSenderAndDestinationRTHMemoBuilder(accountKey)
+            : TxOutMemoBuilder.createDefaultRTHMemoBuilder();
         do {
             Set<OwnedTxOut> unspent = getUnspentTxOuts();
             try {
@@ -532,7 +534,8 @@ public final class MobileCoinClient implements MobileCoinAccountClient, MobileCo
                         accountKey.getPublicAddress(),
                         totalValue.subtract(selection.fee),
                         selection.txOuts,
-                        selection.fee
+                        selection.fee,
+                        txOutMemoBuilder
                 );
                 if (!delegate.onStepReady(pendingTransaction, selection.fee)) {
                     delegate.onCancel();

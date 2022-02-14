@@ -4,13 +4,11 @@ package com.mobilecoin.lib;
 
 
 import androidx.annotation.NonNull;
-
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.mobilecoin.api.MobileCoinAPI;
 import com.mobilecoin.lib.exceptions.AmountDecoderException;
 import com.mobilecoin.lib.exceptions.SerializationException;
 import com.mobilecoin.lib.log.Logger;
-
 import java.util.Objects;
 
 final class TxOut extends Native {
@@ -108,6 +106,14 @@ final class TxOut extends Native {
         return protoBufTxOut;
     }
 
+    @NonNull
+    byte[] decryptMemoPayload(@NonNull AccountKey accountKey) {
+        if (!protoBufTxOut.hasEMemo()) {
+            return new byte[0];
+        }
+        return decrypt_memo_payload(accountKey);
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -149,4 +155,7 @@ final class TxOut extends Native {
 
     @NonNull
     private native byte[] encode();
+
+    @NonNull
+    private native byte[] decrypt_memo_payload(@NonNull AccountKey accountKey);
 }

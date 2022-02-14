@@ -33,6 +33,7 @@ public interface MobileCoinTransactionClient {
    * @param recipient {@link PublicAddress} of the recipient
    * @param amount    transaction amount
    * @param fee       transaction fee (see {@link MobileCoinClient#estimateTotalFee})
+   * @param txOutMemoBuilder
    * @return {@link PendingTransaction} which encapsulates the {@link Transaction} and {@link
    * Receipt} objects
    */
@@ -40,7 +41,8 @@ public interface MobileCoinTransactionClient {
   PendingTransaction prepareTransaction(
       @NonNull final PublicAddress recipient,
       @NonNull final BigInteger amount,
-      @NonNull final BigInteger fee
+      @NonNull final BigInteger fee,
+      @NonNull TxOutMemoBuilder txOutMemoBuilder
   ) throws InsufficientFundsException, FragmentedAccountException, FeeRejectedException,
       InvalidFogResponse, AttestationException, NetworkException,
       TransactionBuilderException, FogReportException;
@@ -84,7 +86,7 @@ public interface MobileCoinTransactionClient {
    * Estimates the minimum fee required to send a transaction with the specified amount. The account
    * balance consists of multiple coins, if there are no big enough coins to successfully send the
    * transaction {@link FragmentedAccountException} will be thrown. The account needs to be
-   * defragmented in order to send the specified amount. See {@link MobileCoinClient#defragmentAccount}.
+   * defragmented in order to send the specified amount. See {@link MobileCoinAccountClient#defragmentAccount}.
    *
    * @param amount an amount value in picoMob
    */

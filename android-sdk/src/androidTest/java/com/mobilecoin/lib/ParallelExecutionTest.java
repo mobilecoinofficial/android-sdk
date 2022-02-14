@@ -70,7 +70,8 @@ public class ParallelExecutionTest {
                     PendingTransaction pending = aliceClient
                             .prepareTransaction(bobClient.getAccountKey().getPublicAddress(),
                                                 BigInteger.valueOf(AMOUNT_TO_SEND),
-                                                fee
+                                                fee,
+                                                TxOutMemoBuilder.createDefaultRTHMemoBuilder()
                             );
                     aliceClient.submitTransaction(pending.getTransaction());
 
@@ -81,7 +82,8 @@ public class ParallelExecutionTest {
                     pending = aliceClient
                             .prepareTransaction(aliceClient.getAccountKey().getPublicAddress(),
                                                 BigInteger.valueOf(AMOUNT_TO_SEND),
-                                                fee
+                                                fee,
+                                                TxOutMemoBuilder.createDefaultRTHMemoBuilder()
                             );
                     bobClient.submitTransaction(pending.getTransaction());
                 } catch (Exception e) {
