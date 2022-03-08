@@ -402,7 +402,7 @@ public final class MobileCoinClient implements MobileCoinAccountClient, MobileCo
         Logger.d(TAG, "Report + Rings fetch time: " + (endTime - startTime) + "ms");
         FogResolver fogResolver = new FogResolver(fogReportResponses,
                 clientConfig.report.getVerifier());
-        TransactionBuilder txBuilder = new TransactionBuilder(fogResolver, txOutMemoBuilder);
+        TransactionBuilder txBuilder = new TransactionBuilder(fogResolver, txOutMemoBuilder, 1);
         BigInteger totalAmount = BigInteger.valueOf(0);
         for (Ring ring : rings) {
             OwnedTxOut utxo = ring.utxo;

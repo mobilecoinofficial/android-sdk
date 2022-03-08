@@ -19,10 +19,11 @@ final class TransactionBuilder extends Native {
 
     TransactionBuilder(
         @NonNull FogResolver fogResolver,
-        TxOutMemoBuilder txOutMemoBuilder
+        @NonNull TxOutMemoBuilder txOutMemoBuilder,
+        int blockVersion
     ) throws FogReportException {
         try {
-            init_jni(fogResolver, txOutMemoBuilder);
+            init_jni(fogResolver, txOutMemoBuilder, blockVersion);
         } catch (Exception exception) {
             throw new FogReportException("Unable to create TxBuilder", exception);
         }
@@ -141,7 +142,7 @@ final class TransactionBuilder extends Native {
         super.finalize();
     }
 
-    private native void init_jni(@NonNull FogResolver fog_resolver, TxOutMemoBuilder txOutMemoBuilder);
+    private native void init_jni(@NonNull FogResolver fog_resolver, @NonNull TxOutMemoBuilder txOutMemoBuilder, int blockVersion);
 
     private native void finalize_jni();
 
