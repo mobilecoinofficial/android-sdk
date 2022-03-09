@@ -231,6 +231,56 @@ public class TxOutMemoIntegrationTest {
     assertEquals(paymentRequestId, senderWithPaymentRequestMemoData.getPaymentRequestId());
   }
 
+  @Test
+  public void buildTransaction_senderAndDestinationMemoBuilder_txBuidlerRespectsBlockVersion() throws Exception {
+    TxOutMemoBuilder txOutMemoBuilder = TxOutMemoBuilder
+            .createSenderAndDestinationRTHMemoBuilder(senderAccountKey);
+    TxOut realTxOut = txOuts.get(realIndex);
+    transactionBuilder = new TransactionBuilder(fogResolver, txOutMemoBuilder, 1);
+
+    RistrettoPrivate onetimePrivateKey = Util.recoverOnetimePrivateKey(
+            realTxOut.getPubKey(),
+            senderAccountKey.getViewKey(),
+            senderAccountKey.getDefaultSubAddressSpendKey()
+    );
+    transactionBuilder
+            .addInput(txOuts, txOutMembershipProofs, realIndex, onetimePrivateKey,
+                    senderAccountKey.getViewKey());
+    long fee = 1L;
+    transactionBuilder.setFee(fee);
+    transactionBuilder.setTombstoneBlockIndex(UnsignedLong.valueOf(2000));
+    BigInteger sentTxOutValue = BigInteger.ONE;
+
+    transactionBuilder.addOutput(sentTxOutValue, recipientAccountKey.getPublicAddress(), null);
+    BigInteger realTxOutValue = realTxOut.getAmount()
+            .unmaskValue(senderAccountKey.getViewKey(), realTxOut.getPubKey());
+    BigInteger changeValue = realTxOutValue.subtract(BigInteger.valueOf(fee))
+            .subtract(sentTxOutValue);
+    transactionBuilder.addChangeOutput(changeValue, senderAccountKey, null);
+    Transaction transaction = transactionBuilder.build();
+
+    List<MobileCoinAPI.TxOut> outputsList = transaction.toProtoBufObject().getPrefix()
+            .getOutputsList();
+    TxOut txOut1 = TxOut.fromProtoBufObject(outputsList.get(0));
+    TxOut txOut2 = TxOut.fromProtoBufObject(outputsList.get(1));
+
+    TxOut sentTxOut;
+    try {
+      txOut1.getAmount().unmaskValue(recipientAccountKey.getViewKey(), txOut1.getPubKey());
+      sentTxOut = txOut1;
+    } catch(Exception e) {
+      sentTxOut = txOut2;
+    }
+
+    byte[] sentMemoPayload = sentTxOut.decryptMemoPayload(recipientAccountKey);
+
+    AddressHash senderAddressHash = senderAccountKey.getPublicAddress().calculateAddressHash();
+    TxOutMemo unsetMemo = TxOutMemoParser
+            .parseTxOutMemo(sentMemoPayload, recipientAccountKey, sentTxOut);
+
+    assertEquals(TxOutMemoType.NOT_SET, unsetMemo.getTxOutMemoType());
+  }
+
   private static FogResolver createFogResolver() throws Exception {
     FogReportResponses fogReportResponses = new FogReportResponses();
     Uri fogUri = Uri.parse(fogAlphaUri);
