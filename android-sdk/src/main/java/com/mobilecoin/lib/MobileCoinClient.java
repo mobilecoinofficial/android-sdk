@@ -312,7 +312,6 @@ public final class MobileCoinClient implements MobileCoinAccountClient, MobileCo
                 "recipient:", recipient,
                 "amount:", amount,
                 "fee:", fee);
-        final RistrettoPrivate viewKey = accountKey.getViewKey();
         UnsignedLong blockIndex = txOutStore.getCurrentBlockIndex();
         UnsignedLong tombstoneBlockIndex = blockIndex
                 .add(UnsignedLong.fromLongBits(DEFAULT_NEW_TX_BLOCK_ATTEMPTS));
@@ -403,7 +402,7 @@ public final class MobileCoinClient implements MobileCoinAccountClient, MobileCo
         FogResolver fogResolver = new FogResolver(fogReportResponses,
                 clientConfig.report.getVerifier());
 
-        TransactionBuilder txBuilder = new TransactionBuilder(fogResolver, txOutMemoBuilder, 2);
+        TransactionBuilder txBuilder = new TransactionBuilder(fogResolver, txOutMemoBuilder, 1);
         txBuilder.setFee(fee.longValue());
         txBuilder.setTombstoneBlockIndex(tombstoneBlockIndex);
 
@@ -412,16 +411,17 @@ public final class MobileCoinClient implements MobileCoinAccountClient, MobileCo
             OwnedTxOut utxo = ring.utxo;
             totalAmount = totalAmount.add(utxo.getValue());
 
-            RistrettoPrivate onetimePrivateKey = Util.recoverOnetimePrivateKey(utxo.getPublicKey(),
-                    viewKey,
-                    accountKey.getDefaultSubAddressSpendKey()
+            RistrettoPrivate onetimePrivateKey = Util.recoverOnetimePrivateKey(
+                    utxo.getPublicKey(),
+                    utxo.getTargetKey(),
+                    accountKey
             );
 
             txBuilder.addInput(ring.getNativeTxOuts(),
                     ring.getNativeTxOutMembershipProofs(),
                     ring.realIndex,
                     onetimePrivateKey,
-                    viewKey
+                    accountKey.getViewKey()
             );
         }
         byte[] confirmationNumberOut = new byte[Receipt.CONFIRMATION_NUMBER_LENGTH];
@@ -658,7 +658,7 @@ public final class MobileCoinClient implements MobileCoinAccountClient, MobileCo
                 0
         );
         List<Ledger.OutputResult> outs = outputsResponse.getResultsList();
-
+Logger.e("HERE!", "version " + outputsResponse.getMaxBlockVersion());
         if (outs.size() != count) {
             throw new InvalidFogResponse("getOutputs returned incorrect number of outputs");
         }

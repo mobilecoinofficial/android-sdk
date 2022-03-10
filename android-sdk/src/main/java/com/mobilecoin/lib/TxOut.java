@@ -15,12 +15,14 @@ final class TxOut extends Native {
     private final static String TAG = TxOut.class.getName();
     private final MobileCoinAPI.TxOut protoBufTxOut;
     private final RistrettoPublic pubKey;
+    private final RistrettoPublic targetKey;
 
     private TxOut(@NonNull byte[] serializedBytes) throws SerializationException {
         try {
             init_from_protobuf_bytes(serializedBytes);
             protoBufTxOut = MobileCoinAPI.TxOut.parseFrom(serializedBytes);
             pubKey = RistrettoPublic.fromProtoBufObject(protoBufTxOut.getPublicKey());
+            targetKey = RistrettoPublic.fromProtoBufObject(protoBufTxOut.getTargetKey());
         } catch (Exception ex) {
             SerializationException serializationException =
                     new SerializationException(ex.getLocalizedMessage(), ex);
@@ -34,6 +36,7 @@ final class TxOut extends Native {
         try {
             protoBufTxOut = MobileCoinAPI.TxOut.parseFrom(toByteArray());
             pubKey = RistrettoPublic.fromProtoBufObject(protoBufTxOut.getPublicKey());
+            targetKey = RistrettoPublic.fromProtoBufObject(protoBufTxOut.getTargetKey());
         } catch (InvalidProtocolBufferException ex) {
             SerializationException serializationException =
                     new SerializationException(ex.getLocalizedMessage());
@@ -46,6 +49,7 @@ final class TxOut extends Native {
         try {
             protoBufTxOut = tx;
             pubKey = RistrettoPublic.fromProtoBufObject(protoBufTxOut.getPublicKey());
+            targetKey = RistrettoPublic.fromProtoBufObject(protoBufTxOut.getTargetKey());
             init_from_protobuf_bytes(tx.toByteString().toByteArray());
         } catch (Exception ex) {
             SerializationException serializationException =
@@ -144,6 +148,11 @@ final class TxOut extends Native {
     @NonNull
     RistrettoPublic getPubKey() {
         return pubKey;
+    }
+
+    @NonNull
+    RistrettoPublic getTargetKey() {
+        return targetKey;
     }
 
     private native void init_from_protobuf_bytes(@NonNull byte[] data);

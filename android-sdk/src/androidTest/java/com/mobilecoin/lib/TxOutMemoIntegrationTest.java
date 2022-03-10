@@ -76,8 +76,8 @@ public class TxOutMemoIntegrationTest {
 
     RistrettoPrivate onetimePrivateKey = Util.recoverOnetimePrivateKey(
         realTxOut.getPubKey(),
-        senderAccountKey.getViewKey(),
-        senderAccountKey.getDefaultSubAddressSpendKey()
+        realTxOut.getTargetKey(),
+        senderAccountKey
     );
     transactionBuilder
         .addInput(txOuts, txOutMembershipProofs, realIndex, onetimePrivateKey,
@@ -130,8 +130,8 @@ public class TxOutMemoIntegrationTest {
 
     RistrettoPrivate onetimePrivateKey = Util.recoverOnetimePrivateKey(
         realTxOut.getPubKey(),
-        senderAccountKey.getViewKey(),
-        senderAccountKey.getDefaultSubAddressSpendKey()
+        realTxOut.getTargetKey(),
+        senderAccountKey
     );
 
     transactionBuilder
@@ -186,8 +186,8 @@ public class TxOutMemoIntegrationTest {
 
     RistrettoPrivate onetimePrivateKey = Util.recoverOnetimePrivateKey(
         realTxOut.getPubKey(),
-        senderAccountKey.getViewKey(),
-        senderAccountKey.getDefaultSubAddressSpendKey()
+        realTxOut.getTargetKey(),
+        senderAccountKey
     );
     transactionBuilder
         .addInput(txOuts, txOutMembershipProofs, realIndex, onetimePrivateKey,
@@ -240,8 +240,8 @@ public class TxOutMemoIntegrationTest {
 
     RistrettoPrivate onetimePrivateKey = Util.recoverOnetimePrivateKey(
             realTxOut.getPubKey(),
-            senderAccountKey.getViewKey(),
-            senderAccountKey.getDefaultSubAddressSpendKey()
+            realTxOut.getTargetKey(),
+            senderAccountKey
     );
     transactionBuilder
             .addInput(txOuts, txOutMembershipProofs, realIndex, onetimePrivateKey,
@@ -274,7 +274,6 @@ public class TxOutMemoIntegrationTest {
 
     byte[] sentMemoPayload = sentTxOut.decryptMemoPayload(recipientAccountKey);
 
-    AddressHash senderAddressHash = senderAccountKey.getPublicAddress().calculateAddressHash();
     TxOutMemo unsetMemo = TxOutMemoParser
             .parseTxOutMemo(sentMemoPayload, recipientAccountKey, sentTxOut);
 
