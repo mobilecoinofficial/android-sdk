@@ -658,7 +658,7 @@ public final class MobileCoinClient implements MobileCoinAccountClient, MobileCo
                 0
         );
         List<Ledger.OutputResult> outs = outputsResponse.getResultsList();
-Logger.e("HERE!", "version " + outputsResponse.getMaxBlockVersion());
+
         if (outs.size() != count) {
             throw new InvalidFogResponse("getOutputs returned incorrect number of outputs");
         }
