@@ -18,6 +18,7 @@ import com.mobilecoin.lib.exceptions.AmountDecoderException;
 import com.mobilecoin.lib.exceptions.AttestationException;
 import com.mobilecoin.lib.exceptions.FeeRejectedException;
 import com.mobilecoin.lib.exceptions.FogReportException;
+import com.mobilecoin.lib.exceptions.FogSyncException;
 import com.mobilecoin.lib.exceptions.FragmentedAccountException;
 import com.mobilecoin.lib.exceptions.InsufficientFundsException;
 import com.mobilecoin.lib.exceptions.InvalidFogResponse;
@@ -480,13 +481,14 @@ public class MobileCoinClientTest {
 
     @Test
     public void test_internal_external_get_owned_tx_outs_api()
-            throws InvalidFogResponse, NetworkException, AttestationException, InvalidUriException {
+            throws InvalidFogResponse, NetworkException, AttestationException, InvalidUriException, FogSyncException {
         MobileCoinClient mobileCoinClient = MobileCoinClientBuilder.newBuilder().build();
         TxOutStore store = mobileCoinClient.getTxOutStore();
         store.refresh(
                 mobileCoinClient.viewClient,
                 mobileCoinClient.ledgerClient,
-                mobileCoinClient.fogBlockClient
+                mobileCoinClient.fogBlockClient,
+                mobileCoinClient.blockchainClient
         );
         AccountActivity accountActivity = mobileCoinClient.getAccountActivity();
         UnsignedLong activityBlockCount = accountActivity.getBlockCount();
@@ -624,7 +626,8 @@ public class MobileCoinClientTest {
         txOutStore.refresh(
             mobileCoinClient.viewClient,
             mobileCoinClient.ledgerClient,
-            mobileCoinClient.fogBlockClient
+            mobileCoinClient.fogBlockClient,
+            mobileCoinClient.blockchainClient
         );
 
         mobileCoinClient.cacheUserData();

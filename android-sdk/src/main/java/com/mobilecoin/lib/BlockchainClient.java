@@ -17,7 +17,7 @@ import java.time.LocalDateTime;
 
 import consensus_common.ConsensusCommon;
 
-final class BlockchainClient extends AnyClient {
+class BlockchainClient extends AnyClient {
     private static final String TAG = BlockchainClient.class.getName();
     private static final BigInteger DEFAULT_TX_FEE = BigInteger.valueOf(10000000000L);
     private final Duration minimumFeeCacheTTL;

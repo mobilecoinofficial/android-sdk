@@ -7,9 +7,11 @@ import android.os.Parcelable;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.annotation.VisibleForTesting;
 
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.mobilecoin.lib.exceptions.AttestationException;
+import com.mobilecoin.lib.exceptions.FogSyncException;
 import com.mobilecoin.lib.exceptions.InvalidFogResponse;
 import com.mobilecoin.lib.exceptions.KexRngException;
 import com.mobilecoin.lib.exceptions.NetworkException;
@@ -45,6 +47,8 @@ final class TxOutStore implements Parcelable {
 
     // Bump serial version and read/write code if fields change
     private static final long serialVersionUID = 2L;
+
+    protected static final UnsignedLong FOG_SYNC_THRESHOLD = UnsignedLong.TEN;
 
     // A map of nonce -> Seed.
     private HashMap<Integer, FogSeed> seeds;
@@ -146,8 +150,9 @@ final class TxOutStore implements Parcelable {
     void refresh(
             @NonNull AttestedViewClient viewClient,
             @NonNull AttestedLedgerClient ledgerClient,
-            @NonNull FogBlockClient blockClient
-    ) throws InvalidFogResponse, NetworkException, AttestationException {
+            @NonNull FogBlockClient blockClient,
+            @NonNull BlockchainClient blockchainClient
+    ) throws InvalidFogResponse, NetworkException, AttestationException, FogSyncException {
         // update RNGs, TxOuts, and fog misses
         Set<BlockRange> fogMisses;
         try {
@@ -173,6 +178,13 @@ final class TxOutStore implements Parcelable {
         }
         // update the spent status of the TxOuts
         updateKeyImages(ledgerClient);
+
+        UnsignedLong consensusBlockIndex = UnsignedLong.fromLongBits(blockchainClient.getOrFetchLastBlockInfo().getIndex());
+        if(consensusBlockIndex.compareTo(viewBlockIndex) > 0) {
+            if(consensusBlockIndex.sub(viewBlockIndex).compareTo(FOG_SYNC_THRESHOLD) >= 0) {
+                throw new FogSyncException(viewBlockIndex, consensusBlockIndex);
+            }
+        }
     }
 
     /**
@@ -192,6 +204,7 @@ final class TxOutStore implements Parcelable {
         Stack<FogSeed> pendingSeeds = new Stack<>();
         HashSet<BlockRange> missedRanges = new HashSet<>();
         pendingSeeds.addAll(seeds.values());
+        long blockCount = 0L;
         do {
             FogSeed seed = null;
             if (pendingSeeds.size() > 0) {
@@ -208,6 +221,8 @@ final class TxOutStore implements Parcelable {
                 }
                 View.QueryResponse result = viewClient
                     .request(searchKeys, lastKnownFogViewEventId, viewBlockIndex.longValue());
+                blockCount = result.getHighestProcessedBlockCount();
+                lastKnownFogViewEventId = result.getNextStartFromUserEventId();
                 for (DecommissionedIngestInvocation decommissionedIngestInvocation : result
                     .getDecommissionedIngestInvocationsList()) {
                   decommissionedIngestInvocationIds.add(decommissionedIngestInvocation.getIngestInvocationId());
@@ -289,18 +304,17 @@ final class TxOutStore implements Parcelable {
                             if (isSeedDecommissioned(seed)) {
                                 seed.markObsolete();
                             }
-                            long blockCount = result.getHighestProcessedBlockCount();
-                            viewBlockIndex = (blockCount != 0)
-                                    ? UnsignedLong.fromLongBits(blockCount).sub(UnsignedLong.ONE)
-                                    : UnsignedLong.ZERO;
-                            lastKnownFogViewEventId = result.getNextStartFromUserEventId();
-                            Logger.i(TAG, "View Request completed blockIndex = " + viewBlockIndex);
                             break;
                         }
                     }
                     if (allTXOsRetrieved) break;
                 }
             } while (!allTXOsRetrieved);
+            viewBlockIndex = (blockCount != 0)
+                    ? UnsignedLong.fromLongBits(blockCount).sub(UnsignedLong.ONE)
+                    : UnsignedLong.ZERO;
+            Logger.i(TAG, "View Request completed blockIndex = " + viewBlockIndex);
+            Logger.e("HERE!", "" + blockCount + ", ");
         } while (pendingSeeds.size() > 0);
         return missedRanges;
     }
