@@ -314,7 +314,6 @@ final class TxOutStore implements Parcelable {
                     ? UnsignedLong.fromLongBits(blockCount).sub(UnsignedLong.ONE)
                     : UnsignedLong.ZERO;
             Logger.i(TAG, "View Request completed blockIndex = " + viewBlockIndex);
-            Logger.e("HERE!", "" + blockCount + ", ");
         } while (pendingSeeds.size() > 0);
         return missedRanges;
     }
