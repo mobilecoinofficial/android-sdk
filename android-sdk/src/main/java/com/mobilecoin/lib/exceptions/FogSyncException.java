@@ -8,7 +8,7 @@ import com.mobilecoin.lib.UnsignedLong;
 public class FogSyncException extends MobileCoinException {
 
     @Nullable
-    private UnsignedLong viewBlockIndex;
+    private UnsignedLong fogBlockIndex;
     @Nullable
     private UnsignedLong consensusBlockIndex;
 
@@ -24,16 +24,16 @@ public class FogSyncException extends MobileCoinException {
         super(message, exception);
     }
 
-    public FogSyncException(@NonNull UnsignedLong viewBlockIndex, @NonNull UnsignedLong consensusBlockIndex) {
+    public FogSyncException(@NonNull UnsignedLong fogBlockIndex, @NonNull UnsignedLong consensusBlockIndex) {
         super(String.format("Fog has not finished syncing with Consensus. Please try again later (Block index %s / %s).",
-                viewBlockIndex, consensusBlockIndex));
-        this.viewBlockIndex = viewBlockIndex;
+                fogBlockIndex, consensusBlockIndex));
+        this.fogBlockIndex = fogBlockIndex;
         this.consensusBlockIndex = consensusBlockIndex;
     }
 
     @Nullable
-    public UnsignedLong getViewBlockIndex() {
-        return this.viewBlockIndex;
+    public UnsignedLong getFogBlockIndex() {
+        return this.fogBlockIndex;
     }
 
     @Nullable

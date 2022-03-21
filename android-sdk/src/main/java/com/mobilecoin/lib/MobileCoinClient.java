@@ -230,7 +230,7 @@ public final class MobileCoinClient implements MobileCoinAccountClient, MobileCo
                         blockchainClient
                 );
             } catch(FogSyncException e) {
-                if(blockIndex.compareTo(e.getViewBlockIndex()) >= 0) {
+                if(blockIndex.compareTo(e.getFogBlockIndex()) >= 0) {
                     throw new InvalidFogResponse("Cannot create up-to-date snapshot until Fog sync finishes. Try again later.", e);
                 }
             }
@@ -463,6 +463,7 @@ public final class MobileCoinClient implements MobileCoinAccountClient, MobileCo
                 "transaction:", transaction);
         ConsensusCommon.ProposeTxResponse txResponse =
                 consensusClient.proposeTx(transaction.toProtoBufObject());
+        this.txOutStore.setConsensusBlockIndex(UnsignedLong.fromLongBits(txResponse.getBlockCount() - 1L));
         int code = txResponse.getResult().getNumber();
         if (0 != code) {
             blockchainClient.resetCache();

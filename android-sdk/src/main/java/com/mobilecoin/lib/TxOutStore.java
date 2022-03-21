@@ -60,6 +60,8 @@ final class TxOutStore implements Parcelable {
     private UnsignedLong ledgerBlockIndex;
     // Block index reported from view server.
     private UnsignedLong viewBlockIndex;
+    // Last known consensus block index.
+    private UnsignedLong consensusBlockIndex;
     // The last event id serves as a cursor for Fog View events.
     private long lastKnownFogViewEventId;
     private UnsignedLong ledgerTotalTxCount;
@@ -73,6 +75,7 @@ final class TxOutStore implements Parcelable {
         this.accountKey = accountKey;
         this.ledgerBlockIndex = UnsignedLong.ZERO;
         this.viewBlockIndex = UnsignedLong.ZERO;
+        this.consensusBlockIndex = UnsignedLong.ZERO;
         this.recoveredTxOuts = new ConcurrentLinkedQueue<>();
     }
 
@@ -179,10 +182,10 @@ final class TxOutStore implements Parcelable {
         // update the spent status of the TxOuts
         updateKeyImages(ledgerClient);
 
-        UnsignedLong consensusBlockIndex = UnsignedLong.fromLongBits(blockchainClient.getOrFetchLastBlockInfo().getIndex());
-        if(consensusBlockIndex.compareTo(viewBlockIndex) > 0) {
-            if(consensusBlockIndex.sub(viewBlockIndex).compareTo(FOG_SYNC_THRESHOLD) >= 0) {
-                throw new FogSyncException(viewBlockIndex, consensusBlockIndex);
+        UnsignedLong currentBlockIndex = getCurrentBlockIndex();
+        if(consensusBlockIndex.compareTo(currentBlockIndex) > 0) {
+            if(consensusBlockIndex.sub(currentBlockIndex).compareTo(FOG_SYNC_THRESHOLD) >= 0) {
+                throw new FogSyncException(currentBlockIndex, consensusBlockIndex);
             }
         }
     }
@@ -394,28 +397,6 @@ final class TxOutStore implements Parcelable {
         return null;
     }
 
-    private synchronized void writeObject(ObjectOutputStream out) throws IOException {
-        out.writeLong(lastKnownFogViewEventId);
-        out.writeObject(ledgerBlockIndex);
-        out.writeObject(viewBlockIndex);
-        out.writeObject(ledgerTotalTxCount);
-        out.writeObject(seeds);
-        out.writeObject(decommissionedIngestInvocationIds);
-        out.writeObject(recoveredTxOuts);
-    }
-
-    @SuppressWarnings("unchecked")
-    private synchronized void readObject(ObjectInputStream in)
-            throws IOException, ClassNotFoundException {
-        lastKnownFogViewEventId = in.readLong();
-        ledgerBlockIndex = (UnsignedLong) in.readObject();
-        viewBlockIndex = (UnsignedLong) in.readObject();
-        ledgerTotalTxCount = (UnsignedLong) in.readObject();
-        seeds = (HashMap<Integer, FogSeed>) in.readObject();
-        decommissionedIngestInvocationIds = (Set<Long>) in.readObject();
-        recoveredTxOuts = new ConcurrentLinkedQueue<>();
-    }
-
     @Override
     public boolean equals(Object o) {
         if (this == o) {
@@ -429,11 +410,11 @@ final class TxOutStore implements Parcelable {
         return lastKnownFogViewEventId == that.lastKnownFogViewEventId &&
             Objects.equals(ledgerBlockIndex, that.ledgerBlockIndex) &&
             Objects.equals(viewBlockIndex, that.viewBlockIndex) &&
+            Objects.equals(consensusBlockIndex, that.consensusBlockIndex) &&
             Objects.equals(ledgerTotalTxCount, that.ledgerTotalTxCount) &&
             Objects.equals(seeds, that.seeds) &&
             Objects
-                .equals(decommissionedIngestInvocationIds, that.decommissionedIngestInvocationIds)
-            &&
+                .equals(decommissionedIngestInvocationIds, that.decommissionedIngestInvocationIds) &&
             Arrays.equals(recoveredTxOuts.toArray(), that.recoveredTxOuts.toArray()) &&
             Objects.equals(accountKey, that.accountKey);
     }
@@ -464,6 +445,7 @@ final class TxOutStore implements Parcelable {
         }
         parcel.writeParcelable(ledgerBlockIndex, flags);
         parcel.writeParcelable(viewBlockIndex, flags);
+        parcel.writeParcelable(consensusBlockIndex, flags);
         parcel.writeLong(lastKnownFogViewEventId);
         parcel.writeParcelable(ledgerTotalTxCount, flags);
         parcel.writeInt(recoveredTxOuts.size());
@@ -511,6 +493,7 @@ final class TxOutStore implements Parcelable {
         }
         ledgerBlockIndex = parcel.readParcelable(UnsignedLong.class.getClassLoader());
         viewBlockIndex = parcel.readParcelable(UnsignedLong.class.getClassLoader());
+        consensusBlockIndex = parcel.readParcelable(UnsignedLong.class.getClassLoader());
         lastKnownFogViewEventId = parcel.readLong();
         ledgerTotalTxCount = parcel.readParcelable(UnsignedLong.class.getClassLoader());
         int otxoSize = parcel.readInt();
@@ -518,6 +501,30 @@ final class TxOutStore implements Parcelable {
         for(int i = 0; i < otxoSize; i++) {
             recoveredTxOuts.add(parcel.readParcelable(OwnedTxOut.class.getClassLoader()));
         }
+    }
+
+    public UnsignedLong getViewBlockIndex() {
+        return this.viewBlockIndex;
+    }
+
+    public UnsignedLong getLedgerBlockIndex() {
+        return this.ledgerBlockIndex;
+    }
+
+    public UnsignedLong getConsensusBlockIndex() {
+        return this.consensusBlockIndex;
+    }
+
+    public void setViewBlockIndex(UnsignedLong viewBlockIndex) {
+        this.viewBlockIndex = viewBlockIndex;
+    }
+
+    public void setLedgerBlockIndex(UnsignedLong ledgerBlockIndex) {
+        this.ledgerBlockIndex = ledgerBlockIndex;
+    }
+
+    public void setConsensusBlockIndex(UnsignedLong consensusBlockIndex) {
+        this.consensusBlockIndex = consensusBlockIndex;
     }
 
 }

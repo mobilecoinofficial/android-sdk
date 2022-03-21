@@ -324,7 +324,7 @@ public class TxOutStoreTest {
         try {
             attemptFogSync(testValueFog4, testValueConsensus4);// Fog behind at threshold, should fail
         } catch(FogSyncException e) {
-            assertEquals(e.getViewBlockIndex(), UnsignedLong.fromLongBits(testValueFog4 - 1L));
+            assertEquals(e.getFogBlockIndex(), UnsignedLong.fromLongBits(testValueFog4 - 1L));
             assertEquals(e.getConsensusBlockIndex(), UnsignedLong.fromLongBits(testValueConsensus4));
             exceptionThrown = true;
         }
@@ -336,7 +336,7 @@ public class TxOutStoreTest {
         try {
             attemptFogSync(testValueFog5, testValueConsensus5);// Fog behind over threshold, should fail
         } catch (FogSyncException e) {
-            assertEquals(e.getViewBlockIndex(), UnsignedLong.fromLongBits(testValueFog5 - 1L));
+            assertEquals(e.getFogBlockIndex(), UnsignedLong.fromLongBits(testValueFog5 - 1L));
             assertEquals(e.getConsensusBlockIndex(), UnsignedLong.fromLongBits(testValueConsensus5));
             exceptionThrown = true;
         }
@@ -345,7 +345,7 @@ public class TxOutStoreTest {
 
     }
 
-    private void attemptFogSync(long fogNumProcessedBlocks, long consensusNumBlocks) throws Exception {
+    private void attemptFogSync(long fogNumProcessedBlocks, long consensusBlockIndex) throws Exception {
 
         AccountKey accountKey = mock(AccountKey.class);
 
@@ -365,10 +365,11 @@ public class TxOutStoreTest {
 
         BlockchainClient blockchainClient = mock(BlockchainClient.class);
         ConsensusCommon.LastBlockInfoResponse.Builder blockchainClientResponseBuilder = ConsensusCommon.LastBlockInfoResponse.newBuilder();
-        blockchainClientResponseBuilder.setIndex(consensusNumBlocks);
+        blockchainClientResponseBuilder.setIndex(consensusBlockIndex);
         when(blockchainClient.getOrFetchLastBlockInfo()).thenReturn(blockchainClientResponseBuilder.build());
 
         TxOutStore txOutStore = new TxOutStore(accountKey);
+        txOutStore.setConsensusBlockIndex(UnsignedLong.fromLongBits(consensusBlockIndex));
         txOutStore.refresh(
                 viewClient,
                 ledgerClient,
