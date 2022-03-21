@@ -487,8 +487,7 @@ public class MobileCoinClientTest {
         store.refresh(
                 mobileCoinClient.viewClient,
                 mobileCoinClient.ledgerClient,
-                mobileCoinClient.fogBlockClient,
-                mobileCoinClient.blockchainClient
+                mobileCoinClient.fogBlockClient
         );
         AccountActivity accountActivity = mobileCoinClient.getAccountActivity();
         UnsignedLong activityBlockCount = accountActivity.getBlockCount();
@@ -626,8 +625,7 @@ public class MobileCoinClientTest {
         txOutStore.refresh(
             mobileCoinClient.viewClient,
             mobileCoinClient.ledgerClient,
-            mobileCoinClient.fogBlockClient,
-            mobileCoinClient.blockchainClient
+            mobileCoinClient.fogBlockClient
         );
 
         mobileCoinClient.cacheUserData();

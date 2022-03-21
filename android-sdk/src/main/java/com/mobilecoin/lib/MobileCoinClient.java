@@ -226,8 +226,7 @@ public final class MobileCoinClient implements MobileCoinAccountClient, MobileCo
                 txOutStore.refresh(
                         viewClient,
                         ledgerClient,
-                        fogBlockClient,
-                        blockchainClient
+                        fogBlockClient
                 );
             } catch(FogSyncException e) {
                 if(blockIndex.compareTo(e.getFogBlockIndex()) >= 0) {
@@ -609,8 +608,7 @@ public final class MobileCoinClient implements MobileCoinAccountClient, MobileCo
             getTxOutStore().refresh(
                     viewClient,
                     ledgerClient,
-                    fogBlockClient,
-                    blockchainClient
+                    fogBlockClient
             );
         } catch(FogSyncException e) {
             throw new InvalidFogResponse(e.getMessage(), e);
@@ -629,7 +627,7 @@ public final class MobileCoinClient implements MobileCoinAccountClient, MobileCo
     public AccountActivity getAccountActivity() throws NetworkException, InvalidFogResponse,
             AttestationException {
         try {
-            txOutStore.refresh(viewClient, ledgerClient, fogBlockClient, blockchainClient);
+            txOutStore.refresh(viewClient, ledgerClient, fogBlockClient);
         } catch(FogSyncException e) {
             throw new InvalidFogResponse("Some account activity may not be available right now. Try again later.", e);
         }

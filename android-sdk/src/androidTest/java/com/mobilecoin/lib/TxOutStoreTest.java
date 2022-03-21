@@ -60,8 +60,7 @@ public class TxOutStoreTest {
         store.refresh(
                 mobileCoinClient.viewClient,
                 mobileCoinClient.ledgerClient,
-                mobileCoinClient.fogBlockClient,
-                mobileCoinClient.blockchainClient
+                mobileCoinClient.fogBlockClient
         );
         mobileCoinClient.shutdown();
         Set<OwnedTxOut> utxos = store.getSyncedTxOuts();
@@ -373,8 +372,7 @@ public class TxOutStoreTest {
         txOutStore.refresh(
                 viewClient,
                 ledgerClient,
-                blockClient,
-                blockchainClient
+                blockClient
         );
 
     }

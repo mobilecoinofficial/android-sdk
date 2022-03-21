@@ -153,8 +153,7 @@ final class TxOutStore implements Parcelable {
     void refresh(
             @NonNull AttestedViewClient viewClient,
             @NonNull AttestedLedgerClient ledgerClient,
-            @NonNull FogBlockClient blockClient,
-            @NonNull BlockchainClient blockchainClient
+            @NonNull FogBlockClient blockClient
     ) throws InvalidFogResponse, NetworkException, AttestationException, FogSyncException {
         // update RNGs, TxOuts, and fog misses
         Set<BlockRange> fogMisses;
