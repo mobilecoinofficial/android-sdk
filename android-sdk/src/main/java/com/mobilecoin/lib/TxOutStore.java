@@ -11,6 +11,7 @@ import androidx.annotation.VisibleForTesting;
 
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.mobilecoin.lib.exceptions.AttestationException;
+import com.mobilecoin.lib.exceptions.FogStatusException;
 import com.mobilecoin.lib.exceptions.FogSyncException;
 import com.mobilecoin.lib.exceptions.InvalidFogResponse;
 import com.mobilecoin.lib.exceptions.KexRngException;
@@ -154,7 +155,7 @@ final class TxOutStore implements Parcelable {
             @NonNull AttestedViewClient viewClient,
             @NonNull AttestedLedgerClient ledgerClient,
             @NonNull FogBlockClient blockClient
-    ) throws InvalidFogResponse, NetworkException, AttestationException, FogSyncException {
+    ) throws InvalidFogResponse, NetworkException, AttestationException {
         // update RNGs, TxOuts, and fog misses
         Set<BlockRange> fogMisses;
         try {
@@ -180,6 +181,10 @@ final class TxOutStore implements Parcelable {
         }
         // update the spent status of the TxOuts
         updateKeyImages(ledgerClient);
+
+        if(Math.abs(ledgerBlockIndex.longValue() - viewBlockIndex.longValue()) >= FOG_SYNC_THRESHOLD.longValue()) {
+            throw new FogStatusException(viewBlockIndex, ledgerBlockIndex);
+        }
 
         UnsignedLong currentBlockIndex = getCurrentBlockIndex();
         if(consensusBlockIndex.compareTo(currentBlockIndex) > 0) {

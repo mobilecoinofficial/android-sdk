@@ -11,6 +11,7 @@ import com.mobilecoin.api.MobileCoinAPI;
 import com.mobilecoin.lib.exceptions.AttestationException;
 import com.mobilecoin.lib.exceptions.FeeRejectedException;
 import com.mobilecoin.lib.exceptions.FogReportException;
+import com.mobilecoin.lib.exceptions.FogStatusException;
 import com.mobilecoin.lib.exceptions.FogSyncException;
 import com.mobilecoin.lib.exceptions.FragmentedAccountException;
 import com.mobilecoin.lib.exceptions.InsufficientFundsException;
@@ -604,15 +605,11 @@ public final class MobileCoinClient implements MobileCoinAccountClient, MobileCo
     @NonNull
     Set<OwnedTxOut> getUnspentTxOuts() throws InvalidFogResponse, NetworkException,
             AttestationException {
-        try {
-            getTxOutStore().refresh(
-                    viewClient,
-                    ledgerClient,
-                    fogBlockClient
-            );
-        } catch(FogSyncException e) {
-            throw new InvalidFogResponse(e.getMessage(), e);
-        }
+        getTxOutStore().refresh(
+                viewClient,
+                ledgerClient,
+                fogBlockClient
+        );
         return getTxOutStore().getUnspentTxOuts();
     }
 
@@ -626,11 +623,7 @@ public final class MobileCoinClient implements MobileCoinAccountClient, MobileCo
     @NonNull
     public AccountActivity getAccountActivity() throws NetworkException, InvalidFogResponse,
             AttestationException {
-        try {
-            txOutStore.refresh(viewClient, ledgerClient, fogBlockClient);
-        } catch(FogSyncException e) {
-            throw new InvalidFogResponse("Some account activity may not be available right now. Try again later.", e);
-        }
+        txOutStore.refresh(viewClient, ledgerClient, fogBlockClient);
         Set<OwnedTxOut> txOuts = txOutStore.getSyncedTxOuts();
         return new AccountActivity(txOuts,
                 getTxOutStore().getCurrentBlockIndex().add(UnsignedLong.ONE));

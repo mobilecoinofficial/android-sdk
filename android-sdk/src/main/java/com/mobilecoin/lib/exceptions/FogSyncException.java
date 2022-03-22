@@ -5,7 +5,7 @@ import androidx.annotation.Nullable;
 
 import com.mobilecoin.lib.UnsignedLong;
 
-public class FogSyncException extends MobileCoinException {
+public class FogSyncException extends InvalidFogResponse {
 
     @Nullable
     private UnsignedLong fogBlockIndex;

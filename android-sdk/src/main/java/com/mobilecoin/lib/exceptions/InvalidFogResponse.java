@@ -2,11 +2,16 @@
 
 package com.mobilecoin.lib.exceptions;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-public final class InvalidFogResponse extends MobileCoinException {
+public class InvalidFogResponse extends MobileCoinException {
     public InvalidFogResponse(@Nullable String message) {
         super(message);
+    }
+
+    public InvalidFogResponse(@NonNull Throwable throwable) {
+        super(throwable);
     }
 
     public InvalidFogResponse(@Nullable String message, @Nullable Throwable throwable) {

@@ -17,6 +17,7 @@ import com.mobilecoin.lib.exceptions.AttestationException;
 import com.mobilecoin.lib.exceptions.BadBip39EntropyException;
 import com.mobilecoin.lib.exceptions.FeeRejectedException;
 import com.mobilecoin.lib.exceptions.FogReportException;
+import com.mobilecoin.lib.exceptions.FogStatusException;
 import com.mobilecoin.lib.exceptions.FogSyncException;
 import com.mobilecoin.lib.exceptions.FragmentedAccountException;
 import com.mobilecoin.lib.exceptions.InsufficientFundsException;
@@ -308,20 +309,20 @@ public class TxOutStoreTest {
 
         final long testValueFog1 = 61L;
         final long testValueConsensus1 = testValueFog1;
-        fogSyncTest_attemptRefresh(testValueFog1, testValueConsensus1);// same index should succeed
+        fogSyncTest_attemptRefresh(testValueFog1, testValueFog1, testValueConsensus1);// same index should succeed
 
         final long testValueFog2 = 321L;
         final long testValueConsensus2 = testValueFog2 - 2L;
-        fogSyncTest_attemptRefresh(testValueFog2, testValueConsensus2);// Fog ahead of Consensus should succeed (occurs when cached Consensus block info is used)
+        fogSyncTest_attemptRefresh(testValueFog2, testValueFog2, testValueConsensus2);// Fog ahead of Consensus should succeed (occurs when cached Consensus block info is used)
 
         final long testValueFog3 = 5234523462456L;
         final long testValueConsensus3 = testValueFog3 + TxOutStore.FOG_SYNC_THRESHOLD.longValue() - 2L;
-        fogSyncTest_attemptRefresh(testValueFog3, testValueConsensus3);// Fog behind but within threshold should succeed
+        fogSyncTest_attemptRefresh(testValueFog3, testValueFog3, testValueConsensus3);// Fog behind but within threshold should succeed
 
         final long testValueFog4 = 60L;
         final long testValueConsensus4 = testValueFog4 + TxOutStore.FOG_SYNC_THRESHOLD.longValue() - 1L;
         try {
-            fogSyncTest_attemptRefresh(testValueFog4, testValueConsensus4);// Fog behind at threshold, should fail
+            fogSyncTest_attemptRefresh(testValueFog4, testValueFog4, testValueConsensus4);// Fog behind at threshold, should fail
         } catch(FogSyncException e) {
             assertEquals(e.getFogBlockIndex(), UnsignedLong.fromLongBits(testValueFog4 - 1L));
             assertEquals(e.getConsensusBlockIndex(), UnsignedLong.fromLongBits(testValueConsensus4));
@@ -333,7 +334,7 @@ public class TxOutStoreTest {
         final long testValueFog5 = 410L;
         final long testValueConsensus5 = testValueFog5 + TxOutStore.FOG_SYNC_THRESHOLD.longValue();
         try {
-            fogSyncTest_attemptRefresh(testValueFog5, testValueConsensus5);// Fog behind over threshold, should fail
+            fogSyncTest_attemptRefresh(testValueFog5, testValueFog5, testValueConsensus5);// Fog behind over threshold, should fail
         } catch (FogSyncException e) {
             assertEquals(e.getFogBlockIndex(), UnsignedLong.fromLongBits(testValueFog5 - 1L));
             assertEquals(e.getConsensusBlockIndex(), UnsignedLong.fromLongBits(testValueConsensus5));
@@ -342,20 +343,64 @@ public class TxOutStoreTest {
         assertTrue(exceptionThrown);
         exceptionThrown = false;
 
+        final long testValueView6 = 234234235675L;
+        final long testValueLedger6 = testValueView6 - TxOutStore.FOG_SYNC_THRESHOLD.longValue() + 2L;
+        final long testValueConsensus6 = testValueView6;
+        fogSyncTest_attemptRefresh(testValueView6, testValueLedger6, testValueConsensus6);// below threshold, should pass
+
+        final long testValueView7 = 99L;
+        final long testValueLedger7 = testValueView7 + TxOutStore.FOG_SYNC_THRESHOLD.longValue() + 1L;
+        final long testValueConsensus7 = testValueView7 + TxOutStore.FOG_SYNC_THRESHOLD.longValue() / 2;
+        try {
+            fogSyncTest_attemptRefresh(testValueView7, testValueLedger7, testValueConsensus7);// at threshold, should fail
+        } catch(FogStatusException e) {
+            assertEquals(testValueView7 - 1L, e.getFogViewIndex().longValue());
+            assertEquals(testValueLedger7 - 1L, e.getFogLedgerIndex().longValue());
+            exceptionThrown = true;
+        }
+        assertTrue(exceptionThrown);
+        exceptionThrown = false;
+
+        final long testValueView8 = 170L;
+        final long testValueLedger8 = testValueView8 - TxOutStore.FOG_SYNC_THRESHOLD.longValue() - 1L;
+        final long testValueConsensus8 = testValueView8 - TxOutStore.FOG_SYNC_THRESHOLD.longValue() / 2;
+        try {
+            fogSyncTest_attemptRefresh(testValueView8, testValueLedger8, testValueConsensus8);// at threshold, should fail
+        } catch(FogStatusException e) {
+            assertEquals(testValueView8 - 1L, e.getFogViewIndex().longValue());
+            assertEquals(testValueLedger8 - 1L, e.getFogLedgerIndex().longValue());
+            exceptionThrown = true;
+        }
+        assertTrue(exceptionThrown);
+        exceptionThrown = false;
+
+        final long testValueView9 = 99L;
+        final long testValueLedger9 = testValueView9 + TxOutStore.FOG_SYNC_THRESHOLD.longValue();
+        final long testValueConsensus9 = testValueView9 + TxOutStore.FOG_SYNC_THRESHOLD.longValue() / 2;
+        try {
+            fogSyncTest_attemptRefresh(testValueView9, testValueLedger9, testValueConsensus9);// above threshold, should fail
+        } catch(FogStatusException e) {
+            assertEquals(testValueView9 - 1L, e.getFogViewIndex().longValue());
+            assertEquals(testValueLedger9 - 1L, e.getFogLedgerIndex().longValue());
+            exceptionThrown = true;
+        }
+        assertTrue(exceptionThrown);
+        exceptionThrown = false;
+
     }
 
-    private void fogSyncTest_attemptRefresh(long fogNumProcessedBlocks, long consensusBlockIndex) throws Exception {
+    private void fogSyncTest_attemptRefresh(long fogViewBlocks, long fogLedgerBlocks, long consensusBlocks) throws Exception {
 
         AccountKey accountKey = mock(AccountKey.class);
 
         AttestedViewClient viewClient = mock(AttestedViewClient.class);
         View.QueryResponse.Builder viewResponseBuilder = View.QueryResponse.newBuilder();
-        viewResponseBuilder.setHighestProcessedBlockCount(fogNumProcessedBlocks);
+        viewResponseBuilder.setHighestProcessedBlockCount(fogViewBlocks);
         when(viewClient.request(any(), eq(Long.valueOf(0L)), eq(Long.valueOf(0L)))).thenReturn(viewResponseBuilder.build());
 
         AttestedLedgerClient ledgerClient = mock(AttestedLedgerClient.class);
         Ledger.CheckKeyImagesResponse.Builder ledgerResponseBuilder = Ledger.CheckKeyImagesResponse.newBuilder();
-        ledgerResponseBuilder.setNumBlocks(fogNumProcessedBlocks);
+        ledgerResponseBuilder.setNumBlocks(fogLedgerBlocks);
         ledgerResponseBuilder.setGlobalTxoCount(18930623637638213L);
         when(ledgerClient.checkUtxoKeyImages(any())).thenReturn(ledgerResponseBuilder.build());
 
@@ -364,11 +409,11 @@ public class TxOutStoreTest {
 
         BlockchainClient blockchainClient = mock(BlockchainClient.class);
         ConsensusCommon.LastBlockInfoResponse.Builder blockchainClientResponseBuilder = ConsensusCommon.LastBlockInfoResponse.newBuilder();
-        blockchainClientResponseBuilder.setIndex(consensusBlockIndex);
+        blockchainClientResponseBuilder.setIndex(consensusBlocks);
         when(blockchainClient.getOrFetchLastBlockInfo()).thenReturn(blockchainClientResponseBuilder.build());
 
         TxOutStore txOutStore = new TxOutStore(accountKey);
-        txOutStore.setConsensusBlockIndex(UnsignedLong.fromLongBits(consensusBlockIndex));
+        txOutStore.setConsensusBlockIndex(UnsignedLong.fromLongBits(consensusBlocks));
         txOutStore.refresh(
                 viewClient,
                 ledgerClient,
