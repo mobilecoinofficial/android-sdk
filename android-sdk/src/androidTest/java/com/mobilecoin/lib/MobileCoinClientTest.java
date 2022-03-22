@@ -18,7 +18,6 @@ import com.mobilecoin.lib.exceptions.AmountDecoderException;
 import com.mobilecoin.lib.exceptions.AttestationException;
 import com.mobilecoin.lib.exceptions.FeeRejectedException;
 import com.mobilecoin.lib.exceptions.FogReportException;
-import com.mobilecoin.lib.exceptions.FogSyncException;
 import com.mobilecoin.lib.exceptions.FragmentedAccountException;
 import com.mobilecoin.lib.exceptions.InsufficientFundsException;
 import com.mobilecoin.lib.exceptions.InvalidFogResponse;
@@ -481,7 +480,7 @@ public class MobileCoinClientTest {
 
     @Test
     public void test_internal_external_get_owned_tx_outs_api()
-            throws InvalidFogResponse, NetworkException, AttestationException, InvalidUriException, FogSyncException {
+            throws InvalidFogResponse, NetworkException, AttestationException, InvalidUriException {
         MobileCoinClient mobileCoinClient = MobileCoinClientBuilder.newBuilder().build();
         TxOutStore store = mobileCoinClient.getTxOutStore();
         store.refresh(

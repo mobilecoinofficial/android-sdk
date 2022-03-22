@@ -53,7 +53,7 @@ public class TxOutStoreTest {
     @Test
     public void test_serialize_roundtrip()
             throws SerializationException, InvalidFogResponse, NetworkException,
-            AttestationException, InvalidUriException, FogSyncException {
+            AttestationException, InvalidUriException {
         AccountKey accountKey = TestKeysManager.getNextAccountKey();
         MobileCoinClient mobileCoinClient = MobileCoinClientBuilder.newBuilder()
             .setAccountKey(accountKey).build();

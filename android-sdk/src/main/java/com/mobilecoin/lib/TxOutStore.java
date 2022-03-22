@@ -7,7 +7,6 @@ import android.os.Parcelable;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.annotation.VisibleForTesting;
 
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.mobilecoin.lib.exceptions.AttestationException;
@@ -20,9 +19,6 @@ import com.mobilecoin.lib.exceptions.SerializationException;
 import com.mobilecoin.lib.log.Logger;
 import com.mobilecoin.lib.util.Hex;
 
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
