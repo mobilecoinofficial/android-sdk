@@ -515,15 +515,15 @@ final class TxOutStore implements Parcelable {
         return this.consensusBlockIndex;
     }
 
-    public void setViewBlockIndex(UnsignedLong viewBlockIndex) {
+    void setViewBlockIndex(UnsignedLong viewBlockIndex) {
         this.viewBlockIndex = viewBlockIndex;
     }
 
-    public void setLedgerBlockIndex(UnsignedLong ledgerBlockIndex) {
+    void setLedgerBlockIndex(UnsignedLong ledgerBlockIndex) {
         this.ledgerBlockIndex = ledgerBlockIndex;
     }
 
-    public void setConsensusBlockIndex(UnsignedLong consensusBlockIndex) {
+    void setConsensusBlockIndex(UnsignedLong consensusBlockIndex) {
         this.consensusBlockIndex = consensusBlockIndex;
     }
 
