@@ -44,7 +44,7 @@ final class BlockchainClient extends AnyClient {
     @NonNull
     synchronized UnsignedLong getOrFetchMinimumFee() throws NetworkException {
         ConsensusCommon.LastBlockInfoResponse response = getOrFetchLastBlockInfo();
-        long minimumFeeBits = response.getMinimumFee();
+        long minimumFeeBits = response.getMinimumFeesMap().get(0);
         UnsignedLong minimumFee = UnsignedLong.fromLongBits(minimumFeeBits);
         if (minimumFee.equals(UnsignedLong.ZERO)) {
             minimumFee = UnsignedLong.fromBigInteger(DEFAULT_TX_FEE);

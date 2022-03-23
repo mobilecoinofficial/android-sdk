@@ -303,4 +303,16 @@ public class PublicAddressTest {
         assertEquals(parcelInput, parcelOutput);
     }
 
+    public void calculateAddressHash_calculatesAddressHash() {
+        Uri fogUri = Uri.parse("fog://some-test-uri");
+        PublicAddress publicAddress = new PublicAddress(key1,
+            key2,
+            fogUri,
+            fogConfig.getFogAuthoritySpki(),
+            fogConfig.getFogReportId()
+        );
+
+        publicAddress.calculateAddressHash();
+    }
+
 }

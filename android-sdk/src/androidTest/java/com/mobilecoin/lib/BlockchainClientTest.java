@@ -48,12 +48,12 @@ public class BlockchainClientTest {
         when(blockchainService.getLastBlockInfo(any())).thenReturn(
                 ConsensusCommon.LastBlockInfoResponse.newBuilder()
                         .setIndex(1)
-                        .setMinimumFee(1)
+                        .putMinimumFees(0, 400000000L)
                         .build()
         ).thenReturn(
                 ConsensusCommon.LastBlockInfoResponse.newBuilder()
                         .setIndex(2)
-                        .setMinimumFee(3)
+                        .putMinimumFees(0, 400000000L)
                         .build()
         );
         when(apiManager.getBlockchainService(any())).thenReturn(blockchainService);
@@ -106,12 +106,12 @@ public class BlockchainClientTest {
         when(blockchainService.getLastBlockInfo(any())).thenReturn(
                 ConsensusCommon.LastBlockInfoResponse.newBuilder()
                         .setIndex(1)
-                        .setMinimumFee(1)
+                        .putMinimumFees(0, 400000000L)
                         .build()
         ).thenReturn(
                 ConsensusCommon.LastBlockInfoResponse.newBuilder()
                         .setIndex(1)
-                        .setMinimumFee(1)
+                        .putMinimumFees(0, 400000000L)
                         .build()
         );
         when(apiManager.getBlockchainService(any())).thenReturn(blockchainService);
