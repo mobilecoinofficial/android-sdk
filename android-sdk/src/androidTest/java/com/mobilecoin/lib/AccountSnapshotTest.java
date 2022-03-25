@@ -26,10 +26,7 @@ public class AccountSnapshotTest {
     // check snapshot balance, spent some coins and check again, the balance for that snapshot
     // should remain constant
     @Test
-    public void test_balance() throws NetworkException, InvalidFogResponse, AttestationException,
-            InsufficientFundsException, FogReportException, TransactionBuilderException,
-            FragmentedAccountException, FeeRejectedException, InvalidTransactionException,
-            TimeoutException, InterruptedException, InvalidUriException {
+    public void test_balance() throws Exception {
 
         MobileCoinClient mobileCoinClient = MobileCoinClientBuilder.newBuilder().build();
         AccountSnapshot snapshot = mobileCoinClient.getAccountSnapshot();
@@ -78,10 +75,7 @@ public class AccountSnapshotTest {
     }
 
     @Test
-    public void test_tx_status() throws NetworkException, InvalidFogResponse, AttestationException,
-            InsufficientFundsException, FogReportException, TransactionBuilderException,
-            FragmentedAccountException, FeeRejectedException, InvalidTransactionException,
-            TimeoutException, InterruptedException, InvalidUriException {
+    public void test_tx_status() throws Exception {
 
         MobileCoinClient mobileCoinClient = MobileCoinClientBuilder.newBuilder().build();
         AccountSnapshot snapshotBefore =
@@ -112,11 +106,7 @@ public class AccountSnapshotTest {
     }
 
     @Test
-    public void test_tx_receipts() throws NetworkException, InvalidFogResponse,
-            AttestationException,
-            InsufficientFundsException, FogReportException, TransactionBuilderException,
-            FragmentedAccountException, FeeRejectedException, InvalidTransactionException,
-            TimeoutException, InterruptedException, InvalidUriException, InvalidReceiptException {
+    public void test_tx_receipts() throws Exception {
 
         MobileCoinClient senderClient = MobileCoinClientBuilder.newBuilder().build();
         MobileCoinClient recipientClient = MobileCoinClientBuilder.newBuilder().build();

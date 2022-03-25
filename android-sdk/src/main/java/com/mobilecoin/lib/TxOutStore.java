@@ -10,7 +10,6 @@ import androidx.annotation.Nullable;
 
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.mobilecoin.lib.exceptions.AttestationException;
-import com.mobilecoin.lib.exceptions.FogStatusException;
 import com.mobilecoin.lib.exceptions.FogSyncException;
 import com.mobilecoin.lib.exceptions.InvalidFogResponse;
 import com.mobilecoin.lib.exceptions.KexRngException;
@@ -151,7 +150,7 @@ final class TxOutStore implements Parcelable {
             @NonNull AttestedViewClient viewClient,
             @NonNull AttestedLedgerClient ledgerClient,
             @NonNull FogBlockClient blockClient
-    ) throws InvalidFogResponse, NetworkException, AttestationException {
+    ) throws InvalidFogResponse, NetworkException, AttestationException, FogSyncException {
         // update RNGs, TxOuts, and fog misses
         Set<BlockRange> fogMisses;
         try {
@@ -179,13 +178,19 @@ final class TxOutStore implements Parcelable {
         updateKeyImages(ledgerClient);
 
         if(Math.abs(ledgerBlockIndex.longValue() - viewBlockIndex.longValue()) >= FOG_SYNC_THRESHOLD.longValue()) {
-            throw new FogStatusException(viewBlockIndex, ledgerBlockIndex);
+            throw new FogSyncException(
+                    String.format("Fog view and ledger block indices are out of sync. " +
+                            "Try again later. View index: %s, Ledger index: %s",
+                            viewBlockIndex, ledgerBlockIndex));
         }
 
         UnsignedLong currentBlockIndex = getCurrentBlockIndex();
         if(consensusBlockIndex.compareTo(currentBlockIndex) > 0) {
             if(consensusBlockIndex.sub(currentBlockIndex).compareTo(FOG_SYNC_THRESHOLD) >= 0) {
-                throw new FogSyncException(currentBlockIndex, consensusBlockIndex);
+                throw new FogSyncException(
+                        String.format("Fog has not finished syncing with Consensus. " +
+                                        "Try again later (Block index %s / %s).",
+                        currentBlockIndex, consensusBlockIndex));
             }
         }
     }

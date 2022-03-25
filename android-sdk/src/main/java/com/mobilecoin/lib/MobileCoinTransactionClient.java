@@ -5,6 +5,7 @@ import androidx.annotation.NonNull;
 import com.mobilecoin.lib.exceptions.AttestationException;
 import com.mobilecoin.lib.exceptions.FeeRejectedException;
 import com.mobilecoin.lib.exceptions.FogReportException;
+import com.mobilecoin.lib.exceptions.FogSyncException;
 import com.mobilecoin.lib.exceptions.FragmentedAccountException;
 import com.mobilecoin.lib.exceptions.InsufficientFundsException;
 import com.mobilecoin.lib.exceptions.InvalidFogResponse;
@@ -42,8 +43,8 @@ public interface MobileCoinTransactionClient {
       @NonNull final BigInteger amount,
       @NonNull final BigInteger fee
   ) throws InsufficientFundsException, FragmentedAccountException, FeeRejectedException,
-      InvalidFogResponse, AttestationException, NetworkException,
-      TransactionBuilderException, FogReportException;
+          InvalidFogResponse, AttestationException, NetworkException,
+          TransactionBuilderException, FogReportException, FogSyncException;
 
 
   /**
@@ -91,7 +92,7 @@ public interface MobileCoinTransactionClient {
   @NonNull
   BigInteger estimateTotalFee(@NonNull BigInteger amount)
       throws InsufficientFundsException, NetworkException, InvalidFogResponse,
-      AttestationException;
+      AttestationException, FogSyncException;
 
   /**
    * Fetches or returns the cached minimum transaction fee.

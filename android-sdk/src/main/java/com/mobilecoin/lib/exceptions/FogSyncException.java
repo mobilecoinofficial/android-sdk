@@ -5,12 +5,7 @@ import androidx.annotation.Nullable;
 
 import com.mobilecoin.lib.UnsignedLong;
 
-public class FogSyncException extends InvalidFogResponse {
-
-    @Nullable
-    private UnsignedLong fogBlockIndex;
-    @Nullable
-    private UnsignedLong consensusBlockIndex;
+public class FogSyncException extends MobileCoinException {
 
     public FogSyncException(@NonNull Throwable throwable) {
         super(throwable);
@@ -22,23 +17,6 @@ public class FogSyncException extends InvalidFogResponse {
 
     public FogSyncException(@Nullable String message, @Nullable Throwable exception) {
         super(message, exception);
-    }
-
-    public FogSyncException(@NonNull UnsignedLong fogBlockIndex, @NonNull UnsignedLong consensusBlockIndex) {
-        super(String.format("Fog has not finished syncing with Consensus. Please try again later (Block index %s / %s).",
-                fogBlockIndex, consensusBlockIndex));
-        this.fogBlockIndex = fogBlockIndex;
-        this.consensusBlockIndex = consensusBlockIndex;
-    }
-
-    @Nullable
-    public UnsignedLong getFogBlockIndex() {
-        return this.fogBlockIndex;
-    }
-
-    @Nullable
-    public UnsignedLong getConsensusBlockIndex() {
-        return this.consensusBlockIndex;
     }
 
 }
