@@ -81,14 +81,14 @@ public class OwnedTxOut implements Parcelable {
             long maskedValue = txOutRecord.getTxOutAmountMaskedValue();
             RistrettoPublic txOutSharedSecret =
                 Util.getSharedSecret(accountKey.getViewKey(), txOutPublicKey);
-            Amount amount = new Amount(txOutSharedSecret, maskedValue);
-            value = amount.unmaskValue(
+            MaskedAmount maskedAmount = new MaskedAmount(txOutSharedSecret, maskedValue);
+            value = maskedAmount.unmaskValue(
                     accountKey.getViewKey(),
                     txOutPublicKey
             );
 
             MobileCoinAPI.TxOut.Builder txOutProtoBuilder = MobileCoinAPI.TxOut.newBuilder()
-                    .setAmount(amount.toProtoBufObject())
+                    .setMaskedAmount(maskedAmount.toProtoBufObject())
                     .setPublicKey(txOutPublicKeyProto)
                     .setTargetKey(txOutTargetKeyProto);
             if (!txOutRecord.getTxOutEMemoData().isEmpty()) {

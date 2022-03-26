@@ -12,21 +12,21 @@ import com.mobilecoin.lib.log.Logger;
 import java.math.BigInteger;
 
 /**
- * Encapsulates the abstraction of a native Amount with a JNI link to control the native
+ * Encapsulates the abstraction of a native MaskedAmount with a JNI link to control the native
  * counterpart.
  */
-final class Amount extends Native {
-    private final static String TAG = Amount.class.getName();
-    private final MobileCoinAPI.Amount protoBufAmount;
+final class MaskedAmount extends Native {
+    private final static String TAG = MaskedAmount.class.getName();
+    private final MobileCoinAPI.MaskedAmount protoBufMaskedAmount;
 
     /**
-     * Constructs native Amount object from the commitment and masked data
+     * Constructs native MaskedAmount object from the commitment and masked data
      *
      * @param commitment  A Pedersen commitment {@code v*G + s*H}
      * @param maskedValue {@code masked_value = value XOR_8 Blake2B(value_mask || shared_secret)}
      */
-    Amount(@NonNull byte[] commitment, long maskedValue) throws AmountDecoderException {
-        protoBufAmount = MobileCoinAPI.Amount.newBuilder()
+    MaskedAmount(@NonNull byte[] commitment, long maskedValue) throws AmountDecoderException {
+        protoBufMaskedAmount = MobileCoinAPI.MaskedAmount.newBuilder()
                 .setCommitment(MobileCoinAPI.CompressedRistretto.newBuilder()
                         .setData(ByteString.copyFrom(commitment)).build())
                 .setMaskedValue(maskedValue).build();
@@ -37,26 +37,26 @@ final class Amount extends Native {
             );
         } catch (Exception exception) {
             AmountDecoderException amountDecoderException = new AmountDecoderException("Unable to" +
-                    " initialize amount object", exception);
+                    " initialize MaskedAmount object", exception);
             Util.logException(TAG, amountDecoderException);
             throw amountDecoderException;
         }
     }
 
     /**
-     * Constructs native Amount object from the txOutSharedSecret and masked value.
+     * Constructs native MaskedAmount object from the txOutSharedSecret and masked value.
      *
      * @param txOutSharedSecret  A {@link RistrettoPublic} representing the shared secret.
      * @param maskedValue {@code masked_value = value XOR_8 Blake2B(value_mask || shared_secret)}
      */
-    Amount(@NonNull RistrettoPublic txOutSharedSecret, long maskedValue) throws AmountDecoderException {
+    MaskedAmount(@NonNull RistrettoPublic txOutSharedSecret, long maskedValue) throws AmountDecoderException {
         try {
             init_jni_with_secret(
                 txOutSharedSecret,
                 maskedValue
             );
             byte[] amountBytes = get_bytes();
-            protoBufAmount = MobileCoinAPI.Amount.parseFrom(amountBytes);
+            protoBufMaskedAmount = MobileCoinAPI.MaskedAmount.parseFrom(amountBytes);
         } catch (Exception exception) {
             AmountDecoderException amountDecoderException = new AmountDecoderException("Unable to" +
                 " initialize amount object", exception);
@@ -66,27 +66,27 @@ final class Amount extends Native {
     }
 
     /**
-     * Constructs native Amount object from the protocol buffer
+     * Constructs native MaskedAmount object from the protocol buffer
      */
-    Amount(@NonNull MobileCoinAPI.Amount amount) throws AmountDecoderException {
-        this(amount.getCommitment().getData().toByteArray(), amount.getMaskedValue());
+    MaskedAmount(@NonNull MobileCoinAPI.MaskedAmount maskedAmount) throws AmountDecoderException {
+        this(maskedAmount.getCommitment().getData().toByteArray(), maskedAmount.getMaskedValue());
     }
 
     /**
      * Constructs native Amount object from the protocol buffer
      */
-    static Amount fromProtoBufObject(@NonNull MobileCoinAPI.Amount protoBuf)
+    static MaskedAmount fromProtoBufObject(@NonNull MobileCoinAPI.MaskedAmount protoBuf)
             throws AmountDecoderException {
-        Logger.i(TAG, "Deserializing amount from protobuf object");
-        return new Amount(protoBuf);
+        Logger.i(TAG, "Deserializing MaskedAmount from protobuf object");
+        return new MaskedAmount(protoBuf);
     }
 
     /**
-     * Construct and return a new Amount protocol buffer object
+     * Construct and return a new MaskedAmount protocol buffer object
      */
     @NonNull
-    MobileCoinAPI.Amount toProtoBufObject() {
-        return protoBufAmount;
+    MobileCoinAPI.MaskedAmount toProtoBufObject() {
+        return protoBufMaskedAmount;
     }
 
     /**
@@ -96,20 +96,20 @@ final class Amount extends Native {
      */
     @NonNull
     byte[] getCommitment() {
-        return protoBufAmount.getCommitment().getData().toByteArray();
+        return protoBufMaskedAmount.getCommitment().getData().toByteArray();
     }
 
     /**
-     * Amount's masked value
+     * MaskedAmount's masked value
      *
      * @return {@code masked_value = value XOR_8 Blake2B(value_mask || shared_secret)}
      */
     long getMaskedValue() {
-        return protoBufAmount.getMaskedValue();
+        return protoBufMaskedAmount.getMaskedValue();
     }
 
     /**
-     * Unmasks the value of the Amount
+     * Unmasks the value of the MaskedAmount
      *
      * @param txPubKey transaction public key
      * @return unmasked amount of picoMob represented as a BigInteger
@@ -119,7 +119,7 @@ final class Amount extends Native {
             @NonNull RistrettoPrivate viewKey,
             @NonNull RistrettoPublic txPubKey
     ) throws AmountDecoderException {
-        Logger.i(TAG, "Unmasking amount");
+        Logger.i(TAG, "Unmasking MaskedAmount");
         try {
             return unmask_value(
                     viewKey,
@@ -127,7 +127,7 @@ final class Amount extends Native {
             );
         } catch (Exception exception) {
             AmountDecoderException amountDecoderException = new AmountDecoderException("Unable to" +
-                    " unmask the amount", exception);
+                    " unmask the MaskedAmount", exception);
             Util.logException(TAG, amountDecoderException);
             throw amountDecoderException;
         }

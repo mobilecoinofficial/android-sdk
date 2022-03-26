@@ -88,7 +88,7 @@ public class TxOutMemoIntegrationTest {
     BigInteger sentTxOutValue = BigInteger.ONE;
 
     transactionBuilder.addOutput(sentTxOutValue, recipientAccountKey.getPublicAddress(), null);
-    BigInteger realTxOutValue = realTxOut.getAmount()
+    BigInteger realTxOutValue = realTxOut.getMaskedAmount()
         .unmaskValue(senderAccountKey.getViewKey(), realTxOut.getPubKey());
     BigInteger changeValue = realTxOutValue.subtract(BigInteger.valueOf(fee))
         .subtract(sentTxOutValue);
@@ -102,7 +102,7 @@ public class TxOutMemoIntegrationTest {
 
     TxOut sentTxOut;
     try {
-      txOut1.getAmount().unmaskValue(recipientAccountKey.getViewKey(), txOut1.getPubKey());
+      txOut1.getMaskedAmount().unmaskValue(recipientAccountKey.getViewKey(), txOut1.getPubKey());
       sentTxOut = txOut1;
     } catch(Exception e) {
       sentTxOut = txOut2;
@@ -143,7 +143,7 @@ public class TxOutMemoIntegrationTest {
     BigInteger txValue = BigInteger.ONE;
 
     transactionBuilder.addOutput(txValue, recipientAccountKey.getPublicAddress(), null);
-    BigInteger realTxOutValue = realTxOut.getAmount()
+    BigInteger realTxOutValue = realTxOut.getMaskedAmount()
         .unmaskValue(senderAccountKey.getViewKey(), realTxOut.getPubKey());
     BigInteger changeValue = realTxOutValue.subtract(BigInteger.valueOf(fee)).subtract(txValue);
     transactionBuilder.addChangeOutput(changeValue, senderAccountKey, null);
@@ -156,7 +156,7 @@ public class TxOutMemoIntegrationTest {
 
     TxOut changeTxOut;
     try {
-      txOut1.getAmount()
+      txOut1.getMaskedAmount()
           .unmaskValue(senderAccountKey.getViewKey(), txOut1.getPubKey());
       changeTxOut = txOut1;
     } catch(Exception e) {
@@ -198,7 +198,7 @@ public class TxOutMemoIntegrationTest {
     BigInteger sentTxOutValue = BigInteger.ONE;
 
     transactionBuilder.addOutput(sentTxOutValue, recipientAccountKey.getPublicAddress(), null);
-    BigInteger realTxOutValue = realTxOut.getAmount()
+    BigInteger realTxOutValue = realTxOut.getMaskedAmount()
         .unmaskValue(senderAccountKey.getViewKey(), realTxOut.getPubKey());
     BigInteger changeValue = realTxOutValue.subtract(BigInteger.valueOf(fee))
         .subtract(sentTxOutValue);
@@ -212,7 +212,7 @@ public class TxOutMemoIntegrationTest {
 
     TxOut sentTxOut;
     try {
-      txOut1.getAmount().unmaskValue(recipientAccountKey.getViewKey(), txOut1.getPubKey());
+      txOut1.getMaskedAmount().unmaskValue(recipientAccountKey.getViewKey(), txOut1.getPubKey());
       sentTxOut = txOut1;
     } catch(Exception e) {
       sentTxOut = txOut2;
@@ -252,7 +252,7 @@ public class TxOutMemoIntegrationTest {
     BigInteger sentTxOutValue = BigInteger.ONE;
 
     transactionBuilder.addOutput(sentTxOutValue, recipientAccountKey.getPublicAddress(), null);
-    BigInteger realTxOutValue = realTxOut.getAmount()
+    BigInteger realTxOutValue = realTxOut.getMaskedAmount()
             .unmaskValue(senderAccountKey.getViewKey(), realTxOut.getPubKey());
     BigInteger changeValue = realTxOutValue.subtract(BigInteger.valueOf(fee))
             .subtract(sentTxOutValue);
@@ -266,7 +266,7 @@ public class TxOutMemoIntegrationTest {
 
     TxOut sentTxOut;
     try {
-      txOut1.getAmount().unmaskValue(recipientAccountKey.getViewKey(), txOut1.getPubKey());
+      txOut1.getMaskedAmount().unmaskValue(recipientAccountKey.getViewKey(), txOut1.getPubKey());
       sentTxOut = txOut1;
     } catch(Exception e) {
       sentTxOut = txOut2;
