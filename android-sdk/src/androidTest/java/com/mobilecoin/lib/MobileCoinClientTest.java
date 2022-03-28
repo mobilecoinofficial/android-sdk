@@ -70,12 +70,12 @@ public class MobileCoinClientTest {
             Balance balance1 = mobileCoinClient.getBalance();
             Logger.d(
                     TAG,
-                    "Balance 1: " + balance1.toString()
+                    "Balance 1: " + balance1
             );
             Balance balance2 = mobileCoinClient.getBalance();
             Logger.d(
                     TAG,
-                    "Balance 2: " + balance2.toString()
+                    "Balance 2: " + balance2
             );
             Assert.assertEquals(
                     balance1,
@@ -93,8 +93,9 @@ public class MobileCoinClientTest {
         Balance balance = mobileCoinClient.getBalance();
         Logger.d(
                 TAG,
-                "Balance: " + balance.toString()
+                "Balance: " + balance
         );
+        Logger.d(TAG,"Balance: " + balance.getAmountPicoMob());
         Assert.assertTrue(
                 "Expect non-zero balance",
                 balance.getAmountPicoMob().compareTo(BigInteger.ZERO) > 0
@@ -512,11 +513,11 @@ public class MobileCoinClientTest {
         public_api_tx_outs.forEach(ownedTxOut -> {
             Date receivedTimestamp = ownedTxOut.getReceivedBlockTimestamp();
             Assert.assertNotNull("Received timestamp should not be null", receivedTimestamp);
-            Logger.d(TAG, "TxOut received at " + receivedTimestamp.toString());
+            Logger.d(TAG, "TxOut received at " + receivedTimestamp);
             if (ownedTxOut.isSpent(UnsignedLong.MAX_VALUE)) {
                 Date spentTimestamp = ownedTxOut.getSpentBlockTimestamp();
                 Assert.assertNotNull("Spent timestamp should not be null", spentTimestamp);
-                Logger.d(TAG, "TxOut spent at " + spentTimestamp.toString());
+                Logger.d(TAG, "TxOut spent at " + spentTimestamp);
             }
         });
 

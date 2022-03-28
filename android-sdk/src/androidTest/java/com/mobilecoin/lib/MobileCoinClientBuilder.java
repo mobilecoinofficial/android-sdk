@@ -12,7 +12,7 @@ public final class MobileCoinClientBuilder {
 
   private AccountKey accountKey;
   private Uri fogUri;
-  private List<Uri> consensueUris;
+  private List<Uri> consensusUris;
   private ClientConfig clientConfig;
   private String username;
   private String password;
@@ -43,7 +43,7 @@ public final class MobileCoinClientBuilder {
                                   TransportProtocol transportProtocol) {
     this.accountKey = accountKey;
     this.fogUri = fogUri;
-    this.consensueUris = consensusUris;
+    this.consensusUris = consensusUris;
     this.clientConfig = clientConfig;
     this.username = username;
     this.password = password;
@@ -64,8 +64,8 @@ public final class MobileCoinClientBuilder {
     return this;
   }
 
-  public MobileCoinClientBuilder setConsensueUris(List<Uri> consensueUris) {
-    this.consensueUris = consensueUris;
+  public MobileCoinClientBuilder setConsensusUris(List<Uri> consensusUris) {
+    this.consensusUris = consensusUris;
     return this;
   }
 
@@ -94,7 +94,7 @@ public final class MobileCoinClientBuilder {
     MobileCoinClient mobileCoinClient = new MobileCoinClient(
         this.accountKey,
         this.fogUri,
-        this.consensueUris,
+        this.consensusUris,
         this.clientConfig,
         this.transportProtocol
     );
@@ -118,8 +118,8 @@ public final class MobileCoinClientBuilder {
     return this.fogUri;
   }
 
-  public List<Uri> getConsensueUris() {
-    return this.consensueUris;
+  public List<Uri> getConsensusUris() {
+    return this.consensusUris;
   }
 
   public ClientConfig getClientConfig() {

@@ -70,7 +70,7 @@ repositories {
 }
 ```
 
-Then insert library dependency in the dependecies section of the target's `build.gradle`
+Then insert library dependency in the dependencies section of the target's `build.gradle`
 
 ```
 dependencies {
