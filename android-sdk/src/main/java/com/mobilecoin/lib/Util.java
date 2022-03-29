@@ -22,14 +22,15 @@ final class Util extends Native {
 
     static RistrettoPrivate recoverOnetimePrivateKey(
             @NonNull RistrettoPublic tx_pub_key,
-            @NonNull RistrettoPrivate view_key,
-            @NonNull RistrettoPrivate spend_key
+            @NonNull RistrettoPublic tx_target_key,
+            @NonNull AccountKey account_key
     ) throws TransactionBuilderException {
         Logger.i(TAG, "Recovering onetime private key", null, "tx_pub_key:", tx_pub_key);
         try {
-            long rustObj = recover_onetime_private_key(tx_pub_key,
-                    view_key,
-                    spend_key
+            long rustObj = recover_onetime_private_key(
+                    tx_pub_key,
+                    tx_target_key,
+                    account_key
             );
             return RistrettoPrivate.fromJNI(rustObj);
         } catch (Exception ex) {
@@ -56,8 +57,8 @@ final class Util extends Native {
 
     private native static long recover_onetime_private_key(
             @NonNull RistrettoPublic tx_pub_key,
-            @NonNull RistrettoPrivate view_key,
-            @NonNull RistrettoPrivate spend_key
+            @NonNull RistrettoPublic tx_target_key,
+            @NonNull AccountKey account_key
     );
 
     @NonNull

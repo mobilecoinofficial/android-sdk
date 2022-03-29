@@ -32,6 +32,8 @@ public final class PublicAddress extends Native implements Parcelable {
     private final String fogReportId;
     private final byte[] fogAuthoritySig;
 
+    private AddressHash addressHash;
+
     /**
      * Constructs new {@link PublicAddress} instance
      *
@@ -186,6 +188,17 @@ public final class PublicAddress extends Native implements Parcelable {
         return toProtoBufObject().toByteArray();
     }
 
+
+    /** Calculates the {@link AddressHash} for the given instance. */
+    public AddressHash calculateAddressHash() {
+        if (addressHash == null) {
+            byte[] addressHashData = calculate_address_hash_data();
+            addressHash = AddressHash.createAddressHash(addressHashData);
+        }
+
+        return addressHash;
+    }
+
     @NonNull
     MobileCoinAPI.PublicAddress toProtoBufObject() {
         MobileCoinAPI.PublicAddress.Builder addressBuilder =
@@ -275,7 +288,8 @@ public final class PublicAddress extends Native implements Parcelable {
                 spendKey.equals(that.spendKey) &&
                 Arrays.equals(fogAuthoritySig, that.fogAuthoritySig) &&
                 Objects.equals(getNormalizedFogReportUri(), that.getNormalizedFogReportUri()) &&
-                Objects.equals(fogReportId, that.fogReportId);
+                Objects.equals(fogReportId, that.fogReportId) &&
+                Objects.equals(addressHash, that.addressHash);
     }
 
     @Override
@@ -287,12 +301,13 @@ public final class PublicAddress extends Native implements Parcelable {
                 spendKey.equals(that.spendKey) &&
                 Arrays.equals(fogAuthoritySig, that.fogAuthoritySig) &&
                 Objects.equals(fogReportUri, that.fogReportUri) &&
-                Objects.equals(fogReportId, that.fogReportId);
+                Objects.equals(fogReportId, that.fogReportId) &&
+                Objects.equals(addressHash, that.addressHash);
     }
 
     @Override
     public int hashCode() {
-        int result = Objects.hash(fogReportId, viewKey, spendKey, fogReportUri);
+        int result = Objects.hash(fogReportId, viewKey, spendKey, fogReportUri, addressHash);
         result = 31 * result + Arrays.hashCode(fogAuthoritySig);
         return result;
     }
@@ -309,6 +324,7 @@ public final class PublicAddress extends Native implements Parcelable {
                 ", fogReportUri=" + fogReportUri +
                 ", fogReportId=" + fogReportId +
                 ", fogAuthoritySig=" + fogAuthoritySignString +
+                ", addressHash=" + addressHash +
                 '}';
     }
 
@@ -391,5 +407,7 @@ public final class PublicAddress extends Native implements Parcelable {
             return new PublicAddress[length];
         }
     };
+
+    private native byte[] calculate_address_hash_data();
 
 }

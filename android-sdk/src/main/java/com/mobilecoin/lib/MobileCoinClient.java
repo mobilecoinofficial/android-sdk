@@ -270,9 +270,10 @@ public final class MobileCoinClient implements MobileCoinAccountClient, MobileCo
     @Override
     @NonNull
     public PendingTransaction prepareTransaction(
-            @NonNull final PublicAddress recipient,
-            @NonNull final BigInteger amount,
-            @NonNull final BigInteger fee
+        @NonNull final PublicAddress recipient,
+        @NonNull final BigInteger amount,
+        @NonNull final BigInteger fee,
+        @NonNull TxOutMemoBuilder txOutMemoBuilder
     ) throws InsufficientFundsException, FragmentedAccountException, FeeRejectedException,
             InvalidFogResponse, AttestationException, NetworkException,
             TransactionBuilderException, FogReportException, FogSyncException {
@@ -300,23 +301,24 @@ public final class MobileCoinClient implements MobileCoinAccountClient, MobileCo
                 recipient,
                 amount,
                 selection.txOuts,
-                fee
+                fee,
+                txOutMemoBuilder
         );
     }
 
     @NonNull
     PendingTransaction prepareTransaction(
-            @NonNull final PublicAddress recipient,
-            @NonNull final BigInteger amount,
-            @NonNull final List<OwnedTxOut> txOuts,
-            @NonNull final BigInteger fee
+        @NonNull final PublicAddress recipient,
+        @NonNull final BigInteger amount,
+        @NonNull final List<OwnedTxOut> txOuts,
+        @NonNull final BigInteger fee,
+        TxOutMemoBuilder txOutMemoBuilder
     ) throws InvalidFogResponse, AttestationException, NetworkException,
             TransactionBuilderException, FogReportException {
         Logger.i(TAG, "PrepareTransaction with TxOuts call", null,
                 "recipient:", recipient,
                 "amount:", amount,
                 "fee:", fee);
-        final RistrettoPrivate viewKey = accountKey.getViewKey();
         UnsignedLong blockIndex = txOutStore.getCurrentBlockIndex();
         UnsignedLong tombstoneBlockIndex = blockIndex
                 .add(UnsignedLong.fromLongBits(DEFAULT_NEW_TX_BLOCK_ATTEMPTS));
@@ -406,22 +408,27 @@ public final class MobileCoinClient implements MobileCoinAccountClient, MobileCo
         Logger.d(TAG, "Report + Rings fetch time: " + (endTime - startTime) + "ms");
         FogResolver fogResolver = new FogResolver(fogReportResponses,
                 clientConfig.report.getVerifier());
-        TransactionBuilder txBuilder = new TransactionBuilder(fogResolver);
+
+        TransactionBuilder txBuilder = new TransactionBuilder(fogResolver, txOutMemoBuilder, 1);
+        txBuilder.setFee(fee.longValue());
+        txBuilder.setTombstoneBlockIndex(tombstoneBlockIndex);
+
         BigInteger totalAmount = BigInteger.valueOf(0);
         for (Ring ring : rings) {
             OwnedTxOut utxo = ring.utxo;
             totalAmount = totalAmount.add(utxo.getValue());
 
-            RistrettoPrivate onetimePrivateKey = Util.recoverOnetimePrivateKey(utxo.getPublicKey(),
-                    viewKey,
-                    accountKey.getDefaultSubAddressSpendKey()
+            RistrettoPrivate onetimePrivateKey = Util.recoverOnetimePrivateKey(
+                    utxo.getPublicKey(),
+                    utxo.getTargetKey(),
+                    accountKey
             );
 
             txBuilder.addInput(ring.getNativeTxOuts(),
                     ring.getNativeTxOutMembershipProofs(),
                     ring.realIndex,
                     onetimePrivateKey,
-                    viewKey
+                    accountKey.getViewKey()
             );
         }
         byte[] confirmationNumberOut = new byte[Receipt.CONFIRMATION_NUMBER_LENGTH];
@@ -432,15 +439,8 @@ public final class MobileCoinClient implements MobileCoinAccountClient, MobileCo
 
         BigInteger finalAmount = amount.add(fee);
 
-        if (totalAmount.compareTo(finalAmount) > 0) { // if total amount > finalAmount
-            BigInteger change = totalAmount.subtract(finalAmount);
-            txBuilder.addOutput(change,
-                    accountKey.getPublicAddress(),
-                    null
-            );
-        }
-        txBuilder.setTombstoneBlockIndex(tombstoneBlockIndex);
-        txBuilder.setFee(fee.longValue());
+        BigInteger change = totalAmount.subtract(finalAmount);
+        txBuilder.addChangeOutput(change, accountKey, null);
 
         Transaction transaction = txBuilder.build();
         Amount pendingAmount = pendingTxo.getAmount();
@@ -509,13 +509,16 @@ public final class MobileCoinClient implements MobileCoinAccountClient, MobileCo
 
     @Override
     public void defragmentAccount(
-            @NonNull BigInteger amountToSend,
-            @NonNull DefragmentationDelegate delegate
-    ) throws InvalidFogResponse, AttestationException, NetworkException, InsufficientFundsException,
+        @NonNull BigInteger amountToSend,
+        @NonNull DefragmentationDelegate delegate,
+        boolean shouldWriteRTHMemos) throws InvalidFogResponse, AttestationException, NetworkException, InsufficientFundsException,
             TransactionBuilderException, InvalidTransactionException,
             FogReportException, TimeoutException, FogSyncException {
         delegate.onStart();
         UTXOSelector.Selection<OwnedTxOut> inputSelectionForAmount = null;
+        TxOutMemoBuilder txOutMemoBuilder = shouldWriteRTHMemos ? TxOutMemoBuilder
+            .createSenderAndDestinationRTHMemoBuilder(accountKey)
+            : TxOutMemoBuilder.createDefaultRTHMemoBuilder();
         do {
             Set<OwnedTxOut> unspent = getUnspentTxOuts();
             try {
@@ -540,7 +543,8 @@ public final class MobileCoinClient implements MobileCoinAccountClient, MobileCo
                         accountKey.getPublicAddress(),
                         totalValue.subtract(selection.fee),
                         selection.txOuts,
-                        selection.fee
+                        selection.fee,
+                        txOutMemoBuilder
                 );
                 if (!delegate.onStepReady(pendingTransaction, selection.fee)) {
                     delegate.onCancel();

@@ -4,25 +4,25 @@ package com.mobilecoin.lib;
 
 
 import androidx.annotation.NonNull;
-
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.mobilecoin.api.MobileCoinAPI;
 import com.mobilecoin.lib.exceptions.AmountDecoderException;
 import com.mobilecoin.lib.exceptions.SerializationException;
 import com.mobilecoin.lib.log.Logger;
-
 import java.util.Objects;
 
 final class TxOut extends Native {
     private final static String TAG = TxOut.class.getName();
     private final MobileCoinAPI.TxOut protoBufTxOut;
     private final RistrettoPublic pubKey;
+    private final RistrettoPublic targetKey;
 
     private TxOut(@NonNull byte[] serializedBytes) throws SerializationException {
         try {
             init_from_protobuf_bytes(serializedBytes);
             protoBufTxOut = MobileCoinAPI.TxOut.parseFrom(serializedBytes);
             pubKey = RistrettoPublic.fromProtoBufObject(protoBufTxOut.getPublicKey());
+            targetKey = RistrettoPublic.fromProtoBufObject(protoBufTxOut.getTargetKey());
         } catch (Exception ex) {
             SerializationException serializationException =
                     new SerializationException(ex.getLocalizedMessage(), ex);
@@ -36,6 +36,7 @@ final class TxOut extends Native {
         try {
             protoBufTxOut = MobileCoinAPI.TxOut.parseFrom(toByteArray());
             pubKey = RistrettoPublic.fromProtoBufObject(protoBufTxOut.getPublicKey());
+            targetKey = RistrettoPublic.fromProtoBufObject(protoBufTxOut.getTargetKey());
         } catch (InvalidProtocolBufferException ex) {
             SerializationException serializationException =
                     new SerializationException(ex.getLocalizedMessage());
@@ -48,6 +49,7 @@ final class TxOut extends Native {
         try {
             protoBufTxOut = tx;
             pubKey = RistrettoPublic.fromProtoBufObject(protoBufTxOut.getPublicKey());
+            targetKey = RistrettoPublic.fromProtoBufObject(protoBufTxOut.getTargetKey());
             init_from_protobuf_bytes(tx.toByteString().toByteArray());
         } catch (Exception ex) {
             SerializationException serializationException =
@@ -108,6 +110,14 @@ final class TxOut extends Native {
         return protoBufTxOut;
     }
 
+    @NonNull
+    byte[] decryptMemoPayload(@NonNull AccountKey accountKey) {
+        if (!protoBufTxOut.hasEMemo()) {
+            return new byte[0];
+        }
+        return decrypt_memo_payload(accountKey);
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -140,6 +150,11 @@ final class TxOut extends Native {
         return pubKey;
     }
 
+    @NonNull
+    RistrettoPublic getTargetKey() {
+        return targetKey;
+    }
+
     private native void init_from_protobuf_bytes(@NonNull byte[] data);
 
     private native void finalize_jni();
@@ -149,4 +164,7 @@ final class TxOut extends Native {
 
     @NonNull
     private native byte[] encode();
+
+    @NonNull
+    private native byte[] decrypt_memo_payload(@NonNull AccountKey accountKey);
 }

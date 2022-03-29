@@ -202,7 +202,7 @@ public final class AccountSnapshot {
      * consists of multiple coins, if there are no big enough coins to successfully send the
      * transaction {@link FragmentedAccountException} will be thrown. The account needs to be
      * defragmented in order to send the specified amount. See
-     * {@link MobileCoinClient#defragmentAccount}
+     * {@link MobileCoinAccountClient#defragmentAccount}
      *
      * @param amount       an amount value in picoMob
      * @param minimumTxFee minimum transaction fee, see
@@ -237,7 +237,8 @@ public final class AccountSnapshot {
     public PendingTransaction prepareTransaction(
             @NonNull final PublicAddress recipient,
             @NonNull final BigInteger amount,
-            @NonNull final BigInteger fee
+            @NonNull final BigInteger fee,
+            @NonNull final TxOutMemoBuilder txOutMemoBuilder
     ) throws InsufficientFundsException, FragmentedAccountException, FeeRejectedException,
             InvalidFogResponse, AttestationException, NetworkException,
             TransactionBuilderException, FogReportException {
@@ -266,7 +267,8 @@ public final class AccountSnapshot {
                 recipient,
                 amount,
                 selection.txOuts,
-                fee
+                fee,
+                txOutMemoBuilder
         );
     }
 }
