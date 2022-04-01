@@ -11,6 +11,7 @@ import com.mobilecoin.api.MobileCoinAPI;
 import com.mobilecoin.lib.exceptions.AttestationException;
 import com.mobilecoin.lib.exceptions.FeeRejectedException;
 import com.mobilecoin.lib.exceptions.FogReportException;
+import com.mobilecoin.lib.exceptions.FogSyncException;
 import com.mobilecoin.lib.exceptions.FragmentedAccountException;
 import com.mobilecoin.lib.exceptions.InsufficientFundsException;
 import com.mobilecoin.lib.exceptions.InvalidFogResponse;
@@ -221,11 +222,17 @@ public final class MobileCoinClient implements MobileCoinAccountClient, MobileCo
         TxOutStore txOutStore = getTxOutStore();
         UnsignedLong storeIndex = txOutStore.getCurrentBlockIndex();
         if (storeIndex.compareTo(blockIndex) < 0) {
-            txOutStore.refresh(
-                    viewClient,
-                    ledgerClient,
-                    fogBlockClient
-            );
+            try {
+                txOutStore.refresh(
+                        viewClient,
+                        ledgerClient,
+                        fogBlockClient
+                );
+            } catch(FogSyncException e) {
+                if(blockIndex.compareTo(storeIndex) >= 0) {
+                    throw new InvalidFogResponse("Cannot create up-to-date snapshot until Fog sync finishes. Try again later.", e);
+                }
+            }
             // refresh store index
             storeIndex = txOutStore.getCurrentBlockIndex();
         }
@@ -269,7 +276,7 @@ public final class MobileCoinClient implements MobileCoinAccountClient, MobileCo
         @NonNull TxOutMemoBuilder txOutMemoBuilder
     ) throws InsufficientFundsException, FragmentedAccountException, FeeRejectedException,
             InvalidFogResponse, AttestationException, NetworkException,
-            TransactionBuilderException, FogReportException {
+            TransactionBuilderException, FogReportException, FogSyncException {
         Logger.i(TAG, "PrepareTransaction call", null,
                 "recipient:", recipient,
                 "amount:", amount,
@@ -455,6 +462,7 @@ public final class MobileCoinClient implements MobileCoinAccountClient, MobileCo
                 "transaction:", transaction);
         ConsensusCommon.ProposeTxResponse txResponse =
                 consensusClient.proposeTx(transaction.toProtoBufObject());
+        this.txOutStore.setConsensusBlockIndex(UnsignedLong.fromLongBits(txResponse.getBlockCount() - 1L));
         int code = txResponse.getResult().getNumber();
         if (0 != code) {
             blockchainClient.resetCache();
@@ -488,7 +496,7 @@ public final class MobileCoinClient implements MobileCoinAccountClient, MobileCo
     @NonNull
     public BigInteger estimateTotalFee(@NonNull BigInteger amount)
             throws InsufficientFundsException, NetworkException, InvalidFogResponse,
-            AttestationException {
+            AttestationException, FogSyncException {
         Logger.i(TAG, "EstimateTotalFee call");
         return UTXOSelector.calculateFee(
                 getUnspentTxOuts(),
@@ -505,7 +513,7 @@ public final class MobileCoinClient implements MobileCoinAccountClient, MobileCo
         @NonNull DefragmentationDelegate delegate,
         boolean shouldWriteRTHMemos) throws InvalidFogResponse, AttestationException, NetworkException, InsufficientFundsException,
             TransactionBuilderException, InvalidTransactionException,
-            FogReportException, TimeoutException {
+            FogReportException, TimeoutException, FogSyncException {
         delegate.onStart();
         UTXOSelector.Selection<OwnedTxOut> inputSelectionForAmount = null;
         TxOutMemoBuilder txOutMemoBuilder = shouldWriteRTHMemos ? TxOutMemoBuilder
@@ -583,7 +591,7 @@ public final class MobileCoinClient implements MobileCoinAccountClient, MobileCo
                     getOrFetchMinimumTxFee(),
                     INPUT_FEE,
                     OUTPUT_FEE, 1);
-        } catch (FragmentedAccountException exception) {
+        } catch (FragmentedAccountException | FogSyncException exception) {
             return true;
         }
         return false;
@@ -599,7 +607,7 @@ public final class MobileCoinClient implements MobileCoinAccountClient, MobileCo
      */
     @NonNull
     Set<OwnedTxOut> getUnspentTxOuts() throws InvalidFogResponse, NetworkException,
-            AttestationException {
+            AttestationException, FogSyncException {
         getTxOutStore().refresh(
                 viewClient,
                 ledgerClient,
@@ -617,7 +625,7 @@ public final class MobileCoinClient implements MobileCoinAccountClient, MobileCo
     @Override
     @NonNull
     public AccountActivity getAccountActivity() throws NetworkException, InvalidFogResponse,
-            AttestationException {
+            AttestationException, FogSyncException {
         txOutStore.refresh(viewClient, ledgerClient, fogBlockClient);
         Set<OwnedTxOut> txOuts = txOutStore.getSyncedTxOuts();
         return new AccountActivity(txOuts,

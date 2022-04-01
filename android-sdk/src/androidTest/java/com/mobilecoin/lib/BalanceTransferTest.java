@@ -27,12 +27,7 @@ public class BalanceTransferTest {
     // defragment the new account and send the entire balance back to a test account
     // the test account balance should be between 0 and the txFee
     @Test
-    public void test_fragmented_balance_transfer() throws InvalidUriException,
-            InsufficientFundsException,
-            NetworkException, InvalidFogResponse, AttestationException, FogReportException,
-            TransactionBuilderException, FragmentedAccountException, FeeRejectedException,
-            InvalidTransactionException, InterruptedException, TimeoutException,
-            InvalidReceiptException {
+    public void test_fragmented_balance_transfer() throws Exception {
         AccountKey testKey = TestKeysManager.getNextAccountKey();
         // make sure the account is fragmented
         int TEST_FRAGMENTS = UTXOSelector.MAX_INPUTS + 1;

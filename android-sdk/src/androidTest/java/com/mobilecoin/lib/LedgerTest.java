@@ -65,16 +65,7 @@ public class LedgerTest {
      * and scan blocks around that index (in case the current block index advanced during the test)
      */
     @Test
-    public void view_key_scanning_test() throws
-            NetworkException,
-            AttestationException,
-            FragmentedAccountException,
-            InsufficientFundsException,
-            InvalidFogResponse,
-            TransactionBuilderException,
-            FeeRejectedException,
-            InvalidTransactionException, InterruptedException, FogReportException,
-            InvalidReceiptException, InvalidUriException {
+    public void view_key_scanning_test() throws Exception {
 
         MobileCoinClient senderClient = MobileCoinClientBuilder.newBuilder().build();
         MobileCoinClient recipientClient = MobileCoinClientBuilder.newBuilder().build();

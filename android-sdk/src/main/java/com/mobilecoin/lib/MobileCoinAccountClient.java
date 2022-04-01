@@ -5,6 +5,7 @@ import androidx.annotation.Nullable;
 
 import com.mobilecoin.lib.exceptions.AttestationException;
 import com.mobilecoin.lib.exceptions.FogReportException;
+import com.mobilecoin.lib.exceptions.FogSyncException;
 import com.mobilecoin.lib.exceptions.InsufficientFundsException;
 import com.mobilecoin.lib.exceptions.InvalidFogResponse;
 import com.mobilecoin.lib.exceptions.InvalidTransactionException;
@@ -79,16 +80,15 @@ public interface MobileCoinAccountClient {
   void defragmentAccount(
       @NonNull BigInteger amountToSend,
       @NonNull DefragmentationDelegate delegate,
-      boolean shouldWriteRTHMemos) throws InvalidFogResponse, AttestationException, NetworkException, InsufficientFundsException,
-      TransactionBuilderException, InvalidTransactionException,
-      FogReportException, TimeoutException;
-
+      boolean shouldWriteRTHMemos) throws InvalidFogResponse, AttestationException, NetworkException, 
+      InsufficientFundsException, TransactionBuilderException, InvalidTransactionException,
+      FogReportException, TimeoutException, FogSyncException;
 
   /**
    * Retrieves the account activity.
    */
   @NonNull
-  AccountActivity getAccountActivity() throws NetworkException, InvalidFogResponse, AttestationException;
+  AccountActivity getAccountActivity() throws NetworkException, InvalidFogResponse, AttestationException, FogSyncException;
 
   /**
    * Provides the {@link AccountKey} associated with this client instance.

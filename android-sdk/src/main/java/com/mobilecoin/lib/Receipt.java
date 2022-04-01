@@ -10,6 +10,7 @@ import com.google.protobuf.InvalidProtocolBufferException;
 import com.mobilecoin.api.MobileCoinAPI;
 import com.mobilecoin.lib.exceptions.AmountDecoderException;
 import com.mobilecoin.lib.exceptions.AttestationException;
+import com.mobilecoin.lib.exceptions.FogSyncException;
 import com.mobilecoin.lib.exceptions.InvalidFogResponse;
 import com.mobilecoin.lib.exceptions.NetworkException;
 import com.mobilecoin.lib.exceptions.SerializationException;
@@ -165,7 +166,7 @@ public final class Receipt {
      */
     @Nullable
     public OwnedTxOut fetchOwnedTxOut(@NonNull MobileCoinClient mobileCoinClient) throws NetworkException,
-            InvalidFogResponse, AttestationException {
+            InvalidFogResponse, AttestationException, FogSyncException {
         return mobileCoinClient.getAccountActivity().getAllTxOuts().stream()
                 .filter(txOut -> txOut.getPublicKey().equals(getPublicKey()))
                 .findFirst()

@@ -63,8 +63,7 @@ public class MobileCoinClientTest {
             GrantPermissionRule.grant(Manifest.permission.READ_EXTERNAL_STORAGE);
 
     @Test
-    public void test_balance_consistency()
-            throws InvalidFogResponse, NetworkException, AttestationException, InvalidUriException {
+    public void test_balance_consistency() throws Exception {
         MobileCoinClient mobileCoinClient = MobileCoinClientBuilder.newBuilder().build();
         try {
             Balance balance1 = mobileCoinClient.getBalance();
@@ -87,8 +86,7 @@ public class MobileCoinClientTest {
     }
 
     @Test
-    public void test_balance_retrieval()
-            throws InvalidFogResponse, NetworkException, AttestationException, InvalidUriException {
+    public void test_balance_retrieval() throws Exception {
         MobileCoinClient mobileCoinClient = MobileCoinClientBuilder.newBuilder().build();
         Balance balance = mobileCoinClient.getBalance();
         Logger.d(
@@ -103,12 +101,7 @@ public class MobileCoinClientTest {
     }
 
     @Test
-    public void test_balance_updates_correctly()
-            throws InvalidTransactionException, FragmentedAccountException,
-            InsufficientFundsException, InvalidFogResponse, FeeRejectedException,
-            AttestationException, NetworkException,
-            TransactionBuilderException, FogReportException, TimeoutException,
-            InterruptedException, InvalidUriException {
+    public void test_balance_updates_correctly() throws Exception {
 
         BigInteger amount = BigInteger.TEN;
 
@@ -145,11 +138,7 @@ public class MobileCoinClientTest {
     }
 
     @Test
-    public void test_post_to_serialized_public_address()
-            throws InvalidTransactionException, FragmentedAccountException,
-            InsufficientFundsException, InvalidFogResponse, FeeRejectedException,
-            SerializationException, AttestationException, NetworkException,
-            TransactionBuilderException, FogReportException, InvalidUriException {
+    public void test_post_to_serialized_public_address() throws Exception {
         MobileCoinClient mobileCoinClient = MobileCoinClientBuilder.newBuilder().build();
         AccountKey recipient = TestKeysManager.getNextAccountKey();
         try {
@@ -214,11 +203,7 @@ public class MobileCoinClientTest {
 
 
     @Test
-    public void test_outgoing_tx_status()
-            throws InvalidTransactionException, InterruptedException, FragmentedAccountException,
-            AttestationException, InvalidFogResponse, FeeRejectedException,
-            InsufficientFundsException, NetworkException, TransactionBuilderException,
-            TimeoutException, FogReportException, InvalidUriException {
+    public void test_outgoing_tx_status() throws Exception {
         MobileCoinClient mobileCoinClient = MobileCoinClientBuilder.newBuilder().build();
         AccountKey recipient = TestKeysManager.getNextAccountKey();
         try {
@@ -248,12 +233,7 @@ public class MobileCoinClientTest {
     }
 
     @Test
-    public void test_incoming_tx_status()
-            throws InvalidTransactionException, InterruptedException, FragmentedAccountException,
-            AttestationException, InvalidFogResponse, FeeRejectedException,
-            InsufficientFundsException, AmountDecoderException, NetworkException,
-            TransactionBuilderException, TimeoutException, FogReportException,
-            InvalidReceiptException, InvalidUriException {
+    public void test_incoming_tx_status() throws Exception {
         MobileCoinClient senderClient = MobileCoinClientBuilder.newBuilder().build();
         MobileCoinClient recipientClient = MobileCoinClientBuilder.newBuilder().build();
         try {
@@ -296,12 +276,7 @@ public class MobileCoinClientTest {
     }
 
     @Test
-    public void test_zero_coin_value()
-            throws InvalidTransactionException, FragmentedAccountException,
-            InsufficientFundsException, InvalidFogResponse, FeeRejectedException,
-            AttestationException, NetworkException,
-            TransactionBuilderException, InterruptedException, TimeoutException,
-            FogReportException, InvalidReceiptException, InvalidUriException {
+    public void test_zero_coin_value() throws Exception {
         MobileCoinClient senderClient = MobileCoinClientBuilder.newBuilder().build();
         MobileCoinClient recipientClient = MobileCoinClientBuilder.newBuilder().build();
 
@@ -361,11 +336,7 @@ public class MobileCoinClientTest {
      * (fees will consumed since the test is not a mock)
      */
     @Test
-    public void test_fragmented_account()
-            throws AttestationException, TransactionBuilderException, NetworkException,
-            InvalidFogResponse, InsufficientFundsException, InterruptedException,
-            InvalidTransactionException, FragmentedAccountException, FeeRejectedException,
-            TimeoutException, FogReportException, InvalidReceiptException, InvalidUriException {
+    public void test_fragmented_account() throws Exception {
 
         AccountKey coinSourceKey = TestKeysManager.getNextAccountKey();
         MobileCoinClient coinSourceClient = MobileCoinClientBuilder.newBuilder()
@@ -487,8 +458,7 @@ public class MobileCoinClientTest {
     }
 
     @Test
-    public void test_internal_external_get_owned_tx_outs_api()
-            throws InvalidFogResponse, NetworkException, AttestationException, InvalidUriException {
+    public void test_internal_external_get_owned_tx_outs_api() throws Exception {
         MobileCoinClient mobileCoinClient = MobileCoinClientBuilder.newBuilder().build();
         TxOutStore store = mobileCoinClient.getTxOutStore();
         store.refresh(
@@ -526,11 +496,7 @@ public class MobileCoinClientTest {
     }
 
     @Test
-    public void test_tx_and_receipt_accessors() throws InvalidUriException,
-            InsufficientFundsException, NetworkException, AttestationException,
-            InvalidFogResponse, InvalidTransactionException, TimeoutException,
-            InterruptedException, FogReportException, TransactionBuilderException,
-            FragmentedAccountException, FeeRejectedException, InvalidReceiptException {
+    public void test_tx_and_receipt_accessors() throws Exception {
         MobileCoinClient senderClient = MobileCoinClientBuilder.newBuilder().build();
         MobileCoinClient recipientClient = MobileCoinClientBuilder.newBuilder().build();
         BigInteger amount = BigInteger.TEN;
@@ -574,11 +540,7 @@ public class MobileCoinClientTest {
     // send a transaction to a non-fog public address
     // verify the validity of the sent TxOut by view key scanning
     @Test
-    public void test_send_to_address_without_fog() throws InvalidUriException,
-            InsufficientFundsException, NetworkException, InvalidFogResponse,
-            AttestationException, FogReportException, TransactionBuilderException,
-            FragmentedAccountException, FeeRejectedException, InterruptedException,
-            InvalidTransactionException, TimeoutException {
+    public void test_send_to_address_without_fog() throws Exception {
         TestFogConfig fogConfig = getTestFogConfig();
         AccountKey recipientAccount = TestKeysManager.getNextAccountKey();
         // remove fog info from the public address

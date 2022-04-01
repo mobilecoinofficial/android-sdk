@@ -156,7 +156,7 @@ public class OwnedTxOutTest {
   }
 
   @Test
-  public void testParcelable() throws InvalidUriException, AttestationException, InvalidFogResponse, NetworkException {
+  public void testParcelable() throws Exception {
     MobileCoinClient client = MobileCoinClientBuilder.newBuilder().build();
     AccountActivity activity = client.getAccountActivity();
     for(OwnedTxOut parcelInput : activity.getAllTxOuts()) {
