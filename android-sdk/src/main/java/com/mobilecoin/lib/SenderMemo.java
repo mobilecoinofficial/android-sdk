@@ -7,7 +7,7 @@ import com.mobilecoin.lib.exceptions.InvalidTxOutMemoException;
 
 import java.util.Objects;
 
-/** Represents a sender memo, which corresponds to the "AuthenticatedSenderMemo" specificatoin. */
+/** Represents a sender memo, which corresponds to the "AuthenticatedSenderMemo" specification. */
 public final class SenderMemo extends TxOutMemo {
 
   private static final String TAG = SenderMemo.class.getSimpleName();
