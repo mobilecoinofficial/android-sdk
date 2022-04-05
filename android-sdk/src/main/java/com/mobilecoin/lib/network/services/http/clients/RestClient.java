@@ -16,7 +16,7 @@ import androidx.annotation.Nullable;
 
 import com.mobilecoin.lib.exceptions.NetworkException;
 import com.mobilecoin.lib.network.NetworkResult;
-import com.mobilecoin.lib.network.services.http.Requester;
+import com.mobilecoin.lib.network.services.http.Requester.Requester;
 
 import java.io.IOException;
 import java.util.HashMap;

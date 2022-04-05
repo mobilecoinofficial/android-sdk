@@ -4,7 +4,7 @@ import android.net.Uri;
 
 import androidx.annotation.NonNull;
 
-import com.mobilecoin.lib.network.services.http.Requester;
+import com.mobilecoin.lib.network.services.http.Requester.Requester;
 import com.squareup.okhttp.Authenticator;
 import com.squareup.okhttp.Credentials;
 import com.squareup.okhttp.Headers;

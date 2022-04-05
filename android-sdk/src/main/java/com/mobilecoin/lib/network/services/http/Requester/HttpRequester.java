@@ -1,0 +1,152 @@
+package com.mobilecoin.lib.network.services.http.Requester;
+
+import android.net.Uri;
+import androidx.annotation.NonNull;
+import androidx.annotation.VisibleForTesting;
+import com.mobilecoin.lib.util.Util;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.net.Authenticator;
+import java.net.HttpURLConnection;
+import java.net.PasswordAuthentication;
+import java.net.URL;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+/**
+ * HttpRequester class is used to make a HTTP request and returns the response.
+ */
+
+public class HttpRequester implements Requester {
+    private static final String HEADER_CONTENT_TYPE_KEY = "Content-Type";
+
+    public HttpRequester(String username, String password) {
+        Authenticator.setDefault(new Authenticator() {
+            @Override
+            protected PasswordAuthentication getPasswordAuthentication() {
+                return new PasswordAuthentication(username, password.toCharArray());
+            }
+        });
+    }
+
+    /**
+     * Builds a request using the arguments, parses the response to
+     * return response code, headers and data.
+     *
+     * @param httpMethod  Method name for the request
+     * @param uri         URI target for the request
+     * @param headers     Headers to be added to the request
+     * @param body        Request body
+     * @param contentType Header to be added to the request
+     * @return HttpResponse which contains response code, data and headers
+     * @throws IOException
+     */
+
+    @NonNull
+    @Override
+    public HttpResponse httpRequest(@NonNull String httpMethod,
+                                    @NonNull Uri uri,
+                                    @NonNull Map<String, String> headers,
+                                    @NonNull byte[] body,
+                                    @NonNull String contentType) throws IOException {
+        HttpURLConnection connection = createConnection(httpMethod, uri, headers, body, contentType);
+        ByteArrayOutputStream byteArrayOutputStream = parseResponse(connection);
+
+        return new HttpResponse() {
+            @Override
+            public int getResponseCode() throws IOException {
+                return connection.getResponseCode();
+            }
+
+            @Override
+            public byte[] getResponseData() {
+                return byteArrayOutputStream.toByteArray();
+            }
+
+            @Override
+            public Map<String, String> getResponseHeaders() {
+                return parseHeaderFields(connection);
+            }
+        };
+    }
+
+    @VisibleForTesting
+    public HttpURLConnection createConnection(@NonNull String httpMethod,
+                                              @NonNull Uri uri,
+                                              @NonNull Map<String, String> headers,
+                                              @NonNull byte[] body,
+                                              @NonNull String contentType) throws IOException {
+        URL url = new URL(uri.toString());
+        HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+        connection.setDoOutput(true);
+        connection.setDoInput(true);
+        connection.setRequestMethod(httpMethod);
+        addRequestHeaders(connection, headers, contentType);
+        addRequestBody(connection, body);
+        connection.connect();
+        return connection;
+    }
+
+    private void addRequestHeaders(@NonNull HttpURLConnection connection,
+                                   @NonNull Map<String, String> headers,
+                                   @NonNull String contentType) {
+        connection.setRequestProperty(HEADER_CONTENT_TYPE_KEY, contentType);
+        for (Map.Entry<String, String> header : headers.entrySet()) {
+            connection.setRequestProperty(header.getKey().trim(), header.getValue().trim());
+        }
+    }
+
+    private void addRequestBody(@NonNull HttpURLConnection connection,
+                                @NonNull byte[] body) throws IOException {
+        OutputStream os = connection.getOutputStream();
+        os.write(body);
+        os.close();
+    }
+
+    private ByteArrayOutputStream parseResponse(@NonNull HttpURLConnection connection) throws IOException {
+        InputStream responseStream = null;
+        ByteArrayOutputStream byteArrayStream;
+        try {
+            if (connection.getResponseCode() == HttpURLConnection.HTTP_OK) {
+                responseStream = connection.getInputStream();
+            } else {
+                responseStream = connection.getErrorStream();
+            }
+            byteArrayStream = convertToByteArrayStream(responseStream);
+        } finally {
+            if (responseStream != null) {
+                responseStream.close();
+            }
+            connection.disconnect();
+        }
+        return byteArrayStream;
+    }
+
+    private ByteArrayOutputStream convertToByteArrayStream(InputStream responseStream) throws IOException {
+        byte[] buffer = new byte[1024];
+        int length;
+        ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+        while ((length = responseStream.read(buffer)) != -1) {
+            byteArrayOutputStream.write(buffer, 0, length);
+        }
+        return byteArrayOutputStream;
+    }
+
+    private HashMap<String, String> parseHeaderFields(@NonNull HttpURLConnection connection) {
+        Map<String, List<String>> headers = connection.getHeaderFields();
+        HashMap<String, String> headerMap = new HashMap<>();
+        if (headers != null) {
+            Set<String> keys = headers.keySet();
+            for (String key : keys) {
+                if (key != null) {
+                    headerMap.put(key, Util.listToString(headers.get(key)));
+                }
+            }
+        }
+        return headerMap;
+    }
+}

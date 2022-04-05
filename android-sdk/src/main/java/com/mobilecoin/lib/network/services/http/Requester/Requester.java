@@ -1,4 +1,4 @@
-package com.mobilecoin.lib.network.services.http;
+package com.mobilecoin.lib.network.services.http.Requester;
 
 import android.net.Uri;
 
@@ -18,7 +18,7 @@ public interface Requester {
     ) throws IOException;
 
     interface HttpResponse {
-        int getResponseCode();
+        int getResponseCode() throws IOException;
 
         byte[] getResponseData();
 
