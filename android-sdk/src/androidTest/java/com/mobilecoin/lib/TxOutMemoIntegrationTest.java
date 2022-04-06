@@ -72,7 +72,7 @@ public class TxOutMemoIntegrationTest {
     TxOutMemoBuilder txOutMemoBuilder = TxOutMemoBuilder
         .createSenderAndDestinationRTHMemoBuilder(senderAccountKey);
     TxOut realTxOut = txOuts.get(realIndex);
-    transactionBuilder = new TransactionBuilder(fogResolver, txOutMemoBuilder, 2);
+    transactionBuilder = new TransactionBuilder(fogResolver, txOutMemoBuilder, 1);
 
     RistrettoPrivate onetimePrivateKey = Util.recoverOnetimePrivateKey(
         realTxOut.getPubKey(),
@@ -124,7 +124,7 @@ public class TxOutMemoIntegrationTest {
   public void buildTransaction_senderAndDestinationMemoBuilder_buildsCorrectDestinationMemo() throws Exception {
     TxOutMemoBuilder txOutMemoBuilder = TxOutMemoBuilder
         .createSenderAndDestinationRTHMemoBuilder(senderAccountKey);
-    transactionBuilder = new TransactionBuilder(fogResolver, txOutMemoBuilder, 2);
+    transactionBuilder = new TransactionBuilder(fogResolver, txOutMemoBuilder, 1);
 
     TxOut realTxOut = txOuts.get(realIndex);
 
@@ -182,7 +182,7 @@ public class TxOutMemoIntegrationTest {
     TxOutMemoBuilder txOutMemoBuilder = TxOutMemoBuilder
         .createSenderPaymentRequestAndDestinationRTHMemoBuilder(senderAccountKey, paymentRequestId);
     TxOut realTxOut = txOuts.get(realIndex);
-    transactionBuilder = new TransactionBuilder(fogResolver, txOutMemoBuilder, 2);
+    transactionBuilder = new TransactionBuilder(fogResolver, txOutMemoBuilder, 1);
 
     RistrettoPrivate onetimePrivateKey = Util.recoverOnetimePrivateKey(
         realTxOut.getPubKey(),
@@ -236,7 +236,7 @@ public class TxOutMemoIntegrationTest {
     TxOutMemoBuilder txOutMemoBuilder = TxOutMemoBuilder
             .createSenderAndDestinationRTHMemoBuilder(senderAccountKey);
     TxOut realTxOut = txOuts.get(realIndex);
-    transactionBuilder = new TransactionBuilder(fogResolver, txOutMemoBuilder, 1);
+    transactionBuilder = new TransactionBuilder(fogResolver, txOutMemoBuilder, 0);
 
     RistrettoPrivate onetimePrivateKey = Util.recoverOnetimePrivateKey(
             realTxOut.getPubKey(),
