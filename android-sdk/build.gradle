@@ -2,23 +2,20 @@ apply plugin: 'com.android.library'
 apply plugin: 'com.google.protobuf'
 apply from: 'publish.gradle'
 
-def grpcVersion = "1.38.0"
-def protobufVersion = "3.17.0"
-
 protobuf {
     protoc {
         if (osdetector.os == "osx") {
-            artifact = "com.google.protobuf:protoc:${protobufVersion}:osx-x86_64"
+            artifact = deps.network.protoc_osx
         } else {
-            artifact = "com.google.protobuf:protoc:${protobufVersion}"
+            artifact = deps.network.protoc
         }
     }
     plugins {
         grpc {
             if (osdetector.os == "osx") {
-                artifact = "io.grpc:protoc-gen-grpc-java:${grpcVersion}:osx-x86_64"
+                artifact = deps.network.grpc_protoc_osx
             } else {
-                artifact = "io.grpc:protoc-gen-grpc-java:${grpcVersion}"
+                artifact = deps.network.grpc_protoc
             }
         }
     }
@@ -37,18 +34,14 @@ protobuf {
 }
 
 android {
-    compileSdkVersion 30
+    compileSdkVersion build_versions.compile_sdk
     useLibrary 'android.test.runner'
-
     useLibrary 'android.test.base'
     useLibrary 'android.test.mock'
-
-
     defaultConfig {
-        minSdkVersion 19
-        targetSdkVersion 30
+        minSdkVersion build_versions.min_sdk
+        targetSdkVersion build_versions.target_sdk
         multiDexEnabled true
-
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         consumerProguardFiles 'consumer-rules.pro'
     }
@@ -106,32 +99,30 @@ task printSourceSetInfo(){
 
 dependencies {
     // multidex to avoid 64K reference limit
-    implementation 'com.android.support:multidex:1.0.3'
-
+    implementation deps.android.multidex
     // @Nullable, @NonNull annotations
-    implementation "androidx.annotation:annotation:1.2.0"
-    implementation "javax.annotation:javax.annotation-api:1.3.2"
-
+    implementation deps.android.annotation
+    implementation deps.android.java_annotation
     // Desugar enables to use Java 8 features without requiring a minimum API level
     // it works by using bytecode transformations during D8/R8 stage (dex + compression)
-    coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:1.1.5'
+    coreLibraryDesugaring deps.android.desugar
 
-    // GRPC
-    grpcImplementation ("io.grpc:grpc-okhttp:${grpcVersion}")
-    grpcImplementation ("io.grpc:grpc-stub:${grpcVersion}")
-    grpcImplementation ("io.grpc:grpc-protobuf-lite:${grpcVersion}")
+    // Network
+    grpcImplementation deps.network.grpc_okhttp
+    grpcImplementation deps.network.grpc_stuf
+    grpcImplementation deps.network.grpc_protobuf
+    implementation deps.network.protobuf
 
-    implementation "com.google.protobuf:protobuf-javalite:${protobufVersion}"
+    // Testing
+    testImplementation deps.testing.junit
+    testImplementation deps.testing.mockito_core
+    androidTestImplementation deps.testing.mockito_android
+    androidTestImplementation deps.testing.core
+    androidTestImplementation deps.testing.ext_junit
+    androidTestImplementation deps.testing.runner
+    androidTestImplementation deps.testing.rules
+    androidTestImplementation deps.testing.espresso_core
+    androidTestImplementation deps.testing.support_rules
+    androidTestImplementation deps.testing.okhttp
 
-    // Tests
-    testImplementation 'junit:junit:4.13.1'
-    testImplementation 'org.mockito:mockito-core:3.9.0'
-    androidTestImplementation 'org.mockito:mockito-android:3.9.0'
-    androidTestImplementation 'androidx.test:core:1.3.0'
-    androidTestImplementation 'androidx.test.ext:junit:1.1.2'
-    androidTestImplementation 'androidx.test:runner:1.3.0'
-    androidTestImplementation 'androidx.test:rules:1.3.0'
-    androidTestImplementation 'androidx.test.espresso:espresso-core:3.3.0'
-    androidTestImplementation 'com.android.support.test:rules:1.0.2'
-    androidTestImplementation 'com.squareup.okhttp:okhttp:2.7.4'
 }

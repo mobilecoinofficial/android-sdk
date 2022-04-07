@@ -1,0 +1,75 @@
+ext.deps = [:]
+
+def deps = [:]
+def versions = [:]
+
+versions.gradle_plugin = '4.2.1'
+versions.protobuf_gradle_plugin = '0.8.16'
+
+def build_versions = [:]
+build_versions.min_sdk = 19
+build_versions.compile_sdk = 30
+build_versions.target_sdk = 30
+ext.build_versions = build_versions
+
+// Android
+def android_versions = [:]
+android_versions.multidex = '1.0.3'
+android_versions.desugar = '1.1.5'
+android_versions.annotation = '1.3.0'
+android_versions.javax_annotation = '1.3.2'
+versions.android = android_versions
+
+// Network
+def network_versions = [:]
+network_versions.grpc = '1.38.0'
+network_versions.protobuf = '3.17.0'
+versions.network = network_versions
+
+// Testing
+def testing_versions = [:]
+testing_versions.junit = '4.13.2'
+testing_versions.mockito = '3.9.0'
+testing_versions.core = '1.4.0'
+testing_versions.ext_junit = '1.1.3'
+testing_versions.espresso_core = '3.4.0'
+testing_versions.support_rules = '1.0.2'
+testing_versions.okhttp = '2.7.4'
+versions.testing = testing_versions
+
+deps.gradle_plugin = "com.android.tools.build:gradle:$versions.gradle_plugin"
+deps.protobuf_gradle_plugin = "com.google.protobuf:protobuf-gradle-plugin:$versions.protobuf_gradle_plugin"
+
+def android_deps = [:]
+android_deps.multidex = "com.android.support:multidex:$versions.android.multidex"
+android_deps.annotation = "androidx.annotation:annotation:$versions.android.annotation"
+android_deps.java_annotation = "javax.annotation:javax.annotation-api:$versions.android.javax_annotation"
+android_deps.desugar = "com.android.tools:desugar_jdk_libs:$versions.android.desugar"
+deps.android = android_deps
+
+def network_deps = [:]
+network_deps.grpc_okhttp = "io.grpc:grpc-okhttp:$versions.network.grpc"
+network_deps.grpc_stuf = "io.grpc:grpc-stub:$versions.network.grpc"
+network_deps.grpc_protobuf = "io.grpc:grpc-protobuf-lite:$versions.network.grpc"
+network_deps.grpc_protoc_osx = "io.grpc:protoc-gen-grpc-java:$versions.network.grpc:osx-x86_64"
+network_deps.grpc_protoc = "io.grpc:protoc-gen-grpc-java:$versions.network.grpc"
+
+network_deps.protobuf = "com.google.protobuf:protobuf-javalite:$versions.network.protobuf"
+network_deps.protoc_osx = "com.google.protobuf:protoc:$versions.network.protobuf:osx-x86_64"
+network_deps.protoc = "com.google.protobuf:protoc:$versions.network.protobuf"
+deps.network = network_deps
+
+def testing_deps = [:]
+testing_deps.junit = "junit:junit:$versions.testing.junit"
+testing_deps.mockito_core = "org.mockito:mockito-core:$versions.testing.mockito"
+testing_deps.mockito_android = "org.mockito:mockito-android:$versions.testing.mockito"
+testing_deps.core = "androidx.test:core:$versions.testing.core"
+testing_deps.ext_junit = "androidx.test.ext:junit:$versions.testing.ext_junit"
+testing_deps.runner = "androidx.test:runner:$versions.testing.core"
+testing_deps.rules = "androidx.test:rules:$versions.testing.core"
+testing_deps.espresso_core = "androidx.test.espresso:espresso-core:$versions.testing.espresso_core"
+testing_deps.support_rules = "com.android.support.test:rules:$versions.testing.support_rules"
+testing_deps.okhttp = "com.squareup.okhttp:okhttp:$versions.testing.okhttp"
+deps.testing = testing_deps
+
+ext.deps = deps
