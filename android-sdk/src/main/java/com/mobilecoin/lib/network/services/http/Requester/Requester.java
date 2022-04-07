@@ -18,7 +18,7 @@ public interface Requester {
     ) throws IOException;
 
     interface HttpResponse {
-        int getResponseCode() throws IOException;
+        int getResponseCode();
 
         byte[] getResponseData();
 

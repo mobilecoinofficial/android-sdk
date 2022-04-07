@@ -55,11 +55,11 @@ public class HttpRequester implements Requester {
                                     @NonNull String contentType) throws IOException {
         HttpURLConnection connection = createConnection(httpMethod, uri, headers, body, contentType);
         ByteArrayOutputStream byteArrayOutputStream = parseResponse(connection);
-
+        int responseCode = connection.getResponseCode();
         return new HttpResponse() {
             @Override
-            public int getResponseCode() throws IOException {
-                return connection.getResponseCode();
+            public int getResponseCode() {
+                return responseCode;
             }
 
             @Override
@@ -74,6 +74,7 @@ public class HttpRequester implements Requester {
         };
     }
 
+    @NonNull
     @VisibleForTesting
     public HttpURLConnection createConnection(@NonNull String httpMethod,
                                               @NonNull Uri uri,
@@ -107,6 +108,7 @@ public class HttpRequester implements Requester {
         os.close();
     }
 
+    @NonNull
     private ByteArrayOutputStream parseResponse(@NonNull HttpURLConnection connection) throws IOException {
         InputStream responseStream = null;
         ByteArrayOutputStream byteArrayStream;
@@ -126,6 +128,7 @@ public class HttpRequester implements Requester {
         return byteArrayStream;
     }
 
+    @NonNull
     private ByteArrayOutputStream convertToByteArrayStream(InputStream responseStream) throws IOException {
         byte[] buffer = new byte[1024];
         int length;
@@ -136,6 +139,7 @@ public class HttpRequester implements Requester {
         return byteArrayOutputStream;
     }
 
+    @NonNull
     private HashMap<String, String> parseHeaderFields(@NonNull HttpURLConnection connection) {
         Map<String, List<String>> headers = connection.getHeaderFields();
         HashMap<String, String> headerMap = new HashMap<>();
