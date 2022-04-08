@@ -21,7 +21,7 @@ class BlockchainClient extends AnyClient {
     private static final String TAG = BlockchainClient.class.getName();
     private static final BigInteger DEFAULT_TX_FEE = BigInteger.valueOf(10000000000L);
     private final Duration minimumFeeCacheTTL;
-    private ConsensusCommon.LastBlockInfoResponse lastBlockInfo;
+    private volatile ConsensusCommon.LastBlockInfoResponse lastBlockInfo;
     private LocalDateTime lastBlockInfoTimestamp;
 
     /**
@@ -42,14 +42,21 @@ class BlockchainClient extends AnyClient {
      * Fetch or return cached current minimal fee
      */
     @NonNull
-    synchronized UnsignedLong getOrFetchMinimumFee() throws NetworkException {
+    UnsignedLong getOrFetchMinimumFee() throws NetworkException {
         ConsensusCommon.LastBlockInfoResponse response = getOrFetchLastBlockInfo();
-        long minimumFeeBits = response.getMinimumFeesMap().get(0);
+        long minimumFeeBits = response.getMinimumFeesMap().get(0);//TODO: token ID 1.3 update
         UnsignedLong minimumFee = UnsignedLong.fromLongBits(minimumFeeBits);
         if (minimumFee.equals(UnsignedLong.ZERO)) {
             minimumFee = UnsignedLong.fromBigInteger(DEFAULT_TX_FEE);
         }
         return minimumFee;
+    }
+
+    /**
+     * Get or fetch and return network block version
+     */
+    int getOrFetchNetworkBlockVersion() throws NetworkException {
+        return getOrFetchLastBlockInfo().getNetworkBlockVersion();
     }
 
     /**
