@@ -29,7 +29,7 @@ public final class PaymentRequest {
     @NonNull
     static PaymentRequest fromProtoBufObject(@NonNull Printable.PaymentRequest protoBuf)
             throws SerializationException {
-        Logger.i(TAG, "Deserializing PaymentRequest from protobof");
+        Logger.i(TAG, "Deserializing PaymentRequest from protobuf");
         PublicAddress publicAddress = PublicAddress.fromProtoBufObject(protoBuf.getPublicAddress());
         return new PaymentRequest(
                 publicAddress,
