@@ -409,7 +409,11 @@ public final class MobileCoinClient implements MobileCoinAccountClient, MobileCo
         FogResolver fogResolver = new FogResolver(fogReportResponses,
                 clientConfig.report.getVerifier());
 
-        TransactionBuilder txBuilder = new TransactionBuilder(fogResolver, txOutMemoBuilder, 1);
+        TransactionBuilder txBuilder = new TransactionBuilder(
+                fogResolver,
+                txOutMemoBuilder,
+                blockchainClient.getOrFetchNetworkBlockVersion()
+        );
         txBuilder.setFee(fee.longValue());
         txBuilder.setTombstoneBlockIndex(tombstoneBlockIndex);
 
