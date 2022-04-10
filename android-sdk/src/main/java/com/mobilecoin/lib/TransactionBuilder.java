@@ -130,7 +130,7 @@ final class TransactionBuilder extends Native {
         } catch (Exception exception) {
             Logger.e(TAG, "Unable to set transaction fee", exception);
             throw new TransactionBuilderException(
-                    "Unable to build transaction from supplied " + "arguments");
+                    "Unable to build transaction from supplied arguments", exception);
         }
     }
 
