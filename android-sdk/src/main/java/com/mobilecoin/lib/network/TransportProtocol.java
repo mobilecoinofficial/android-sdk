@@ -3,7 +3,7 @@ package com.mobilecoin.lib.network;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import com.mobilecoin.lib.network.services.http.Requester;
+import com.mobilecoin.lib.network.services.http.Requester.Requester;
 import com.mobilecoin.lib.network.services.transport.Transport;
 
 /**

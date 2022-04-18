@@ -1,4 +1,4 @@
-package com.mobilecoin.lib.network.services.http;
+package com.mobilecoin.lib.network.services.http.Requester;
 
 import android.net.Uri;
 
