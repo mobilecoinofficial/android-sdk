@@ -14,10 +14,10 @@ class TestKeysManager {
     private static final int DEFAULT_ACCOUNT_INDEX = 0;
     private static int currentAccountIndex = 0;
 
-    private final static String[] testNetMnemonics =
+    private static final String testNetMnemonics[] =
             loadTestStrings(com.mobilecoin.lib.test.R.raw.test_net_mnemonics);
-    private final static String[] devNetRootEntropies =
-            loadTestStrings(com.mobilecoin.lib.test.R.raw.dev_net_root_entropies);
+    private static final String devNetMnemonics[] =
+            loadTestStrings(com.mobilecoin.lib.test.R.raw.dev_net_mnemonics);
 
     private static String[] loadTestStrings(int resource) {
         InputStream inputStream = InstrumentationRegistry.getInstrumentation().getTargetContext()
@@ -35,7 +35,7 @@ class TestKeysManager {
         if (Environment.CURRENT_TEST_ENV == Environment.TestEnvironment.TEST_NET) {
             return testNetMnemonics.length;
         }
-        return devNetRootEntropies.length;
+        return devNetMnemonics.length;
     }
 
     static AccountKey getNextAccountKey() {
@@ -59,12 +59,13 @@ class TestKeysManager {
             case MOBILE_DEV:
             case ALPHA:
             default:
-                if (currentAccountIndex >= devNetRootEntropies.length) {
+                if (currentAccountIndex >= devNetMnemonics.length) {
                     currentAccountIndex = 0;
                 }
                 try {
-                    return AccountKey.fromRootEntropy(
-                            Hex.toByteArray(devNetRootEntropies[currentAccountIndex++]),
+                    return AccountKey.fromMnemonicPhrase(
+                            devNetMnemonics[currentAccountIndex++],
+                            DEFAULT_ACCOUNT_INDEX,
                             fogConfig.getFogUri(),
                             fogConfig.getFogReportId(),
                             fogConfig.getFogAuthoritySpki()

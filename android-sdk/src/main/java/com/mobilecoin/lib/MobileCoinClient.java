@@ -447,10 +447,10 @@ public final class MobileCoinClient implements MobileCoinAccountClient, MobileCo
         txBuilder.addChangeOutput(change, accountKey, null);
 
         Transaction transaction = txBuilder.build();
-        Amount pendingAmount = pendingTxo.getAmount();
+        MaskedAmount pendingMaskedAmount = pendingTxo.getAmount();
         Receipt receipt = new Receipt(pendingTxo.getPubKey(),
                 confirmationNumberOut,
-                pendingAmount,
+                pendingMaskedAmount,
                 tombstoneBlockIndex
         );
         return new PendingTransaction(
