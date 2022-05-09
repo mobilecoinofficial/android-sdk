@@ -82,7 +82,7 @@ public class OwnedTxOut implements Parcelable {
             RistrettoPublic txOutSharedSecret =
                 Util.getSharedSecret(accountKey.getViewKey(), txOutPublicKey);
             MaskedAmount maskedAmount = new MaskedAmount(txOutSharedSecret, maskedValue);
-            value = maskedAmount.unmaskValue(
+            value = maskedAmount.unmaskAmount(
                     accountKey.getViewKey(),
                     txOutPublicKey
             );
