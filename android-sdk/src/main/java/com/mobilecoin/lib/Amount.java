@@ -6,6 +6,7 @@ import android.os.Parcelable;
 import androidx.annotation.NonNull;
 
 import java.math.BigInteger;
+import java.util.Objects;
 
 public class Amount implements Parcelable {
 
@@ -25,6 +26,22 @@ public class Amount implements Parcelable {
     @NonNull
     public UnsignedLong getTokenId() {
         return this.tokenId;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if(this == o) return true;
+        if(!(o instanceof Amount)) {
+            return false;
+        }
+        Amount that = (Amount)o;
+        return Objects.equals(this.value, that.value) &&
+               Objects.equals(this.tokenId, that.tokenId);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(this.value, this.tokenId);
     }
 
     private Amount(@NonNull Parcel parcel) {
