@@ -4,7 +4,7 @@ import androidx.annotation.NonNull;
 
 import java.math.BigInteger;
 
-public class Amount extends Native {
+public class Amount {
 
     private final BigInteger value;
     private final UnsignedLong tokenId;
