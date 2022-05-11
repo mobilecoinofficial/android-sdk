@@ -51,7 +51,7 @@ final class TransactionBuilder extends Native {
     }
 
     @NonNull
-    TxOut addOutput(
+    TxOutContext addOutput(
             @NonNull BigInteger value,
             @NonNull PublicAddress recipient,
             @Nullable byte[] confirmationNumberOut
@@ -70,7 +70,7 @@ final class TransactionBuilder extends Native {
                 System.arraycopy(confirmationOut, 0, confirmationNumberOut, 0,
                         confirmationOut.length);
             }
-            return TxOut.fromJNI(rustObj);
+            return TxOutContext.fromJNI(rustObj);
         } catch (Exception exception) {
             Logger.e(TAG, "Unable to add transaction output", exception);
             throw new TransactionBuilderException(exception.getLocalizedMessage(), exception);
@@ -78,7 +78,7 @@ final class TransactionBuilder extends Native {
     }
 
     @NonNull
-    TxOut addChangeOutput(
+    TxOutContext addChangeOutput(
         @NonNull BigInteger value,
         @NonNull AccountKey accountKey,
         @Nullable byte[] confirmationNumberOut
@@ -94,7 +94,7 @@ final class TransactionBuilder extends Native {
                 System.arraycopy(confirmationOut, 0, confirmationNumberOut, 0,
                     confirmationOut.length);
             }
-            return TxOut.fromJNI(rustObj);
+            return TxOutContext.fromJNI(rustObj);
         } catch (Exception exception) {
             Logger.e(TAG, "Unable to add transaction change output", exception);
             throw new TransactionBuilderException(exception.getLocalizedMessage(), exception);

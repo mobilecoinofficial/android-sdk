@@ -439,7 +439,7 @@ public final class MobileCoinClient implements MobileCoinAccountClient, MobileCo
         TxOut pendingTxo = txBuilder.addOutput(amount,
                 recipient,
                 confirmationNumberOut
-        );
+        ).getTxOut();
 
         BigInteger finalAmount = amount.add(fee);
 
