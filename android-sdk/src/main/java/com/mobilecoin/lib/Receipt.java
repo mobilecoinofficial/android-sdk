@@ -122,14 +122,14 @@ public final class Receipt {
         if (!receiptBuf.hasMaskedAmount()) {
             throw new AmountDecoderException("Receipt does not contain an encoded amount");
         }
-        MobileCoinAPI.MaskedAmount protoAmount = receiptBuf.getMaskedAmount();
-        byte[] commitment = protoAmount.getCommitment().getData().toByteArray();
-        long maskedValue = protoAmount.getMaskedValue();
+        MobileCoinAPI.MaskedAmount protoMaskedAmount = receiptBuf.getMaskedAmount();
+        byte[] commitment = protoMaskedAmount.getCommitment().getData().toByteArray();
+        long maskedValue = protoMaskedAmount.getMaskedValue();
         MaskedAmount maskedAmount = new MaskedAmount(
                 commitment,
                 maskedValue
         );
-        return maskedAmount.unmaskValue(
+        return maskedAmount.unmaskAmount(
                 accountKey.getViewKey(),
                 getPublicKey()
         );

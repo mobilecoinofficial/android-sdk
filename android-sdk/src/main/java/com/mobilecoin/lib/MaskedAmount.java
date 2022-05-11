@@ -17,7 +17,7 @@ import java.math.BigInteger;
  */
 final class MaskedAmount extends Native {
     private final static String TAG = MaskedAmount.class.getName();
-    private final MobileCoinAPI.MaskedAmount protoBufAmount;
+    private final MobileCoinAPI.MaskedAmount protoBufMaskedAmount;
 
     /**
      * Constructs native Amount object from the commitment and masked data
@@ -26,7 +26,7 @@ final class MaskedAmount extends Native {
      * @param maskedValue {@code masked_value = value XOR_8 Blake2B(value_mask || shared_secret)}
      */
     MaskedAmount(@NonNull byte[] commitment, long maskedValue) throws AmountDecoderException {
-        protoBufAmount = MobileCoinAPI.MaskedAmount.newBuilder()
+        protoBufMaskedAmount = MobileCoinAPI.MaskedAmount.newBuilder()
                 .setCommitment(MobileCoinAPI.CompressedRistretto.newBuilder()
                         .setData(ByteString.copyFrom(commitment)).build())
                 .setMaskedValue(maskedValue).build();
@@ -56,7 +56,7 @@ final class MaskedAmount extends Native {
                 maskedValue
             );
             byte[] amountBytes = get_bytes();
-            protoBufAmount = MobileCoinAPI.MaskedAmount.parseFrom(amountBytes);
+            protoBufMaskedAmount = MobileCoinAPI.MaskedAmount.parseFrom(amountBytes);
         } catch (Exception exception) {
             AmountDecoderException amountDecoderException = new AmountDecoderException("Unable to" +
                 " initialize amount object", exception);
@@ -86,7 +86,7 @@ final class MaskedAmount extends Native {
      */
     @NonNull
     MobileCoinAPI.MaskedAmount toProtoBufObject() {
-        return protoBufAmount;
+        return protoBufMaskedAmount;
     }
 
     /**
@@ -96,7 +96,7 @@ final class MaskedAmount extends Native {
      */
     @NonNull
     byte[] getCommitment() {
-        return protoBufAmount.getCommitment().getData().toByteArray();
+        return protoBufMaskedAmount.getCommitment().getData().toByteArray();
     }
 
     /**
@@ -105,7 +105,7 @@ final class MaskedAmount extends Native {
      * @return {@code masked_value = value XOR_8 Blake2B(value_mask || shared_secret)}
      */
     long getMaskedValue() {
-        return protoBufAmount.getMaskedValue();
+        return protoBufMaskedAmount.getMaskedValue();
     }
 
     /**
@@ -115,16 +115,16 @@ final class MaskedAmount extends Native {
      * @return unmasked amount of picoMob represented as a BigInteger
      */
     @NonNull
-    BigInteger unmaskValue(
-            @NonNull RistrettoPrivate viewKey,
-            @NonNull RistrettoPublic txPubKey
+    BigInteger unmaskAmount(//TODO: return Amount
+        @NonNull RistrettoPrivate viewKey,
+        @NonNull RistrettoPublic txPubKey
     ) throws AmountDecoderException {
         Logger.i(TAG, "Unmasking amount");
         try {
-            return unmask_value(
+            return unmask_amount(
                     viewKey,
                     txPubKey
-            );
+            ).getValue();
         } catch (Exception exception) {
             AmountDecoderException amountDecoderException = new AmountDecoderException("Unable to" +
                     " unmask the amount", exception);
@@ -145,7 +145,7 @@ final class MaskedAmount extends Native {
     /* Native methods */
 
     @NonNull
-    private native BigInteger unmask_value(
+    private native Amount unmask_amount(
             @NonNull RistrettoPrivate view_key,
             @NonNull RistrettoPublic pub_key
     );
