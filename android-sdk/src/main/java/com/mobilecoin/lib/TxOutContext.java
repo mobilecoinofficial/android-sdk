@@ -5,6 +5,9 @@ import androidx.annotation.NonNull;
 import com.mobilecoin.api.MobileCoinAPI;
 import com.mobilecoin.lib.exceptions.SerializationException;
 
+import java.util.Arrays;
+import java.util.Objects;
+
 public class TxOutContext extends Native {
 
     private final TxOut txOut;
@@ -42,6 +45,25 @@ public class TxOutContext extends Native {
     @NonNull
     public RistrettoPublic getSharedSecret() {
         return this.sharedSecret;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if(this == o) {
+            return true;
+        }
+        if(o instanceof TxOutContext) {
+            TxOutContext that = (TxOutContext)o;
+            return Objects.equals(this.txOut, that.txOut) &&
+                   Arrays.equals(this.confirmationNumber.toByteArray(), that.confirmationNumber.toByteArray()) &&
+                   Objects.equals(this.sharedSecret, that.sharedSecret);
+        }
+        return false;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(this.txOut, this.confirmationNumber, this.sharedSecret);
     }
 
     private native long get_tx_out();
