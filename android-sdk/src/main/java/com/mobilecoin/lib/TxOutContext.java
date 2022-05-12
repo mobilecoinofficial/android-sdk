@@ -1,33 +1,55 @@
 package com.mobilecoin.lib;
 
+import androidx.annotation.NonNull;
+
 import com.mobilecoin.api.MobileCoinAPI;
+import com.mobilecoin.lib.exceptions.SerializationException;
 
 public class TxOutContext extends Native {
 
-    public TxOutContext(long existingRustObj) {
+    private final TxOut txOut;
+    private final MobileCoinAPI.TxOutConfirmationNumber confirmationNumber;
+    private final RistrettoPublic sharedSecret;
+
+    public TxOutContext(long existingRustObj) throws SerializationException {
         this.rustObj = existingRustObj;
+        try {
+            this.txOut = TxOut.fromJNI(get_tx_out());
+            this.confirmationNumber = MobileCoinAPI.TxOutConfirmationNumber.parseFrom(get_confirmation_number());
+            this.sharedSecret = RistrettoPublic.fromJNI(get_shared_secret());
+        } catch(Exception e) {
+            SerializationException serializationException =
+                    new SerializationException(e.getLocalizedMessage(), e);
+            Util.logException(TAG, serializationException);
+            throw serializationException;
+        }
     }
 
-    public static TxOutContext fromJNI(long rustObj) {
+    public static TxOutContext fromJNI(long rustObj) throws SerializationException {
         return new TxOutContext(rustObj);
     }
 
+    @NonNull
     public TxOut getTxOut() {
-        return get_tx_out();
+        return this.txOut;
     }
 
+    @NonNull
     public MobileCoinAPI.TxOutConfirmationNumber getConfirmationNumber() {
-        return get_confirmation_number();
+        return this.confirmationNumber;
     }
 
+    @NonNull
     public RistrettoPublic getSharedSecret() {
-        return get_shared_secret();
+        return this.sharedSecret;
     }
 
-    private native TxOut get_tx_out();
+    private native long get_tx_out();
 
-    private native MobileCoinAPI.TxOutConfirmationNumber get_confirmation_number();
+    private native byte[] get_confirmation_number();
 
-    private native RistrettoPublic get_shared_secret();
+    private native long get_shared_secret();
+
+    private static final String TAG = TxOutContext.class.getName();
 
 }

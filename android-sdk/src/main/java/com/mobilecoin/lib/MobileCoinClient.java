@@ -436,15 +436,16 @@ public final class MobileCoinClient implements MobileCoinAccountClient, MobileCo
             );
         }
         byte[] confirmationNumberOut = new byte[Receipt.CONFIRMATION_NUMBER_LENGTH];
-        TxOut pendingTxo = txBuilder.addOutput(amount,
+        final TxOutContext payloadTxOutContext = txBuilder.addOutput(amount,
                 recipient,
                 confirmationNumberOut
-        ).getTxOut();
+        );
+        TxOut pendingTxo = payloadTxOutContext.getTxOut();
 
         BigInteger finalAmount = amount.add(fee);
 
         BigInteger change = totalAmount.subtract(finalAmount);
-        txBuilder.addChangeOutput(change, accountKey, null);
+        final TxOutContext changeTxOutContext = txBuilder.addChangeOutput(change, accountKey, null);
 
         Transaction transaction = txBuilder.build();
         MaskedAmount pendingMaskedAmount = pendingTxo.getAmount();
@@ -455,7 +456,9 @@ public final class MobileCoinClient implements MobileCoinAccountClient, MobileCo
         );
         return new PendingTransaction(
                 transaction,
-                receipt
+                receipt,
+                payloadTxOutContext,
+                changeTxOutContext
         );
     }
 
