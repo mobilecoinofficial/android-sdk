@@ -445,7 +445,13 @@ public final class MobileCoinClient implements MobileCoinAccountClient, MobileCo
         BigInteger finalAmount = amount.add(fee);
 
         BigInteger change = totalAmount.subtract(finalAmount);
-        final TxOutContext changeTxOutContext = txBuilder.addChangeOutput(change, accountKey, null);
+        TxOutContext changeTxOutContext;
+        if(blockchainClient.getOrFetchNetworkBlockVersion() < 1) {
+            changeTxOutContext = txBuilder.addOutput(change, accountKey.getPublicAddress(), null);
+        }
+        else {
+            changeTxOutContext = txBuilder.addChangeOutput(change, accountKey, null);
+        }
 
         Transaction transaction = txBuilder.build();
         MaskedAmount pendingMaskedAmount = pendingTxo.getAmount();
