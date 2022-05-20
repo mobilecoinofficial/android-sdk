@@ -5,16 +5,8 @@ package com.mobilecoin.lib;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 
 import com.mobilecoin.lib.exceptions.AttestationException;
-import com.mobilecoin.lib.exceptions.FeeRejectedException;
-import com.mobilecoin.lib.exceptions.FogReportException;
-import com.mobilecoin.lib.exceptions.FragmentedAccountException;
-import com.mobilecoin.lib.exceptions.InsufficientFundsException;
-import com.mobilecoin.lib.exceptions.InvalidFogResponse;
-import com.mobilecoin.lib.exceptions.InvalidReceiptException;
-import com.mobilecoin.lib.exceptions.InvalidTransactionException;
 import com.mobilecoin.lib.exceptions.InvalidUriException;
 import com.mobilecoin.lib.exceptions.NetworkException;
-import com.mobilecoin.lib.exceptions.TransactionBuilderException;
 import com.mobilecoin.lib.network.uri.FogUri;
 
 import org.junit.Assert;
@@ -71,8 +63,11 @@ public class LedgerTest {
         MobileCoinClient recipientClient = MobileCoinClientBuilder.newBuilder().build();
 
         // randomize the amount for each test run, up to a 100 picoMob
-        BigInteger amount = BigInteger.valueOf(Math.abs(new SecureRandom().nextInt() % 100) + 1);
-        BigInteger minimumFee = senderClient.estimateTotalFee(
+        Amount amount = new Amount(
+                BigInteger.valueOf(Math.abs(new SecureRandom().nextInt() % 100) + 1),
+                KnownTokenId.MOB.getId()
+        );
+        Amount minimumFee = senderClient.estimateTotalFee(
                 amount
         );
         PendingTransaction pending = senderClient.prepareTransaction(
@@ -121,7 +116,7 @@ public class LedgerTest {
         // search for the specific amount sent earlier
         boolean found = false;
         for (OwnedTxOut txOut : records) {
-            found = txOut.getValue().equals(amount);
+            found = txOut.getAmountData().equals(amount);
             if (found) break;
         }
 

@@ -16,17 +16,10 @@ import androidx.test.rule.GrantPermissionRule;
 
 import com.mobilecoin.lib.exceptions.AmountDecoderException;
 import com.mobilecoin.lib.exceptions.AttestationException;
-import com.mobilecoin.lib.exceptions.FeeRejectedException;
-import com.mobilecoin.lib.exceptions.FogReportException;
-import com.mobilecoin.lib.exceptions.FragmentedAccountException;
-import com.mobilecoin.lib.exceptions.InsufficientFundsException;
 import com.mobilecoin.lib.exceptions.InvalidFogResponse;
-import com.mobilecoin.lib.exceptions.InvalidReceiptException;
 import com.mobilecoin.lib.exceptions.InvalidTransactionException;
 import com.mobilecoin.lib.exceptions.InvalidUriException;
 import com.mobilecoin.lib.exceptions.NetworkException;
-import com.mobilecoin.lib.exceptions.SerializationException;
-import com.mobilecoin.lib.exceptions.TransactionBuilderException;
 import com.mobilecoin.lib.log.Logger;
 import com.mobilecoin.lib.network.TransportProtocol;
 import com.mobilecoin.lib.network.uri.FogUri;
@@ -43,7 +36,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.TimeoutException;
 import java.util.stream.Collectors;
 
 /**
@@ -312,7 +304,7 @@ public class MobileCoinClientTest {
             );
             OwnedTxOut zeroCoinTxOut = null;
             for (OwnedTxOut txOut : txOuts) {
-                if (txOut.getValue().equals(BigInteger.ZERO)) {
+                if (txOut.getAmount().equals(BigInteger.ZERO)) {
                     zeroCoinTxOut = txOut;
                     break;
                 }
@@ -528,7 +520,7 @@ public class MobileCoinClientTest {
 
             // verify the output of the receipt is valid
             OwnedTxOut receivedTxOut = pending.getReceipt().fetchOwnedTxOut(recipientClient);
-            Assert.assertEquals("Receipt amount must be valid", receivedTxOut.getValue(), amount);
+            Assert.assertEquals("Receipt amount must be valid", receivedTxOut.getAmount(), amount);
             AccountActivity recipientActivity = recipientClient.getAccountActivity();
             Assert.assertTrue("Recipient activity must contain received TxOut",
                     recipientActivity.getAllTxOuts().contains(receivedTxOut));
@@ -711,4 +703,5 @@ public class MobileCoinClientTest {
             mobileCoinClient.shutdown();
         }
     }
+
 }

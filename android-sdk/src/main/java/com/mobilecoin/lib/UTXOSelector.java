@@ -287,7 +287,7 @@ final class UTXOSelector {
                 "outputFee:", outputFee);
         // Convert inputs into promises to simplify calculation.
         List<TxOutNode> inputs = unspent.stream()
-                .filter(txOut -> txOut.getValue().compareTo(inputFee) > 0)
+                .filter(txOut -> txOut.getAmountData().getValue().compareTo(inputFee) > 0)
                 .map(txOut -> new TxOutNode(txOut, null)
                 ).collect(Collectors.toCollection(ArrayList::new));
 
@@ -346,7 +346,7 @@ final class UTXOSelector {
         @NonNull
         BigInteger getValue() {
             return (null != txOut)
-                    ? txOut.getValue()
+                    ? txOut.getAmountData().getValue()
                     : children.stream()
                     .map(TxOutNode::getValue)
                     .reduce(BigInteger.ZERO, BigInteger::add);

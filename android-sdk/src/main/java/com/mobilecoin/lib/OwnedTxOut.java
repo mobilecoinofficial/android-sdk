@@ -32,7 +32,7 @@ public class OwnedTxOut implements Parcelable {
     private final static String TAG = OwnedTxOut.class.getName();
 
     // Bump serial version and read/write code if fields change
-    private static final long serialVersionUID = 3L;
+    private static final long serialVersionUID = 4L;
 
     //  The global index of this TxOut in the entire block chain.
     private final UnsignedLong txOutGlobalIndex;
@@ -46,7 +46,7 @@ public class OwnedTxOut implements Parcelable {
 
     private final TxOutMemo cachedTxOutMemo;
 
-    private final BigInteger value;
+    private final Amount amount;
     private final RistrettoPublic txOutPublicKey;
     private final RistrettoPublic txOutTargetKey;
     private final byte[] keyImage;
@@ -79,10 +79,11 @@ public class OwnedTxOut implements Parcelable {
                             .build();
             txOutTargetKey = RistrettoPublic.fromProtoBufObject(txOutTargetKeyProto);
             long maskedValue = txOutRecord.getTxOutAmountMaskedValue();
+            byte maskedTokenId[] = txOutRecord.getTxOutAmountMaskedTokenId().toByteArray();
             RistrettoPublic txOutSharedSecret =
                 Util.getSharedSecret(accountKey.getViewKey(), txOutPublicKey);
-            MaskedAmount maskedAmount = new MaskedAmount(txOutSharedSecret, maskedValue);
-            value = maskedAmount.unmaskAmount(
+            MaskedAmount maskedAmount = new MaskedAmount(txOutSharedSecret, maskedValue, maskedTokenId);
+            amount = maskedAmount.unmaskAmount(
                     accountKey.getViewKey(),
                     txOutPublicKey
             );
@@ -118,11 +119,28 @@ public class OwnedTxOut implements Parcelable {
     }
 
     /**
-     * Returns the decoded value of the TxOut
+     * @return The value of this TxOut
      */
+    @Deprecated
     @NonNull
-    public BigInteger getValue() {
-        return value;
+    public BigInteger getAmount() {
+        return amount.getValue();
+    }
+
+    /**
+     * @return The token ID of this TxOut
+     */
+    @Deprecated
+    @NonNull
+    public UnsignedLong getTokenId() {
+        return amount.getTokenId();
+    }
+
+    /**
+     * @return The amount of this TxOut
+     */
+    @NonNull Amount getAmountData() {
+        return amount;
     }
 
     @NonNull
@@ -197,7 +215,7 @@ public class OwnedTxOut implements Parcelable {
                Objects.equals(this.receivedBlockTimestamp, that.receivedBlockTimestamp) &&
                Objects.equals(this.spentBlockTimestamp, that.spentBlockTimestamp) &&
                Objects.equals(this.spentBlockIndex, that.spentBlockIndex) &&
-               Objects.equals(this.value, that.value) &&
+               Objects.equals(this.amount, that.amount) &&
                Objects.equals(this.txOutPublicKey, that.txOutPublicKey) &&
                Objects.equals(this.txOutTargetKey, that.txOutTargetKey) &&
                Arrays.equals(this.keyImage, that.keyImage) &&
@@ -208,7 +226,7 @@ public class OwnedTxOut implements Parcelable {
     @Override
     public int hashCode() {
         int result = Objects.hash(txOutGlobalIndex, receivedBlockIndex,
-                receivedBlockTimestamp, spentBlockTimestamp, spentBlockIndex, value, txOutPublicKey,
+                receivedBlockTimestamp, spentBlockTimestamp, spentBlockIndex, amount, txOutPublicKey,
                 txOutTargetKey, Arrays.hashCode(keyImage), keyImageHash, cachedTxOutMemo);
         return result;
     }
@@ -223,7 +241,7 @@ public class OwnedTxOut implements Parcelable {
         receivedBlockTimestamp = (Date)parcel.readSerializable();
         spentBlockTimestamp = (Date)parcel.readSerializable();
         spentBlockIndex = parcel.readParcelable(UnsignedLong.class.getClassLoader());
-        value = (BigInteger)parcel.readSerializable();
+        amount = parcel.readParcelable(Amount.class.getClassLoader());
         txOutPublicKey = RistrettoPublic.fromBytes(parcel.createByteArray());
         txOutTargetKey = RistrettoPublic.fromBytes(parcel.createByteArray());
         keyImage = parcel.createByteArray();
@@ -243,7 +261,7 @@ public class OwnedTxOut implements Parcelable {
         parcel.writeSerializable(receivedBlockTimestamp);
         parcel.writeSerializable(spentBlockTimestamp);
         parcel.writeParcelable(spentBlockIndex, flags);
-        parcel.writeSerializable(value);
+        parcel.writeParcelable(amount, flags);
         parcel.writeByteArray(txOutPublicKey.getKeyBytes());
         parcel.writeByteArray(txOutTargetKey.getKeyBytes());
         parcel.writeByteArray(keyImage);

@@ -5,20 +5,21 @@ package com.mobilecoin.lib;
 import androidx.annotation.NonNull;
 
 import java.math.BigInteger;
+import java.util.Objects;
 
 /**
  * The {@code Balance} class represents the account balance
  */
 final public class Balance {
     private final static String TAG = Balance.class.getName();
-    private final BigInteger amountPicoMob;
+    private final BigInteger value;
     private final UnsignedLong atBlock;
 
     public Balance(
-            @NonNull BigInteger amountPicoMob,
+            @NonNull BigInteger value,
             @NonNull UnsignedLong atBlock
     ) {
-        this.amountPicoMob = amountPicoMob;
+        this.value = value;
         this.atBlock = atBlock;
     }
 
@@ -26,8 +27,17 @@ final public class Balance {
      * Returns the balance amount in pico MOBs
      */
     @NonNull
+    @Deprecated
     public BigInteger getAmountPicoMob() {
-        return amountPicoMob;
+        return value;
+    }
+
+    /**
+     * Returns the value of this balance
+     */
+    @NonNull
+    public BigInteger getValue() {
+        return this.value;
     }
 
     /**
@@ -43,17 +53,20 @@ final public class Balance {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Balance balance = (Balance) o;
-        return amountPicoMob.equals(balance.amountPicoMob);
+        return value.equals(balance.value);
     }
 
     @Override
     public int hashCode() {
-        return 31 * amountPicoMob.hashCode();
+        return Objects.hash(
+                this.value,
+                this.atBlock
+        );
     }
 
     @NonNull
     @Override
     public String toString() {
-        return amountPicoMob.toString();
+        return value.toString();
     }
 }

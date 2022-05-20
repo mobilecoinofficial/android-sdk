@@ -39,17 +39,26 @@ class BlockchainClient extends AnyClient {
     }
 
     /**
-     * Fetch or return cached current minimal fee
+     * Fetch or return cached current minimal fee for a specified token
+     *
+     * @param tokenId the token ID for which to fetch the minimum fee
      */
     @NonNull
-    UnsignedLong getOrFetchMinimumFee() throws NetworkException {
+    Amount getOrFetchMinimumFee(@NonNull UnsignedLong tokenId) throws NetworkException {
         ConsensusCommon.LastBlockInfoResponse response = getOrFetchLastBlockInfo();
         long minimumFeeBits = response.getMobMinimumFee();
+        if(response.getNetworkBlockVersion() >= 1) {//Needed for compatibility with old networks
+            Long minFeeLookup;
+            if((minFeeLookup = response.getMinimumFeesMap().get(tokenId.longValue())) == null) {
+                throw new IllegalArgumentException("Invalid Token ID");
+            }
+            minimumFeeBits = minFeeLookup;
+        }
         UnsignedLong minimumFee = UnsignedLong.fromLongBits(minimumFeeBits);
         if (minimumFee.equals(UnsignedLong.ZERO)) {
             minimumFee = UnsignedLong.fromBigInteger(DEFAULT_TX_FEE);
         }
-        return minimumFee;
+        return new Amount(minimumFee.toBigInteger(), KnownTokenId.MOB.getId());
     }
 
     /**

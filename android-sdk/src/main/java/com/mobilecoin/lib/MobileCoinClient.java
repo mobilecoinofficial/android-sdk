@@ -38,6 +38,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Random;
 import java.util.Set;
@@ -252,27 +253,66 @@ public final class MobileCoinClient implements MobileCoinAccountClient, MobileCo
         return new AccountSnapshot(this, txOuts, finalBlockIndex);
     }
 
+    @Deprecated
     @Override
     @NonNull
-    public Balance getBalance() throws InvalidFogResponse, NetworkException, AttestationException {
-        Logger.i(TAG, "GetBalance call");
-        return getAccountSnapshot().getBalance();
+    public Balance getBalance() throws AttestationException, InvalidFogResponse, NetworkException {
+        return getBalance(KnownTokenId.MOB.getId());
     }
 
+    @Override
+    @NonNull
+    public Balance getBalance(UnsignedLong tokenId) throws AttestationException, InvalidFogResponse, NetworkException {
+        Logger.i(TAG, "GetBalance call");
+        return getAccountSnapshot().getBalance(tokenId);
+    }
+
+    @Override
+    @NonNull
+    public Map<UnsignedLong, Balance> getBalances() throws AttestationException, InvalidFogResponse, NetworkException {
+        return getAccountSnapshot().getBalances();
+    }
+
+    @Deprecated
     @Override
     @NonNull
     public BigInteger getTransferableAmount() throws NetworkException, InvalidFogResponse,
             AttestationException {
+        return getTransferableAmount(KnownTokenId.MOB.getId()).getValue();
+    }
+    
+    @Override
+    @NonNull
+    public Amount getTransferableAmount(@NonNull UnsignedLong tokenId) throws NetworkException, InvalidFogResponse,
+            AttestationException {
         Logger.i(TAG, "GetTransferableAmount call");
-        return getAccountSnapshot().getTransferableAmount(getOrFetchMinimumTxFee());
+        return getAccountSnapshot().getTransferableAmount(getOrFetchMinimumTxFee(tokenId));
     }
 
+    @Deprecated
     @Override
     @NonNull
     public PendingTransaction prepareTransaction(
+            @NonNull final PublicAddress recipient,
+            @NonNull final BigInteger amountPicoMOB,
+            @NonNull final BigInteger feePicoMOB,
+            @NonNull TxOutMemoBuilder txOutMemoBuilder
+    ) throws InsufficientFundsException, FragmentedAccountException, FeeRejectedException,
+            InvalidFogResponse, AttestationException, NetworkException,
+            TransactionBuilderException, FogReportException, FogSyncException {
+        return prepareTransaction(
+                recipient,
+                new Amount(amountPicoMOB, KnownTokenId.MOB.getId()),
+                new Amount(feePicoMOB, KnownTokenId.MOB.getId()),
+                txOutMemoBuilder
+        );
+    }
+
+    @NonNull
+    public PendingTransaction prepareTransaction(
         @NonNull final PublicAddress recipient,
-        @NonNull final BigInteger amount,
-        @NonNull final BigInteger fee,
+        @NonNull final Amount amount,
+        @NonNull final Amount fee,
         @NonNull TxOutMemoBuilder txOutMemoBuilder
     ) throws InsufficientFundsException, FragmentedAccountException, FeeRejectedException,
             InvalidFogResponse, AttestationException, NetworkException,
@@ -281,17 +321,20 @@ public final class MobileCoinClient implements MobileCoinAccountClient, MobileCo
                 "recipient:", recipient,
                 "amount:", amount,
                 "fee:", fee);
-        Set<OwnedTxOut> unspent = getUnspentTxOuts();
-        BigInteger finalAmount = amount.add(fee);
-        BigInteger totalAvailable = unspent.stream()
-                .map(OwnedTxOut::getValue)
-                .reduce(BigInteger.ZERO, BigInteger::add);
+        if(!amount.getTokenId().equals(fee.getTokenId())) {
+            throw new IllegalArgumentException("Mixed token type transactions not supported");
+        }
+        Set<OwnedTxOut> unspent = getUnspentTxOuts(amount.getTokenId());
+        Amount finalAmount = amount.add(fee);
+        Amount totalAvailable = unspent.stream()
+                .map(OwnedTxOut::getAmountData)
+                .reduce(new Amount(BigInteger.ZERO, amount.getTokenId()), Amount::add);
         if (totalAvailable.compareTo(finalAmount) < 0) {
             throw new InsufficientFundsException();
         }
         // the custom fee is provided, no need to calculate a new fee
         UTXOSelector.Selection<OwnedTxOut> selection = UTXOSelector.selectInputsForAmount(unspent,
-                finalAmount,
+                finalAmount.getValue(),
                 BigInteger.ZERO,
                 BigInteger.ZERO,
                 BigInteger.ZERO,
@@ -309,9 +352,9 @@ public final class MobileCoinClient implements MobileCoinAccountClient, MobileCo
     @NonNull
     PendingTransaction prepareTransaction(
         @NonNull final PublicAddress recipient,
-        @NonNull final BigInteger amount,
+        @NonNull final Amount amount,
         @NonNull final List<OwnedTxOut> txOuts,
-        @NonNull final BigInteger fee,
+        @NonNull final Amount fee,
         TxOutMemoBuilder txOutMemoBuilder
     ) throws InvalidFogResponse, AttestationException, NetworkException,
             TransactionBuilderException, FogReportException {
@@ -319,6 +362,9 @@ public final class MobileCoinClient implements MobileCoinAccountClient, MobileCo
                 "recipient:", recipient,
                 "amount:", amount,
                 "fee:", fee);
+        if(!amount.getTokenId().equals(fee.getTokenId())) {
+            throw new IllegalArgumentException("Mixed token type transactions not supported");
+        }
         UnsignedLong blockIndex = txOutStore.getCurrentBlockIndex();
         UnsignedLong tombstoneBlockIndex = blockIndex
                 .add(UnsignedLong.fromLongBits(DEFAULT_NEW_TX_BLOCK_ATTEMPTS));
@@ -412,15 +458,17 @@ public final class MobileCoinClient implements MobileCoinAccountClient, MobileCo
         TransactionBuilder txBuilder = new TransactionBuilder(
                 fogResolver,
                 txOutMemoBuilder,
-                blockchainClient.getOrFetchNetworkBlockVersion()
+                blockchainClient.getOrFetchNetworkBlockVersion(),
+                amount.getTokenId(),
+                fee
         );
-        txBuilder.setFee(fee.longValue());
+        txBuilder.setFee(fee);
         txBuilder.setTombstoneBlockIndex(tombstoneBlockIndex);
 
         BigInteger totalAmount = BigInteger.valueOf(0);
         for (Ring ring : rings) {
             OwnedTxOut utxo = ring.utxo;
-            totalAmount = totalAmount.add(utxo.getValue());
+            totalAmount = totalAmount.add(utxo.getAmountData().getValue());
 
             RistrettoPrivate onetimePrivateKey = Util.recoverOnetimePrivateKey(
                     utxo.getPublicKey(),
@@ -436,18 +484,19 @@ public final class MobileCoinClient implements MobileCoinAccountClient, MobileCo
             );
         }
         byte[] confirmationNumberOut = new byte[Receipt.CONFIRMATION_NUMBER_LENGTH];
-        TxOut pendingTxo = txBuilder.addOutput(amount,
+        TxOut pendingTxo = txBuilder.addOutput(
+                amount.getValue(),
                 recipient,
                 confirmationNumberOut
         );
 
-        BigInteger finalAmount = amount.add(fee);
+        BigInteger finalAmount = amount.add(fee).getValue();
 
         BigInteger change = totalAmount.subtract(finalAmount);
         txBuilder.addChangeOutput(change, accountKey, null);
 
         Transaction transaction = txBuilder.build();
-        MaskedAmount pendingMaskedAmount = pendingTxo.getAmount();
+        MaskedAmount pendingMaskedAmount = pendingTxo.getMaskedAmount();
         Receipt receipt = new Receipt(pendingTxo.getPubKey(),
                 confirmationNumberOut,
                 pendingMaskedAmount,
@@ -496,26 +545,59 @@ public final class MobileCoinClient implements MobileCoinAccountClient, MobileCo
         return getAccountSnapshot().getTransactionStatus(transaction);
     }
 
+    @Deprecated
     @Override
     @NonNull
-    public BigInteger estimateTotalFee(@NonNull BigInteger amount)
+    public BigInteger estimateTotalFee(@NonNull BigInteger amountPicoMOB)
+            throws InsufficientFundsException, NetworkException, InvalidFogResponse,
+            AttestationException, FogSyncException {
+        return estimateTotalFee(new Amount(
+                amountPicoMOB,
+                KnownTokenId.MOB.getId()
+        )).getValue();
+    }
+
+    @Override
+    @NonNull
+    public Amount estimateTotalFee(@NonNull Amount amount)
             throws InsufficientFundsException, NetworkException, InvalidFogResponse,
             AttestationException, FogSyncException {
         Logger.i(TAG, "EstimateTotalFee call");
-        return UTXOSelector.calculateFee(
-                getUnspentTxOuts(),
-                amount,
-                getOrFetchMinimumTxFee(),
-                INPUT_FEE,
-                OUTPUT_FEE,
-                2);
+        return new Amount(
+                UTXOSelector.calculateFee(
+                    getUnspentTxOuts(amount.getTokenId()),
+                    amount.getValue(),
+                    getOrFetchMinimumTxFee(amount.getTokenId()).getValue(),
+                    INPUT_FEE,
+                    OUTPUT_FEE,
+                    2
+                ),
+                KnownTokenId.MOB.getId()
+        );
+    }
+
+    @Deprecated
+    @Override
+    public void defragmentAccount(
+            @NonNull BigInteger amountPicoMOB,
+            @NonNull DefragmentationDelegate delegate,
+            boolean shouldWriteRTHMemos
+    ) throws InvalidFogResponse, AttestationException, NetworkException, InsufficientFundsException,
+            TransactionBuilderException, InvalidTransactionException,
+            FogReportException, TimeoutException, FogSyncException {
+        defragmentAccount(
+                new Amount(amountPicoMOB, KnownTokenId.MOB.getId()),
+                delegate,
+                shouldWriteRTHMemos
+        );
     }
 
     @Override
     public void defragmentAccount(
-        @NonNull BigInteger amountToSend,
+        @NonNull Amount amountToSend,
         @NonNull DefragmentationDelegate delegate,
-        boolean shouldWriteRTHMemos) throws InvalidFogResponse, AttestationException, NetworkException, InsufficientFundsException,
+        boolean shouldWriteRTHMemos
+    ) throws InvalidFogResponse, AttestationException, NetworkException, InsufficientFundsException,
             TransactionBuilderException, InvalidTransactionException,
             FogReportException, TimeoutException, FogSyncException {
         delegate.onStart();
@@ -524,30 +606,34 @@ public final class MobileCoinClient implements MobileCoinAccountClient, MobileCo
             .createSenderAndDestinationRTHMemoBuilder(accountKey)
             : TxOutMemoBuilder.createDefaultRTHMemoBuilder();
         do {
-            Set<OwnedTxOut> unspent = getUnspentTxOuts();
+            Set<OwnedTxOut> unspent = getUnspentTxOuts(amountToSend.getTokenId());
+            final Amount txFee = getOrFetchMinimumTxFee(amountToSend.getTokenId());
             try {
                 inputSelectionForAmount = UTXOSelector.selectInputsForAmount(
                         unspent,
-                        amountToSend,
-                        getOrFetchMinimumTxFee(),
+                        amountToSend.getValue(),
+                        txFee.getValue(),
                         INPUT_FEE,
-                        OUTPUT_FEE, 1);
+                        OUTPUT_FEE,
+                        1
+                );
             } catch (FragmentedAccountException exception) {
                 UTXOSelector.Selection<OwnedTxOut> selection = UTXOSelector.selectInputsForMerging(
                         unspent,
-                        getOrFetchMinimumTxFee(),
+                        txFee.getValue(),
                         INPUT_FEE,
                         OUTPUT_FEE
                 );
-                BigInteger totalValue = BigInteger.ZERO;
+                Amount totalValue = new Amount(BigInteger.ZERO, amountToSend.getTokenId());
                 for (OwnedTxOut utxo : selection.txOuts) {
-                    totalValue = totalValue.add(utxo.getValue());
+                    totalValue = totalValue.add(utxo.getAmountData());
                 }
+                Amount selectionFee = new Amount(selection.fee, totalValue.getTokenId());
                 PendingTransaction pendingTransaction = prepareTransaction(
                         accountKey.getPublicAddress(),
-                        totalValue.subtract(selection.fee),
+                        totalValue.subtract(selectionFee),
                         selection.txOuts,
-                        selection.fee,
+                        selectionFee,
                         txOutMemoBuilder
                 );
                 if (!delegate.onStepReady(pendingTransaction, selection.fee)) {
@@ -584,15 +670,26 @@ public final class MobileCoinClient implements MobileCoinAccountClient, MobileCo
         delegate.onComplete();
     }
 
+    @Deprecated
     @Override
-    public boolean requiresDefragmentation(@NonNull BigInteger amountToSend)
+    public boolean requiresDefragmentation(@NonNull BigInteger amountPicoMOB)
+            throws NetworkException, InvalidFogResponse, AttestationException,
+            InsufficientFundsException {
+        return requiresDefragmentation(new Amount(
+                amountPicoMOB,
+                KnownTokenId.MOB.getId()
+        ));
+    }
+
+    @Override
+    public boolean requiresDefragmentation(@NonNull Amount amountToSend)
             throws NetworkException, InvalidFogResponse, AttestationException,
             InsufficientFundsException {
         try {
             UTXOSelector.selectInputsForAmount(
-                    getUnspentTxOuts(),
-                    amountToSend,
-                    getOrFetchMinimumTxFee(),
+                    getUnspentTxOuts(amountToSend.getTokenId()),
+                    amountToSend.getValue(),
+                    getOrFetchMinimumTxFee(amountToSend.getTokenId()).getValue(),
                     INPUT_FEE,
                     OUTPUT_FEE, 1);
         } catch (FragmentedAccountException | FogSyncException exception) {
@@ -610,7 +707,7 @@ public final class MobileCoinClient implements MobileCoinAccountClient, MobileCo
      * Retrieve the list of account's unspent TxOuts
      */
     @NonNull
-    Set<OwnedTxOut> getUnspentTxOuts() throws InvalidFogResponse, NetworkException,
+    Set<OwnedTxOut> getAllUnspentTxOuts() throws InvalidFogResponse, NetworkException,
             AttestationException, FogSyncException {
         getTxOutStore().refresh(
                 viewClient,
@@ -620,10 +717,25 @@ public final class MobileCoinClient implements MobileCoinAccountClient, MobileCo
         return getTxOutStore().getUnspentTxOuts();
     }
 
+    @NonNull
+    Set<OwnedTxOut> getUnspentTxOuts(@NonNull UnsignedLong tokenId) throws InvalidFogResponse,
+            NetworkException, AttestationException, FogSyncException {
+        return getAllUnspentTxOuts().stream()
+                .filter(otxo -> tokenId.equals(otxo.getAmountData().getTokenId()))
+                .collect(Collectors.toSet());
+    }
+
+    @Deprecated
     @Override
     @NonNull
     public BigInteger getOrFetchMinimumTxFee() throws NetworkException {
-        return blockchainClient.getOrFetchMinimumFee().toBigInteger();
+        return getOrFetchMinimumTxFee(KnownTokenId.MOB.getId()).getValue();
+    }
+
+    @Override
+    @NonNull
+    public Amount getOrFetchMinimumTxFee(@NonNull UnsignedLong tokenId) throws NetworkException {
+        return blockchainClient.getOrFetchMinimumFee(tokenId);
     }
 
     @Override
