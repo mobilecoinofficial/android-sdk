@@ -572,7 +572,7 @@ public final class MobileCoinClient implements MobileCoinAccountClient, MobileCo
                     OUTPUT_FEE,
                     2
                 ),
-                KnownTokenId.MOB.getId()
+                amount.getTokenId()
         );
     }
 

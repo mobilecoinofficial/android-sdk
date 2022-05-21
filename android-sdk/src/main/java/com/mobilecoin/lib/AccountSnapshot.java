@@ -78,8 +78,8 @@ public final class AccountSnapshot {
         Logger.i(TAG, "Getting balance");
         BigInteger value = BigInteger.ZERO;
         for (OwnedTxOut txOut : txOuts) {
-            if(txOut.getAmountData().getTokenId().equals(tokenId)) {
-                if (!txOut.isSpent(blockIndex)) {
+            if (!txOut.isSpent(blockIndex)) {
+                if (txOut.getAmountData().getTokenId().equals(tokenId)) {
                     value = value.add(txOut.getAmountData().getValue());
                 }
             }
@@ -101,9 +101,9 @@ public final class AccountSnapshot {
             if(null == balance) {
                 balance = new Balance(BigInteger.ZERO, blockIndex);
             }
-            else {
+            if(!otxo.isSpent(blockIndex)) {
                 balance = new Balance(
-                        balance.getValue().add(otxo.getAmountData().getValue()),
+                        otxo.getAmountData().getValue().add(balance.getValue()),
                         blockIndex
                 );
             }
