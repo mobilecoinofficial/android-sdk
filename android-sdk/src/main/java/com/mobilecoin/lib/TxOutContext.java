@@ -14,7 +14,7 @@ public class TxOutContext extends Native {
     private final MobileCoinAPI.TxOutConfirmationNumber confirmationNumber;
     private final RistrettoPublic sharedSecret;
 
-    public TxOutContext(long existingRustObj) throws SerializationException {
+    TxOutContext(long existingRustObj) throws SerializationException {
         this.rustObj = existingRustObj;
         try {
             this.txOut = TxOut.fromJNI(get_tx_out());
@@ -28,13 +28,24 @@ public class TxOutContext extends Native {
         }
     }
 
-    public static TxOutContext fromJNI(long rustObj) throws SerializationException {
+    static TxOutContext fromJNI(long rustObj) throws SerializationException {
         return new TxOutContext(rustObj);
     }
 
+    /**
+     * @return the TxOut
+     */
     @NonNull
-    public TxOut getTxOut() {
+    TxOut getTxOut() {
         return this.txOut;
+    }
+
+    /**
+     * @return the public key of the TxOut
+     */
+    @NonNull
+    public RistrettoPublic getTxOutPublicKey() {
+        return this.txOut.getPublicKey();
     }
 
     @NonNull
@@ -42,6 +53,9 @@ public class TxOutContext extends Native {
         return this.confirmationNumber;
     }
 
+    /**
+     * @return the shared secret for this TxOutContext
+     */
     @NonNull
     public RistrettoPublic getSharedSecret() {
         return this.sharedSecret;

@@ -12,30 +12,28 @@ import com.mobilecoin.lib.network.services.BlockchainService;
 import com.mobilecoin.lib.util.NetworkingCall;
 
 import java.math.BigInteger;
-import java.time.Duration;
-import java.time.LocalDateTime;
 
 import consensus_common.ConsensusCommon;
 
 class BlockchainClient extends AnyClient {
     private static final String TAG = BlockchainClient.class.getName();
     private static final BigInteger DEFAULT_TX_FEE = BigInteger.valueOf(10000000000L);
-    private final Duration minimumFeeCacheTTL;
+    private final long minimumFeeCacheTTLms;
     private volatile ConsensusCommon.LastBlockInfoResponse lastBlockInfo;
-    private LocalDateTime lastBlockInfoTimestamp;
+    private long lastBlockInfoTimestampms;
 
     /**
      * Creates and initializes an instance of {@link BlockchainClient}
      *  @param loadBalancer                a uri of the service
      * @param serviceConfig      service configuration passed to MobileCoinClient
-     * @param minimumFeeCacheTTL duration of the minimum fee cache lifetime
+     * @param minimumFeeCacheTTLms duration of the minimum fee cache lifetime
      */
     BlockchainClient(@NonNull LoadBalancer loadBalancer,
                      @NonNull Service serviceConfig,
-                     @NonNull Duration minimumFeeCacheTTL,
+                     long minimumFeeCacheTTLms,
                      @NonNull TransportProtocol transportProtocol) {
         super(loadBalancer, serviceConfig, transportProtocol);
-        this.minimumFeeCacheTTL = minimumFeeCacheTTL;
+        this.minimumFeeCacheTTLms = minimumFeeCacheTTLms;
     }
 
     /**
@@ -64,7 +62,7 @@ class BlockchainClient extends AnyClient {
      */
     synchronized void resetCache() {
         lastBlockInfo = null;
-        lastBlockInfoTimestamp = null;
+        lastBlockInfoTimestampms = 0L;
     }
 
     /**
@@ -73,11 +71,9 @@ class BlockchainClient extends AnyClient {
     @NonNull
     synchronized ConsensusCommon.LastBlockInfoResponse getOrFetchLastBlockInfo() throws NetworkException {
         if (lastBlockInfo == null ||
-                lastBlockInfoTimestamp
-                        .plus(minimumFeeCacheTTL)
-                        .compareTo(LocalDateTime.now()) <= 0) {
+                lastBlockInfoTimestampms + minimumFeeCacheTTLms <= System.currentTimeMillis()) {
             lastBlockInfo = fetchLastBlockInfo();
-            lastBlockInfoTimestamp = LocalDateTime.now();
+            lastBlockInfoTimestampms = System.currentTimeMillis();
         }
         return lastBlockInfo;
     }

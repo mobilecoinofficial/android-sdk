@@ -141,7 +141,7 @@ public final class MobileCoinClient implements MobileCoinAccountClient, MobileCo
         this.blockchainClient = new BlockchainClient(
             RandomLoadBalancer.create(normalizedConsensusUris),
             clientConfig.consensus,
-            clientConfig.minimumFeeCacheTTL,
+            clientConfig.minimumFeeCacheTTLms,
             transportProtocol
         );
         this.viewClient = new AttestedViewClient(RandomLoadBalancer.create(normalizedFogUri),
@@ -455,7 +455,7 @@ public final class MobileCoinClient implements MobileCoinAccountClient, MobileCo
 
         Transaction transaction = txBuilder.build();
         MaskedAmount pendingMaskedAmount = pendingTxo.getAmount();
-        Receipt receipt = new Receipt(pendingTxo.getPubKey(),
+        Receipt receipt = new Receipt(pendingTxo.getPublicKey(),
                 confirmationNumberOut,
                 pendingMaskedAmount,
                 tombstoneBlockIndex

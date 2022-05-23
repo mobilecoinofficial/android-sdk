@@ -18,7 +18,7 @@ publishing {
 
             pom.withXml {
                 def dependenciesNode = asNode().appendNode('dependencies')
-                configurations.implementation.allDependencies.each {
+                configurations.grpcImplementation.allDependencies.each {
                     // Ensure dependencies such as fileTree are not included in the pom.
                     if (it.name != 'unspecified') {
                         def dependencyNode = dependenciesNode.appendNode('dependency')

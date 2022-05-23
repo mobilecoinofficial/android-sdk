@@ -105,6 +105,14 @@ final class TxOut extends Native {
         }
     }
 
+    /**
+     * @return the public key of this TxOut
+     */
+    @NonNull
+    RistrettoPublic getPublicKey() {
+        return this.pubKey;
+    }
+
     @NonNull
     MobileCoinAPI.TxOut toProtoBufObject() {
         return protoBufTxOut;
@@ -143,11 +151,6 @@ final class TxOut extends Native {
     @NonNull
     byte[] computeKeyImage(AccountKey accountKey) {
         return compute_key_image(accountKey);
-    }
-
-    @NonNull
-    RistrettoPublic getPubKey() {
-        return pubKey;
     }
 
     @NonNull
