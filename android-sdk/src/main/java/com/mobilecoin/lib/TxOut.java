@@ -72,7 +72,7 @@ final class TxOut extends Native {
      * @throws IllegalArgumentException if serialized bytes parameter is invalid
      */
     @NonNull
-    public static TxOut fromBytes(@NonNull byte[] serializedBytes) throws SerializationException {
+    static TxOut fromBytes(@NonNull byte[] serializedBytes) throws SerializationException {
         return new TxOut(serializedBytes);
     }
 
@@ -82,7 +82,7 @@ final class TxOut extends Native {
     }
 
     @NonNull
-    public MaskedAmount getAmount() {
+    MaskedAmount getAmount() {
         try {
             return MaskedAmount.fromProtoBufObject(protoBufTxOut.getMaskedAmount());
         } catch (AmountDecoderException exception) {
@@ -97,12 +97,20 @@ final class TxOut extends Native {
      * Returns a binary representation of the {@link Transaction} instance
      */
     @NonNull
-    public byte[] toByteArray() throws SerializationException {
+    byte[] toByteArray() throws SerializationException {
         try {
             return encode();
         } catch (Exception ex) {
             throw new SerializationException(ex.getLocalizedMessage());
         }
+    }
+
+    /**
+     * @return the public key of this TxOut
+     */
+    @NonNull
+    RistrettoPublic getPublicKey() {
+        return this.pubKey;
     }
 
     @NonNull
@@ -143,11 +151,6 @@ final class TxOut extends Native {
     @NonNull
     byte[] computeKeyImage(AccountKey accountKey) {
         return compute_key_image(accountKey);
-    }
-
-    @NonNull
-    RistrettoPublic getPubKey() {
-        return pubKey;
     }
 
     @NonNull

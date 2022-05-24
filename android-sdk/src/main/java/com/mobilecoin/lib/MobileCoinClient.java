@@ -141,7 +141,7 @@ public final class MobileCoinClient implements MobileCoinAccountClient, MobileCo
         this.blockchainClient = new BlockchainClient(
             RandomLoadBalancer.create(normalizedConsensusUris),
             clientConfig.consensus,
-            clientConfig.minimumFeeCacheTTL,
+            clientConfig.minimumFeeCacheTTLms,
             transportProtocol
         );
         this.viewClient = new AttestedViewClient(RandomLoadBalancer.create(normalizedFogUri),
@@ -436,26 +436,35 @@ public final class MobileCoinClient implements MobileCoinAccountClient, MobileCo
             );
         }
         byte[] confirmationNumberOut = new byte[Receipt.CONFIRMATION_NUMBER_LENGTH];
-        TxOut pendingTxo = txBuilder.addOutput(amount,
+        final TxOutContext payloadTxOutContext = txBuilder.addOutput(amount,
                 recipient,
                 confirmationNumberOut
         );
+        TxOut pendingTxo = payloadTxOutContext.getTxOut();
 
         BigInteger finalAmount = amount.add(fee);
 
         BigInteger change = totalAmount.subtract(finalAmount);
-        txBuilder.addChangeOutput(change, accountKey, null);
+        TxOutContext changeTxOutContext;
+        if(blockchainClient.getOrFetchNetworkBlockVersion() < 1) {
+            changeTxOutContext = txBuilder.addOutput(change, accountKey.getPublicAddress(), null);
+        }
+        else {
+            changeTxOutContext = txBuilder.addChangeOutput(change, accountKey, null);
+        }
 
         Transaction transaction = txBuilder.build();
         MaskedAmount pendingMaskedAmount = pendingTxo.getAmount();
-        Receipt receipt = new Receipt(pendingTxo.getPubKey(),
+        Receipt receipt = new Receipt(pendingTxo.getPublicKey(),
                 confirmationNumberOut,
                 pendingMaskedAmount,
                 tombstoneBlockIndex
         );
         return new PendingTransaction(
                 transaction,
-                receipt
+                receipt,
+                payloadTxOutContext,
+                changeTxOutContext
         );
     }
 

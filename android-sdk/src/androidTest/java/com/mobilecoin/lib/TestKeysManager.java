@@ -16,6 +16,8 @@ class TestKeysManager {
 
     private static final String testNetMnemonics[] =
             loadTestStrings(com.mobilecoin.lib.test.R.raw.test_net_mnemonics);
+    private static final String devNetRootEntropies[] =
+            loadTestStrings(com.mobilecoin.lib.test.R.raw.dev_net_root_entropies);
     private static final String devNetMnemonics[] =
             loadTestStrings(com.mobilecoin.lib.test.R.raw.dev_net_mnemonics);
 
@@ -32,10 +34,14 @@ class TestKeysManager {
     }
 
     static int getTotalTestKeysCount() {
-        if (Environment.CURRENT_TEST_ENV == Environment.TestEnvironment.TEST_NET) {
-            return testNetMnemonics.length;
+        switch(Environment.CURRENT_TEST_ENV) {
+            case ALPHA:
+                return devNetRootEntropies.length;
+            case TEST_NET:
+                return testNetMnemonics.length;
+            default:
+                return devNetMnemonics.length;
         }
-        return devNetMnemonics.length;
     }
 
     static AccountKey getNextAccountKey() {
@@ -56,8 +62,21 @@ class TestKeysManager {
                 } catch (Exception exception) {
                     throw new IllegalStateException("Bug: All test keys must be valid");
                 }
-            case MOBILE_DEV:
             case ALPHA:
+                if (currentAccountIndex >= devNetRootEntropies.length) {
+                    currentAccountIndex = 0;
+                }
+                try {
+                    return AccountKey.fromRootEntropy(
+                            Hex.toByteArray(devNetRootEntropies[currentAccountIndex++]),
+                            fogConfig.getFogUri(),
+                            fogConfig.getFogReportId(),
+                            fogConfig.getFogAuthoritySpki()
+                    );
+                } catch (Exception exception) {
+                    throw new IllegalStateException("Bug: All test keys must be valid");
+                }
+            case MOBILE_DEV:
             default:
                 if (currentAccountIndex >= devNetMnemonics.length) {
                     currentAccountIndex = 0;

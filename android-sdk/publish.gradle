@@ -1,6 +1,6 @@
 apply plugin: 'maven-publish'
 
-version '1.2.0-pre0'
+version '0.0.0.0'
 group 'com.mobilecoin'
 
 Properties properties = new Properties()
@@ -11,14 +11,14 @@ try {
 publishing {
     publications {
         Production(MavenPublication) {
-            artifact("$buildDir/outputs/aar/android-sdk-release.aar")
+            artifact("$buildDir/outputs/aar/android-sdk-grpc-release.aar")
             groupId
             artifactId 'android-sdk'
             version this.version
 
             pom.withXml {
                 def dependenciesNode = asNode().appendNode('dependencies')
-                configurations.implementation.allDependencies.each {
+                configurations.grpcImplementation.allDependencies.each {
                     // Ensure dependencies such as fileTree are not included in the pom.
                     if (it.name != 'unspecified') {
                         def dependencyNode = dependenciesNode.appendNode('dependency')
