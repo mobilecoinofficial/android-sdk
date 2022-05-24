@@ -20,7 +20,7 @@ class BlockchainClient extends AnyClient {
     private static final BigInteger DEFAULT_TX_FEE = BigInteger.valueOf(10000000000L);
     private final long minimumFeeCacheTTLms;
     private volatile ConsensusCommon.LastBlockInfoResponse lastBlockInfo;
-    private long lastBlockInfoTimestampms;
+    private long lastBlockInfoTimestamp_ms;
 
     /**
      * Creates and initializes an instance of {@link BlockchainClient}
