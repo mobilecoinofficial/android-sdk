@@ -18,7 +18,7 @@ import consensus_common.ConsensusCommon;
 class BlockchainClient extends AnyClient {
     private static final String TAG = BlockchainClient.class.getName();
     private static final BigInteger DEFAULT_TX_FEE = BigInteger.valueOf(10000000000L);
-    private final long minimumFeeCacheTTLms;
+    private final long minimumFeeCacheTTL_ms;
     private volatile ConsensusCommon.LastBlockInfoResponse lastBlockInfo;
     private long lastBlockInfoTimestamp_ms;
 
@@ -26,14 +26,14 @@ class BlockchainClient extends AnyClient {
      * Creates and initializes an instance of {@link BlockchainClient}
      *  @param loadBalancer                a uri of the service
      * @param serviceConfig      service configuration passed to MobileCoinClient
-     * @param minimumFeeCacheTTLms duration of the minimum fee cache lifetime
+     * @param minimumFeeCacheTTL_ms duration of the minimum fee cache lifetime
      */
     BlockchainClient(@NonNull LoadBalancer loadBalancer,
                      @NonNull Service serviceConfig,
-                     long minimumFeeCacheTTLms,
+                     long minimumFeeCacheTTL_ms,
                      @NonNull TransportProtocol transportProtocol) {
         super(loadBalancer, serviceConfig, transportProtocol);
-        this.minimumFeeCacheTTLms = minimumFeeCacheTTLms;
+        this.minimumFeeCacheTTL_ms = minimumFeeCacheTTL_ms;
     }
 
     /**
@@ -62,7 +62,7 @@ class BlockchainClient extends AnyClient {
      */
     synchronized void resetCache() {
         lastBlockInfo = null;
-        lastBlockInfoTimestampms = 0L;
+        lastBlockInfoTimestamp_ms = 0L;
     }
 
     /**
@@ -71,9 +71,9 @@ class BlockchainClient extends AnyClient {
     @NonNull
     synchronized ConsensusCommon.LastBlockInfoResponse getOrFetchLastBlockInfo() throws NetworkException {
         if (lastBlockInfo == null ||
-                lastBlockInfoTimestampms + minimumFeeCacheTTLms <= System.currentTimeMillis()) {
+                lastBlockInfoTimestamp_ms + minimumFeeCacheTTL_ms <= System.currentTimeMillis()) {
             lastBlockInfo = fetchLastBlockInfo();
-            lastBlockInfoTimestampms = System.currentTimeMillis();
+            lastBlockInfoTimestamp_ms = System.currentTimeMillis();
         }
         return lastBlockInfo;
     }
