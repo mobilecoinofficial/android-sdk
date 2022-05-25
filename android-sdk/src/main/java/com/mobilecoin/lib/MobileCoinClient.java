@@ -6,6 +6,7 @@ import android.net.Uri;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.annotation.VisibleForTesting;
 
 import com.mobilecoin.api.MobileCoinAPI;
 import com.mobilecoin.lib.exceptions.AttestationException;
@@ -163,6 +164,32 @@ public final class MobileCoinClient implements MobileCoinAccountClient, MobileCo
         if (null != logAdapter) {
             Logger.addAdapter(logAdapter);
         }
+    }
+
+    @VisibleForTesting
+    public MobileCoinClient(
+            AccountKey accountKey,
+            TxOutStore txOutStore,
+            ClientConfig clientConfig,
+            StorageAdapter cacheStorage,
+            FogReportsManager fogReportsManager,
+            FogBlockClient fogBlockClient,
+            FogUntrustedClient untrustedClient,
+            AttestedViewClient viewClient,AttestedLedgerClient ledgerClient,
+            AttestedConsensusClient consensusClient,
+            BlockchainClient blockchainClient
+    ) {
+        this.accountKey = accountKey;
+        this.txOutStore = txOutStore;
+        this.clientConfig = clientConfig;
+        this.cacheStorage = cacheStorage;
+        this.fogReportsManager = fogReportsManager;
+        this.fogBlockClient = fogBlockClient;
+        this.untrustedClient = untrustedClient;
+        this.viewClient = viewClient;
+        this.ledgerClient = ledgerClient;
+        this.consensusClient = consensusClient;
+        this.blockchainClient = blockchainClient;
     }
 
     private List<MobileCoinUri> createNormalizedConsensusUris(List<Uri> consensusUris)

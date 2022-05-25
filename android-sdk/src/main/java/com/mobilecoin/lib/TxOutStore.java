@@ -38,7 +38,7 @@ import fog_ledger.Ledger;
 import fog_view.View;
 import fog_view.View.DecommissionedIngestInvocation;
 
-final class TxOutStore implements Parcelable {
+class TxOutStore implements Parcelable {
     private static final String TAG = TxOutStore.class.getName();
 
     // Bump serial version and read/write code if fields change
