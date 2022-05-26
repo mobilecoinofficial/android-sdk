@@ -18,7 +18,7 @@ public class Environment {
 
     enum TestEnvironment {
         MOBILE_DEV("mobiledev"),
-        ALPHA("alpha"),
+        ALPHA("alpha.development"),
         TEST_NET("test");
 
         private final String name;

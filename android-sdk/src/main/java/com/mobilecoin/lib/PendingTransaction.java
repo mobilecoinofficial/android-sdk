@@ -16,16 +16,23 @@ public final class PendingTransaction {
     private final static String TAG = PendingTransaction.class.getName();
     private final Transaction transaction;
     private final Receipt receipt;
+    private final TxOutContext payloadTxOutContext;
+    private final TxOutContext changeTxOutContext;
 
     public PendingTransaction(
             @NonNull Transaction tx,
-            @NonNull Receipt receipt
+            @NonNull Receipt receipt,
+            @NonNull TxOutContext payloadTxOutContext,
+            @NonNull TxOutContext changeTxOutContext
     ) {
         this.transaction = tx;
         this.receipt = receipt;
+        this.payloadTxOutContext = payloadTxOutContext;
+        this.changeTxOutContext = changeTxOutContext;
         Logger.i(TAG, "Created PendingTransaction", null,
                 "receipt:", receipt,
-                "transaction:", tx);
+                "transaction:", tx, "payloadTxOutContext:", payloadTxOutContext,
+                "changeTxOutContext:", changeTxOutContext);
     }
 
     @NonNull
@@ -39,4 +46,15 @@ public final class PendingTransaction {
         Logger.i(TAG, "Getting transaction", null, transaction);
         return transaction;
     }
+
+    @NonNull
+    public TxOutContext getPayloadTxOutContext() {
+        return payloadTxOutContext;
+    }
+
+    @NonNull
+    public TxOutContext getChangeTxOutContext() {
+        return changeTxOutContext;
+    }
+
 }

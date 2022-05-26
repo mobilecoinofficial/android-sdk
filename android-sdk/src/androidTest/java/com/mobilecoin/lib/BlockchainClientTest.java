@@ -27,7 +27,7 @@ public class BlockchainClientTest {
         BlockchainClient blockchainClient = new BlockchainClient(
                 RandomLoadBalancer.create(consensusUri),
                 fogConfig.getClientConfig().consensus,
-                Duration.ofHours(1),
+                Duration.ofHours(1).toMillis(),
                 fogConfig.getTransportProtocol());
         blockchainClient.setAuthorization(
                 fogConfig.getUsername(),
@@ -63,7 +63,7 @@ public class BlockchainClientTest {
         BlockchainClient blockchainClient = new BlockchainClient(
                 createLoadBalancer(),
                 fogConfig.getClientConfig().consensus,
-                Duration.ofHours(1),
+                Duration.ofHours(1).toMillis(),
                 fogConfig.getTransportProtocol());
 
         // Get initial block response and cache it
@@ -84,7 +84,7 @@ public class BlockchainClientTest {
         BlockchainClient blockchainClient = new BlockchainClient(
                 RandomLoadBalancer.create(consensusUri),
                 fogConfig.getClientConfig().consensus,
-                Duration.ofMillis(1),
+                Duration.ofMillis(1).toMillis(),
                 fogConfig.getTransportProtocol());
         blockchainClient.setAuthorization(
                 fogConfig.getUsername(),
@@ -121,7 +121,7 @@ public class BlockchainClientTest {
         BlockchainClient blockchainClient = new BlockchainClient(
                 createLoadBalancer(),
                 fogConfig.getClientConfig().consensus,
-                Duration.ofMillis(1),
+                Duration.ofMillis(1).toMillis(),
                 fogConfig.getTransportProtocol());
 
         // Get initial block response and cache it
