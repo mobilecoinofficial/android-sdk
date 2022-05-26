@@ -32,7 +32,7 @@ public class OwnedTxOut implements Parcelable {
     private final static String TAG = OwnedTxOut.class.getName();
 
     // Bump serial version and read/write code if fields change
-    private static final long serialVersionUID = 3L;
+    private static final long serialVersionUID = 4L;
 
     //  The global index of this TxOut in the entire block chain.
     private final UnsignedLong txOutGlobalIndex;
@@ -49,6 +49,7 @@ public class OwnedTxOut implements Parcelable {
     private final BigInteger value;
     private final RistrettoPublic txOutPublicKey;
     private final RistrettoPublic txOutTargetKey;
+    private final RistrettoPublic sharedSecret;
     private final byte[] keyImage;
     private int keyImageHash;
 
@@ -79,9 +80,8 @@ public class OwnedTxOut implements Parcelable {
                             .build();
             txOutTargetKey = RistrettoPublic.fromProtoBufObject(txOutTargetKeyProto);
             long maskedValue = txOutRecord.getTxOutAmountMaskedValue();
-            RistrettoPublic txOutSharedSecret =
-                Util.getSharedSecret(accountKey.getViewKey(), txOutPublicKey);
-            MaskedAmount maskedAmount = new MaskedAmount(txOutSharedSecret, maskedValue);
+            sharedSecret = Util.getSharedSecret(accountKey.getViewKey(), txOutPublicKey);
+            MaskedAmount maskedAmount = new MaskedAmount(sharedSecret, maskedValue);
             value = maskedAmount.unmaskAmount(
                     accountKey.getViewKey(),
                     txOutPublicKey
@@ -160,6 +160,11 @@ public class OwnedTxOut implements Parcelable {
         return txOutTargetKey;
     }
 
+    @NonNull
+    public RistrettoPublic getSharedSecret() {
+        return sharedSecret;
+    }
+
     public synchronized boolean isSpent(@NonNull UnsignedLong atIndex) {
         return (spentBlockIndex != null) && (spentBlockIndex.compareTo(atIndex) <= 0);
     }
@@ -229,6 +234,7 @@ public class OwnedTxOut implements Parcelable {
         keyImage = parcel.createByteArray();
         keyImageHash = parcel.readInt();
         cachedTxOutMemo = parcel.readParcelable(TxOutMemo.class.getClassLoader());
+        sharedSecret = parcel.readParcelable(RistrettoPublic.class.getClassLoader());
     }
 
     /**
@@ -249,6 +255,7 @@ public class OwnedTxOut implements Parcelable {
         parcel.writeByteArray(keyImage);
         parcel.writeInt(keyImageHash);
         parcel.writeParcelable(cachedTxOutMemo, flags);
+        parcel.writeParcelable(sharedSecret, flags);
     }
 
     /**
