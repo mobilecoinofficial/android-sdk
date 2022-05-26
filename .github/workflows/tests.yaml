@@ -41,6 +41,9 @@ jobs:
       - name: Provide DevNet Entropies
         run: echo "${{ secrets.DEV_NET_ENTROPIES }}" > "android-sdk/src/androidTest/res/raw/dev_net_root_entropies"
 
+      - name: Provide DevNet Mnemonics
+        run: echo "${{ secrets.DEV_NET_MNEMONICS }}" > "android-sdk/src/androidTest/res/raw/dev_net_mnemonics"
+
       - name: Provide TestNet Mnemonics
         run: echo "${{ secrets.TEST_NET_MNEMONICS }}" > "android-sdk/src/androidTest/res/raw/test_net_mnemonics"
 
