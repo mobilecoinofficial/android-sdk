@@ -22,6 +22,8 @@ class BlockchainClient extends AnyClient {
     private volatile ConsensusCommon.LastBlockInfoResponse lastBlockInfo;
     private long lastBlockInfoTimestamp_ms;
 
+    public static final int TOKEN_ID_BLOCK_VERSION = 2;
+
     /**
      * Creates and initializes an instance of {@link BlockchainClient}
      *  @param loadBalancer                a uri of the service
@@ -44,6 +46,9 @@ class BlockchainClient extends AnyClient {
     @NonNull
     Amount getOrFetchMinimumFee(@NonNull UnsignedLong tokenId) throws NetworkException {
         ConsensusCommon.LastBlockInfoResponse response = getOrFetchLastBlockInfo();
+        if((!tokenId.equals(KnownTokenId.MOB.getId())) && (response.getNetworkBlockVersion() < TOKEN_ID_BLOCK_VERSION)) {
+            throw(new IllegalArgumentException("Network block version does not support different tokens"));
+        }
         long minimumFeeBits = response.getMobMinimumFee();
         if(response.getNetworkBlockVersion() >= 1) {//Needed for compatibility with old networks
             Long minFeeLookup;
@@ -56,7 +61,7 @@ class BlockchainClient extends AnyClient {
         if (minimumFee.equals(UnsignedLong.ZERO)) {
             minimumFee = UnsignedLong.fromBigInteger(DEFAULT_TX_FEE);
         }
-        return new Amount(minimumFee.toBigInteger(), KnownTokenId.MOB.getId());
+        return new Amount(minimumFee.toBigInteger(), tokenId);
     }
 
     /**

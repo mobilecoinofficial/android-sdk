@@ -61,17 +61,17 @@ public class TxOutStoreTest {
         Map<UnsignedLong, Balance> balances = new HashMap<UnsignedLong, Balance>();
         for(OwnedTxOut otxo : utxos) {
             //TODO: on API level 24, we can use getOrDefault to simplify the logic here
-            Balance balance = balances.get(otxo.getAmountData().getTokenId());
+            Balance balance = balances.get(otxo.getAmount().getTokenId());
             if(null == balance) {
                 balance = new Balance(BigInteger.ZERO, store.getCurrentBlockIndex());
             }
             else {
                 balance = new Balance(
-                        balance.getValue().add(otxo.getAmountData().getValue()),
+                        balance.getValue().add(otxo.getAmount().getValue()),
                         store.getCurrentBlockIndex()
                 );
             }
-            balances.put(otxo.getAmountData().getTokenId(), balance);
+            balances.put(otxo.getAmount().getTokenId(), balance);
         }
 
         byte[] serialized = store.toByteArray();
@@ -86,17 +86,17 @@ public class TxOutStoreTest {
         Map<UnsignedLong, Balance> restoredBalances = new HashMap<UnsignedLong, Balance>();
         for(OwnedTxOut otxo : restoredUtxos) {
             //TODO: on API level 24, we can use getOrDefault to simplify the logic here
-            Balance balance = restoredBalances.get(otxo.getAmountData().getTokenId());
+            Balance balance = restoredBalances.get(otxo.getAmount().getTokenId());
             if(null == balance) {
                 balance = new Balance(BigInteger.ZERO, store.getCurrentBlockIndex());
             }
             else {
                 balance = new Balance(
-                        balance.getValue().add(otxo.getAmountData().getValue()),
+                        balance.getValue().add(otxo.getAmount().getValue()),
                         store.getCurrentBlockIndex()
                 );
             }
-            restoredBalances.put(otxo.getAmountData().getTokenId(), balance);
+            restoredBalances.put(otxo.getAmount().getTokenId(), balance);
         }
         Assert.assertEquals("Balance must remain the same after serialization round trip",
                 balances,
@@ -118,8 +118,7 @@ public class TxOutStoreTest {
         PendingTransaction pending = senderClient.prepareTransaction(
                 recipientClient.getAccountKey().getPublicAddress(),
                 amount,
-                minimumFee,
-                TxOutMemoBuilder.createDefaultRTHMemoBuilder()
+                minimumFee
         );
         senderClient.submitTransaction(pending.getTransaction());
 
@@ -170,7 +169,7 @@ public class TxOutStoreTest {
         // search for the specific amount sent earlier
         boolean found = false;
         for (OwnedTxOut txOut : records) {
-            found = txOut.getAmount().equals(amount);
+            found = txOut.getValue().equals(amount);
             if (found) break;
         }
         if (!found) {

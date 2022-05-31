@@ -123,7 +123,7 @@ public class OwnedTxOut implements Parcelable {
      */
     @Deprecated
     @NonNull
-    public BigInteger getAmount() {
+    public BigInteger getValue() {
         return amount.getValue();
     }
 
@@ -139,7 +139,7 @@ public class OwnedTxOut implements Parcelable {
     /**
      * @return The amount of this TxOut
      */
-    @NonNull Amount getAmountData() {
+    @NonNull Amount getAmount() {
         return amount;
     }
 

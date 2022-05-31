@@ -116,7 +116,7 @@ public class LedgerTest {
         // search for the specific amount sent earlier
         boolean found = false;
         for (OwnedTxOut txOut : records) {
-            found = txOut.getAmountData().equals(amount);
+            found = txOut.getAmount().equals(amount);
             if (found) break;
         }
 

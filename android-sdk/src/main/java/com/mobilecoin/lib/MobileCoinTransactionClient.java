@@ -34,7 +34,7 @@ public interface MobileCoinTransactionClient {
    */
   @NonNull
   Amount getTransferableAmount(@NonNull UnsignedLong tokenId) throws NetworkException,
-          InvalidFogResponse, AttestationException;
+          InvalidFogResponse, AttestationException, FogSyncException;
 
   /**
    * Prepares a {@link PendingTransaction} to be executed.
@@ -42,7 +42,6 @@ public interface MobileCoinTransactionClient {
    * @param recipient {@link PublicAddress} of the recipient
    * @param amountPicoMOB    transaction amount in picoMOB
    * @param feePicoMOB       transaction fee (see {@link MobileCoinClient#estimateTotalFee})
-   * @param txOutMemoBuilder
    * @return {@link PendingTransaction} which encapsulates the {@link Transaction} and {@link
    * Receipt} objects
    */
@@ -51,11 +50,10 @@ public interface MobileCoinTransactionClient {
   PendingTransaction prepareTransaction(
           @NonNull final PublicAddress recipient,
           @NonNull final BigInteger amountPicoMOB,
-          @NonNull final BigInteger feepicoMOB,
-          @NonNull TxOutMemoBuilder txOutMemoBuilder
+          @NonNull final BigInteger feePicoMOB
   ) throws InsufficientFundsException, FragmentedAccountException, FeeRejectedException,
           InvalidFogResponse, AttestationException, NetworkException,
-          TransactionBuilderException, FogReportException, FogSyncException;
+          TransactionBuilderException, FogReportException;
 
   /**
    * Prepares a {@link PendingTransaction} to be executed.
@@ -97,7 +95,7 @@ public interface MobileCoinTransactionClient {
   @NonNull
   Receipt.Status getReceiptStatus(@NonNull Receipt receipt)
       throws InvalidFogResponse, NetworkException, AttestationException,
-      InvalidReceiptException;
+      InvalidReceiptException, FogSyncException;
 
   /**
    * Checks the status of the {@link Transaction}. Sender's key is required to decode verification
@@ -110,7 +108,7 @@ public interface MobileCoinTransactionClient {
   @NonNull
   Transaction.Status getTransactionStatus(@NonNull Transaction transaction)
       throws InvalidFogResponse, AttestationException,
-          NetworkException;
+          NetworkException, FogSyncException;
 
   /**
    * Estimates the minimum fee required to send a transaction with the specified amount. The account
@@ -124,7 +122,7 @@ public interface MobileCoinTransactionClient {
   @NonNull
   BigInteger estimateTotalFee(@NonNull BigInteger amountPicoMOB)
           throws InsufficientFundsException, NetworkException, InvalidFogResponse,
-          AttestationException, FogSyncException;
+          AttestationException;
 
   /**
    * Estimates the minimum fee required to send a transaction with the specified amount. The account

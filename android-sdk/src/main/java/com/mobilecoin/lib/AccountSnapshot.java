@@ -79,8 +79,8 @@ public final class AccountSnapshot {
         BigInteger value = BigInteger.ZERO;
         for (OwnedTxOut txOut : txOuts) {
             if (!txOut.isSpent(blockIndex)) {
-                if (txOut.getAmountData().getTokenId().equals(tokenId)) {
-                    value = value.add(txOut.getAmountData().getValue());
+                if (txOut.getAmount().getTokenId().equals(tokenId)) {
+                    value = value.add(txOut.getAmount().getValue());
                 }
             }
         }
@@ -97,17 +97,17 @@ public final class AccountSnapshot {
         HashMap<UnsignedLong, Balance> balances = new HashMap<UnsignedLong, Balance>();
         for(OwnedTxOut otxo : txOuts) {
             //TODO: on API level 24, we can use getOrDefault to simplify the logic here
-            Balance balance = balances.get(otxo.getAmountData().getTokenId());
+            Balance balance = balances.get(otxo.getAmount().getTokenId());
             if(null == balance) {
                 balance = new Balance(BigInteger.ZERO, blockIndex);
             }
             if(!otxo.isSpent(blockIndex)) {
                 balance = new Balance(
-                        otxo.getAmountData().getValue().add(balance.getValue()),
+                        otxo.getAmount().getValue().add(balance.getValue()),
                         blockIndex
                 );
             }
-            balances.put(otxo.getAmountData().getTokenId(), balance);
+            balances.put(otxo.getAmount().getTokenId(), balance);
         }
         return balances;
     }
@@ -129,7 +129,7 @@ public final class AccountSnapshot {
                 try {
                     AccountKey accountKey = mobileCoinClient.getAccountKey();
                     Amount receiptAmountValue = receipt.getAmountData(accountKey);
-                    Amount txoValue = txOut.getAmountData();
+                    Amount txoValue = txOut.getAmount();
                     if (!txoValue.equals(receiptAmountValue)) {
                         InvalidReceiptException exception = new InvalidReceiptException("Receipt " +
                                 "amount mismatch");
@@ -232,7 +232,7 @@ public final class AccountSnapshot {
     public Amount getTransferableAmount(@NonNull Amount minimumTxFee) {
         Logger.i(TAG, "Calculating transferable amount");
         HashSet<OwnedTxOut> unspent = txOuts.stream().filter(p -> !p.isSpent(blockIndex))
-                .filter(utxo -> utxo.getAmountData().getTokenId().equals(minimumTxFee.getTokenId()))
+                .filter(utxo -> utxo.getAmount().getTokenId().equals(minimumTxFee.getTokenId()))
                 .collect(Collectors.toCollection(HashSet::new));
         try {
             BigInteger value =  UTXOSelector.getTransferableAmount(
@@ -287,7 +287,7 @@ public final class AccountSnapshot {
             throw(new IllegalArgumentException("Mixed token type transactions not supported"));
         }
         HashSet<OwnedTxOut> unspent = txOuts.stream().filter(p -> !p.isSpent(blockIndex))
-                .filter(otxo -> otxo.getAmountData().getTokenId().equals(amount.getTokenId()))
+                .filter(otxo -> otxo.getAmount().getTokenId().equals(amount.getTokenId()))
                 .collect(Collectors.toCollection(HashSet::new));
         BigInteger totalFee = UTXOSelector.calculateFee(
                 unspent,
@@ -312,8 +312,7 @@ public final class AccountSnapshot {
     public PendingTransaction prepareTransaction(
             @NonNull final PublicAddress recipient,
             @NonNull final BigInteger amountPicoMOB,
-            @NonNull final BigInteger feePicoMOB,
-            @NonNull final TxOutMemoBuilder txOutMemoBuilder
+            @NonNull final BigInteger feePicoMOB
     ) throws InsufficientFundsException, FragmentedAccountException, FeeRejectedException,
             InvalidFogResponse, AttestationException, NetworkException,
             TransactionBuilderException, FogReportException {
@@ -321,7 +320,7 @@ public final class AccountSnapshot {
                 recipient,
                 new Amount(amountPicoMOB, KnownTokenId.MOB.getId()),
                 new Amount(feePicoMOB, KnownTokenId.MOB.getId()),
-                txOutMemoBuilder
+                TxOutMemoBuilder.createDefaultRTHMemoBuilder()
         );
     }
 
@@ -349,11 +348,11 @@ public final class AccountSnapshot {
             throw new IllegalArgumentException("Mixed token type transactions not supported");
         }
         Set<OwnedTxOut> unspent = txOuts.stream().filter(p -> !p.isSpent(getBlockIndex()))
-                .filter(utxo -> utxo.getAmountData().getTokenId().equals(amount.getTokenId()))
+                .filter(utxo -> utxo.getAmount().getTokenId().equals(amount.getTokenId()))
                 .collect(Collectors.toCollection(HashSet::new));
         Amount finalAmount = amount.add(fee);
         Amount totalAvailable = unspent.stream()
-                .map(OwnedTxOut::getAmountData)
+                .map(OwnedTxOut::getAmount)
                 .reduce(
                         new Amount(BigInteger.ZERO, amount.getTokenId()),
                         Amount::add

@@ -63,7 +63,7 @@ class TestKeysManager {
                     throw new IllegalStateException("Bug: All test keys must be valid");
                 }
             case ALPHA:
-                if (currentAccountIndex >= devNetRootEntropies.length) {
+                if (currentAccountIndex >= devNetRootEntropies.length - 1) {
                     currentAccountIndex = 0;
                 }
                 try {
@@ -74,7 +74,9 @@ class TestKeysManager {
                             fogConfig.getFogAuthoritySpki()
                     );
                 } catch (Exception exception) {
-                    throw new IllegalStateException("Bug: All test keys must be valid");
+                    throw new IllegalStateException("Bug: All test keys must be valid. \"" +
+                            devNetRootEntropies[currentAccountIndex - 1] + "\", " +
+                            getTotalTestKeysCount(), exception);
                 }
             case MOBILE_DEV:
             default:

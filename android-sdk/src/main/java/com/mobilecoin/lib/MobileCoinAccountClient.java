@@ -39,7 +39,7 @@ public interface MobileCoinAccountClient {
    */
   @NonNull
   AccountSnapshot getAccountSnapshot() throws NetworkException,
-      InvalidFogResponse, AttestationException;
+      InvalidFogResponse, AttestationException, FogSyncException;
 
   /**
    * Creates an account snapshot for the provided block index.
@@ -50,7 +50,7 @@ public interface MobileCoinAccountClient {
    */
   @Nullable
   AccountSnapshot getAccountSnapshot(UnsignedLong blockIndex) throws NetworkException,
-      InvalidFogResponse, AttestationException;
+      InvalidFogResponse, AttestationException, FogSyncException;
 
   /**
    * Retrieves {@code AccountKey}'s MOB balance in picoMOB.
@@ -63,13 +63,13 @@ public interface MobileCoinAccountClient {
    * Retrieves {@code AccountKey}'s balance of a specified token.
    */
   @NonNull
-  Balance getBalance(UnsignedLong tokenId) throws AttestationException, InvalidFogResponse, NetworkException;
+  Balance getBalance(UnsignedLong tokenId) throws AttestationException, InvalidFogResponse, NetworkException, FogSyncException;
 
   /**
    * Retrieves {@code AccountKey}'s balance for every discovered token.
    */
   @NonNull
-  Map<UnsignedLong, Balance> getBalances() throws AttestationException, InvalidFogResponse, NetworkException;
+  Map<UnsignedLong, Balance> getBalances() throws AttestationException, InvalidFogResponse, NetworkException, FogSyncException;
 
   /**
    * Returns whether the defragmentation is required on the active account in order to send the
@@ -98,16 +98,14 @@ public interface MobileCoinAccountClient {
    * once. However, wallet fragmentation is a rare occurrence since there is an internal mechanism
    * to defragment the account during other operations.
    *  @param delegate monitors and controls the defragmentation process
-   * @param shouldWriteRTHMemos writes sender and destination memos for a defrag transaction if true.
    */
   @Deprecated
   void defragmentAccount(
       @NonNull BigInteger amountPicoMOB,
-      @NonNull DefragmentationDelegate delegate,
-      boolean shouldWriteRTHMemos
+      @NonNull DefragmentationDelegate delegate
   ) throws InvalidFogResponse, AttestationException, NetworkException, InsufficientFundsException,
           TransactionBuilderException, InvalidTransactionException,
-          FogReportException, TimeoutException, FogSyncException;
+          FogReportException, TimeoutException;
 
   /**
    * Defragments the user's account.

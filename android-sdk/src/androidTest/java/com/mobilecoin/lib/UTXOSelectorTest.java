@@ -386,7 +386,7 @@ public class UTXOSelectorTest {
 
   private static OwnedTxOut createMockTxOut(Amount amount) {
     OwnedTxOut txOut = mock(OwnedTxOut.class);
-    when(txOut.getAmountData()).thenReturn(amount);
+    when(txOut.getAmount()).thenReturn(amount);
     return txOut;
   }
 }

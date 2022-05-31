@@ -107,8 +107,7 @@ public class MobileCoinClientTest {
             PendingTransaction pending = mobileCoinClient.prepareTransaction(
                     recipient,
                     amount,
-                    minimumFee,
-                    TxOutMemoBuilder.createDefaultRTHMemoBuilder()
+                    minimumFee
             );
 
             Balance balanceBefore = mobileCoinClient.getBalance();
@@ -145,8 +144,7 @@ public class MobileCoinClientTest {
             PendingTransaction pending = mobileCoinClient.prepareTransaction(
                     recipientAddress,
                     amount,
-                    minimumFee,
-                    TxOutMemoBuilder.createDefaultRTHMemoBuilder()
+                    minimumFee
             );
             mobileCoinClient.submitTransaction(pending.getTransaction());
         } finally {
@@ -207,8 +205,7 @@ public class MobileCoinClientTest {
             PendingTransaction pending = mobileCoinClient.prepareTransaction(
                     recipient.getPublicAddress(),
                     amount,
-                    minimumFee,
-                    TxOutMemoBuilder.createDefaultRTHMemoBuilder()
+                    minimumFee
             );
             mobileCoinClient.submitTransaction(pending.getTransaction());
             Transaction.Status status = waitForTransactionStatus(
@@ -237,8 +234,7 @@ public class MobileCoinClientTest {
             PendingTransaction pending = senderClient.prepareTransaction(
                     recipientClient.getAccountKey().getPublicAddress(),
                     amount,
-                    minimumFee,
-                    TxOutMemoBuilder.createDefaultRTHMemoBuilder()
+                    minimumFee
             );
             senderClient.submitTransaction(pending.getTransaction());
             Receipt receipt = pending.getReceipt();
@@ -282,8 +278,7 @@ public class MobileCoinClientTest {
             PendingTransaction pending = senderClient.prepareTransaction(
                     recipientClient.getAccountKey().getPublicAddress(),
                     amount,
-                    minimumFee,
-                    TxOutMemoBuilder.createDefaultRTHMemoBuilder()
+                    minimumFee
             );
             senderClient.submitTransaction(pending.getTransaction());
 
@@ -304,7 +299,7 @@ public class MobileCoinClientTest {
             );
             OwnedTxOut zeroCoinTxOut = null;
             for (OwnedTxOut txOut : txOuts) {
-                if (txOut.getAmount().equals(BigInteger.ZERO)) {
+                if (txOut.getValue().equals(BigInteger.ZERO)) {
                     zeroCoinTxOut = txOut;
                     break;
                 }
@@ -356,8 +351,7 @@ public class MobileCoinClientTest {
             PendingTransaction pendingTransaction = coinSourceClient.prepareTransaction(
                     fragmentedAccount.getPublicAddress(),
                     FRAGMENT_AMOUNT,
-                    fee,
-                    TxOutMemoBuilder.createDefaultRTHMemoBuilder()
+                    fee
             );
             coinSourceClient.submitTransaction(pendingTransaction.getTransaction());
             waitForTransactionStatus(coinSourceClient,
@@ -388,8 +382,7 @@ public class MobileCoinClientTest {
         PendingTransaction pendingTransaction = coinSourceClient.prepareTransaction(
                 fragmentedAccount.getPublicAddress(),
                 futureFees,
-                txFee,
-                TxOutMemoBuilder.createDefaultRTHMemoBuilder()
+                txFee
         );
         coinSourceClient.submitTransaction(pendingTransaction.getTransaction());
         coinSourceClient.shutdown();
@@ -437,14 +430,13 @@ public class MobileCoinClientTest {
                 Logger.wtf(TAG, "Defragmentation process was cancelled");
                 Assert.fail("Defragmentation process should not be cancelled in this test");
             }
-        }, false);
+        });
         // 5. Send the funds back to the original wallet
         BigInteger fee = fragmentedClient.estimateTotalFee(txAmount);
         pendingTransaction = fragmentedClient.prepareTransaction(
                 coinSourceKey.getPublicAddress(),
                 txAmount,
-                fee,
-                TxOutMemoBuilder.createDefaultRTHMemoBuilder()
+                fee
         );
         fragmentedClient.submitTransaction(pendingTransaction.getTransaction());
         fragmentedClient.shutdown();
@@ -500,8 +492,7 @@ public class MobileCoinClientTest {
             PendingTransaction pending = senderClient.prepareTransaction(
                     recipientClient.getAccountKey().getPublicAddress(),
                     amount,
-                    minimumFee,
-                    TxOutMemoBuilder.createDefaultRTHMemoBuilder()
+                    minimumFee
             );
 
             // verify input key images corresponding to owned txOuts
@@ -520,7 +511,7 @@ public class MobileCoinClientTest {
 
             // verify the output of the receipt is valid
             OwnedTxOut receivedTxOut = pending.getReceipt().fetchOwnedTxOut(recipientClient);
-            Assert.assertEquals("Receipt amount must be valid", receivedTxOut.getAmount(), amount);
+            Assert.assertEquals("Receipt amount must be valid", receivedTxOut.getValue(), amount);
             AccountActivity recipientActivity = recipientClient.getAccountActivity();
             Assert.assertTrue("Recipient activity must contain received TxOut",
                     recipientActivity.getAllTxOuts().contains(receivedTxOut));
@@ -547,7 +538,7 @@ public class MobileCoinClientTest {
         MobileCoinClient mobileCoinClient = MobileCoinClientBuilder.newBuilder().build();
         BigInteger fee = mobileCoinClient.estimateTotalFee(amount);
         PendingTransaction pendingTransaction = mobileCoinClient.prepareTransaction(recipient,
-                amount, fee, TxOutMemoBuilder.createDefaultRTHMemoBuilder());
+                amount, fee);
 
         mobileCoinClient.submitTransaction(pendingTransaction.getTransaction());
         Transaction.Status txStatus = waitForTransactionStatus(mobileCoinClient,
@@ -686,8 +677,7 @@ public class MobileCoinClientTest {
             PendingTransaction pending = mobileCoinClient.prepareTransaction(
                 recipient.getPublicAddress(),
                 amount,
-                minimumFee,
-                TxOutMemoBuilder.createDefaultRTHMemoBuilder()
+                minimumFee
             );
             mobileCoinClient.submitTransaction(pending.getTransaction());
             Transaction.Status status = waitForTransactionStatus(
