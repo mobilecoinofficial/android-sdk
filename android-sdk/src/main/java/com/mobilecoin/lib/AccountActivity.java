@@ -7,6 +7,7 @@ import androidx.annotation.NonNull;
 import com.mobilecoin.lib.log.Logger;
 
 import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * <pre>
@@ -41,13 +42,28 @@ public final class AccountActivity {
     }
 
     /**
-     * @return all account TxOuts at the particular block count, see
+     * @return all account MOB TxOuts at the particular block count, see
      * {@link AccountActivity#getBlockCount}
      */
+    @Deprecated
     @NonNull
     public Set<OwnedTxOut> getAllTxOuts() {
         Logger.i(TAG, "GetAllTxOuts", null,
                 "txOuts count:", txOuts.size());
+        return txOuts.stream()
+                .filter(otxo -> KnownTokenId.MOB.getId().equals(otxo.getAmount().getTokenId()))
+                .collect(Collectors.toSet());
+    }
+
+    /**
+     * @return all account TxOuts at the particular block count, see
+     * {@link AccountActivity#getBlockCount}
+     */
+    @NonNull
+    public Set<OwnedTxOut> getAllTokenTxOuts() {
+        Logger.i(TAG, "GetAllTxOuts", null,
+                "txOuts count:", txOuts.size());
         return txOuts;
     }
+
 }

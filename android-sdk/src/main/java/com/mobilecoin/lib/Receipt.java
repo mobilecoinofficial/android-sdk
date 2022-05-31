@@ -178,7 +178,7 @@ public final class Receipt {
     @Nullable
     public OwnedTxOut fetchOwnedTxOut(@NonNull MobileCoinClient mobileCoinClient) throws NetworkException,
             InvalidFogResponse, AttestationException, FogSyncException {
-        return mobileCoinClient.getAccountActivity().getAllTxOuts().stream()
+        return mobileCoinClient.getAccountActivity().getAllTokenTxOuts().stream()
                 .filter(txOut -> txOut.getPublicKey().equals(getPublicKey()))
                 .findFirst()
                 .orElse(null);

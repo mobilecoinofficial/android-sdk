@@ -456,7 +456,7 @@ public class MobileCoinClientTest {
         UnsignedLong storeBlockCount = store.getCurrentBlockIndex().add(UnsignedLong.ONE);
 
         Set<OwnedTxOut> private_api_tx_outs = store.getSyncedTxOuts();
-        Set<OwnedTxOut> public_api_tx_outs = accountActivity.getAllTxOuts();
+        Set<OwnedTxOut> public_api_tx_outs = accountActivity.getAllTokenTxOuts();
         mobileCoinClient.shutdown();
 
         if (!private_api_tx_outs.equals(public_api_tx_outs)) {
@@ -498,7 +498,7 @@ public class MobileCoinClientTest {
             // verify input key images corresponding to owned txOuts
             AccountActivity activity = senderClient.getAccountActivity();
             Set<KeyImage> keyImages = pending.getTransaction().getKeyImages();
-            Set<KeyImage> matches = activity.getAllTxOuts().stream()
+            Set<KeyImage> matches = activity.getAllTokenTxOuts().stream()
                     .map(OwnedTxOut::getKeyImage)
                     .filter(keyImages::contains)
                     .collect(Collectors.toSet());
@@ -514,7 +514,7 @@ public class MobileCoinClientTest {
             Assert.assertEquals("Receipt amount must be valid", receivedTxOut.getValue(), amount);
             AccountActivity recipientActivity = recipientClient.getAccountActivity();
             Assert.assertTrue("Recipient activity must contain received TxOut",
-                    recipientActivity.getAllTxOuts().contains(receivedTxOut));
+                    recipientActivity.getAllTokenTxOuts().contains(receivedTxOut));
         } finally {
             senderClient.shutdown();
             recipientClient.shutdown();
