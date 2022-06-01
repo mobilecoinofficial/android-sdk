@@ -85,7 +85,7 @@ public class TokenIdTest {
                 .reduce(Amount::add).get();
         assertEquals(new Amount(new BigInteger("4325"), UnsignedLong.TEN), tokenIdTenTotal);
 
-        // Filtering byt token ID 11 should return no OwnedTxOuts
+        // Filtering by token ID 11 should return no OwnedTxOuts
         assertFalse(client.getUnspentTxOuts(UnsignedLong.TEN.add(UnsignedLong.ONE)).stream()
                 .map(OwnedTxOut::getAmount)
                 .reduce(Amount::add).isPresent());
