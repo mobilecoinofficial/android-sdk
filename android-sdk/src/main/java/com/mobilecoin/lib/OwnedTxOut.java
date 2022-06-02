@@ -32,7 +32,7 @@ public class OwnedTxOut implements Parcelable {
     private final static String TAG = OwnedTxOut.class.getName();
 
     // Bump serial version and read/write code if fields change
-    private static final long serialVersionUID = 3L;
+    private static final long serialVersionUID = 4L;
 
     //  The global index of this TxOut in the entire block chain.
     private final UnsignedLong txOutGlobalIndex;
@@ -79,9 +79,8 @@ public class OwnedTxOut implements Parcelable {
                             .build();
             txOutTargetKey = RistrettoPublic.fromProtoBufObject(txOutTargetKeyProto);
             long maskedValue = txOutRecord.getTxOutAmountMaskedValue();
-            RistrettoPublic txOutSharedSecret =
-                Util.getSharedSecret(accountKey.getViewKey(), txOutPublicKey);
-            MaskedAmount maskedAmount = new MaskedAmount(txOutSharedSecret, maskedValue);
+            RistrettoPublic sharedSecret = Util.getSharedSecret(accountKey.getViewKey(), txOutPublicKey);
+            MaskedAmount maskedAmount = new MaskedAmount(sharedSecret, maskedValue);
             value = maskedAmount.unmaskAmount(
                     accountKey.getViewKey(),
                     txOutPublicKey
@@ -158,6 +157,11 @@ public class OwnedTxOut implements Parcelable {
     @NonNull
     public RistrettoPublic getTargetKey() {
         return txOutTargetKey;
+    }
+
+    @NonNull
+    public RistrettoPublic getSharedSecret(AccountKey accountKey) throws TransactionBuilderException {
+        return Util.getSharedSecret(accountKey.getViewKey(), txOutPublicKey);
     }
 
     public synchronized boolean isSpent(@NonNull UnsignedLong atIndex) {
