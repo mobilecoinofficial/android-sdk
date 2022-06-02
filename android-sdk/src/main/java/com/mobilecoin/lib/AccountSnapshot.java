@@ -67,14 +67,14 @@ public final class AccountSnapshot {
     @NonNull
     @Deprecated
     public Balance getBalance() {
-        return getBalance(KnownTokenId.MOB.getId());
+        return getBalance(TokenId.MOB);
     }
 
     /**
      * Computes the account's balance as it was at the snapshot's block index
      */
     @NonNull
-    public Balance getBalance(UnsignedLong tokenId) {
+    public Balance getBalance(TokenId tokenId) {
         Logger.i(TAG, "Getting balance");
         BigInteger value = BigInteger.ZERO;
         for (OwnedTxOut txOut : txOuts) {
@@ -93,8 +93,8 @@ public final class AccountSnapshot {
     /**
      * Computes the account's balances
      */
-    public Map<UnsignedLong, Balance> getBalances() {
-        HashMap<UnsignedLong, Balance> balances = new HashMap<UnsignedLong, Balance>();
+    public Map<TokenId, Balance> getBalances() {
+        HashMap<TokenId, Balance> balances = new HashMap<TokenId, Balance>();
         for(OwnedTxOut otxo : txOuts) {
             //TODO: on API level 24, we can use getOrDefault to simplify the logic here
             Balance balance = balances.get(otxo.getAmount().getTokenId());
@@ -219,7 +219,7 @@ public final class AccountSnapshot {
     @Deprecated
     @NonNull
     public BigInteger getTransferableAmount(@NonNull BigInteger minimumTxFee) {
-        return getTransferableAmount(new Amount(minimumTxFee, KnownTokenId.MOB.getId())).getValue();
+        return getTransferableAmount(new Amount(minimumTxFee, TokenId.MOB)).getValue();
     }
 
     /**
@@ -252,18 +252,18 @@ public final class AccountSnapshot {
      * send the transaction {@link FragmentedAccountException} will be thrown. The account needs to
      * be defragmented in order to send the specified amount. See {@link MobileCoinAccountClient#defragmentAccount}
      *
-     * @param amount       an amount value in picoMob
+     * @param amountPicoMOB       an amount value in picoMob
      * @param minimumTxFee minimum transaction fee, see
      *                     {@link MobileCoinClient#getOrFetchMinimumTxFee}
      */
     @Deprecated
     @NonNull
-    public BigInteger estimateTotalFee(@NonNull BigInteger amount,
+    public BigInteger estimateTotalFee(@NonNull BigInteger amountPicoMOB,
                                        @NonNull BigInteger minimumTxFee
     ) throws InsufficientFundsException {
         return estimateTotalFee(
-                new Amount(amount, KnownTokenId.MOB.getId()),
-                new Amount(minimumTxFee, KnownTokenId.MOB.getId())
+                new Amount(amountPicoMOB, TokenId.MOB),
+                new Amount(minimumTxFee, TokenId.MOB)
         ).getValue();
     }
 
@@ -318,8 +318,8 @@ public final class AccountSnapshot {
             TransactionBuilderException, FogReportException {
         return prepareTransaction(
                 recipient,
-                new Amount(amountPicoMOB, KnownTokenId.MOB.getId()),
-                new Amount(feePicoMOB, KnownTokenId.MOB.getId()),
+                new Amount(amountPicoMOB, TokenId.MOB),
+                new Amount(feePicoMOB, TokenId.MOB),
                 TxOutMemoBuilder.createDefaultRTHMemoBuilder()
         );
     }

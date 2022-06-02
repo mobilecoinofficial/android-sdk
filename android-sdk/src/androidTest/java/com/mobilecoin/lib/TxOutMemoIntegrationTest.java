@@ -73,11 +73,11 @@ public class TxOutMemoIntegrationTest {
     TxOutMemoBuilder txOutMemoBuilder = TxOutMemoBuilder
         .createSenderAndDestinationRTHMemoBuilder(senderAccountKey);
     TxOut realTxOut = txOuts.get(realIndex);
-    Amount fee = new Amount(BigInteger.ONE, KnownTokenId.MOB.getId());
+    Amount fee = new Amount(BigInteger.ONE, TokenId.MOB);
     transactionBuilder = new TransactionBuilder(fogResolver,
             txOutMemoBuilder,
             MEMO_BLOCK_VERSION,
-            KnownTokenId.MOB.getId(),
+            TokenId.MOB,
             fee
     );
 
@@ -129,12 +129,12 @@ public class TxOutMemoIntegrationTest {
   public void buildTransaction_senderAndDestinationMemoBuilder_buildsCorrectDestinationMemo() throws Exception {
     TxOutMemoBuilder txOutMemoBuilder = TxOutMemoBuilder
         .createSenderAndDestinationRTHMemoBuilder(senderAccountKey);
-    Amount fee = new Amount(BigInteger.ONE, KnownTokenId.MOB.getId());
+    Amount fee = new Amount(BigInteger.ONE, TokenId.MOB);
     transactionBuilder = new TransactionBuilder(
             fogResolver,
             txOutMemoBuilder,
             MEMO_BLOCK_VERSION,
-            KnownTokenId.MOB.getId(),
+            TokenId.MOB,
             fee
     );
 
@@ -193,12 +193,12 @@ public class TxOutMemoIntegrationTest {
     TxOutMemoBuilder txOutMemoBuilder = TxOutMemoBuilder
         .createSenderPaymentRequestAndDestinationRTHMemoBuilder(senderAccountKey, paymentRequestId);
     TxOut realTxOut = txOuts.get(realIndex);
-    Amount fee = new Amount(BigInteger.ONE, KnownTokenId.MOB.getId());
+    Amount fee = new Amount(BigInteger.ONE, TokenId.MOB);
     transactionBuilder = new TransactionBuilder(
             fogResolver,
             txOutMemoBuilder,
             MEMO_BLOCK_VERSION,
-            KnownTokenId.MOB.getId(),
+            TokenId.MOB,
             fee
           );
 
@@ -253,12 +253,12 @@ public class TxOutMemoIntegrationTest {
     TxOutMemoBuilder txOutMemoBuilder = TxOutMemoBuilder
             .createSenderAndDestinationRTHMemoBuilder(senderAccountKey);
     TxOut realTxOut = txOuts.get(realIndex);
-    Amount fee = new Amount(BigInteger.ONE, KnownTokenId.MOB.getId());
+    Amount fee = new Amount(BigInteger.ONE, TokenId.MOB);
     transactionBuilder = new TransactionBuilder(
             fogResolver,
             txOutMemoBuilder,
             MEMO_BLOCK_VERSION - 1,
-            KnownTokenId.MOB.getId(),
+            TokenId.MOB,
             fee
     );
 

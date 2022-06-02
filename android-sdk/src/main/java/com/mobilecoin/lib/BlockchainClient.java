@@ -44,15 +44,15 @@ class BlockchainClient extends AnyClient {
      * @param tokenId the token ID for which to fetch the minimum fee
      */
     @NonNull
-    Amount getOrFetchMinimumFee(@NonNull UnsignedLong tokenId) throws NetworkException {
+    Amount getOrFetchMinimumFee(@NonNull TokenId tokenId) throws NetworkException {
         ConsensusCommon.LastBlockInfoResponse response = getOrFetchLastBlockInfo();
-        if((!tokenId.equals(KnownTokenId.MOB.getId())) && (response.getNetworkBlockVersion() < TOKEN_ID_BLOCK_VERSION)) {
+        if((!tokenId.equals(TokenId.MOB)) && (response.getNetworkBlockVersion() < TOKEN_ID_BLOCK_VERSION)) {
             throw(new IllegalArgumentException("Network block version does not support different tokens"));
         }
         long minimumFeeBits = response.getMobMinimumFee();
         if(response.getNetworkBlockVersion() >= 1) {//Needed for compatibility with old networks
             Long minFeeLookup;
-            if((minFeeLookup = response.getMinimumFeesMap().get(tokenId.longValue())) == null) {
+            if((minFeeLookup = response.getMinimumFeesMap().get(tokenId.getId().longValue())) == null) {
                 throw new IllegalArgumentException("Invalid Token ID");
             }
             minimumFeeBits = minFeeLookup;

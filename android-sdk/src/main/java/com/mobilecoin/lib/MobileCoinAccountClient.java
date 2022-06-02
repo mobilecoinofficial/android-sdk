@@ -63,13 +63,13 @@ public interface MobileCoinAccountClient {
    * Retrieves {@code AccountKey}'s balance of a specified token.
    */
   @NonNull
-  Balance getBalance(UnsignedLong tokenId) throws AttestationException, InvalidFogResponse, NetworkException, FogSyncException;
+  Balance getBalance(TokenId tokenId) throws AttestationException, InvalidFogResponse, NetworkException, FogSyncException;
 
   /**
    * Retrieves {@code AccountKey}'s balance for every discovered token.
    */
   @NonNull
-  Map<UnsignedLong, Balance> getBalances() throws AttestationException, InvalidFogResponse, NetworkException, FogSyncException;
+  Map<TokenId, Balance> getBalances() throws AttestationException, InvalidFogResponse, NetworkException, FogSyncException;
 
   /**
    * Returns whether the defragmentation is required on the active account in order to send the

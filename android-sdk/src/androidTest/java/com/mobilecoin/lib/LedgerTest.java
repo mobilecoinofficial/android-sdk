@@ -65,7 +65,7 @@ public class LedgerTest {
         // randomize the amount for each test run, up to a 100 picoMob
         Amount amount = new Amount(
                 BigInteger.valueOf(Math.abs(new SecureRandom().nextInt() % 100) + 1),
-                KnownTokenId.MOB.getId()
+                TokenId.MOB
         );
         Amount minimumFee = senderClient.estimateTotalFee(
                 amount

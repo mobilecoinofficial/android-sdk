@@ -33,7 +33,7 @@ public interface MobileCoinTransactionClient {
    * Calculate the total transferable amount excluding all the required fees for such transfer.
    */
   @NonNull
-  Amount getTransferableAmount(@NonNull UnsignedLong tokenId) throws NetworkException,
+  Amount getTransferableAmount(@NonNull TokenId tokenId) throws NetworkException,
           InvalidFogResponse, AttestationException, FogSyncException;
 
   /**
@@ -148,7 +148,7 @@ public interface MobileCoinTransactionClient {
    * Fetches or returns the cached minimum transaction fee.
    */
   @NonNull
-  Amount getOrFetchMinimumTxFee(@NonNull UnsignedLong tokenId) throws NetworkException;
+  Amount getOrFetchMinimumTxFee(@NonNull TokenId tokenId) throws NetworkException;
 
 }
 

@@ -132,7 +132,7 @@ public class OwnedTxOut implements Parcelable {
      */
     @Deprecated
     @NonNull
-    public UnsignedLong getTokenId() {
+    public TokenId getTokenId() {
         return amount.getTokenId();
     }
 

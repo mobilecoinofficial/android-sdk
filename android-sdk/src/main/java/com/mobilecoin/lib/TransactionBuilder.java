@@ -21,7 +21,7 @@ final class TransactionBuilder extends Native {
         @NonNull FogResolver fogResolver,
         @NonNull TxOutMemoBuilder txOutMemoBuilder,
         int blockVersion,
-        @NonNull UnsignedLong tokenId,
+        @NonNull TokenId tokenId,
         @NonNull Amount fee
     ) throws FogReportException {
         try {
@@ -29,7 +29,7 @@ final class TransactionBuilder extends Native {
                     fogResolver,
                     txOutMemoBuilder,
                     blockVersion,
-                    tokenId.longValue(),
+                    tokenId.getId().longValue(),
                     fee.getValue().longValue()
             );
         } catch (Exception exception) {

@@ -14,6 +14,7 @@ import androidx.annotation.NonNull;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 
 import com.mobilecoin.lib.exceptions.InvalidTransactionException;
+import com.mobilecoin.lib.log.Logger;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -32,21 +33,22 @@ public class TokenIdTest {
  ********************************************************************
  */
 
+    //Not using TokenId.MOB because test should be valid regardless of its ID
     @Test
     public void testGetUnspentTxOuts() throws Exception {
         TxOutStore txOutStore = mock(TxOutStore.class);
         doNothing().when(txOutStore).refresh(any(), any(), any());
         Set<OwnedTxOut> unspentTxOuts = new HashSet<OwnedTxOut>();
 
-        unspentTxOuts.add(createMockTxOut(new Amount(BigInteger.TEN, UnsignedLong.ZERO)));
-        unspentTxOuts.add(createMockTxOut(new Amount(BigInteger.ONE, UnsignedLong.ZERO)));
-        unspentTxOuts.add(createMockTxOut(new Amount(BigInteger.ZERO, UnsignedLong.ZERO)));
-        unspentTxOuts.add(createMockTxOut(new Amount(new BigInteger("230"), KnownTokenId.MOB.getId())));
+        unspentTxOuts.add(createMockTxOut(new Amount(BigInteger.TEN, TokenId.from(UnsignedLong.ZERO))));
+        unspentTxOuts.add(createMockTxOut(new Amount(BigInteger.ONE, TokenId.from(UnsignedLong.ZERO))));
+        unspentTxOuts.add(createMockTxOut(new Amount(BigInteger.ZERO, TokenId.from(UnsignedLong.ZERO))));
+        unspentTxOuts.add(createMockTxOut(new Amount(new BigInteger("230"), TokenId.from(UnsignedLong.ZERO))));
 
-        unspentTxOuts.add(createMockTxOut(new Amount(BigInteger.TEN, UnsignedLong.ONE)));
-        unspentTxOuts.add(createMockTxOut(new Amount(BigInteger.ONE, UnsignedLong.ONE)));
+        unspentTxOuts.add(createMockTxOut(new Amount(BigInteger.TEN, TokenId.from(UnsignedLong.ONE))));
+        unspentTxOuts.add(createMockTxOut(new Amount(BigInteger.ONE, TokenId.from(UnsignedLong.ONE))));
 
-        unspentTxOuts.add(createMockTxOut(new Amount(new BigInteger("4325"), UnsignedLong.TEN)));
+        unspentTxOuts.add(createMockTxOut(new Amount(new BigInteger("4325"), TokenId.from(UnsignedLong.TEN))));
 
         when(txOutStore.getUnspentTxOuts()).thenReturn(unspentTxOuts);
 
@@ -65,33 +67,34 @@ public class TokenIdTest {
         );
 
         assertEquals(client.getAllUnspentTxOuts().size(), 7);
-        assertEquals(client.getUnspentTxOuts(UnsignedLong.ZERO).size(), 4);
-        assertEquals(client.getUnspentTxOuts(UnsignedLong.ONE).size(), 2);
-        assertEquals(client.getUnspentTxOuts(UnsignedLong.TEN).size(), 1);
-        assertEquals(client.getUnspentTxOuts(UnsignedLong.fromLongBits(37)).size(), 0);
+        assertEquals(client.getUnspentTxOuts(TokenId.from(UnsignedLong.ZERO)).size(), 4);
+        assertEquals(client.getUnspentTxOuts(TokenId.from(UnsignedLong.ONE)).size(), 2);
+        assertEquals(client.getUnspentTxOuts(TokenId.from(UnsignedLong.TEN)).size(), 1);
+        assertEquals(client.getUnspentTxOuts(TokenId.from(UnsignedLong.fromLongBits(37))).size(), 0);
 
-        Amount tokenIdZeroTotal = client.getUnspentTxOuts(UnsignedLong.ZERO).stream()
+        Amount tokenIdZeroTotal = client.getUnspentTxOuts(TokenId.from(UnsignedLong.ZERO)).stream()
                 .map(OwnedTxOut::getAmount)
                 .reduce(Amount::add).get();
-        assertEquals(new Amount(new BigInteger("241"), UnsignedLong.ZERO), tokenIdZeroTotal);
+        assertEquals(new Amount(new BigInteger("241"), TokenId.from(UnsignedLong.ZERO)), tokenIdZeroTotal);
 
-        Amount tokenIdOneTotal = client.getUnspentTxOuts(UnsignedLong.ONE).stream()
+        Amount tokenIdOneTotal = client.getUnspentTxOuts(TokenId.from(UnsignedLong.ONE)).stream()
                 .map(OwnedTxOut::getAmount)
                 .reduce(Amount::add).get();
-        assertEquals(new Amount(new BigInteger("11"), UnsignedLong.ONE), tokenIdOneTotal);
+        assertEquals(new Amount(new BigInteger("11"), TokenId.from(UnsignedLong.ONE)), tokenIdOneTotal);
 
-        Amount tokenIdTenTotal = client.getUnspentTxOuts(UnsignedLong.TEN).stream()
+        Amount tokenIdTenTotal = client.getUnspentTxOuts(TokenId.from(UnsignedLong.TEN)).stream()
                 .map(OwnedTxOut::getAmount)
                 .reduce(Amount::add).get();
-        assertEquals(new Amount(new BigInteger("4325"), UnsignedLong.TEN), tokenIdTenTotal);
+        assertEquals(new Amount(new BigInteger("4325"), TokenId.from(UnsignedLong.TEN)), tokenIdTenTotal);
 
         // Filtering by token ID 11 should return no OwnedTxOuts
-        assertFalse(client.getUnspentTxOuts(UnsignedLong.TEN.add(UnsignedLong.ONE)).stream()
+        assertFalse(client.getUnspentTxOuts(TokenId.from(UnsignedLong.TEN.add(UnsignedLong.ONE))).stream()
                 .map(OwnedTxOut::getAmount)
                 .reduce(Amount::add).isPresent());
 
     }
 
+    //Not using TokenId.MOB because test should be valid regardless of its ID
     @Test
     public void getBalancesUnitTest() throws Exception {
         TxOutStore txOutStore = mock(TxOutStore.class);
@@ -99,23 +102,23 @@ public class TokenIdTest {
         doNothing().when(txOutStore).refresh(any(), any(), any());
         Set<OwnedTxOut> unspentTxOuts = new HashSet<OwnedTxOut>();
 
-        unspentTxOuts.add(createMockTxOut(new Amount(BigInteger.TEN, UnsignedLong.ZERO)));
-        unspentTxOuts.add(createMockTxOut(new Amount(BigInteger.ONE, UnsignedLong.ZERO)));
-        unspentTxOuts.add(createMockTxOut(new Amount(BigInteger.ZERO, UnsignedLong.ZERO)));
-        unspentTxOuts.add(createMockTxOut(new Amount(new BigInteger("230"), KnownTokenId.MOB.getId())));
-        unspentTxOuts.add(createMockTxOut(new Amount(new BigInteger("4325512"), KnownTokenId.MOB.getId())));
-        unspentTxOuts.add(createMockTxOut(new Amount(new BigInteger("69238"), KnownTokenId.MOB.getId())));
+        unspentTxOuts.add(createMockTxOut(new Amount(BigInteger.TEN, TokenId.from(UnsignedLong.ZERO))));
+        unspentTxOuts.add(createMockTxOut(new Amount(BigInteger.ONE, TokenId.from(UnsignedLong.ZERO))));
+        unspentTxOuts.add(createMockTxOut(new Amount(BigInteger.ZERO, TokenId.from(UnsignedLong.ZERO))));
+        unspentTxOuts.add(createMockTxOut(new Amount(new BigInteger("230"), TokenId.from(UnsignedLong.ZERO))));
+        unspentTxOuts.add(createMockTxOut(new Amount(new BigInteger("4325512"), TokenId.from(UnsignedLong.ZERO))));
+        unspentTxOuts.add(createMockTxOut(new Amount(new BigInteger("69238"), TokenId.from(UnsignedLong.ZERO))));
 
-        unspentTxOuts.add(createMockTxOut(new Amount(BigInteger.TEN, UnsignedLong.ONE)));
-        unspentTxOuts.add(createMockTxOut(new Amount(BigInteger.ONE, UnsignedLong.ONE)));
-        unspentTxOuts.add(createMockTxOut(new Amount(BigInteger.TEN, UnsignedLong.ONE)));
-        unspentTxOuts.add(createMockTxOut(new Amount(BigInteger.TEN, UnsignedLong.ONE)));
-        unspentTxOuts.add(createMockTxOut(new Amount(new BigInteger("53423"), UnsignedLong.ONE)));
+        unspentTxOuts.add(createMockTxOut(new Amount(BigInteger.TEN, TokenId.from(UnsignedLong.ONE))));
+        unspentTxOuts.add(createMockTxOut(new Amount(BigInteger.ONE, TokenId.from(UnsignedLong.ONE))));
+        unspentTxOuts.add(createMockTxOut(new Amount(BigInteger.TEN, TokenId.from(UnsignedLong.ONE))));
+        unspentTxOuts.add(createMockTxOut(new Amount(BigInteger.TEN, TokenId.from(UnsignedLong.ONE))));
+        unspentTxOuts.add(createMockTxOut(new Amount(new BigInteger("53423"), TokenId.from(UnsignedLong.ONE))));
 
-        unspentTxOuts.add(createMockTxOut(new Amount(new BigInteger("6534"), UnsignedLong.TEN)));
-        unspentTxOuts.add(createMockTxOut(new Amount(BigInteger.TEN, UnsignedLong.TEN)));
-        unspentTxOuts.add(createMockTxOut(new Amount(new BigInteger("10975"), UnsignedLong.TEN)));
-        unspentTxOuts.add(createMockTxOut(new Amount(new BigInteger("9572983"), UnsignedLong.TEN)));
+        unspentTxOuts.add(createMockTxOut(new Amount(new BigInteger("6534"), TokenId.from(UnsignedLong.TEN))));
+        unspentTxOuts.add(createMockTxOut(new Amount(BigInteger.TEN, TokenId.from(UnsignedLong.TEN))));
+        unspentTxOuts.add(createMockTxOut(new Amount(new BigInteger("10975"), TokenId.from(UnsignedLong.TEN))));
+        unspentTxOuts.add(createMockTxOut(new Amount(new BigInteger("9572983"), TokenId.from(UnsignedLong.TEN))));
 
         when(txOutStore.getUnspentTxOuts()).thenReturn(unspentTxOuts);
 
@@ -132,33 +135,34 @@ public class TokenIdTest {
                 null,
                 null
         );
-        Map<UnsignedLong, Balance> client1Balances = client.getBalances();
-        for(Map.Entry<UnsignedLong, Balance> entry : client1Balances.entrySet()) {
+        Map<TokenId, Balance> client1Balances = client.getBalances();
+        for(Map.Entry<TokenId, Balance> entry : client1Balances.entrySet()) {
             assertEquals(entry.getValue().getValue(), client.getBalance(entry.getKey()).getValue());
         }
 
-        Amount tokenIdZeroTotal = client.getUnspentTxOuts(UnsignedLong.ZERO).stream()
+        Amount tokenIdZeroTotal = client.getUnspentTxOuts(TokenId.from(UnsignedLong.ZERO)).stream()
                 .map(OwnedTxOut::getAmount)
                 .reduce(Amount::add).get();
-        assertEquals(new Amount(new BigInteger("4394991"), UnsignedLong.ZERO), tokenIdZeroTotal);
+        assertEquals(new Amount(new BigInteger("4394991"), TokenId.from(UnsignedLong.ZERO)), tokenIdZeroTotal);
 
-        Amount tokenIdOneTotal = client.getUnspentTxOuts(UnsignedLong.ONE).stream()
+        Amount tokenIdOneTotal = client.getUnspentTxOuts(TokenId.from(UnsignedLong.ONE)).stream()
                 .map(OwnedTxOut::getAmount)
                 .reduce(Amount::add).get();
-        assertEquals(new Amount(new BigInteger("53454"), UnsignedLong.ONE), tokenIdOneTotal);
+        assertEquals(new Amount(new BigInteger("53454"), TokenId.from(UnsignedLong.ONE)), tokenIdOneTotal);
 
-        Amount tokenIdTenTotal = client.getUnspentTxOuts(UnsignedLong.TEN).stream()
+        Amount tokenIdTenTotal = client.getUnspentTxOuts(TokenId.from(UnsignedLong.TEN)).stream()
                 .map(OwnedTxOut::getAmount)
                 .reduce(Amount::add).get();
-        assertEquals(new Amount(new BigInteger("9590502"), UnsignedLong.TEN), tokenIdTenTotal);
+        assertEquals(new Amount(new BigInteger("9590502"), TokenId.from(UnsignedLong.TEN)), tokenIdTenTotal);
 
         // Filtering byt token ID 11 should return no OwnedTxOuts
-        assertFalse(client.getUnspentTxOuts(UnsignedLong.TEN.add(UnsignedLong.ONE)).stream()
+        assertFalse(client.getUnspentTxOuts(TokenId.from(UnsignedLong.TEN.add(UnsignedLong.ONE))).stream()
                 .map(OwnedTxOut::getAmount)
                 .reduce(Amount::add).isPresent());
 
     }
 
+    //Not using TokenId.MOB because test should be valid regardless of its ID
     @Test
     public void testMixedTransactionFails() throws Exception {
         MobileCoinClient client = new MobileCoinClient(
@@ -177,8 +181,8 @@ public class TokenIdTest {
         try {
             client.prepareTransaction(
                     null,
-                    new Amount(BigInteger.TEN, UnsignedLong.ZERO),
-                    new Amount(BigInteger.ONE, UnsignedLong.ONE),
+                    new Amount(BigInteger.TEN, TokenId.from(UnsignedLong.ZERO)),
+                    new Amount(BigInteger.ONE, TokenId.from(UnsignedLong.ONE)),
                     null
             );
             fail("Mixed transactions should fail.");
@@ -186,8 +190,8 @@ public class TokenIdTest {
         try {
             new AccountSnapshot(null, null, null)
                     .prepareTransaction(null,
-                            new Amount(BigInteger.TEN, UnsignedLong.ZERO),
-                            new Amount(BigInteger.ONE, UnsignedLong.ONE),
+                            new Amount(BigInteger.TEN, TokenId.from(UnsignedLong.ZERO)),
+                            new Amount(BigInteger.ONE, TokenId.from(UnsignedLong.ONE)),
                             null
                     );
             fail("Mixed transactions should fail.");
@@ -205,8 +209,8 @@ public class TokenIdTest {
         MobileCoinClient client = MobileCoinClientBuilder.newBuilder()
                 .setAccountKey(createAccountKeyFromMnemonic(ACCOUNT_WITH_MOBUSD_1))
                 .build();
-        Balance mobBalance = client.getBalance(KnownTokenId.MOB.getId());
-        Balance mobUsdBalance = client.getBalance(UnsignedLong.ONE);//TODO: Update with KnownTokenId
+        Balance mobBalance = client.getBalance(TokenId.MOB);
+        Balance mobUsdBalance = client.getBalance(TokenId.from(UnsignedLong.ONE));//TODO: Update with KnownTokenId
         assertTrue("0 MOB balance",
                 mobBalance.getValue().compareTo(BigInteger.ZERO) > 0);
         assertTrue("0 MOB USD balance",
@@ -222,12 +226,12 @@ public class TokenIdTest {
         MobileCoinClient client2 = MobileCoinClientBuilder.newBuilder()
                 .setAccountKey(createAccountKeyFromMnemonic(ACCOUNT_WITH_MOBUSD_2))
                 .build();
-        Map<UnsignedLong, Balance> client1Balances = client1.getBalances();
-        for(Map.Entry<UnsignedLong, Balance> entry : client1Balances.entrySet()) {
+        Map<TokenId, Balance> client1Balances = client1.getBalances();
+        for(Map.Entry<TokenId, Balance> entry : client1Balances.entrySet()) {
             assertEquals(entry.getValue().getValue(), client1.getBalance(entry.getKey()).getValue());
         }
-        Map<UnsignedLong, Balance> client2Balances = client2.getBalances();
-        for(Map.Entry<UnsignedLong, Balance> entry : client2Balances.entrySet()) {
+        Map<TokenId, Balance> client2Balances = client2.getBalances();
+        for(Map.Entry<TokenId, Balance> entry : client2Balances.entrySet()) {
             assertEquals(entry.getValue().getValue(), client2.getBalance(entry.getKey()).getValue());
         }
         client1.shutdown();
@@ -244,12 +248,12 @@ public class TokenIdTest {
                 .build();
 
         //TODO: update with KnownTokenId
-        Balance senderMobBalanceBefore = senderClient.getBalance(KnownTokenId.MOB.getId());
-        Balance senderMobUsdBalanceBefore = senderClient.getBalance(UnsignedLong.ONE);
-        Balance recipientMobBalanceBefore = recipientClient.getBalance(KnownTokenId.MOB.getId());
-        Balance recipientMobUsdBalanceBefore = recipientClient.getBalance(UnsignedLong.ONE);
+        Balance senderMobBalanceBefore = senderClient.getBalance(TokenId.MOB);
+        Balance senderMobUsdBalanceBefore = senderClient.getBalance(TokenId.from(UnsignedLong.ONE));
+        Balance recipientMobBalanceBefore = recipientClient.getBalance(TokenId.MOB);
+        Balance recipientMobUsdBalanceBefore = recipientClient.getBalance(TokenId.from(UnsignedLong.ONE));
 
-        Amount amountToSend = new Amount(BigInteger.TEN, UnsignedLong.ONE);//TODO: update with KnownTokenId
+        Amount amountToSend = new Amount(BigInteger.TEN, TokenId.from(UnsignedLong.ONE));//TODO: update with KnownTokenId
         Amount fee = senderClient.estimateTotalFee(amountToSend);
         PendingTransaction pendingTransaction =
             senderClient.prepareTransaction(
@@ -262,10 +266,10 @@ public class TokenIdTest {
         UtilTest.waitForTransactionStatus(senderClient, pendingTransaction.getTransaction());
 
         //TODO: update with KnownTokenId
-        Balance senderMobBalanceAfter = senderClient.getBalance(KnownTokenId.MOB.getId());
-        Balance senderMobUsdBalanceAfter = senderClient.getBalance(UnsignedLong.ONE);
-        Balance recipientMobBalanceAfter = recipientClient.getBalance(KnownTokenId.MOB.getId());
-        Balance recipientMobUsdBalanceAfter = recipientClient.getBalance(UnsignedLong.ONE);
+        Balance senderMobBalanceAfter = senderClient.getBalance(TokenId.MOB);
+        Balance senderMobUsdBalanceAfter = senderClient.getBalance(TokenId.from(UnsignedLong.ONE));
+        Balance recipientMobBalanceAfter = recipientClient.getBalance(TokenId.MOB);
+        Balance recipientMobUsdBalanceAfter = recipientClient.getBalance(TokenId.from(UnsignedLong.ONE));
 
         //Check that MOB USD balances updated and MOB balances didn't
         assertEquals(senderMobBalanceBefore.getValue(), senderMobBalanceAfter.getValue());
@@ -294,11 +298,11 @@ public class TokenIdTest {
                 .build();
         PublicAddress recipientAddress = createAccountKeyFromMnemonic(ACCOUNT_WITH_MOBUSD_2).getPublicAddress();
         //TODO: update with KnownTokenId
-        Amount amountToSend = new Amount(new BigInteger("43252"), UnsignedLong.ONE);
+        Amount amountToSend = new Amount(new BigInteger("43252"), TokenId.from(UnsignedLong.ONE));
         Amount fee = senderClient
                 .estimateTotalFee(amountToSend);
         //TODO: update with KnownTokenId
-        fee = fee.divide(new Amount(BigInteger.TEN, UnsignedLong.ONE));
+        fee = fee.divide(new Amount(BigInteger.TEN, TokenId.from(UnsignedLong.ONE)));
         PendingTransaction pendingTransaction = senderClient.prepareTransaction(
                 recipientAddress,
                 amountToSend,
@@ -326,13 +330,13 @@ public class TokenIdTest {
         AccountSnapshot snapshot = senderClient.getAccountSnapshot();
 
         //TODO: update with KnownTokenId
-        Balance senderMobBalanceBefore = snapshot.getBalance(KnownTokenId.MOB.getId());
-        Balance senderMobUsdBalanceBefore = snapshot.getBalance(UnsignedLong.ONE);
-        Balance recipientMobBalanceBefore = recipientClient.getBalance(KnownTokenId.MOB.getId());
-        Balance recipientMobUsdBalanceBefore = recipientClient.getBalance(UnsignedLong.ONE);
+        Balance senderMobBalanceBefore = snapshot.getBalance(TokenId.MOB);
+        Balance senderMobUsdBalanceBefore = snapshot.getBalance(TokenId.from(UnsignedLong.ONE));
+        Balance recipientMobBalanceBefore = recipientClient.getBalance(TokenId.MOB);
+        Balance recipientMobUsdBalanceBefore = recipientClient.getBalance(TokenId.from(UnsignedLong.ONE));
 
-        Amount amountToSend = new Amount(BigInteger.TEN, UnsignedLong.ONE);//TODO: update with KnownTokenId
-        Amount fee = snapshot.estimateTotalFee(amountToSend, senderClient.getOrFetchMinimumTxFee(UnsignedLong.ONE));
+        Amount amountToSend = new Amount(BigInteger.TEN, TokenId.from(UnsignedLong.ONE));//TODO: update with KnownTokenId
+        Amount fee = snapshot.estimateTotalFee(amountToSend, senderClient.getOrFetchMinimumTxFee(TokenId.from(UnsignedLong.ONE)));
         PendingTransaction pendingTransaction =
                 snapshot.prepareTransaction(
                         recipientClient.getAccountKey().getPublicAddress(),
@@ -344,10 +348,10 @@ public class TokenIdTest {
         UtilTest.waitForTransactionStatus(senderClient, pendingTransaction.getTransaction());
 
         //TODO: update with KnownTokenId
-        Balance senderMobBalanceAfter = senderClient.getBalance(KnownTokenId.MOB.getId());
-        Balance senderMobUsdBalanceAfter = senderClient.getBalance(UnsignedLong.ONE);
-        Balance recipientMobBalanceAfter = recipientClient.getBalance(KnownTokenId.MOB.getId());
-        Balance recipientMobUsdBalanceAfter = recipientClient.getBalance(UnsignedLong.ONE);
+        Balance senderMobBalanceAfter = senderClient.getBalance(TokenId.MOB);
+        Balance senderMobUsdBalanceAfter = senderClient.getBalance(TokenId.from(UnsignedLong.ONE));
+        Balance recipientMobBalanceAfter = recipientClient.getBalance(TokenId.MOB);
+        Balance recipientMobUsdBalanceAfter = recipientClient.getBalance(TokenId.from(UnsignedLong.ONE));
 
         //Check that MOB USD balances updated and MOB balances didn't
         assertEquals(senderMobBalanceBefore.getValue(), senderMobBalanceAfter.getValue());
@@ -373,10 +377,10 @@ public class TokenIdTest {
     public void testClientGetFeeHasCorrectTokenId() throws Exception {
         AccountKey key = createAccountKeyFromMnemonic(ACCOUNT_WITH_MOBUSD_1);
         MobileCoinClient client = MobileCoinClientBuilder.newBuilder().setAccountKey(key).build();
-        Amount amountToSendMOB = new Amount(BigInteger.TEN, KnownTokenId.MOB.getId());
+        Amount amountToSendMOB = new Amount(BigInteger.TEN, TokenId.MOB);
         Amount feeMOB = client.estimateTotalFee(amountToSendMOB);
         assertEquals(amountToSendMOB.getTokenId(), feeMOB.getTokenId());
-        Amount amountToSendMOBUSD = new Amount(BigInteger.TEN, UnsignedLong.ONE);
+        Amount amountToSendMOBUSD = new Amount(BigInteger.TEN, TokenId.from(UnsignedLong.ONE));
         Amount feeMOBUSD = client.estimateTotalFee(amountToSendMOBUSD);
         assertEquals(amountToSendMOBUSD.getTokenId(), feeMOBUSD.getTokenId());
         client.shutdown();
@@ -387,11 +391,11 @@ public class TokenIdTest {
         AccountKey key = createAccountKeyFromMnemonic(ACCOUNT_WITH_MOBUSD_1);
         MobileCoinClient client = MobileCoinClientBuilder.newBuilder().setAccountKey(key).build();
         AccountSnapshot snapshot = client.getAccountSnapshot();
-        Amount amountToSendMOB = new Amount(BigInteger.TEN, KnownTokenId.MOB.getId());
-        Amount feeMOB = snapshot.estimateTotalFee(amountToSendMOB, client.getOrFetchMinimumTxFee(KnownTokenId.MOB.getId()));
+        Amount amountToSendMOB = new Amount(BigInteger.TEN, TokenId.MOB);
+        Amount feeMOB = snapshot.estimateTotalFee(amountToSendMOB, client.getOrFetchMinimumTxFee(TokenId.MOB));
         assertEquals(amountToSendMOB.getTokenId(), feeMOB.getTokenId());
-        Amount amountToSendMOBUSD = new Amount(BigInteger.TEN, UnsignedLong.ONE);
-        Amount feeMOBUSD = snapshot.estimateTotalFee(amountToSendMOBUSD, client.getOrFetchMinimumTxFee(UnsignedLong.ONE));
+        Amount amountToSendMOBUSD = new Amount(BigInteger.TEN, TokenId.from(UnsignedLong.ONE));
+        Amount feeMOBUSD = snapshot.estimateTotalFee(amountToSendMOBUSD, client.getOrFetchMinimumTxFee(TokenId.from(UnsignedLong.ONE)));
         assertEquals(amountToSendMOBUSD.getTokenId(), feeMOBUSD.getTokenId());
         client.shutdown();
     }

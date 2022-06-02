@@ -5,15 +5,13 @@ import android.os.Parcelable;
 
 import androidx.annotation.NonNull;
 
-import com.mobilecoin.api.MobileCoinAPI;
-
 import java.math.BigInteger;
 import java.util.Objects;
 
 public class Amount implements Parcelable, Comparable<Amount> {
 
     private final BigInteger value;
-    private final UnsignedLong tokenId;
+    private final TokenId tokenId;
 
     /**
      * Create an amount with the specified value and token ID
@@ -21,9 +19,21 @@ public class Amount implements Parcelable, Comparable<Amount> {
      * @param value   The value stored in this amount
      * @param tokenId The ID of the token that this amount represents
      */
-    Amount(BigInteger value, UnsignedLong tokenId) {
+    Amount(BigInteger value, TokenId tokenId) {
         this.value = value;
         this.tokenId = tokenId;
+    }
+
+    /**
+     * Create an amount with the specified value and token ID
+     *
+     * @param value   The value stored in this amount
+     * @param tokenId The ID of the token that this amount represents
+     */
+    @Deprecated
+    private Amount(BigInteger value, UnsignedLong tokenId) {// TODO: remove in future versions and update bindings
+        this.value = value;
+        this.tokenId = TokenId.from(tokenId);
     }
 
     /**
@@ -101,7 +111,7 @@ public class Amount implements Parcelable, Comparable<Amount> {
      * @return The token ID of this Amount
      */
     @NonNull
-    public UnsignedLong getTokenId() {
+    public TokenId getTokenId() {
         return this.tokenId;
     }
 
@@ -155,17 +165,7 @@ public class Amount implements Parcelable, Comparable<Amount> {
     @Override
     public String toString() {
         StringBuilder b = new StringBuilder();
-        b.append(this.value.toString()).append(' ');
-        if(
-                this.tokenId.longValue() <= Integer.MAX_VALUE &&
-                        this.tokenId.longValue() >= 0 &&
-                        MobileCoinAPI.KnownTokenId.internalGetVerifier().isInRange((int)this.tokenId.longValue())
-        ) {
-            b.append(MobileCoinAPI.KnownTokenId.forNumber((int)this.tokenId.longValue()).name());
-        }
-        else {
-            b.append("Unknown token(id:").append(this.tokenId).append(')');
-        }
+        b.append(this.value.toString()).append(' ').append(this.tokenId);
         return b.toString();
     }
 

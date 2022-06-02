@@ -51,7 +51,7 @@ public final class AccountActivity {
         Logger.i(TAG, "GetAllTxOuts", null,
                 "txOuts count:", txOuts.size());
         return txOuts.stream()
-                .filter(otxo -> KnownTokenId.MOB.getId().equals(otxo.getAmount().getTokenId()))
+                .filter(otxo -> TokenId.MOB.equals(otxo.getAmount().getTokenId()))
                 .collect(Collectors.toSet());
     }
 

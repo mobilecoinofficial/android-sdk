@@ -58,7 +58,7 @@ public class TxOutStoreTest {
             Assert.fail("UTXO store must contain non-zero TXOs");
         }
 
-        Map<UnsignedLong, Balance> balances = new HashMap<UnsignedLong, Balance>();
+        Map<TokenId, Balance> balances = new HashMap<TokenId, Balance>();
         for(OwnedTxOut otxo : utxos) {
             //TODO: on API level 24, we can use getOrDefault to simplify the logic here
             Balance balance = balances.get(otxo.getAmount().getTokenId());
@@ -83,7 +83,7 @@ public class TxOutStoreTest {
                 restoredStoreSize
         );
 
-        Map<UnsignedLong, Balance> restoredBalances = new HashMap<UnsignedLong, Balance>();
+        Map<TokenId, Balance> restoredBalances = new HashMap<TokenId, Balance>();
         for(OwnedTxOut otxo : restoredUtxos) {
             //TODO: on API level 24, we can use getOrDefault to simplify the logic here
             Balance balance = restoredBalances.get(otxo.getAmount().getTokenId());
