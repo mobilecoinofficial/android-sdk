@@ -78,10 +78,9 @@ public class OwnedTxOut implements Parcelable {
                             .setData(txOutRecord.getTxOutTargetKeyData())
                             .build();
             txOutTargetKey = RistrettoPublic.fromProtoBufObject(txOutTargetKeyProto);
+            RistrettoPublic txOutSharedSecret = Util.getSharedSecret(accountKey.getViewKey(), txOutPublicKey);
             long maskedValue = txOutRecord.getTxOutAmountMaskedValue();
             byte maskedTokenId[] = txOutRecord.getTxOutAmountMaskedTokenId().toByteArray();
-            RistrettoPublic txOutSharedSecret =
-                Util.getSharedSecret(accountKey.getViewKey(), txOutPublicKey);
             MaskedAmount maskedAmount = new MaskedAmount(txOutSharedSecret, maskedValue, maskedTokenId);
             amount = maskedAmount.unmaskAmount(
                     accountKey.getViewKey(),
@@ -176,6 +175,11 @@ public class OwnedTxOut implements Parcelable {
     @NonNull
     public RistrettoPublic getTargetKey() {
         return txOutTargetKey;
+    }
+
+    @NonNull
+    public RistrettoPublic getSharedSecret(AccountKey accountKey) throws TransactionBuilderException {
+        return Util.getSharedSecret(accountKey.getViewKey(), txOutPublicKey);
     }
 
     public synchronized boolean isSpent(@NonNull UnsignedLong atIndex) {
