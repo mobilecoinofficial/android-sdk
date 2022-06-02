@@ -167,7 +167,7 @@ public final class MobileCoinClient implements MobileCoinAccountClient, MobileCo
     }
 
     @VisibleForTesting
-    public MobileCoinClient(
+    MobileCoinClient(
             AccountKey accountKey,
             TxOutStore txOutStore,
             ClientConfig clientConfig,
