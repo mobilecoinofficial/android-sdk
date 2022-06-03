@@ -120,8 +120,8 @@ class FogBlockClient extends AnyClient {
                         .setBlockIndex(block.getIndex())
                         .setTimestamp(block.getTimestamp())
                         .setTxOutGlobalIndex(globalIndexStart + block.getOutputsList().indexOf(txOut))
-                        .setTxOutAmountCommitmentData(txOut.getAmount().getCommitment().getData())
-                        .setTxOutAmountMaskedValue(txOut.getAmount().getMaskedValue())
+                        .setTxOutAmountCommitmentData(txOut.getMaskedAmount().getCommitment().getData())
+                        .setTxOutAmountMaskedValue(txOut.getMaskedAmount().getMaskedValue())
                         .setTxOutPublicKeyData(txOut.getPublicKey().getData())
                         .setTxOutTargetKeyData(txOut.getTargetKey().getData())
                         .build();

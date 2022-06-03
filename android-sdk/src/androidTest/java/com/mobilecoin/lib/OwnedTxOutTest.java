@@ -5,20 +5,15 @@ import static org.junit.Assert.assertEquals;
 import android.os.Parcel;
 import android.util.Log;
 
-import com.mobilecoin.lib.exceptions.AttestationException;
-import com.mobilecoin.lib.exceptions.InvalidFogResponse;
-import com.mobilecoin.lib.exceptions.InvalidUriException;
-import com.mobilecoin.lib.exceptions.NetworkException;
 import com.mobilecoin.lib.util.Hex;
-
-import fog_view.View.TxOutRecord;
 
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
+
+import fog_view.View.TxOutRecord;
 
 @RunWith(JUnit4.class)
 public class OwnedTxOutTest {
@@ -159,7 +154,7 @@ public class OwnedTxOutTest {
   public void testParcelable() throws Exception {
     MobileCoinClient client = MobileCoinClientBuilder.newBuilder().build();
     AccountActivity activity = client.getAccountActivity();
-    for(OwnedTxOut parcelInput : activity.getAllTxOuts()) {
+    for(OwnedTxOut parcelInput : activity.getAllTokenTxOuts()) {
       Parcel parcel = Parcel.obtain();
       parcelInput.writeToParcel(parcel, 0);
       parcel.setDataPosition(0);

@@ -1,166 +1,200 @@
-// Copyright (c) 2020-2021 MobileCoin. All rights reserved.
-
 package com.mobilecoin.lib;
+
+import android.os.Parcel;
+import android.os.Parcelable;
 
 import androidx.annotation.NonNull;
 
-import com.google.protobuf.ByteString;
-import com.mobilecoin.api.MobileCoinAPI;
-import com.mobilecoin.lib.exceptions.AmountDecoderException;
-import com.mobilecoin.lib.log.Logger;
-
 import java.math.BigInteger;
+import java.util.Objects;
 
-/**
- * Encapsulates the abstraction of a native Amount with a JNI link to control the native
- * counterpart.
- */
-final class Amount extends Native {
-    private final static String TAG = Amount.class.getName();
-    private final MobileCoinAPI.Amount protoBufAmount;
+public class Amount implements Parcelable, Comparable<Amount> {
+
+    private final BigInteger value;
+    private final TokenId tokenId;
 
     /**
-     * Constructs native Amount object from the commitment and masked data
+     * Create an amount with the specified value and token ID
      *
-     * @param commitment  A Pedersen commitment {@code v*G + s*H}
-     * @param maskedValue {@code masked_value = value XOR_8 Blake2B(value_mask || shared_secret)}
+     * @param value   The value stored in this amount
+     * @param tokenId The ID of the token that this amount represents
      */
-    Amount(@NonNull byte[] commitment, long maskedValue) throws AmountDecoderException {
-        protoBufAmount = MobileCoinAPI.Amount.newBuilder()
-                .setCommitment(MobileCoinAPI.CompressedRistretto.newBuilder()
-                        .setData(ByteString.copyFrom(commitment)).build())
-                .setMaskedValue(maskedValue).build();
-        try {
-            init_jni(
-                    commitment,
-                    maskedValue
-            );
-        } catch (Exception exception) {
-            AmountDecoderException amountDecoderException = new AmountDecoderException("Unable to" +
-                    " initialize amount object", exception);
-            Util.logException(TAG, amountDecoderException);
-            throw amountDecoderException;
-        }
+    Amount(BigInteger value, TokenId tokenId) {
+        this.value = value;
+        this.tokenId = tokenId;
     }
 
     /**
-     * Constructs native Amount object from the txOutSharedSecret and masked value.
+     * Create an amount with the specified value and token ID
      *
-     * @param txOutSharedSecret  A {@link RistrettoPublic} representing the shared secret.
-     * @param maskedValue {@code masked_value = value XOR_8 Blake2B(value_mask || shared_secret)}
+     * @param value   The value stored in this amount
+     * @param tokenId The ID of the token that this amount represents
      */
-    Amount(@NonNull RistrettoPublic txOutSharedSecret, long maskedValue) throws AmountDecoderException {
-        try {
-            init_jni_with_secret(
-                txOutSharedSecret,
-                maskedValue
-            );
-            byte[] amountBytes = get_bytes();
-            protoBufAmount = MobileCoinAPI.Amount.parseFrom(amountBytes);
-        } catch (Exception exception) {
-            AmountDecoderException amountDecoderException = new AmountDecoderException("Unable to" +
-                " initialize amount object", exception);
-            Util.logException(TAG, amountDecoderException);
-            throw amountDecoderException;
-        }
+    @Deprecated
+    private Amount(BigInteger value, UnsignedLong tokenId) {// TODO: remove in future versions and update bindings
+        this.value = value;
+        this.tokenId = TokenId.from(tokenId);
     }
 
     /**
-     * Constructs native Amount object from the protocol buffer
-     */
-    Amount(@NonNull MobileCoinAPI.Amount amount) throws AmountDecoderException {
-        this(amount.getCommitment().getData().toByteArray(), amount.getMaskedValue());
-    }
-
-    /**
-     * Constructs native Amount object from the protocol buffer
-     */
-    static Amount fromProtoBufObject(@NonNull MobileCoinAPI.Amount protoBuf)
-            throws AmountDecoderException {
-        Logger.i(TAG, "Deserializing amount from protobuf object");
-        return new Amount(protoBuf);
-    }
-
-    /**
-     * Construct and return a new Amount protocol buffer object
+     * Adds this amount to another amount and returns the sum as another amount
+     * If an attempting to add Amounts with different token IDs, an IllegalArgumentException is thrown
+     *
+     * @param addend The amount to add to this amount
+     * @return a new Amount object with the same token ID and a value equal to the sum of the two Amount's values
      */
     @NonNull
-    MobileCoinAPI.Amount toProtoBufObject() {
-        return protoBufAmount;
-    }
-
-    /**
-     * Amount's commitment
-     *
-     * @return A Pedersen commitment {@code v*G + s*H}
-     */
-    @NonNull
-    byte[] getCommitment() {
-        return protoBufAmount.getCommitment().getData().toByteArray();
-    }
-
-    /**
-     * Amount's masked value
-     *
-     * @return {@code masked_value = value XOR_8 Blake2B(value_mask || shared_secret)}
-     */
-    long getMaskedValue() {
-        return protoBufAmount.getMaskedValue();
-    }
-
-    /**
-     * Unmasks the value of the Amount
-     *
-     * @param txPubKey transaction public key
-     * @return unmasked amount of picoMob represented as a BigInteger
-     */
-    @NonNull
-    BigInteger unmaskValue(
-            @NonNull RistrettoPrivate viewKey,
-            @NonNull RistrettoPublic txPubKey
-    ) throws AmountDecoderException {
-        Logger.i(TAG, "Unmasking amount");
-        try {
-            return unmask_value(
-                    viewKey,
-                    txPubKey
-            );
-        } catch (Exception exception) {
-            AmountDecoderException amountDecoderException = new AmountDecoderException("Unable to" +
-                    " unmask the amount", exception);
-            Util.logException(TAG, amountDecoderException);
-            throw amountDecoderException;
+    public Amount add(@NonNull Amount addend) {
+        if(!this.tokenId.equals(addend.tokenId)) {
+            throw new IllegalArgumentException("Unable to add amounts of different tokens");
         }
+        return new Amount(this.getValue().add(addend.getValue()), this.tokenId);
+    }
+
+    /**
+     * Subtracts subtrahend from this amount and returns the difference as another amount
+     * If an attempting to subtract Amounts with different token IDs, an IllegalArgumentException is thrown
+     *
+     * @param subtrahend The amount to subtract from this amount
+     * @return a new Amount object with the same token ID and a value equal to the difference of the two Amount's values
+     */
+    @NonNull
+    public Amount subtract(@NonNull Amount subtrahend) {
+        if(!this.tokenId.equals(subtrahend.tokenId)) {
+            throw new IllegalArgumentException("Unable to subtract amounts of different tokens");
+        }
+        return new Amount(this.getValue().subtract(subtrahend.getValue()), this.tokenId);
+    }
+
+    /**
+     * Multiplies this amount by another amount and returns the product as another amount
+     * If an attempting to multiply Amounts with different token IDs, an IllegalArgumentException is thrown
+     *
+     * @param multiplier The amount to multiply by this amount
+     * @return a new Amount object with the same token ID and a value equal to the product of the two Amount's values
+     */
+    @NonNull
+    public Amount multiply(@NonNull Amount multiplier) {
+        if(!this.tokenId.equals(multiplier.tokenId)) {
+            throw new IllegalArgumentException("Unable to multiply amounts of different tokens");
+        }
+        return new Amount(this.getValue().multiply(multiplier.getValue()), this.tokenId);
+    }
+
+    /**
+     * Divides this amount by another amount and returns the quotient as another amount
+     * If an attempting to divide Amounts with different token IDs, an IllegalArgumentException is thrown
+     *
+     * @param divisor The amount divide this amount by
+     * @return a new Amount object with the same token ID and a value equal to the quotient of the two Amount's values
+     */
+    @NonNull
+    public Amount divide(@NonNull Amount divisor) {
+        if(!this.tokenId.equals(divisor.tokenId)) {
+            throw new IllegalArgumentException("Unable to divide amounts of different tokens");
+        }
+        return new Amount(this.getValue().divide(divisor.getValue()), this.tokenId);
+    }
+
+    /**
+     * Gets the value of this Amount
+     *
+     * @return The value of this Amount
+     */
+    @NonNull
+    public BigInteger getValue() {
+        return this.value;
+    }
+
+    /**
+     * Gets the token ID of this Amount
+     * @return The token ID of this Amount
+     */
+    @NonNull
+    public TokenId getTokenId() {
+        return this.tokenId;
+    }
+
+    /**
+     * Compares this Amount to another Amount
+     * If the specified Amount has a different token ID, an IllegalArgumentException is thrown
+     *
+     * @param o The Amount to compare with
+     * @return -1 if this < o, 0 if this == o, 1 if this > o
+     */
+    @Override
+    public int compareTo(@NonNull Amount o) {
+        if(!this.tokenId.equals(o.tokenId)) {
+            throw new IllegalArgumentException("Unable to compare amounts of different tokens");
+        }
+        return this.value.compareTo(o.getValue());
+    }
+
+    /**
+     * Checks if this Amount is equal to another Object
+     *
+     * @param o The Object to compare to
+     * @return true if the Objects are equal, false otherwise
+     */
+    @Override
+    public boolean equals(Object o) {
+        if(this == o) return true;
+        if(!(o instanceof Amount)) {
+            return false;
+        }
+        Amount that = (Amount)o;
+        return Objects.equals(this.value, that.value) &&
+                Objects.equals(this.tokenId, that.tokenId);
+    }
+
+    /**
+     * Hashes this Amount and returns a 32 bit hash code
+     *
+     * @return a 32 bit hash code of this Amount
+     */
+    @Override
+    public int hashCode() {
+        return Objects.hash((this.value.longValue() >> 1), this.tokenId);
+    }
+
+    /**
+     * Generates a String representation of this Amount
+     * The format of the output is [value] [token ID string]
+     * @return
+     */
+    @Override
+    public String toString() {
+        StringBuilder b = new StringBuilder();
+        b.append(this.value.toString()).append(' ').append(this.tokenId);
+        return b.toString();
+    }
+
+    private Amount(@NonNull Parcel parcel) {
+        value = (BigInteger)parcel.readSerializable();
+        tokenId = parcel.readParcelable(UnsignedLong.class.getClassLoader());
     }
 
     @Override
-    protected void finalize() throws Throwable {
-        Logger.i(TAG, "Finalizing object");
-        if (rustObj != 0) {
-            finalize_jni();
-        }
-        super.finalize();
+    public int describeContents() {
+        return 0;
     }
 
-    /* Native methods */
+    @Override
+    public void writeToParcel(@NonNull Parcel parcel, int flags) {
+        parcel.writeSerializable(value);
+        parcel.writeParcelable(tokenId, flags);
+    }
 
-    @NonNull
-    private native BigInteger unmask_value(
-            @NonNull RistrettoPrivate view_key,
-            @NonNull RistrettoPublic pub_key
-    );
+    public static final Creator<Amount> CREATOR = new Creator<Amount>() {
+        @Override
+        public Amount createFromParcel(@NonNull Parcel parcel) {
+            return new Amount(parcel);
+        }
 
-    private native void init_jni(
-            @NonNull byte[] commitment,
-            long maskedValue
-    );
+        @Override
+        public Amount[] newArray(int length) {
+            return new Amount[length];
+        }
+    };
 
-    private native void init_jni_with_secret(
-        @NonNull RistrettoPublic txOutSharedSecret,
-        long maskedValue
-    );
-
-    private native byte[] get_bytes();
-
-    private native void finalize_jni();
 }

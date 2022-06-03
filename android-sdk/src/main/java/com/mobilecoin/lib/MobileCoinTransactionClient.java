@@ -22,11 +22,38 @@ import java.math.BigInteger;
 public interface MobileCoinTransactionClient {
 
   /**
+   * Calculate the total transferable amount of picoMOB excluding all the required fees for such transfer.
+   */
+  @Deprecated
+  @NonNull
+  BigInteger getTransferableAmount() throws NetworkException,
+          InvalidFogResponse, AttestationException;
+
+  /**
    * Calculate the total transferable amount excluding all the required fees for such transfer.
    */
   @NonNull
-  BigInteger getTransferableAmount() throws NetworkException, InvalidFogResponse,
-      AttestationException;
+  Amount getTransferableAmount(@NonNull TokenId tokenId) throws NetworkException,
+          InvalidFogResponse, AttestationException, FogSyncException;
+
+  /**
+   * Prepares a {@link PendingTransaction} to be executed.
+   *
+   * @param recipient {@link PublicAddress} of the recipient
+   * @param amountPicoMOB    transaction amount in picoMOB
+   * @param feePicoMOB       transaction fee (see {@link MobileCoinClient#estimateTotalFee})
+   * @return {@link PendingTransaction} which encapsulates the {@link Transaction} and {@link
+   * Receipt} objects
+   */
+  @Deprecated
+  @NonNull
+  PendingTransaction prepareTransaction(
+          @NonNull final PublicAddress recipient,
+          @NonNull final BigInteger amountPicoMOB,
+          @NonNull final BigInteger feePicoMOB
+  ) throws InsufficientFundsException, FragmentedAccountException, FeeRejectedException,
+          InvalidFogResponse, AttestationException, NetworkException,
+          TransactionBuilderException, FogReportException;
 
   /**
    * Prepares a {@link PendingTransaction} to be executed.
@@ -41,8 +68,8 @@ public interface MobileCoinTransactionClient {
   @NonNull
   PendingTransaction prepareTransaction(
       @NonNull final PublicAddress recipient,
-      @NonNull final BigInteger amount,
-      @NonNull final BigInteger fee,
+      @NonNull final Amount amount,
+      @NonNull final Amount fee,
       @NonNull TxOutMemoBuilder txOutMemoBuilder
   ) throws InsufficientFundsException, FragmentedAccountException, FeeRejectedException,
           InvalidFogResponse, AttestationException, NetworkException,
@@ -68,7 +95,7 @@ public interface MobileCoinTransactionClient {
   @NonNull
   Receipt.Status getReceiptStatus(@NonNull Receipt receipt)
       throws InvalidFogResponse, NetworkException, AttestationException,
-      InvalidReceiptException;
+      InvalidReceiptException, FogSyncException;
 
   /**
    * Checks the status of the {@link Transaction}. Sender's key is required to decode verification
@@ -81,7 +108,7 @@ public interface MobileCoinTransactionClient {
   @NonNull
   Transaction.Status getTransactionStatus(@NonNull Transaction transaction)
       throws InvalidFogResponse, AttestationException,
-          NetworkException;
+          NetworkException, FogSyncException;
 
   /**
    * Estimates the minimum fee required to send a transaction with the specified amount. The account
@@ -89,18 +116,39 @@ public interface MobileCoinTransactionClient {
    * transaction {@link FragmentedAccountException} will be thrown. The account needs to be
    * defragmented in order to send the specified amount. See {@link MobileCoinAccountClient#defragmentAccount}.
    *
-   * @param amount an amount value in picoMob
+   * @param amountPicoMOB amount to send in picoMOB
+   */
+  @Deprecated
+  @NonNull
+  BigInteger estimateTotalFee(@NonNull BigInteger amountPicoMOB)
+          throws InsufficientFundsException, NetworkException, InvalidFogResponse,
+          AttestationException;
+
+  /**
+   * Estimates the minimum fee required to send a transaction with the specified amount. The account
+   * balance consists of multiple coins, if there are no big enough coins to successfully send the
+   * transaction {@link FragmentedAccountException} will be thrown. The account needs to be
+   * defragmented in order to send the specified amount. See {@link MobileCoinAccountClient#defragmentAccount}.
+   *
+   * @param amount amount to send
    */
   @NonNull
-  BigInteger estimateTotalFee(@NonNull BigInteger amount)
+  Amount estimateTotalFee(@NonNull Amount amount)
       throws InsufficientFundsException, NetworkException, InvalidFogResponse,
       AttestationException, FogSyncException;
+
+  /**
+   * Fetches or returns the cached minimum MOB transaction fee in picoMOB
+   */
+  @Deprecated
+  @NonNull
+  BigInteger getOrFetchMinimumTxFee() throws NetworkException;
 
   /**
    * Fetches or returns the cached minimum transaction fee.
    */
   @NonNull
-  BigInteger getOrFetchMinimumTxFee() throws NetworkException;
+  Amount getOrFetchMinimumTxFee(@NonNull TokenId tokenId) throws NetworkException;
 
 }
 

@@ -1,6 +1,7 @@
 package com.mobilecoin.lib;
 
 import androidx.annotation.NonNull;
+
 import com.mobilecoin.lib.exceptions.TransactionBuilderException;
 
 /**

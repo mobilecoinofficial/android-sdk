@@ -5,6 +5,7 @@ import android.util.Log;
 
 import com.mobilecoin.lib.exceptions.InvalidTxOutMemoException;
 import com.mobilecoin.lib.util.Hex;
+
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;

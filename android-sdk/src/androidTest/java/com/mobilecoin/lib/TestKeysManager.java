@@ -14,10 +14,12 @@ class TestKeysManager {
     private static final int DEFAULT_ACCOUNT_INDEX = 0;
     private static int currentAccountIndex = 0;
 
-    private final static String[] testNetMnemonics =
+    private static final String testNetMnemonics[] =
             loadTestStrings(com.mobilecoin.lib.test.R.raw.test_net_mnemonics);
-    private final static String[] devNetRootEntropies =
+    private static final String devNetRootEntropies[] =
             loadTestStrings(com.mobilecoin.lib.test.R.raw.dev_net_root_entropies);
+    private static final String devNetMnemonics[] =
+            loadTestStrings(com.mobilecoin.lib.test.R.raw.dev_net_mnemonics);
 
     private static String[] loadTestStrings(int resource) {
         InputStream inputStream = InstrumentationRegistry.getInstrumentation().getTargetContext()
@@ -32,10 +34,14 @@ class TestKeysManager {
     }
 
     static int getTotalTestKeysCount() {
-        if (Environment.CURRENT_TEST_ENV == Environment.TestEnvironment.TEST_NET) {
-            return testNetMnemonics.length;
+        switch(Environment.CURRENT_TEST_ENV) {
+            case ALPHA:
+                return devNetRootEntropies.length;
+            case TEST_NET:
+                return testNetMnemonics.length;
+            default:
+                return devNetMnemonics.length;
         }
-        return devNetRootEntropies.length;
     }
 
     static AccountKey getNextAccountKey() {
@@ -56,15 +62,31 @@ class TestKeysManager {
                 } catch (Exception exception) {
                     throw new IllegalStateException("Bug: All test keys must be valid");
                 }
-            case MOBILE_DEV:
             case ALPHA:
-            default:
                 if (currentAccountIndex >= devNetRootEntropies.length) {
                     currentAccountIndex = 0;
                 }
                 try {
                     return AccountKey.fromRootEntropy(
                             Hex.toByteArray(devNetRootEntropies[currentAccountIndex++]),
+                            fogConfig.getFogUri(),
+                            fogConfig.getFogReportId(),
+                            fogConfig.getFogAuthoritySpki()
+                    );
+                } catch (Exception exception) {
+                    throw new IllegalStateException("Bug: All test keys must be valid. \"" +
+                            devNetRootEntropies[currentAccountIndex - 1] + "\", " +
+                            getTotalTestKeysCount(), exception);
+                }
+            case MOBILE_DEV:
+            default:
+                if (currentAccountIndex >= devNetMnemonics.length) {
+                    currentAccountIndex = 0;
+                }
+                try {
+                    return AccountKey.fromMnemonicPhrase(
+                            devNetMnemonics[currentAccountIndex++],
+                            DEFAULT_ACCOUNT_INDEX,
                             fogConfig.getFogUri(),
                             fogConfig.getFogReportId(),
                             fogConfig.getFogAuthoritySpki()

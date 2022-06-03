@@ -3,15 +3,19 @@ package com.mobilecoin.lib;
 import static org.junit.Assert.assertEquals;
 
 import android.net.Uri;
+
 import androidx.test.ext.junit.runners.AndroidJUnit4;
+
 import com.mobilecoin.api.MobileCoinAPI;
 import com.mobilecoin.lib.util.Hex;
-import java.math.BigInteger;
-import java.util.ArrayList;
-import java.util.List;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+
+import java.math.BigInteger;
+import java.util.ArrayList;
+import java.util.List;
 
 @RunWith(AndroidJUnit4.class)
 public class TxOutMemoIntegrationTest {
@@ -73,25 +77,30 @@ public class TxOutMemoIntegrationTest {
     TxOutMemoBuilder txOutMemoBuilder = TxOutMemoBuilder
         .createSenderAndDestinationRTHMemoBuilder(senderAccountKey);
     TxOut realTxOut = txOuts.get(realIndex);
-    transactionBuilder = new TransactionBuilder(fogResolver, txOutMemoBuilder, MEMO_BLOCK_VERSION);
+
+    Amount fee = new Amount(BigInteger.ONE, TokenId.MOB);
+    transactionBuilder = new TransactionBuilder(fogResolver,
+            txOutMemoBuilder,
+            MEMO_BLOCK_VERSION,
+            TokenId.MOB,
+            fee
+    );
 
     RistrettoPrivate onetimePrivateKey = Util.recoverOnetimePrivateKey(
-        realTxOut.getPubKey(),
+        realTxOut.getPublicKey(),
         realTxOut.getTargetKey(),
         senderAccountKey
     );
     transactionBuilder
         .addInput(txOuts, txOutMembershipProofs, realIndex, onetimePrivateKey,
             senderAccountKey.getViewKey());
-    long fee = 1L;
-    transactionBuilder.setFee(fee);
     transactionBuilder.setTombstoneBlockIndex(UnsignedLong.valueOf(2000));
     BigInteger sentTxOutValue = BigInteger.ONE;
 
     transactionBuilder.addOutput(sentTxOutValue, recipientAccountKey.getPublicAddress(), null);
-    BigInteger realTxOutValue = realTxOut.getAmount()
-        .unmaskValue(senderAccountKey.getViewKey(), realTxOut.getPubKey());
-    BigInteger changeValue = realTxOutValue.subtract(BigInteger.valueOf(fee))
+    BigInteger realTxOutValue = realTxOut.getMaskedAmount()
+        .unmaskAmount(senderAccountKey.getViewKey(), realTxOut.getPublicKey()).getValue();
+    BigInteger changeValue = realTxOutValue.subtract(fee.getValue())
         .subtract(sentTxOutValue);
     transactionBuilder.addChangeOutput(changeValue, senderAccountKey, null);
     Transaction transaction = transactionBuilder.build();
@@ -103,7 +112,7 @@ public class TxOutMemoIntegrationTest {
 
     TxOut sentTxOut;
     try {
-      txOut1.getAmount().unmaskValue(recipientAccountKey.getViewKey(), txOut1.getPubKey());
+      txOut1.getMaskedAmount().unmaskAmount(recipientAccountKey.getViewKey(), txOut1.getPublicKey());
       sentTxOut = txOut1;
     } catch(Exception e) {
       sentTxOut = txOut2;
@@ -125,12 +134,19 @@ public class TxOutMemoIntegrationTest {
   public void buildTransaction_senderAndDestinationMemoBuilder_buildsCorrectDestinationMemo() throws Exception {
     TxOutMemoBuilder txOutMemoBuilder = TxOutMemoBuilder
         .createSenderAndDestinationRTHMemoBuilder(senderAccountKey);
-    transactionBuilder = new TransactionBuilder(fogResolver, txOutMemoBuilder, MEMO_BLOCK_VERSION);
+    Amount fee = new Amount(BigInteger.ONE, TokenId.MOB);
+    transactionBuilder = new TransactionBuilder(
+            fogResolver,
+            txOutMemoBuilder,
+            MEMO_BLOCK_VERSION,
+            TokenId.MOB,
+            fee
+    );
 
     TxOut realTxOut = txOuts.get(realIndex);
 
     RistrettoPrivate onetimePrivateKey = Util.recoverOnetimePrivateKey(
-        realTxOut.getPubKey(),
+        realTxOut.getPublicKey(),
         realTxOut.getTargetKey(),
         senderAccountKey
     );
@@ -138,15 +154,14 @@ public class TxOutMemoIntegrationTest {
     transactionBuilder
         .addInput(txOuts, txOutMembershipProofs, realIndex, onetimePrivateKey,
             senderAccountKey.getViewKey());
-    long fee = 1L;
-    transactionBuilder.setFee(fee);
+
     transactionBuilder.setTombstoneBlockIndex(UnsignedLong.valueOf(2000));
     BigInteger txValue = BigInteger.ONE;
 
     transactionBuilder.addOutput(txValue, recipientAccountKey.getPublicAddress(), null);
-    BigInteger realTxOutValue = realTxOut.getAmount()
-        .unmaskValue(senderAccountKey.getViewKey(), realTxOut.getPubKey());
-    BigInteger changeValue = realTxOutValue.subtract(BigInteger.valueOf(fee)).subtract(txValue);
+    BigInteger realTxOutValue = realTxOut.getMaskedAmount()
+        .unmaskAmount(senderAccountKey.getViewKey(), realTxOut.getPublicKey()).getValue();
+    BigInteger changeValue = realTxOutValue.subtract(fee.getValue()).subtract(txValue);
     transactionBuilder.addChangeOutput(changeValue, senderAccountKey, null);
     Transaction transaction = transactionBuilder.build();
 
@@ -157,8 +172,8 @@ public class TxOutMemoIntegrationTest {
 
     TxOut changeTxOut;
     try {
-      txOut1.getAmount()
-          .unmaskValue(senderAccountKey.getViewKey(), txOut1.getPubKey());
+      txOut1.getMaskedAmount()
+          .unmaskAmount(senderAccountKey.getViewKey(), txOut1.getPublicKey());
       changeTxOut = txOut1;
     } catch(Exception e) {
       changeTxOut = txOut2;
@@ -168,9 +183,9 @@ public class TxOutMemoIntegrationTest {
     DestinationMemo destinationMemo = (DestinationMemo) TxOutMemoParser
         .parseTxOutMemo(changeMemoPayload, senderAccountKey, changeTxOut);
     DestinationMemoData destinationMemoData = destinationMemo.getDestinationMemoData();
-    UnsignedLong totalOutlay = UnsignedLong.valueOf(fee).add(UnsignedLong.valueOf(txValue));
+    UnsignedLong totalOutlay = UnsignedLong.valueOf(fee.getValue()).add(UnsignedLong.valueOf(txValue));
 
-    assertEquals(UnsignedLong.valueOf(fee), destinationMemoData.getFee());
+    assertEquals(UnsignedLong.valueOf(fee.getValue()), destinationMemoData.getFee());
     assertEquals(totalOutlay, destinationMemoData.getTotalOutlay());
     AddressHash recipientAddressHash = recipientAccountKey.getPublicAddress()
         .calculateAddressHash();
@@ -183,25 +198,31 @@ public class TxOutMemoIntegrationTest {
     TxOutMemoBuilder txOutMemoBuilder = TxOutMemoBuilder
         .createSenderPaymentRequestAndDestinationRTHMemoBuilder(senderAccountKey, paymentRequestId);
     TxOut realTxOut = txOuts.get(realIndex);
-    transactionBuilder = new TransactionBuilder(fogResolver, txOutMemoBuilder, MEMO_BLOCK_VERSION);
+    Amount fee = new Amount(BigInteger.ONE, TokenId.MOB);
+    transactionBuilder = new TransactionBuilder(
+            fogResolver,
+            txOutMemoBuilder,
+            MEMO_BLOCK_VERSION,
+            TokenId.MOB,
+            fee
+          );
 
     RistrettoPrivate onetimePrivateKey = Util.recoverOnetimePrivateKey(
-        realTxOut.getPubKey(),
+        realTxOut.getPublicKey(),
         realTxOut.getTargetKey(),
         senderAccountKey
     );
     transactionBuilder
         .addInput(txOuts, txOutMembershipProofs, realIndex, onetimePrivateKey,
             senderAccountKey.getViewKey());
-    long fee = 1L;
-    transactionBuilder.setFee(fee);
+
     transactionBuilder.setTombstoneBlockIndex(UnsignedLong.valueOf(2000));
     BigInteger sentTxOutValue = BigInteger.ONE;
 
     transactionBuilder.addOutput(sentTxOutValue, recipientAccountKey.getPublicAddress(), null);
-    BigInteger realTxOutValue = realTxOut.getAmount()
-        .unmaskValue(senderAccountKey.getViewKey(), realTxOut.getPubKey());
-    BigInteger changeValue = realTxOutValue.subtract(BigInteger.valueOf(fee))
+    BigInteger realTxOutValue = realTxOut.getMaskedAmount()
+        .unmaskAmount(senderAccountKey.getViewKey(), realTxOut.getPublicKey()).getValue();
+    BigInteger changeValue = realTxOutValue.subtract(fee.getValue())
         .subtract(sentTxOutValue);
     transactionBuilder.addChangeOutput(changeValue, senderAccountKey, null);
     Transaction transaction = transactionBuilder.build();
@@ -213,7 +234,7 @@ public class TxOutMemoIntegrationTest {
 
     TxOut sentTxOut;
     try {
-      txOut1.getAmount().unmaskValue(recipientAccountKey.getViewKey(), txOut1.getPubKey());
+      txOut1.getMaskedAmount().unmaskAmount(recipientAccountKey.getViewKey(), txOut1.getPublicKey());
       sentTxOut = txOut1;
     } catch(Exception e) {
       sentTxOut = txOut2;
@@ -237,25 +258,31 @@ public class TxOutMemoIntegrationTest {
     TxOutMemoBuilder txOutMemoBuilder = TxOutMemoBuilder
             .createSenderAndDestinationRTHMemoBuilder(senderAccountKey);
     TxOut realTxOut = txOuts.get(realIndex);
-    transactionBuilder = new TransactionBuilder(fogResolver, txOutMemoBuilder, MEMO_BLOCK_VERSION - 1);
+    Amount fee = new Amount(BigInteger.ONE, TokenId.MOB);
+    transactionBuilder = new TransactionBuilder(
+            fogResolver,
+            txOutMemoBuilder,
+            MEMO_BLOCK_VERSION - 1,
+            TokenId.MOB,
+            fee
+    );
 
     RistrettoPrivate onetimePrivateKey = Util.recoverOnetimePrivateKey(
-            realTxOut.getPubKey(),
+            realTxOut.getPublicKey(),
             realTxOut.getTargetKey(),
             senderAccountKey
     );
     transactionBuilder
             .addInput(txOuts, txOutMembershipProofs, realIndex, onetimePrivateKey,
                     senderAccountKey.getViewKey());
-    long fee = 1L;
-    transactionBuilder.setFee(fee);
+
     transactionBuilder.setTombstoneBlockIndex(UnsignedLong.valueOf(2000));
     BigInteger sentTxOutValue = BigInteger.ONE;
 
     transactionBuilder.addOutput(sentTxOutValue, recipientAccountKey.getPublicAddress(), null);
-    BigInteger realTxOutValue = realTxOut.getAmount()
-            .unmaskValue(senderAccountKey.getViewKey(), realTxOut.getPubKey());
-    BigInteger changeValue = realTxOutValue.subtract(BigInteger.valueOf(fee))
+    BigInteger realTxOutValue = realTxOut.getMaskedAmount()
+            .unmaskAmount(senderAccountKey.getViewKey(), realTxOut.getPublicKey()).getValue();
+    BigInteger changeValue = realTxOutValue.subtract(fee.getValue())
             .subtract(sentTxOutValue);
     transactionBuilder.addChangeOutput(changeValue, senderAccountKey, null);
     Transaction transaction = transactionBuilder.build();
@@ -267,7 +294,7 @@ public class TxOutMemoIntegrationTest {
 
     TxOut sentTxOut;
     try {
-      txOut1.getAmount().unmaskValue(recipientAccountKey.getViewKey(), txOut1.getPubKey());
+      txOut1.getMaskedAmount().unmaskAmount(recipientAccountKey.getViewKey(), txOut1.getPublicKey());
       sentTxOut = txOut1;
     } catch(Exception e) {
       sentTxOut = txOut2;

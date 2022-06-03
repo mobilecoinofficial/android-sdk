@@ -12,44 +12,58 @@ import com.mobilecoin.lib.network.services.BlockchainService;
 import com.mobilecoin.lib.util.NetworkingCall;
 
 import java.math.BigInteger;
-import java.time.Duration;
-import java.time.LocalDateTime;
 
 import consensus_common.ConsensusCommon;
 
 class BlockchainClient extends AnyClient {
     private static final String TAG = BlockchainClient.class.getName();
     private static final BigInteger DEFAULT_TX_FEE = BigInteger.valueOf(10000000000L);
-    private final Duration minimumFeeCacheTTL;
+
+    private final long minimumFeeCacheTTL_ms;
     private volatile ConsensusCommon.LastBlockInfoResponse lastBlockInfo;
-    private LocalDateTime lastBlockInfoTimestamp;
+    private long lastBlockInfoTimestamp_ms;
+
+    public static final int TOKEN_ID_BLOCK_VERSION = 2;
 
     /**
      * Creates and initializes an instance of {@link BlockchainClient}
      *  @param loadBalancer                a uri of the service
      * @param serviceConfig      service configuration passed to MobileCoinClient
-     * @param minimumFeeCacheTTL duration of the minimum fee cache lifetime
+     * @param minimumFeeCacheTTL_ms duration of the minimum fee cache lifetime
      */
     BlockchainClient(@NonNull LoadBalancer loadBalancer,
                      @NonNull Service serviceConfig,
-                     @NonNull Duration minimumFeeCacheTTL,
+                     long minimumFeeCacheTTL_ms,
                      @NonNull TransportProtocol transportProtocol) {
         super(loadBalancer, serviceConfig, transportProtocol);
-        this.minimumFeeCacheTTL = minimumFeeCacheTTL;
+        this.minimumFeeCacheTTL_ms = minimumFeeCacheTTL_ms;
     }
 
     /**
-     * Fetch or return cached current minimal fee
+     * Fetch or return cached current minimal fee for a specified token
+     *
+     * @param tokenId the token ID for which to fetch the minimum fee
      */
     @NonNull
-    UnsignedLong getOrFetchMinimumFee() throws NetworkException {
+    Amount getOrFetchMinimumFee(@NonNull TokenId tokenId) throws NetworkException {
         ConsensusCommon.LastBlockInfoResponse response = getOrFetchLastBlockInfo();
+        if((!tokenId.equals(TokenId.MOB)) && (response.getNetworkBlockVersion() < TOKEN_ID_BLOCK_VERSION)) {
+            throw(new IllegalArgumentException("Network block version does not support different tokens"));
+        }
         long minimumFeeBits = response.getMobMinimumFee();
+        if(response.getNetworkBlockVersion() >= 1) {//Needed for compatibility with old networks
+            Long minFeeLookup;
+            if((minFeeLookup = response.getMinimumFeesMap().get(tokenId.getId().longValue())) == null) {
+                throw new IllegalArgumentException("Invalid Token ID");
+            }
+            minimumFeeBits = minFeeLookup;
+        }
+
         UnsignedLong minimumFee = UnsignedLong.fromLongBits(minimumFeeBits);
         if (minimumFee.equals(UnsignedLong.ZERO)) {
             minimumFee = UnsignedLong.fromBigInteger(DEFAULT_TX_FEE);
         }
-        return minimumFee;
+        return new Amount(minimumFee.toBigInteger(), tokenId);
     }
 
     /**
@@ -64,7 +78,7 @@ class BlockchainClient extends AnyClient {
      */
     synchronized void resetCache() {
         lastBlockInfo = null;
-        lastBlockInfoTimestamp = null;
+        lastBlockInfoTimestamp_ms = 0L;
     }
 
     /**
@@ -73,11 +87,9 @@ class BlockchainClient extends AnyClient {
     @NonNull
     synchronized ConsensusCommon.LastBlockInfoResponse getOrFetchLastBlockInfo() throws NetworkException {
         if (lastBlockInfo == null ||
-                lastBlockInfoTimestamp
-                        .plus(minimumFeeCacheTTL)
-                        .compareTo(LocalDateTime.now()) <= 0) {
+                lastBlockInfoTimestamp_ms + minimumFeeCacheTTL_ms <= System.currentTimeMillis()) {
             lastBlockInfo = fetchLastBlockInfo();
-            lastBlockInfoTimestamp = LocalDateTime.now();
+            lastBlockInfoTimestamp_ms = System.currentTimeMillis();
         }
         return lastBlockInfo;
     }

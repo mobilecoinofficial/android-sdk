@@ -3,22 +3,13 @@ package com.mobilecoin.lib;
 import androidx.annotation.NonNull;
 
 import com.mobilecoin.lib.exceptions.AttestationException;
-import com.mobilecoin.lib.exceptions.FeeRejectedException;
-import com.mobilecoin.lib.exceptions.FogReportException;
-import com.mobilecoin.lib.exceptions.FragmentedAccountException;
-import com.mobilecoin.lib.exceptions.InsufficientFundsException;
-import com.mobilecoin.lib.exceptions.InvalidFogResponse;
-import com.mobilecoin.lib.exceptions.InvalidReceiptException;
 import com.mobilecoin.lib.exceptions.InvalidTransactionException;
-import com.mobilecoin.lib.exceptions.InvalidUriException;
 import com.mobilecoin.lib.exceptions.NetworkException;
-import com.mobilecoin.lib.exceptions.TransactionBuilderException;
 
 import org.junit.Assert;
 import org.junit.Test;
 
 import java.math.BigInteger;
-import java.util.concurrent.TimeoutException;
 
 public class BalanceTransferTest {
 
@@ -46,8 +37,7 @@ public class BalanceTransferTest {
             PendingTransaction pendingTransaction = mobileCoinClient.prepareTransaction(
                     accountKey.getPublicAddress(),
                     amount,
-                    fee,
-                    TxOutMemoBuilder.createDefaultRTHMemoBuilder()
+                    fee
                 );
             mobileCoinClient.submitTransaction(pendingTransaction.getTransaction());
             UtilTest.waitForReceiptStatus(balanceAccount, pendingTransaction.getReceipt());
@@ -78,14 +68,13 @@ public class BalanceTransferTest {
                 public void onCancel() {
                     Assert.fail("Defrag should not be cancelled in this test");
                 }
-            }, false);
+            });
         }
         BigInteger totalFee = balanceAccount.estimateTotalFee(transferableAmount);
         PendingTransaction pendingTransaction =
                 balanceAccount.prepareTransaction(testKey.getPublicAddress(),
                         transferableAmount,
-                        totalFee,
-                        TxOutMemoBuilder.createDefaultRTHMemoBuilder()
+                        totalFee
                     );
         balanceAccount.submitTransaction(pendingTransaction.getTransaction());
         UtilTest.waitForReceiptStatus(mobileCoinClient, pendingTransaction.getReceipt());

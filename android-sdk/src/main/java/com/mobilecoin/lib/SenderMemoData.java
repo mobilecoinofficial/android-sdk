@@ -3,6 +3,7 @@ package com.mobilecoin.lib;
 import android.os.Parcel;
 
 import androidx.annotation.NonNull;
+
 import java.util.Objects;
 
 /**

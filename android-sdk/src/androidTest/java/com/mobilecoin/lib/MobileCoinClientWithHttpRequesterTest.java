@@ -58,10 +58,8 @@ public class MobileCoinClientWithHttpRequesterTest {
 
         AccountKey recipient = TestKeysManager.getNextAccountKey();
         try {
-            BigInteger amount = BigInteger.TEN;
-            BigInteger minimumFee = mobileCoinClient.estimateTotalFee(
-                    amount
-            );
+            Amount amount = new Amount(BigInteger.TEN, TokenId.MOB);
+            Amount minimumFee = mobileCoinClient.estimateTotalFee(amount);
             PendingTransaction pending = mobileCoinClient.prepareTransaction(
                     recipient.getPublicAddress(),
                     amount,

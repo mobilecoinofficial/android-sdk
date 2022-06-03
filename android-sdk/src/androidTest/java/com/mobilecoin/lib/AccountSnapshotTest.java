@@ -4,23 +4,10 @@ package com.mobilecoin.lib;
 
 import static com.mobilecoin.lib.UtilTest.waitForTransactionStatus;
 
-import com.mobilecoin.lib.exceptions.AttestationException;
-import com.mobilecoin.lib.exceptions.FeeRejectedException;
-import com.mobilecoin.lib.exceptions.FogReportException;
-import com.mobilecoin.lib.exceptions.FragmentedAccountException;
-import com.mobilecoin.lib.exceptions.InsufficientFundsException;
-import com.mobilecoin.lib.exceptions.InvalidFogResponse;
-import com.mobilecoin.lib.exceptions.InvalidReceiptException;
-import com.mobilecoin.lib.exceptions.InvalidTransactionException;
-import com.mobilecoin.lib.exceptions.InvalidUriException;
-import com.mobilecoin.lib.exceptions.NetworkException;
-import com.mobilecoin.lib.exceptions.TransactionBuilderException;
-
 import org.junit.Assert;
 import org.junit.Test;
 
 import java.math.BigInteger;
-import java.util.concurrent.TimeoutException;
 
 public class AccountSnapshotTest {
     // check snapshot balance, spent some coins and check again, the balance for that snapshot
@@ -33,12 +20,10 @@ public class AccountSnapshotTest {
         Balance balanceBefore = snapshot.getBalance();
         BigInteger amount = BigInteger.valueOf(100);
         BigInteger fee = mobileCoinClient.estimateTotalFee(amount);
-        TxOutMemoBuilder txOutMemoBuilder = TxOutMemoBuilder.createDefaultRTHMemoBuilder();
         PendingTransaction pendingTransaction = mobileCoinClient.prepareTransaction(
                 TestKeysManager.getNextAccountKey().getPublicAddress(),
                 amount,
-                fee,
-                txOutMemoBuilder
+                fee
         );
         mobileCoinClient.submitTransaction(pendingTransaction.getTransaction());
         waitForTransactionStatus(mobileCoinClient, pendingTransaction.getTransaction());
@@ -53,11 +38,7 @@ public class AccountSnapshotTest {
     }
 
     @Test
-    public void test_snapshot_prep() throws NetworkException, InvalidFogResponse,
-            AttestationException, InsufficientFundsException, FogReportException,
-            TransactionBuilderException, FragmentedAccountException, FeeRejectedException,
-            InvalidTransactionException, TimeoutException, InterruptedException,
-            InvalidUriException {
+    public void test_snapshot_prep() throws Exception {
 
         MobileCoinClient mobileCoinClient = MobileCoinClientBuilder.newBuilder().build();
         AccountSnapshot snapshot = mobileCoinClient.getAccountSnapshot();
@@ -67,8 +48,7 @@ public class AccountSnapshotTest {
         PendingTransaction pendingTransaction = snapshot.prepareTransaction(
                 TestKeysManager.getNextAccountKey().getPublicAddress(),
                 amount,
-                fee,
-                TxOutMemoBuilder.createDefaultRTHMemoBuilder()
+                fee
         );
         mobileCoinClient.submitTransaction(pendingTransaction.getTransaction());
         waitForTransactionStatus(mobileCoinClient, pendingTransaction.getTransaction());
@@ -85,12 +65,10 @@ public class AccountSnapshotTest {
                 mobileCoinClient.getAccountSnapshot();
         BigInteger amount = BigInteger.valueOf(100);
         BigInteger fee = mobileCoinClient.estimateTotalFee(amount);
-        TxOutMemoBuilder txOutMemoBuilder = TxOutMemoBuilder.createDefaultRTHMemoBuilder();
         PendingTransaction pendingTransaction = mobileCoinClient.prepareTransaction(
                 TestKeysManager.getNextAccountKey().getPublicAddress(),
                 amount,
-                fee,
-                txOutMemoBuilder
+                fee
         );
         mobileCoinClient.submitTransaction(pendingTransaction.getTransaction());
         Transaction.Status status = waitForTransactionStatus(mobileCoinClient,
@@ -119,12 +97,10 @@ public class AccountSnapshotTest {
                 recipientClient.getAccountSnapshot();
         BigInteger amount = BigInteger.valueOf(100);
         BigInteger fee = senderClient.estimateTotalFee(amount);
-        TxOutMemoBuilder txOutMemoBuilder = TxOutMemoBuilder.createDefaultRTHMemoBuilder();
         PendingTransaction pendingTransaction = senderClient.prepareTransaction(
                 recipientClient.getAccountKey().getPublicAddress(),
                 amount,
-                fee,
-                txOutMemoBuilder
+                fee
         );
         senderClient.submitTransaction(pendingTransaction.getTransaction());
         Transaction.Status txStatus = waitForTransactionStatus(senderClient,
@@ -145,8 +121,7 @@ public class AccountSnapshotTest {
     }
 
     @Test
-    public void test_null_return() throws InvalidUriException, NetworkException,
-            InvalidFogResponse, AttestationException {
+    public void test_null_return() throws Exception {
         MobileCoinClient mobileCoinClient = MobileCoinClientBuilder.newBuilder().build();
         AccountSnapshot snapshot =
                 mobileCoinClient.getAccountSnapshot(UnsignedLong.MAX_VALUE.sub(UnsignedLong.ONE));

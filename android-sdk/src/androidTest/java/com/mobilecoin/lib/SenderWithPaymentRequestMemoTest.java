@@ -8,6 +8,7 @@ import android.os.Parcel;
 
 import com.mobilecoin.api.MobileCoinAPI;
 import com.mobilecoin.lib.util.Hex;
+
 import org.junit.Test;
 
 public class SenderWithPaymentRequestMemoTest {

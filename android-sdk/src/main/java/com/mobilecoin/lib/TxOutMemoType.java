@@ -6,6 +6,7 @@ import android.os.Parcelable;
 import androidx.annotation.NonNull;
 
 import com.mobilecoin.lib.util.Hex;
+
 import java.util.Arrays;
 
 /**

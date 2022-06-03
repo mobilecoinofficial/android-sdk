@@ -8,22 +8,21 @@ import android.os.Parcelable;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import com.mobilecoin.api.MobileCoinAPI;
+import com.mobilecoin.api.MobileCoinAPI.EncryptedMemo;
 import com.mobilecoin.lib.exceptions.AmountDecoderException;
 import com.mobilecoin.lib.exceptions.InvalidTxOutMemoException;
 import com.mobilecoin.lib.exceptions.SerializationException;
 import com.mobilecoin.lib.exceptions.TransactionBuilderException;
 import com.mobilecoin.lib.log.Logger;
 
-import com.mobilecoin.api.MobileCoinAPI;
-import com.mobilecoin.api.MobileCoinAPI.EncryptedMemo;
-
-import fog_view.View;
-
 import java.math.BigInteger;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
+
+import fog_view.View;
 
 /**
  * A transaction output that belongs to a {@link AccountKey}
@@ -32,7 +31,7 @@ public class OwnedTxOut implements Parcelable {
     private final static String TAG = OwnedTxOut.class.getName();
 
     // Bump serial version and read/write code if fields change
-    private static final long serialVersionUID = 3L;
+    private static final long serialVersionUID = 4L;
 
     //  The global index of this TxOut in the entire block chain.
     private final UnsignedLong txOutGlobalIndex;
@@ -46,7 +45,7 @@ public class OwnedTxOut implements Parcelable {
 
     private final TxOutMemo cachedTxOutMemo;
 
-    private final BigInteger value;
+    private final Amount amount;
     private final RistrettoPublic txOutPublicKey;
     private final RistrettoPublic txOutTargetKey;
     private final byte[] keyImage;
@@ -78,17 +77,17 @@ public class OwnedTxOut implements Parcelable {
                             .setData(txOutRecord.getTxOutTargetKeyData())
                             .build();
             txOutTargetKey = RistrettoPublic.fromProtoBufObject(txOutTargetKeyProto);
+            RistrettoPublic txOutSharedSecret = Util.getSharedSecret(accountKey.getViewKey(), txOutPublicKey);
             long maskedValue = txOutRecord.getTxOutAmountMaskedValue();
-            RistrettoPublic txOutSharedSecret =
-                Util.getSharedSecret(accountKey.getViewKey(), txOutPublicKey);
-            Amount amount = new Amount(txOutSharedSecret, maskedValue);
-            value = amount.unmaskValue(
+            byte maskedTokenId[] = txOutRecord.getTxOutAmountMaskedTokenId().toByteArray();
+            MaskedAmount maskedAmount = new MaskedAmount(txOutSharedSecret, maskedValue, maskedTokenId);
+            amount = maskedAmount.unmaskAmount(
                     accountKey.getViewKey(),
                     txOutPublicKey
             );
 
             MobileCoinAPI.TxOut.Builder txOutProtoBuilder = MobileCoinAPI.TxOut.newBuilder()
-                    .setAmount(amount.toProtoBufObject())
+                    .setMaskedAmount(maskedAmount.toProtoBufObject())
                     .setPublicKey(txOutPublicKeyProto)
                     .setTargetKey(txOutTargetKeyProto);
             if (!txOutRecord.getTxOutEMemoData().isEmpty()) {
@@ -118,11 +117,28 @@ public class OwnedTxOut implements Parcelable {
     }
 
     /**
-     * Returns the decoded value of the TxOut
+     * @return The value of this TxOut
      */
+    @Deprecated
     @NonNull
     public BigInteger getValue() {
-        return value;
+        return amount.getValue();
+    }
+
+    /**
+     * @return The token ID of this TxOut
+     */
+    @Deprecated
+    @NonNull
+    public TokenId getTokenId() {
+        return amount.getTokenId();
+    }
+
+    /**
+     * @return The amount of this TxOut
+     */
+    @NonNull Amount getAmount() {
+        return amount;
     }
 
     @NonNull
@@ -158,6 +174,11 @@ public class OwnedTxOut implements Parcelable {
     @NonNull
     public RistrettoPublic getTargetKey() {
         return txOutTargetKey;
+    }
+
+    @NonNull
+    public RistrettoPublic getSharedSecret(AccountKey accountKey) throws TransactionBuilderException {
+        return Util.getSharedSecret(accountKey.getViewKey(), txOutPublicKey);
     }
 
     public synchronized boolean isSpent(@NonNull UnsignedLong atIndex) {
@@ -197,7 +218,7 @@ public class OwnedTxOut implements Parcelable {
                Objects.equals(this.receivedBlockTimestamp, that.receivedBlockTimestamp) &&
                Objects.equals(this.spentBlockTimestamp, that.spentBlockTimestamp) &&
                Objects.equals(this.spentBlockIndex, that.spentBlockIndex) &&
-               Objects.equals(this.value, that.value) &&
+               Objects.equals(this.amount, that.amount) &&
                Objects.equals(this.txOutPublicKey, that.txOutPublicKey) &&
                Objects.equals(this.txOutTargetKey, that.txOutTargetKey) &&
                Arrays.equals(this.keyImage, that.keyImage) &&
@@ -208,7 +229,7 @@ public class OwnedTxOut implements Parcelable {
     @Override
     public int hashCode() {
         int result = Objects.hash(txOutGlobalIndex, receivedBlockIndex,
-                receivedBlockTimestamp, spentBlockTimestamp, spentBlockIndex, value, txOutPublicKey,
+                receivedBlockTimestamp, spentBlockTimestamp, spentBlockIndex, amount, txOutPublicKey,
                 txOutTargetKey, Arrays.hashCode(keyImage), keyImageHash, cachedTxOutMemo);
         return result;
     }
@@ -223,7 +244,7 @@ public class OwnedTxOut implements Parcelable {
         receivedBlockTimestamp = (Date)parcel.readSerializable();
         spentBlockTimestamp = (Date)parcel.readSerializable();
         spentBlockIndex = parcel.readParcelable(UnsignedLong.class.getClassLoader());
-        value = (BigInteger)parcel.readSerializable();
+        amount = parcel.readParcelable(Amount.class.getClassLoader());
         txOutPublicKey = RistrettoPublic.fromBytes(parcel.createByteArray());
         txOutTargetKey = RistrettoPublic.fromBytes(parcel.createByteArray());
         keyImage = parcel.createByteArray();
@@ -243,7 +264,7 @@ public class OwnedTxOut implements Parcelable {
         parcel.writeSerializable(receivedBlockTimestamp);
         parcel.writeSerializable(spentBlockTimestamp);
         parcel.writeParcelable(spentBlockIndex, flags);
-        parcel.writeSerializable(value);
+        parcel.writeParcelable(amount, flags);
         parcel.writeByteArray(txOutPublicKey.getKeyBytes());
         parcel.writeByteArray(txOutTargetKey.getKeyBytes());
         parcel.writeByteArray(keyImage);
