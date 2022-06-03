@@ -18,6 +18,7 @@ import consensus_common.ConsensusCommon;
 class BlockchainClient extends AnyClient {
     private static final String TAG = BlockchainClient.class.getName();
     private static final BigInteger DEFAULT_TX_FEE = BigInteger.valueOf(10000000000L);
+
     private final long minimumFeeCacheTTL_ms;
     private volatile ConsensusCommon.LastBlockInfoResponse lastBlockInfo;
     private long lastBlockInfoTimestamp_ms;
@@ -57,6 +58,7 @@ class BlockchainClient extends AnyClient {
             }
             minimumFeeBits = minFeeLookup;
         }
+
         UnsignedLong minimumFee = UnsignedLong.fromLongBits(minimumFeeBits);
         if (minimumFee.equals(UnsignedLong.ZERO)) {
             minimumFee = UnsignedLong.fromBigInteger(DEFAULT_TX_FEE);

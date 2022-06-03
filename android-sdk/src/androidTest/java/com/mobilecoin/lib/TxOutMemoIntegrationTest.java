@@ -77,6 +77,7 @@ public class TxOutMemoIntegrationTest {
     TxOutMemoBuilder txOutMemoBuilder = TxOutMemoBuilder
         .createSenderAndDestinationRTHMemoBuilder(senderAccountKey);
     TxOut realTxOut = txOuts.get(realIndex);
+
     Amount fee = new Amount(BigInteger.ONE, TokenId.MOB);
     transactionBuilder = new TransactionBuilder(fogResolver,
             txOutMemoBuilder,

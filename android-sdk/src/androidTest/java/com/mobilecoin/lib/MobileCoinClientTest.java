@@ -9,11 +9,9 @@ import static com.mobilecoin.lib.UtilTest.waitForTransactionStatus;
 
 import android.Manifest;
 import android.util.Base64;
-
 import androidx.annotation.NonNull;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.rule.GrantPermissionRule;
-
 import com.mobilecoin.lib.exceptions.AmountDecoderException;
 import com.mobilecoin.lib.exceptions.AttestationException;
 import com.mobilecoin.lib.exceptions.InvalidFogResponse;
@@ -23,12 +21,10 @@ import com.mobilecoin.lib.exceptions.NetworkException;
 import com.mobilecoin.lib.log.Logger;
 import com.mobilecoin.lib.network.TransportProtocol;
 import com.mobilecoin.lib.network.uri.FogUri;
-
 import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
 import java.math.BigInteger;
 import java.security.cert.X509Certificate;
 import java.util.Date;
