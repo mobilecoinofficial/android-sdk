@@ -82,7 +82,7 @@ final class TxOut extends Native {
     }
 
     @NonNull
-    MaskedAmount getAmount() {
+    public MaskedAmount getMaskedAmount() {
         try {
             return MaskedAmount.fromProtoBufObject(protoBufTxOut.getMaskedAmount());
         } catch (AmountDecoderException exception) {

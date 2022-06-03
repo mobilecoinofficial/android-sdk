@@ -20,10 +20,18 @@ final class TransactionBuilder extends Native {
     TransactionBuilder(
         @NonNull FogResolver fogResolver,
         @NonNull TxOutMemoBuilder txOutMemoBuilder,
-        int blockVersion
+        int blockVersion,
+        @NonNull TokenId tokenId,
+        @NonNull Amount fee
     ) throws FogReportException {
         try {
-            init_jni(fogResolver, txOutMemoBuilder, blockVersion);
+            init_jni(
+                    fogResolver,
+                    txOutMemoBuilder,
+                    blockVersion,
+                    tokenId.getId().longValue(),
+                    fee.getValue().longValue()
+            );
         } catch (Exception exception) {
             throw new FogReportException("Unable to create TxBuilder", exception);
         }
@@ -111,10 +119,10 @@ final class TransactionBuilder extends Native {
         }
     }
 
-    void setFee(long value) throws TransactionBuilderException {
-        Logger.i(TAG, String.format(Locale.US, "Set transaction fee %d", value));
+    void setFee(Amount value) throws TransactionBuilderException {
+        Logger.i(TAG, String.format(Locale.US, "Set transaction fee %d", value.getValue().longValue()));
         try {
-            set_fee(value);
+            set_fee(value.getValue().longValue());
         } catch (Exception exception) {
             Logger.e(TAG, "Unable to set transaction fee", exception);
             throw new TransactionBuilderException(exception.getLocalizedMessage(), exception);
@@ -142,7 +150,13 @@ final class TransactionBuilder extends Native {
         super.finalize();
     }
 
-    private native void init_jni(@NonNull FogResolver fog_resolver, @NonNull TxOutMemoBuilder txOutMemoBuilder, int blockVersion);
+    private native void init_jni(
+            @NonNull FogResolver fog_resolver,
+            @NonNull TxOutMemoBuilder txOutMemoBuilder,
+            int blockVersion,
+            long tokenId,
+            long fee
+    );
 
     private native void finalize_jni();
 

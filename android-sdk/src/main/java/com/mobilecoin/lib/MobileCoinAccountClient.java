@@ -20,6 +20,7 @@ import java.security.InvalidKeyException;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.UnrecoverableEntryException;
+import java.util.Map;
 import java.util.concurrent.TimeoutException;
 
 import javax.crypto.BadPaddingException;
@@ -38,7 +39,7 @@ public interface MobileCoinAccountClient {
    */
   @NonNull
   AccountSnapshot getAccountSnapshot() throws NetworkException,
-      InvalidFogResponse, AttestationException;
+      InvalidFogResponse, AttestationException, FogSyncException;
 
   /**
    * Creates an account snapshot for the provided block index.
@@ -49,21 +50,62 @@ public interface MobileCoinAccountClient {
    */
   @Nullable
   AccountSnapshot getAccountSnapshot(UnsignedLong blockIndex) throws NetworkException,
-      InvalidFogResponse, AttestationException;
+      InvalidFogResponse, AttestationException, FogSyncException;
 
   /**
-   * Retrieves {@code AccountKey}'s balance.
+   * Retrieves {@code AccountKey}'s MOB balance in picoMOB.
    */
   @NonNull
-  Balance getBalance() throws InvalidFogResponse, NetworkException, AttestationException;
+  @Deprecated
+  Balance getBalance() throws AttestationException, InvalidFogResponse, NetworkException;
+
+  /**
+   * Retrieves {@code AccountKey}'s balance of a specified token.
+   */
+  @NonNull
+  Balance getBalance(TokenId tokenId) throws AttestationException, InvalidFogResponse, NetworkException, FogSyncException;
+
+  /**
+   * Retrieves {@code AccountKey}'s balance for every discovered token.
+   */
+  @NonNull
+  Map<TokenId, Balance> getBalances() throws AttestationException, InvalidFogResponse, NetworkException, FogSyncException;
+
+  /**
+   * Returns whether the defragmentation is required on the active account in order to send the
+   * specified amount of picoMOB
+   */
+  @Deprecated
+  boolean requiresDefragmentation(@NonNull BigInteger amountPicoMOB)
+      throws NetworkException, InvalidFogResponse, AttestationException,
+      InsufficientFundsException;
 
   /**
    * Returns whether the defragmentation is required on the active account in order to send the
    * specified amount
    */
-  boolean requiresDefragmentation(@NonNull BigInteger amountToSend)
+  boolean requiresDefragmentation(@NonNull Amount amountToSend)
       throws NetworkException, InvalidFogResponse, AttestationException,
       InsufficientFundsException;
+
+  /**
+   * Defragments the user's account.
+   *
+   * <p>An account needs to be defragmented when an account balance consists of multiple coins and
+   * there are no big enough coins to successfully send the transaction.
+   *
+   * <p>If the account is too fragmented, it might be necessary to defragment the account more than
+   * once. However, wallet fragmentation is a rare occurrence since there is an internal mechanism
+   * to defragment the account during other operations.
+   *  @param delegate monitors and controls the defragmentation process
+   */
+  @Deprecated
+  void defragmentAccount(
+      @NonNull BigInteger amountPicoMOB,
+      @NonNull DefragmentationDelegate delegate
+  ) throws InvalidFogResponse, AttestationException, NetworkException, InsufficientFundsException,
+          TransactionBuilderException, InvalidTransactionException,
+          FogReportException, TimeoutException;
 
   /**
    * Defragments the user's account.
@@ -78,7 +120,7 @@ public interface MobileCoinAccountClient {
    * @param shouldWriteRTHMemos writes sender and destination memos for a defrag transaction if true.
    */
   void defragmentAccount(
-      @NonNull BigInteger amountToSend,
+      @NonNull Amount amountToSend,
       @NonNull DefragmentationDelegate delegate,
       boolean shouldWriteRTHMemos) throws InvalidFogResponse, AttestationException, NetworkException, 
       InsufficientFundsException, TransactionBuilderException, InvalidTransactionException,

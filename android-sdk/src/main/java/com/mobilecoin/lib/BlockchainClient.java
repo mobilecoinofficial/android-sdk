@@ -22,6 +22,8 @@ class BlockchainClient extends AnyClient {
     private volatile ConsensusCommon.LastBlockInfoResponse lastBlockInfo;
     private long lastBlockInfoTimestamp_ms;
 
+    public static final int TOKEN_ID_BLOCK_VERSION = 2;
+
     /**
      * Creates and initializes an instance of {@link BlockchainClient}
      *  @param loadBalancer                a uri of the service
@@ -37,17 +39,29 @@ class BlockchainClient extends AnyClient {
     }
 
     /**
-     * Fetch or return cached current minimal fee
+     * Fetch or return cached current minimal fee for a specified token
+     *
+     * @param tokenId the token ID for which to fetch the minimum fee
      */
     @NonNull
-    UnsignedLong getOrFetchMinimumFee() throws NetworkException {
+    Amount getOrFetchMinimumFee(@NonNull TokenId tokenId) throws NetworkException {
         ConsensusCommon.LastBlockInfoResponse response = getOrFetchLastBlockInfo();
+        if((!tokenId.equals(TokenId.MOB)) && (response.getNetworkBlockVersion() < TOKEN_ID_BLOCK_VERSION)) {
+            throw(new IllegalArgumentException("Network block version does not support different tokens"));
+        }
         long minimumFeeBits = response.getMobMinimumFee();
+        if(response.getNetworkBlockVersion() >= 1) {//Needed for compatibility with old networks
+            Long minFeeLookup;
+            if((minFeeLookup = response.getMinimumFeesMap().get(tokenId.getId().longValue())) == null) {
+                throw new IllegalArgumentException("Invalid Token ID");
+            }
+            minimumFeeBits = minFeeLookup;
+        }
         UnsignedLong minimumFee = UnsignedLong.fromLongBits(minimumFeeBits);
         if (minimumFee.equals(UnsignedLong.ZERO)) {
             minimumFee = UnsignedLong.fromBigInteger(DEFAULT_TX_FEE);
         }
-        return minimumFee;
+        return new Amount(minimumFee.toBigInteger(), tokenId);
     }
 
     /**

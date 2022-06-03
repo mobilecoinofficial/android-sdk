@@ -19,7 +19,7 @@ import com.mobilecoin.lib.log.Logger;
 import java.math.BigInteger;
 
 /**
- * This receipt is created by {@link MobileCoinTransactionClient#prepareTransaction(PublicAddress, BigInteger, BigInteger, TxOutMemoBuilder)} Then shared with the recipient, so they can check the transaction status. Only the
+ * This receipt is created by {@link MobileCoinTransactionClient#prepareTransaction(PublicAddress, Amount, Amount, TxOutMemoBuilder)} Then shared with the recipient, so they can check the transaction status. Only the
  * recipient can use this receipt since it requires a recipient's key for decoding.
  */
 public final class Receipt {
@@ -115,19 +115,30 @@ public final class Receipt {
     }
 
     /**
-     * @return {@link BigInteger} decoded receipt amount
+     * @return {@link BigInteger} decoded receipt value
      */
     @NonNull
+    @Deprecated
     public BigInteger getAmount(@NonNull AccountKey accountKey) throws AmountDecoderException {
+        return getAmountData(accountKey).getValue();
+    }
+
+    /**
+     * @return {@link Amount} decoded receipt Amount
+     */
+    @NonNull
+    public Amount getAmountData(@NonNull AccountKey accountKey) throws AmountDecoderException {
         if (!receiptBuf.hasMaskedAmount()) {
-            throw new AmountDecoderException("Receipt does not contain an encoded amount");
+            throw new AmountDecoderException("Receipt does not contain an encoded Amount");
         }
         MobileCoinAPI.MaskedAmount protoMaskedAmount = receiptBuf.getMaskedAmount();
-        byte[] commitment = protoMaskedAmount.getCommitment().getData().toByteArray();
+        byte commitment[] = protoMaskedAmount.getCommitment().getData().toByteArray();
         long maskedValue = protoMaskedAmount.getMaskedValue();
+        byte maskedTokenId[] = protoMaskedAmount.getMaskedTokenId().toByteArray();
         MaskedAmount maskedAmount = new MaskedAmount(
                 commitment,
-                maskedValue
+                maskedValue,
+                maskedTokenId
         );
         return maskedAmount.unmaskAmount(
                 accountKey.getViewKey(),
@@ -167,7 +178,7 @@ public final class Receipt {
     @Nullable
     public OwnedTxOut fetchOwnedTxOut(@NonNull MobileCoinClient mobileCoinClient) throws NetworkException,
             InvalidFogResponse, AttestationException, FogSyncException {
-        return mobileCoinClient.getAccountActivity().getAllTxOuts().stream()
+        return mobileCoinClient.getAccountActivity().getAllTokenTxOuts().stream()
                 .filter(txOut -> txOut.getPublicKey().equals(getPublicKey()))
                 .findFirst()
                 .orElse(null);

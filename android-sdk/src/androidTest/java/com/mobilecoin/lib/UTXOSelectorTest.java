@@ -202,8 +202,8 @@ public class UTXOSelectorTest {
     BigInteger inputFee = BigInteger.ZERO;
     BigInteger outputFee = BigInteger.ZERO;
     Set<OwnedTxOut> utxos = new HashSet<>();
-    utxos.add(createMockTxOut(BigInteger.TEN, txFee, inputFee));
-    utxos.add(createMockTxOut(BigInteger.TEN, txFee, inputFee));
+    utxos.add(createMockTxOut(new Amount(BigInteger.TEN, TokenId.MOB)));
+    utxos.add(createMockTxOut(new Amount(BigInteger.TEN, TokenId.MOB)));
 
     BigInteger fee = UTXOSelector.calculateFee(utxos, amount, txFee, inputFee, outputFee, /*
         outputsCount= */ 2);
@@ -219,8 +219,8 @@ public class UTXOSelectorTest {
     BigInteger inputFee = BigInteger.valueOf(2);
     BigInteger outputFee = BigInteger.ONE;
     Set<OwnedTxOut> utxos = new HashSet<>();
-    utxos.add(createMockTxOut(BigInteger.valueOf(13), txFee, inputFee));
-    utxos.add(createMockTxOut(BigInteger.valueOf(13), txFee, inputFee));
+    utxos.add(createMockTxOut(new Amount(BigInteger.valueOf(13), TokenId.MOB)));
+    utxos.add(createMockTxOut(new Amount(BigInteger.valueOf(13), TokenId.MOB)));
 
     BigInteger fee = UTXOSelector.calculateFee(utxos, amount, txFee, inputFee, outputFee, /*
         outputsCount= */ 2);
@@ -239,7 +239,7 @@ public class UTXOSelectorTest {
     Set<OwnedTxOut> utxos = new HashSet<>();
     int numberOfInputUtxos = 100;
     for (int i = 0; i < numberOfInputUtxos; ++i) {
-      utxos.add(createMockTxOut(BigInteger.valueOf(3), txFee, inputFee));
+      utxos.add(createMockTxOut(new Amount(BigInteger.valueOf(3), TokenId.MOB)));
     }
 
     BigInteger fee = UTXOSelector.calculateFee(utxos, /* amount= */ BigInteger.valueOf(10),
@@ -302,11 +302,11 @@ public class UTXOSelectorTest {
   public void getTransferableAmount_zeroInputFee_zeroOutputFee_transfersSmallBalance() throws Exception {
     BigInteger txFee = BigInteger.ONE;
     BigInteger inputFee = BigInteger.ZERO;
-    BigInteger smallAmount = BigInteger.ONE;
+    Amount smallAmount = new Amount(BigInteger.ONE, TokenId.MOB);
     Set<OwnedTxOut> txOuts = new HashSet<>();
     final int numTxOuts = 5;
     for (int i = 0; i < numTxOuts; i++) {
-      txOuts.add(createMockTxOut(smallAmount, txFee, inputFee));
+      txOuts.add(createMockTxOut(smallAmount));
     }
 
     BigInteger transferableBalance = UTXOSelector.getTransferableAmount(txOuts, txFee,
@@ -315,7 +315,7 @@ public class UTXOSelectorTest {
     BigInteger expectedInputFee = inputFee.multiply(BigInteger.valueOf(numTxOuts));
     BigInteger expectedTotalFee = txFee.add(expectedInputFee);
     BigInteger expectedBalance =
-            smallAmount.multiply(BigInteger.valueOf(numTxOuts)).subtract(expectedTotalFee);
+            smallAmount.getValue().multiply(BigInteger.valueOf(numTxOuts)).subtract(expectedTotalFee);
     Assert.assertEquals(expectedBalance, transferableBalance);
   }
 
@@ -323,11 +323,11 @@ public class UTXOSelectorTest {
   public void getTransferableAmount_nonZeroInputFee_nonZeroOutputFee_transfersLargerBalance() throws Exception {
     BigInteger txFee = BigInteger.ONE;
     BigInteger inputFee = BigInteger.ONE;
-    BigInteger largerAmount = BigInteger.valueOf(100);
+    Amount largerAmount = new Amount(BigInteger.valueOf(100), TokenId.MOB);
     Set<OwnedTxOut> txOuts = new HashSet<>();
     final int numTxOuts = 5;
     for (int i = 0; i < numTxOuts; i++) {
-      txOuts.add(createMockTxOut(largerAmount, txFee, inputFee));
+      txOuts.add(createMockTxOut(largerAmount));
     }
 
     BigInteger transferableBalance = UTXOSelector.getTransferableAmount(txOuts, txFee,
@@ -336,7 +336,7 @@ public class UTXOSelectorTest {
     BigInteger expectedInputFee = inputFee.multiply(BigInteger.valueOf(numTxOuts));
     BigInteger expectedTotalFee = txFee.add(expectedInputFee);
     BigInteger expectedBalance =
-            largerAmount.multiply(BigInteger.valueOf(numTxOuts)).subtract(expectedTotalFee);
+            largerAmount.getValue().multiply(BigInteger.valueOf(numTxOuts)).subtract(expectedTotalFee);
     Assert.assertEquals(expectedBalance, transferableBalance);
   }
 
@@ -344,36 +344,36 @@ public class UTXOSelectorTest {
   public void getTransferableAmount_fragmented_transfersBalance() throws Exception {
     BigInteger txFee = BigInteger.ONE;
     BigInteger inputFee = BigInteger.ZERO;
-    BigInteger smallAmount = BigInteger.ONE;
+    Amount smallAmount = new Amount(BigInteger.ONE, TokenId.MOB);
     Set<OwnedTxOut> txOuts = new HashSet<>();
     final int numTxOuts = UTXOSelector.MAX_INPUTS + 1;
     for (int i = 0; i < numTxOuts; i++) {
-      txOuts.add(createMockTxOut(smallAmount, txFee, inputFee));
+      txOuts.add(createMockTxOut(smallAmount));
     }
 
     BigInteger transferableBalance = UTXOSelector.getTransferableAmount(txOuts, txFee,
             inputFee, /* outputFee= */ BigInteger.ONE);
 
     BigInteger expectedTotalFee = txFee.multiply(BigInteger.valueOf(2));
-    Assert.assertEquals(smallAmount.multiply(BigInteger.valueOf(numTxOuts)).subtract(expectedTotalFee), transferableBalance);
+    Assert.assertEquals(smallAmount.getValue().multiply(BigInteger.valueOf(numTxOuts)).subtract(expectedTotalFee), transferableBalance);
   }
 
   @Test
   public void getTransferableAmount_multiLevelFragmentedBalance_transfersBalance() throws Exception {
     BigInteger txFee = BigInteger.ONE;
     BigInteger inputFee = BigInteger.ZERO;
-    BigInteger smallAmount = BigInteger.ONE;
+    Amount smallAmount = new Amount(BigInteger.ONE, TokenId.MOB);
     Set<OwnedTxOut> txOuts = new HashSet<>();
     final int numTxOuts = UTXOSelector.MAX_INPUTS * 10;
     for (int i = 0; i < numTxOuts; i++) {
-      txOuts.add(createMockTxOut(smallAmount, txFee, /* outPutFee= */ BigInteger.ZERO));
+      txOuts.add(createMockTxOut(smallAmount));
     }
 
     BigInteger transferableBalance = UTXOSelector.getTransferableAmount(txOuts, txFee,
             inputFee, /* outputFee= */ BigInteger.ZERO);
 
     BigInteger expectedTotalFee = txFee.multiply(BigInteger.valueOf(11));
-    Assert.assertEquals(smallAmount.multiply(BigInteger.valueOf(numTxOuts).subtract(expectedTotalFee)), transferableBalance);
+    Assert.assertEquals(smallAmount.getValue().multiply(BigInteger.valueOf(numTxOuts).subtract(expectedTotalFee)), transferableBalance);
   }
 
   private static UTXOSelector.TxOutNode createMockTxOutNode(BigInteger value, BigInteger txFee,
@@ -384,10 +384,9 @@ public class UTXOSelectorTest {
     return node;
   }
 
-  private static OwnedTxOut createMockTxOut(BigInteger value, BigInteger txFee,
-                                            BigInteger inputFee) {
+  private static OwnedTxOut createMockTxOut(Amount amount) {
     OwnedTxOut txOut = mock(OwnedTxOut.class);
-    when(txOut.getValue()).thenReturn(value);
+    when(txOut.getAmount()).thenReturn(amount);
     return txOut;
   }
 }

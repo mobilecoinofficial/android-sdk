@@ -6,6 +6,7 @@ import androidx.annotation.NonNull;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 
 import com.mobilecoin.lib.exceptions.AttestationException;
+import com.mobilecoin.lib.exceptions.FogSyncException;
 import com.mobilecoin.lib.exceptions.InvalidFogResponse;
 import com.mobilecoin.lib.exceptions.InvalidReceiptException;
 import com.mobilecoin.lib.exceptions.NetworkException;
@@ -69,7 +70,7 @@ public class UtilTest {
     static Receipt.Status waitForReceiptStatus(
             @NonNull MobileCoinClient mobileCoinClient,
             @NonNull Receipt receipt) throws TimeoutException, InterruptedException,
-            NetworkException, InvalidFogResponse, AttestationException, InvalidReceiptException {
+            NetworkException, InvalidFogResponse, AttestationException, InvalidReceiptException, FogSyncException {
         int receiptQueryTries = 0;
         Receipt.Status status;
         do {
@@ -88,7 +89,7 @@ public class UtilTest {
     static Transaction.Status waitForTransactionStatus(
             @NonNull MobileCoinClient mobileCoinClient,
             @NonNull Transaction tx) throws TimeoutException, InterruptedException,
-            NetworkException, InvalidFogResponse, AttestationException {
+            NetworkException, InvalidFogResponse, AttestationException, FogSyncException {
         int txQueryTries = 0;
         Transaction.Status status;
         do {

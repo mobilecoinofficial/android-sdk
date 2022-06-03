@@ -46,8 +46,7 @@ public class BalanceTransferTest {
             PendingTransaction pendingTransaction = mobileCoinClient.prepareTransaction(
                     accountKey.getPublicAddress(),
                     amount,
-                    fee,
-                    TxOutMemoBuilder.createDefaultRTHMemoBuilder()
+                    fee
                 );
             mobileCoinClient.submitTransaction(pendingTransaction.getTransaction());
             UtilTest.waitForReceiptStatus(balanceAccount, pendingTransaction.getReceipt());
@@ -78,14 +77,13 @@ public class BalanceTransferTest {
                 public void onCancel() {
                     Assert.fail("Defrag should not be cancelled in this test");
                 }
-            }, false);
+            });
         }
         BigInteger totalFee = balanceAccount.estimateTotalFee(transferableAmount);
         PendingTransaction pendingTransaction =
                 balanceAccount.prepareTransaction(testKey.getPublicAddress(),
                         transferableAmount,
-                        totalFee,
-                        TxOutMemoBuilder.createDefaultRTHMemoBuilder()
+                        totalFee
                     );
         balanceAccount.submitTransaction(pendingTransaction.getTransaction());
         UtilTest.waitForReceiptStatus(mobileCoinClient, pendingTransaction.getReceipt());

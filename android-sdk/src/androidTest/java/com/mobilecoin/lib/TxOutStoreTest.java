@@ -13,20 +13,9 @@ import static org.mockito.Mockito.when;
 import android.os.Parcel;
 
 import com.google.protobuf.ByteString;
-import com.mobilecoin.lib.exceptions.AttestationException;
 import com.mobilecoin.lib.exceptions.BadBip39EntropyException;
-import com.mobilecoin.lib.exceptions.FeeRejectedException;
-import com.mobilecoin.lib.exceptions.FogReportException;
 import com.mobilecoin.lib.exceptions.FogSyncException;
-import com.mobilecoin.lib.exceptions.FragmentedAccountException;
-import com.mobilecoin.lib.exceptions.InsufficientFundsException;
 import com.mobilecoin.lib.exceptions.InvalidFogResponse;
-import com.mobilecoin.lib.exceptions.InvalidReceiptException;
-import com.mobilecoin.lib.exceptions.InvalidTransactionException;
-import com.mobilecoin.lib.exceptions.InvalidUriException;
-import com.mobilecoin.lib.exceptions.NetworkException;
-import com.mobilecoin.lib.exceptions.SerializationException;
-import com.mobilecoin.lib.exceptions.TransactionBuilderException;
 import com.mobilecoin.lib.network.uri.FogUri;
 
 import org.junit.Assert;
@@ -36,7 +25,9 @@ import java.math.BigInteger;
 import java.security.SecureRandom;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 
@@ -67,9 +58,20 @@ public class TxOutStoreTest {
             Assert.fail("UTXO store must contain non-zero TXOs");
         }
 
-        BigInteger balance = BigInteger.ZERO;
-        for (OwnedTxOut utxo : utxos) {
-            balance = balance.add(utxo.getValue());
+        Map<TokenId, Balance> balances = new HashMap<TokenId, Balance>();
+        for(OwnedTxOut otxo : utxos) {
+            //TODO: on API level 24, we can use getOrDefault to simplify the logic here
+            Balance balance = balances.get(otxo.getAmount().getTokenId());
+            if(null == balance) {
+                balance = new Balance(BigInteger.ZERO, store.getCurrentBlockIndex());
+            }
+            else {
+                balance = new Balance(
+                        balance.getValue().add(otxo.getAmount().getValue()),
+                        store.getCurrentBlockIndex()
+                );
+            }
+            balances.put(otxo.getAmount().getTokenId(), balance);
         }
 
         byte[] serialized = store.toByteArray();
@@ -81,13 +83,24 @@ public class TxOutStoreTest {
                 restoredStoreSize
         );
 
-        BigInteger restoredBalance = BigInteger.ZERO;
-        for (OwnedTxOut utxo : restoredUtxos) {
-            restoredBalance = restoredBalance.add(utxo.getValue());
+        Map<TokenId, Balance> restoredBalances = new HashMap<TokenId, Balance>();
+        for(OwnedTxOut otxo : restoredUtxos) {
+            //TODO: on API level 24, we can use getOrDefault to simplify the logic here
+            Balance balance = restoredBalances.get(otxo.getAmount().getTokenId());
+            if(null == balance) {
+                balance = new Balance(BigInteger.ZERO, store.getCurrentBlockIndex());
+            }
+            else {
+                balance = new Balance(
+                        balance.getValue().add(otxo.getAmount().getValue()),
+                        store.getCurrentBlockIndex()
+                );
+            }
+            restoredBalances.put(otxo.getAmount().getTokenId(), balance);
         }
         Assert.assertEquals("Balance must remain the same after serialization round trip",
-                balance,
-                restoredBalance
+                balances,
+                restoredBalances
         );
     }
 
@@ -105,8 +118,7 @@ public class TxOutStoreTest {
         PendingTransaction pending = senderClient.prepareTransaction(
                 recipientClient.getAccountKey().getPublicAddress(),
                 amount,
-                minimumFee,
-                TxOutMemoBuilder.createDefaultRTHMemoBuilder()
+                minimumFee
         );
         senderClient.submitTransaction(pending.getTransaction());
 
