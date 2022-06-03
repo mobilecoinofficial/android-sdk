@@ -57,6 +57,11 @@ public class TokenId implements Parcelable {
     }
 
     @Override
+    public int hashCode() {
+        return Objects.hash(this.id);
+    }
+
+    @Override
     public int describeContents() {
         return 0;
     }
