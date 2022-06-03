@@ -1,9 +1,12 @@
 package com.mobilecoin.lib.network.services.http.Requester;
 
 import android.net.Uri;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.VisibleForTesting;
+
 import com.mobilecoin.lib.util.Util;
+
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
