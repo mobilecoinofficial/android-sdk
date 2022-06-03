@@ -4,6 +4,22 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.2.0] - 2022-05-03
+### Added
+- Support for multiple [token types](https://github.com/mobilecoinfoundation/mcips/blob/main/text/0025-confidential-token-ids.md)
+- [Recoverable Transaction History (RTH)](https://github.com/mobilecoinfoundation/mcips/blob/main/text/0004-recoverable-transaction-history.md)
+- [Parcelable](https://developer.android.com/reference/android/os/Parcelable) support for various SDK classes
+- Internal Consensus load balancer
+
+### Changed
+- Change TxOuts are now sent to a dedicated [change subaddress](https://github.com/mobilecoinfoundation/mcips/blob/main/text/0036-reserved-subaddresses.md)
+- Internal block info cache invalidated on submit transaction error, causing fees and block version to be re-fetched
+
+### Fixes
+- Fixed API level 24 support
+- FogSyncException will be thrown if Fog View and Ledger are out of sync with each other or Consensus.
+  This signifies that balances may temporarily be out of date or incorrect.
+
 ## [1.2.0-pre0] - 2021-09-15
 ### Added
 - Network Robustness. Host applications now have the ability to choose which transport protocols
@@ -55,3 +71,4 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [1.0.1-pre3] - 2020-19-03
 ### Added
 - Initial release
+
