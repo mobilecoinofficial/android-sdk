@@ -9,7 +9,6 @@ import com.mobilecoin.lib.exceptions.AttestationException;
 import com.mobilecoin.lib.log.LogAdapter;
 
 import java.security.cert.X509Certificate;
-import java.time.Duration;
 import java.util.Objects;
 import java.util.Set;
 

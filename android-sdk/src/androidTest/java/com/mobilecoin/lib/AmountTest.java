@@ -1,11 +1,10 @@
 package com.mobilecoin.lib;
 
+import static com.mobilecoin.lib.UnsignedLongTest.TEST_BIG_INTEGERS;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
-
-import static com.mobilecoin.lib.UnsignedLongTest.TEST_BIG_INTEGERS;
 
 import android.os.Parcel;
 

@@ -9,8 +9,6 @@ import com.mobilecoin.api.MobileCoinAPI;
 import com.mobilecoin.lib.exceptions.AmountDecoderException;
 import com.mobilecoin.lib.log.Logger;
 
-import java.math.BigInteger;
-
 /**
  * Encapsulates the abstraction of a native MaskedAmount with a JNI link to control the native
  * counterpart.

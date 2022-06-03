@@ -4,11 +4,13 @@ package com.mobilecoin.lib;
 
 
 import androidx.annotation.NonNull;
+
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.mobilecoin.api.MobileCoinAPI;
 import com.mobilecoin.lib.exceptions.AmountDecoderException;
 import com.mobilecoin.lib.exceptions.SerializationException;
 import com.mobilecoin.lib.log.Logger;
+
 import java.util.Objects;
 
 final class TxOut extends Native {

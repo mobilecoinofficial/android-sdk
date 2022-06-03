@@ -3,9 +3,9 @@ package com.mobilecoin.lib.network.services.grpc;
 import androidx.annotation.NonNull;
 
 import com.mobilecoin.lib.exceptions.NetworkException;
+import com.mobilecoin.lib.network.NetworkResult;
 import com.mobilecoin.lib.network.grpc.AuthInterceptor;
 import com.mobilecoin.lib.network.grpc.CookieInterceptor;
-import com.mobilecoin.lib.network.NetworkResult;
 import com.mobilecoin.lib.network.grpc.GRPCStatusResponse;
 import com.mobilecoin.lib.network.services.FogKeyImageService;
 

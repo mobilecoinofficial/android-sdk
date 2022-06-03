@@ -5,7 +5,9 @@ import static org.junit.Assert.assertEquals;
 import android.os.Parcel;
 
 import androidx.test.ext.junit.runners.AndroidJUnit4;
+
 import com.mobilecoin.lib.util.Hex;
+
 import org.junit.Test;
 import org.junit.runner.RunWith;
 

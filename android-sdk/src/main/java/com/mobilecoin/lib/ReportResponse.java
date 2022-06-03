@@ -7,7 +7,6 @@ import androidx.annotation.NonNull;
 import com.mobilecoin.lib.exceptions.FogReportException;
 import com.mobilecoin.lib.log.Logger;
 
-import com.mobilecoin.lib.util.Hex;
 import java.util.List;
 
 final class ReportResponse extends Native {

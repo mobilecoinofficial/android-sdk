@@ -6,8 +6,6 @@ import android.os.Parcel;
 
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 
-import com.mobilecoin.lib.log.Logger;
-
 import org.junit.Test;
 import org.junit.runner.RunWith;
 

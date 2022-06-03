@@ -4,23 +4,10 @@ package com.mobilecoin.lib;
 
 import static com.mobilecoin.lib.UtilTest.waitForTransactionStatus;
 
-import com.mobilecoin.lib.exceptions.AttestationException;
-import com.mobilecoin.lib.exceptions.FeeRejectedException;
-import com.mobilecoin.lib.exceptions.FogReportException;
-import com.mobilecoin.lib.exceptions.FragmentedAccountException;
-import com.mobilecoin.lib.exceptions.InsufficientFundsException;
-import com.mobilecoin.lib.exceptions.InvalidFogResponse;
-import com.mobilecoin.lib.exceptions.InvalidReceiptException;
-import com.mobilecoin.lib.exceptions.InvalidTransactionException;
-import com.mobilecoin.lib.exceptions.InvalidUriException;
-import com.mobilecoin.lib.exceptions.NetworkException;
-import com.mobilecoin.lib.exceptions.TransactionBuilderException;
-
 import org.junit.Assert;
 import org.junit.Test;
 
 import java.math.BigInteger;
-import java.util.concurrent.TimeoutException;
 
 public class AccountSnapshotTest {
     // check snapshot balance, spent some coins and check again, the balance for that snapshot

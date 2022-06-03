@@ -6,8 +6,6 @@ import androidx.annotation.NonNull;
 
 import com.mobilecoin.lib.log.Logger;
 
-import java.math.BigInteger;
-
 /**
  * Wrapper for the Transaction and Receipt objects obtained via {@link
  * MobileCoinTransactionClient#prepareTransaction(PublicAddress, Amount, Amount, TxOutMemoBuilder)}

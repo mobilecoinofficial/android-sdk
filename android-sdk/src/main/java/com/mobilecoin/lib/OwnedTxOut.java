@@ -8,22 +8,21 @@ import android.os.Parcelable;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import com.mobilecoin.api.MobileCoinAPI;
+import com.mobilecoin.api.MobileCoinAPI.EncryptedMemo;
 import com.mobilecoin.lib.exceptions.AmountDecoderException;
 import com.mobilecoin.lib.exceptions.InvalidTxOutMemoException;
 import com.mobilecoin.lib.exceptions.SerializationException;
 import com.mobilecoin.lib.exceptions.TransactionBuilderException;
 import com.mobilecoin.lib.log.Logger;
 
-import com.mobilecoin.api.MobileCoinAPI;
-import com.mobilecoin.api.MobileCoinAPI.EncryptedMemo;
-
-import fog_view.View;
-
 import java.math.BigInteger;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
+
+import fog_view.View;
 
 /**
  * A transaction output that belongs to a {@link AccountKey}

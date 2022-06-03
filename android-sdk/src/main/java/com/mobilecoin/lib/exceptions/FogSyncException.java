@@ -3,8 +3,6 @@ package com.mobilecoin.lib.exceptions;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import com.mobilecoin.lib.UnsignedLong;
-
 /**
  * This Exception is thrown when Fog is in an invalid state
  *
