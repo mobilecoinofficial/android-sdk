@@ -19,7 +19,7 @@ public class Amount implements Parcelable, Comparable<Amount> {
      * @param value   The value stored in this amount
      * @param tokenId The ID of the token that this amount represents
      */
-    Amount(BigInteger value, TokenId tokenId) {
+    public Amount(BigInteger value, TokenId tokenId) {
         this.value = value;
         this.tokenId = tokenId;
     }
