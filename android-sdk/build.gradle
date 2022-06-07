@@ -113,6 +113,9 @@ dependencies {
     grpcImplementation deps.network.grpc_protobuf
     implementation deps.network.protobuf
 
+    // JNI
+    implementation deps.jni.mobilecoin
+
     // Testing
     testImplementation deps.testing.junit
     testImplementation deps.testing.mockito_core

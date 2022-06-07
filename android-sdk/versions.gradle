@@ -26,6 +26,11 @@ network_versions.grpc = '1.38.0'
 network_versions.protobuf = '3.17.0'
 versions.network = network_versions
 
+// JNI
+def jni_versions = [:]
+jni_versions.mobilecoin = '1.2.1'
+versions.jni = jni_versions
+
 // Testing
 def testing_versions = [:]
 testing_versions.junit = '4.13.2'
@@ -58,6 +63,10 @@ network_deps.protobuf = "com.google.protobuf:protobuf-javalite:$versions.network
 network_deps.protoc_osx = "com.google.protobuf:protoc:$versions.network.protobuf:osx-x86_64"
 network_deps.protoc = "com.google.protobuf:protoc:$versions.network.protobuf"
 deps.network = network_deps
+
+def jni_deps = [:]
+jni_deps.mobilecoin = "com.mobilecoin:android-bindings:$versions.jni.mobilecoin"
+deps.jni = jni_deps
 
 def testing_deps = [:]
 testing_deps.junit = "junit:junit:$versions.testing.junit"
