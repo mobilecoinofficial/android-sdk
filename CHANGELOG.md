@@ -4,7 +4,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [1.2.0] - 2022-05-03
+## [1.2.1] - 2022-06-07
+### Added
+- Added Amount.ofMOB(BigInteger value) to create an Amount with MOB token ID
+
+### Changed
+- Updated bindings to version 1.2.1
+
+## [1.2.0] - 2022-06-03
 ### Added
 - Support for multiple [token types](https://github.com/mobilecoinfoundation/mcips/blob/main/text/0025-confidential-token-ids.md)
 - [Recoverable Transaction History (RTH)](https://github.com/mobilecoinfoundation/mcips/blob/main/text/0004-recoverable-transaction-history.md)
