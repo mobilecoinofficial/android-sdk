@@ -18,6 +18,9 @@ allprojects {
     repositories {
         google()
         mavenCentral()
+        maven {
+            url "https://dl.cloudsmith.io/qxAgwaeEE1vN8aLU/mobilecoin/mobilecoin/maven/"
+        }
     }
     gradle.projectsEvaluated {
         tasks.withType(JavaCompile) {
