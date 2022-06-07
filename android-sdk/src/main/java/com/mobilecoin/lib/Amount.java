@@ -25,15 +25,12 @@ public class Amount implements Parcelable, Comparable<Amount> {
     }
 
     /**
-     * Create an amount with the specified value and token ID
+     * Creates an Amount of MOB with the specified value
      *
-     * @param value   The value stored in this amount
-     * @param tokenId The ID of the token that this amount represents
+     * @param valuePicoMOB The value in picoMOB
      */
-    @Deprecated
-    private Amount(BigInteger value, UnsignedLong tokenId) {// TODO: remove in future versions and update bindings
-        this.value = value;
-        this.tokenId = TokenId.from(tokenId);
+    public static Amount ofMOB(BigInteger valuePicoMOB) {
+        return new Amount(valuePicoMOB, TokenId.MOB);
     }
 
     /**

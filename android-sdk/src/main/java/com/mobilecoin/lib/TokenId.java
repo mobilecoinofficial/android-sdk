@@ -36,6 +36,12 @@ public class TokenId implements Parcelable {
         }
     }
 
+    /**
+     * Creates a TokenId with the specified ID
+     *
+     * @param  id the ID number of the token
+     * @return a TokenId with the specified ID number
+     */
     @NonNull
     public static TokenId from(@NonNull UnsignedLong id) {
         return new TokenId(id);
