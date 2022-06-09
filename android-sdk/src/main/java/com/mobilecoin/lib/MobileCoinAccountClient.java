@@ -54,6 +54,8 @@ public interface MobileCoinAccountClient {
 
   /**
    * Retrieves {@code AccountKey}'s MOB balance in picoMOB.
+   * @deprecated Deprecated as of 1.2.0. Please use {@link MobileCoinAccountClient#getBalance(TokenId)} or {@link MobileCoinAccountClient#getBalances()}.
+   * @see TokenId
    */
   @NonNull
   @Deprecated
@@ -74,6 +76,9 @@ public interface MobileCoinAccountClient {
   /**
    * Returns whether the defragmentation is required on the active account in order to send the
    * specified amount of picoMOB
+   * @deprecated Deprecated as of 1.2.0. Please use {@link MobileCoinAccountClient#requiresDefragmentation(Amount)}.
+   * @see Amount
+   * @see TokenId
    */
   @Deprecated
   boolean requiresDefragmentation(@NonNull BigInteger amountPicoMOB)
@@ -98,6 +103,9 @@ public interface MobileCoinAccountClient {
    * once. However, wallet fragmentation is a rare occurrence since there is an internal mechanism
    * to defragment the account during other operations.
    *  @param delegate monitors and controls the defragmentation process
+   * @deprecated Deprecated as of 1.2.0. Please use {@link MobileCoinAccountClient#defragmentAccount(Amount, DefragmentationDelegate, boolean)}.
+   * @see Amount
+   * @see TokenId
    */
   @Deprecated
   void defragmentAccount(

@@ -24,14 +24,21 @@ import java.util.Objects;
 /**
  * Represents account's public address to receive coins
  */
-public final class PublicAddress extends Native implements Parcelable {
+public final class PublicAddress extends Native implements Parcelable, AddressHashProvider {
     private static final String TAG = PublicAddress.class.getName();
+
+    @NonNull
     private final RistrettoPublic viewKey;
+    @NonNull
     private final RistrettoPublic spendKey;
+    @Nullable
     private final Uri fogReportUri;
+    @Nullable
     private final String fogReportId;
+    @Nullable
     private final byte[] fogAuthoritySig;
 
+    @Nullable
     private AddressHash addressHash;
 
     /**
@@ -188,15 +195,25 @@ public final class PublicAddress extends Native implements Parcelable {
         return toProtoBufObject().toByteArray();
     }
 
-
-    /** Calculates the {@link AddressHash} for the given instance. */
-    public AddressHash calculateAddressHash() {
+    /**
+     * Calculates the {@link AddressHash} for the given instance.
+     * @deprecated Deprecated as of 1.2.2. Please use {@link PublicAddress#getAddressHash()}.
+     * */
+    @Deprecated
+    @NonNull
+    public AddressHash calculateAddressHash() {//TODO: 1.3 make private
         if (addressHash == null) {
             byte[] addressHashData = calculate_address_hash_data();
             addressHash = AddressHash.createAddressHash(addressHashData);
         }
 
         return addressHash;
+    }
+
+    @NonNull
+    @Override
+    public AddressHash getAddressHash() {
+        return this.calculateAddressHash();
     }
 
     @NonNull
@@ -319,8 +336,8 @@ public final class PublicAddress extends Native implements Parcelable {
                 ? "(null)"
                 : Hex.toString(fogAuthoritySig);
         return "PublicAddress{" +
-                "viewKey=" + viewKey.toString() +
-                ", spendKey=" + spendKey.toString() +
+                "viewKey=" + viewKey +
+                ", spendKey=" + spendKey +
                 ", fogReportUri=" + fogReportUri +
                 ", fogReportId=" + fogReportId +
                 ", fogAuthoritySig=" + fogAuthoritySignString +

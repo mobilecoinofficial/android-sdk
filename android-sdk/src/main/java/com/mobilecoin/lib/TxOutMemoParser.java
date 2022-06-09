@@ -14,9 +14,11 @@ final class TxOutMemoParser {
    * @param decryptedMemoPayload the memo payload bytes that have been decrypted.
    * @param recipientAccountKey of the user who received the memo.
    **/
-  public static TxOutMemo parseTxOutMemo(byte[] decryptedMemoPayload,
-      AccountKey recipientAccountKey,
-      TxOut nativeTxOut) throws InvalidTxOutMemoException {
+  public static TxOutMemo parseTxOutMemo(
+          byte[] decryptedMemoPayload,
+          AccountKey recipientAccountKey,
+          TxOut nativeTxOut
+  ) throws InvalidTxOutMemoException {
     if (decryptedMemoPayload.length == 0) {
       return new EmptyMemo(TxOutMemoType.NOT_SET);
     }
@@ -37,13 +39,11 @@ final class TxOutMemoParser {
       case UNUSED:
         return new EmptyMemo(TxOutMemoType.UNUSED);
       case SENDER:
-        return SenderMemo
-            .create(nativeTxOut.getPublicKey(), memoData);
+        return SenderMemo.create(nativeTxOut.getPublicKey(), memoData);
       case DESTINATION:
         return DestinationMemo.create(recipientAccountKey, nativeTxOut, memoData);
       case SENDER_WITH_PAYMENT_REQUEST:
-        return SenderWithPaymentRequestMemo
-            .create(nativeTxOut.getPublicKey(), memoData);
+        return SenderWithPaymentRequestMemo.create(nativeTxOut.getPublicKey(), memoData);
       case UNKNOWN:
         return new EmptyMemo(TxOutMemoType.UNKNOWN);
       default:
