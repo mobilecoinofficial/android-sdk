@@ -17,4 +17,22 @@ public class HistoricalTransaction {
         this.memo = txOut.getTxOutMemo();
     }
 
+    /**
+     *
+     * @return
+     */
+    @NonNull
+    public OwnedTxOut getTxOut() {
+        return this.txOut;
+    }
+
+    /**
+     *
+     * @return
+     */
+    @NonNull
+    public TxOutMemo getMemo() {
+        return this.memo;
+    }
+
 }
