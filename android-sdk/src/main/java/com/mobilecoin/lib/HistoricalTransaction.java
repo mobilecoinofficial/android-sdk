@@ -2,6 +2,7 @@ package com.mobilecoin.lib;
 
 import androidx.annotation.NonNull;
 
+import java.util.Objects;
 import java.util.Set;
 
 /**
@@ -56,6 +57,22 @@ public class HistoricalTransaction {
     @NonNull
     public TxOutMemo getMemo() {
         return this.memo;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if(this == o) return true;
+        if(o instanceof HistoricalTransaction) {
+            HistoricalTransaction that = (HistoricalTransaction)o;
+            return Objects.equals(this.txOut, that.txOut) &&
+                   Objects.equals(this.memo, that.memo);
+        }
+        return false;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(this.txOut, this.memo);
     }
 
 }

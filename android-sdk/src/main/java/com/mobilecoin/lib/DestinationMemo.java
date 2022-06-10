@@ -87,17 +87,18 @@ public final class DestinationMemo extends TxOutMemo {
 
   @Override
   public boolean equals(Object o) {
+    if(this == o) return true;
     if(o instanceof DestinationMemo) {
       DestinationMemo that = (DestinationMemo)o;
-      return Objects.equals(this.memoType, that.memoType) &&
-             Objects.equals(this.destinationMemoData, that.destinationMemoData);
+      return super.equals(that) &&
+              Objects.equals(this.destinationMemoData, that.destinationMemoData);
     }
     return false;
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(memoType, destinationMemoData);
+    return Objects.hash(super.hashCode(), memoType, destinationMemoData);
   }
 
   private native void init_jni_from_memo_data(byte[] memoData);

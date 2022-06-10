@@ -39,21 +39,18 @@ public final class SenderWithPaymentRequestMemoData extends MemoData {
 
   @Override
   public boolean equals(Object o) {
-    if (this == o) {
-      return true;
+    if (this == o) return true;
+    if (o instanceof SenderWithPaymentRequestMemoData) {
+      SenderWithPaymentRequestMemoData that = (SenderWithPaymentRequestMemoData) o;
+      return super.equals(that) &&
+             Objects.equals(paymentRequestId, that.paymentRequestId);
     }
-    if (o == null || getClass() != o.getClass()) {
-      return false;
-    }
-    SenderWithPaymentRequestMemoData that = (SenderWithPaymentRequestMemoData) o;
-
-    return Objects.equals(addressHash, that.addressHash) &&
-        Objects.equals(paymentRequestId, that.paymentRequestId);
+    return false;
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(addressHash, paymentRequestId);
+    return Objects.hash(super.hashCode(), paymentRequestId);
   }
 
   private SenderWithPaymentRequestMemoData(@NonNull Parcel parcel) {

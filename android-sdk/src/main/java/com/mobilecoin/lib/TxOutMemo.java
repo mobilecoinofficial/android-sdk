@@ -5,6 +5,8 @@ import android.os.Parcelable;
 
 import androidx.annotation.NonNull;
 
+import java.util.Objects;
+
 /** Represents a TxOut memo. */
 public abstract class TxOutMemo extends Native implements Parcelable {
 
@@ -19,6 +21,22 @@ public abstract class TxOutMemo extends Native implements Parcelable {
   @NonNull
   public TxOutMemoType getTxOutMemoType() {
     return this.memoType;
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if(this == o) return true;
+    if(o instanceof TxOutMemo) {
+      TxOutMemo that = (TxOutMemo)o;
+      return Objects.equals(this.memoType, that.memoType) &&
+             Objects.equals(this.validated, that.validated);
+    }
+    return false;
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(this.memoType, this.validated);
   }
 
   @Override

@@ -112,9 +112,10 @@ public final class SenderMemo extends TxOutMemo {
 
   @Override
   public boolean equals(Object o) {
+    if(this == o) return true;
     if(o instanceof SenderMemo) {
       SenderMemo that = (SenderMemo)o;
-      return Objects.equals(this.memoType, that.memoType) &&
+      return super.equals(that) &&
              Objects.equals(this.txOutPublicKey, that.txOutPublicKey) &&
              Objects.equals(this.senderMemoData, that.senderMemoData);
     }
@@ -123,7 +124,7 @@ public final class SenderMemo extends TxOutMemo {
 
   @Override
   public int hashCode() {
-    return Objects.hash(memoType, txOutPublicKey, senderMemoData);
+    return Objects.hash(txOutPublicKey, senderMemoData);
   }
 
   private native void init_jni_from_memo_data(byte[] memoData);

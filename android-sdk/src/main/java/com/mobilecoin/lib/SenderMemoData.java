@@ -23,23 +23,6 @@ public final class SenderMemoData extends MemoData {
     super(addressHash);
   }
 
-  @Override
-  public boolean equals(Object o) {
-    if (this == o) {
-      return true;
-    }
-    if (o == null || getClass() != o.getClass()) {
-      return false;
-    }
-    SenderMemoData that = (SenderMemoData) o;
-    return Objects.equals(addressHash, that.addressHash);
-  }
-
-  @Override
-  public int hashCode() {
-    return Objects.hash(addressHash);
-  }
-
   private SenderMemoData(@NonNull Parcel parcel) {
     super(parcel.readParcelable(AddressHash.class.getClassLoader()));
   }

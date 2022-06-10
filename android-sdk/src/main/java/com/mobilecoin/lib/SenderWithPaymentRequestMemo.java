@@ -119,11 +119,16 @@ public final class SenderWithPaymentRequestMemo extends TxOutMemo {
   public boolean equals(Object o) {
     if(o instanceof SenderWithPaymentRequestMemo) {
       SenderWithPaymentRequestMemo that = (SenderWithPaymentRequestMemo)o;
-      return Objects.equals(this.memoType, that.memoType) &&
+      return super.equals(that) &&
              Objects.equals(this.txOutPublicKey, that.txOutPublicKey) &&
              Objects.equals(this.senderWithPaymentRequestMemoData, that.senderWithPaymentRequestMemoData);
     }
     return false;
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(super.hashCode(), this.txOutPublicKey, this.senderWithPaymentRequestMemoData);
   }
 
   private native void init_jni_from_memo_data(byte[] memoData);

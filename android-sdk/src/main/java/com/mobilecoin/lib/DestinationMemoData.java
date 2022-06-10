@@ -50,22 +50,20 @@ public final class DestinationMemoData extends MemoData {
 
   @Override
   public boolean equals(Object o) {
-    if (this == o) {
-      return true;
+    if (this == o) return true;
+    if(o instanceof DestinationMemoData) {
+      DestinationMemoData that = (DestinationMemoData)o;
+      return super.equals(that) &&
+             numberOfRecipients == that.numberOfRecipients &&
+             Objects.equals(fee, that.fee) &&
+             Objects.equals(totalOutlay, that.totalOutlay);
     }
-    if (o == null || getClass() != o.getClass()) {
-      return false;
-    }
-    DestinationMemoData that = (DestinationMemoData) o;
-    return numberOfRecipients == that.numberOfRecipients &&
-        Objects.equals(addressHash, that.addressHash) &&
-        Objects.equals(fee, that.fee) &&
-        Objects.equals(totalOutlay, that.totalOutlay);
+    return false;
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(addressHash, numberOfRecipients, fee, totalOutlay);
+    return Objects.hash(super.hashCode(), numberOfRecipients, fee, totalOutlay);
   }
 
   private DestinationMemoData(@NonNull Parcel parcel) {
