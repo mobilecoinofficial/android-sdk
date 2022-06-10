@@ -28,15 +28,14 @@ public abstract class TxOutMemo extends Native implements Parcelable {
     if(this == o) return true;
     if(o instanceof TxOutMemo) {
       TxOutMemo that = (TxOutMemo)o;
-      return Objects.equals(this.memoType, that.memoType) &&
-             Objects.equals(this.validated, that.validated);
+      return Objects.equals(this.memoType, that.memoType);
     }
     return false;
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(this.memoType, this.validated);
+    return Objects.hash(this.memoType);
   }
 
   @Override
