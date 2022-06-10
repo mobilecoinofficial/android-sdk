@@ -77,6 +77,7 @@ public final class AccountActivity {
      * and parse the {@link TxOutMemo}s. For every {@link OwnedTxOut} that has a memo matching the
      * {@link AddressHash} of a contact, a {@link HistoricalTransaction} will be created and added
      * to a {@link List}. The {@link List} is then returned.
+     *
      * @param contacts a {@link Set} of {@link AddressHashProvider}s
      * @return a {@link List} of {@link HistoricalTransaction}s
      * @see AddressHashProvider
@@ -95,6 +96,7 @@ public final class AccountActivity {
      * and parse the {@link TxOutMemo}s. For every {@link OwnedTxOut} that has a memo matching the
      * {@link AddressHash} of the contact, a {@link HistoricalTransaction} will be created and added
      * to a {@link List}. The {@link List} is then returned.
+     *
      * @param contact an {@link AddressHashProvider}
      * @return a {@link List} of {@link HistoricalTransaction}s
      * @see AddressHashProvider
