@@ -53,6 +53,7 @@ public final class DestinationMemo extends TxOutMemo {
             fee,
             totalOutlay
     );
+    super.memoData = destinationMemoData;
   }
 
   /** Retrieves the destination memo data. **/

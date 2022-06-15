@@ -9,8 +9,8 @@ import java.util.Set;
  * Represents a {@link Transaction} with a contact which has already completed
  *
  * @see AccountActivity#recoverTransactions(Set)
- * @see AccountActivity#recoverContactTransactions(AddressHashProvider)
- * @see AddressHashProvider
+ * @see AccountActivity#recoverContactTransactions(PublicAddressProvider)
+ * @see PublicAddressProvider
  * @see OwnedTxOut
  * @see TxOutMemo
  * @since 1.2.2

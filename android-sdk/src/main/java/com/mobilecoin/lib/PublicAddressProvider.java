@@ -13,13 +13,13 @@ import java.util.Set;
  * @see AddressHash
  * @see PublicAddress
  * @see AccountActivity#recoverTransactions(Set)
- * @see AccountActivity#recoverContactTransactions(AddressHashProvider)
+ * @see AccountActivity#recoverContactTransactions(PublicAddressProvider)
  * @since 1.2.2
  */
-public interface AddressHashProvider {
-
+public interface PublicAddressProvider {
+    // TODO: Change the desc
     /**
-     * Returns the {@link AddressHash} of a {@link PublicAddress}.
+     * Returns the {@link PublicAddress} of a {@link PublicAddress}.
      * The {@link AddressHash} can be used to uniquely identify a {@link PublicAddress} in a more
      * compact way. While the {@link AddressHash} cannot be used to recover a {@link PublicAddress},
      * it can be assumed that any two equivalent {@link AddressHash}es were generated using the same
@@ -29,6 +29,6 @@ public interface AddressHashProvider {
      * @since 1.2.2
      */
     @NonNull
-    public AddressHash getAddressHash();
+    public PublicAddress getPublicAddress();
 
 }

@@ -4,8 +4,11 @@ package com.mobilecoin.lib;
 
 import androidx.annotation.NonNull;
 
+import com.mobilecoin.lib.exceptions.InvalidTxOutMemoException;
 import com.mobilecoin.lib.log.Logger;
 
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -23,10 +26,12 @@ public final class AccountActivity {
     private final static String TAG = AccountActivity.class.getName();
     private final UnsignedLong blockCount;
     private final Set<OwnedTxOut> txOuts;
+    private final AccountKey accountKey;
 
-    AccountActivity(@NonNull Set<OwnedTxOut> txOuts, @NonNull UnsignedLong blockCount) {
+    AccountActivity(@NonNull Set<OwnedTxOut> txOuts, @NonNull UnsignedLong blockCount, @NonNull AccountKey accountKey) {
         this.txOuts = txOuts;
         this.blockCount = blockCount;
+        this.accountKey = accountKey;
         Logger.i(TAG, "Created AccountActivity", null,
                 "txOuts size:", txOuts.size(),
                 "blockCount:", blockCount);
@@ -72,40 +77,74 @@ public final class AccountActivity {
 
     /**
      * Recovers all transactions for the provided set of contacts.
-     * Contacts are to be provided as a {@link Set} of {@link AddressHashProvider}s.
+     * Contacts are to be provided as a {@link Set} of {@link PublicAddressProvider}s.
      * This method will iterate over the {@link AccountActivity}'s {@link Set} of {@link OwnedTxOut}s
      * and parse the {@link TxOutMemo}s. For every {@link OwnedTxOut} that has a memo matching the
      * {@link AddressHash} of a contact, a {@link HistoricalTransaction} will be created and added
      * to a {@link List}. The {@link List} is then returned.
      *
-     * @param contacts a {@link Set} of {@link AddressHashProvider}s
+     * @param contacts a {@link Set} of {@link PublicAddressProvider}s
      * @return a {@link List} of {@link HistoricalTransaction}s
-     * @see AddressHashProvider
+     * @see PublicAddressProvider
      * @see HistoricalTransaction
      * @since 1.2.2
      */
     @NonNull
-    public List<HistoricalTransaction> recoverTransactions(@NonNull Set<AddressHashProvider> contacts) {
-        return null;//TODO: this
+    public List<HistoricalTransaction> recoverTransactions(@NonNull Set<PublicAddressProvider> contacts) {
+        Set<OwnedTxOut> ownedTxOut = getAllTokenTxOuts();
+        List<HistoricalTransaction> historicalTransactions = new ArrayList<>();
+        for (OwnedTxOut txOut: ownedTxOut) {
+            for (PublicAddressProvider contact: contacts) {
+                switch (txOut.getTxOutMemo().memoType) {
+                    case SENDER:
+                    case SENDER_WITH_PAYMENT_REQUEST:
+                        if (recover(contact.getPublicAddress(), (SenderMemo) txOut.getTxOutMemo())) {
+                            historicalTransactions.add(new HistoricalTransaction(txOut));
+                        }
+                        break;
+                    case DESTINATION:
+                        historicalTransactions.add(new HistoricalTransaction(txOut));
+                        break;
+                }
+            }
+        }
+        return historicalTransactions;
+    }
+
+    private boolean recover(PublicAddress contact, SenderMemo memo) {
+        if (contact.getPublicAddress().calculateAddressHash() == memo.memoData.getAddressHash()) {
+            try {
+                memo.getSenderMemoData(
+                        accountKey.getPublicAddress(),
+                        accountKey.getDefaultSubAddressViewKey()
+                );
+                return true;
+            } catch (InvalidTxOutMemoException e) {
+                // Unable to validate contact public address with memo
+            }
+        }
+        return false;
     }
 
     /**
      * Recovers all transactions for the provided contact.
-     * The contact is to be provided as an {@link AddressHashProvider}.
+     * The contact is to be provided as an {@link PublicAddressProvider}.
      * This method will iterate over the {@link AccountActivity}'s {@link Set} of {@link OwnedTxOut}s
      * and parse the {@link TxOutMemo}s. For every {@link OwnedTxOut} that has a memo matching the
      * {@link AddressHash} of the contact, a {@link HistoricalTransaction} will be created and added
      * to a {@link List}. The {@link List} is then returned.
      *
-     * @param contact an {@link AddressHashProvider}
+     * @param contact an {@link PublicAddressProvider}
      * @return a {@link List} of {@link HistoricalTransaction}s
-     * @see AddressHashProvider
+     * @see PublicAddressProvider
      * @see HistoricalTransaction
      * @since 1.2.2
      */
     @NonNull
-    public List<HistoricalTransaction> recoverContactTransactions(@NonNull AddressHashProvider contact) {
-        return null;//TODO: this
+    public List<HistoricalTransaction> recoverContactTransactions(@NonNull PublicAddressProvider contact) {
+        Set<PublicAddressProvider> contacts = new HashSet<>();
+        contacts.add(contact);
+        return recoverTransactions(contacts);
     }
 
 }

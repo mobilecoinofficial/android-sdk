@@ -4,6 +4,7 @@ import android.os.Parcel;
 
 import androidx.annotation.NonNull;
 
+import com.mobilecoin.api.MobileCoinAPI;
 import com.mobilecoin.lib.exceptions.InvalidTxOutMemoException;
 
 import java.util.Objects;
@@ -47,6 +48,7 @@ public final class SenderMemo extends TxOutMemo {
       throw illegalArgumentException;
     }
     senderMemoData = SenderMemoData.create(getAddressHash());
+    super.memoData = senderMemoData;
   }
 
   /**

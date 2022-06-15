@@ -13,6 +13,7 @@ public abstract class TxOutMemo extends Native implements Parcelable {
   @NonNull
   protected final TxOutMemoType memoType;
   protected transient boolean validated = false;
+  protected MemoData memoData;
 
   protected TxOutMemo(@NonNull TxOutMemoType memoType) {
     this.memoType = memoType;

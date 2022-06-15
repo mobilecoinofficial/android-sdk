@@ -24,7 +24,7 @@ import java.util.Objects;
 /**
  * Represents account's public address to receive coins
  */
-public final class PublicAddress extends Native implements Parcelable, AddressHashProvider {
+public final class PublicAddress extends Native implements Parcelable, PublicAddressProvider {
     private static final String TAG = PublicAddress.class.getName();
 
     @NonNull
@@ -197,7 +197,7 @@ public final class PublicAddress extends Native implements Parcelable, AddressHa
 
     /**
      * Calculates the {@link AddressHash} for the given instance.
-     * @deprecated Deprecated as of 1.2.2. Please use {@link PublicAddress#getAddressHash()}.
+     * @deprecated Deprecated as of 1.2.2. Please use {@link PublicAddress#()}.
      * */
     @Deprecated
     @NonNull
@@ -212,8 +212,8 @@ public final class PublicAddress extends Native implements Parcelable, AddressHa
 
     @NonNull
     @Override
-    public AddressHash getAddressHash() {
-        return this.calculateAddressHash();
+    public PublicAddress getPublicAddress() {
+        return this;
     }
 
     @NonNull

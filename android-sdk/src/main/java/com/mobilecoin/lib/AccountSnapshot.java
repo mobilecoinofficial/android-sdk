@@ -58,7 +58,7 @@ public final class AccountSnapshot {
      */
     @NonNull
     public AccountActivity getAccountActivity() {
-        return new AccountActivity(txOuts, blockIndex.add(UnsignedLong.ONE));
+        return new AccountActivity(txOuts, blockIndex.add(UnsignedLong.ONE), mobileCoinClient.getAccountKey());
     }
 
     /**

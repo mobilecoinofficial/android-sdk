@@ -799,7 +799,7 @@ public final class MobileCoinClient implements MobileCoinAccountClient, MobileCo
         txOutStore.refresh(viewClient, ledgerClient, fogBlockClient);
         Set<OwnedTxOut> txOuts = txOutStore.getSyncedTxOuts();
         return new AccountActivity(txOuts,
-                getTxOutStore().getCurrentBlockIndex().add(UnsignedLong.ONE));
+                getTxOutStore().getCurrentBlockIndex().add(UnsignedLong.ONE), getAccountKey());
     }
 
     @NonNull
