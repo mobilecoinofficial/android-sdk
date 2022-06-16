@@ -8,7 +8,6 @@ import android.os.Parcelable;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import com.google.protobuf.ByteString;
 import com.mobilecoin.api.MobileCoinAPI;
 import com.mobilecoin.api.MobileCoinAPI.EncryptedMemo;
 import com.mobilecoin.lib.exceptions.AmountDecoderException;

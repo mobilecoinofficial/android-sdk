@@ -1,7 +1,6 @@
 package com.mobilecoin.lib;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import android.os.Parcel;
@@ -19,7 +18,6 @@ import org.junit.runners.JUnit4;
 
 import java.util.Arrays;
 
-import fog_view.View;
 import fog_view.View.TxOutRecord;
 
 @RunWith(JUnit4.class)
@@ -176,8 +174,8 @@ public class OwnedTxOutTest {
     // Test parsing of valid and invalid TxOuts with no commitment data but with commitment crc32
 
     // Test valid with CRC32
-    View.TxOutRecord recordWithCrc32 = TxOutRecord.parseFrom(Hex.toByteArray(viewRecordWithSenderMemoHexProtoBytes));
-    View.TxOutRecord invalidRecordWithCrc32 = TxOutRecord.newBuilder(recordWithCrc32)
+    TxOutRecord recordWithCrc32 = TxOutRecord.parseFrom(Hex.toByteArray(viewRecordWithSenderMemoHexProtoBytes));
+    TxOutRecord invalidRecordWithCrc32 = TxOutRecord.newBuilder(recordWithCrc32)
             .setTxOutAmountCommitmentDataCrc32(
                     recordWithCrc32.getTxOutAmountCommitmentDataCrc32() - 1
             ).build();
@@ -199,7 +197,7 @@ public class OwnedTxOutTest {
             recordWithCrc32.getTxOutAmountMaskedValue(),
             recordWithCrc32.getTxOutAmountMaskedTokenId().toByteArray()
     ).getCommitment();
-    View.TxOutRecord recordWithCommitment = TxOutRecord.newBuilder(recordWithCrc32)
+    TxOutRecord recordWithCommitment = TxOutRecord.newBuilder(recordWithCrc32)
             .setTxOutAmountCommitmentDataCrc32(0)
             .setTxOutAmountCommitmentData(ByteString.copyFrom(validCommitmentData))
             .build();
@@ -208,7 +206,7 @@ public class OwnedTxOutTest {
     // Test invalid with commitment
     byte invalidCommitmentData[] = Arrays.copyOf(validCommitmentData, validCommitmentData.length);
     invalidCommitmentData[0] = (byte)(validCommitmentData[0] - 1);
-    View.TxOutRecord recordWithInvalidCommitment = TxOutRecord.newBuilder(recordWithCrc32)
+    TxOutRecord recordWithInvalidCommitment = TxOutRecord.newBuilder(recordWithCrc32)
             .setTxOutAmountCommitmentDataCrc32(0)
             .setTxOutAmountCommitmentData(ByteString.copyFrom(invalidCommitmentData))
             .build();

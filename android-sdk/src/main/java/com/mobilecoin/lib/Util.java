@@ -4,7 +4,6 @@ package com.mobilecoin.lib;
 
 import androidx.annotation.NonNull;
 
-import com.google.protobuf.ByteString;
 import com.mobilecoin.lib.exceptions.TransactionBuilderException;
 import com.mobilecoin.lib.log.Logger;
 
