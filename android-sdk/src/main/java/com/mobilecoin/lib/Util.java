@@ -4,6 +4,7 @@ package com.mobilecoin.lib;
 
 import androidx.annotation.NonNull;
 
+import com.google.protobuf.ByteString;
 import com.mobilecoin.lib.exceptions.TransactionBuilderException;
 import com.mobilecoin.lib.log.Logger;
 
@@ -92,4 +93,11 @@ final class Util extends Native {
         }
         return trustRoots;
     }
+
+    private static native int compute_commitment_crc32(byte committment_bytes[]);
+
+    static int computeCommittmentCrc32(byte committmentBytes[]) {
+        return compute_commitment_crc32(committmentBytes);
+    }
+
 }

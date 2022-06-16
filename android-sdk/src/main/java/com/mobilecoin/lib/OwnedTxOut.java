@@ -8,6 +8,7 @@ import android.os.Parcelable;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import com.google.protobuf.ByteString;
 import com.mobilecoin.api.MobileCoinAPI;
 import com.mobilecoin.api.MobileCoinAPI.EncryptedMemo;
 import com.mobilecoin.lib.exceptions.AmountDecoderException;
@@ -85,6 +86,21 @@ public class OwnedTxOut implements Parcelable {
                     accountKey.getViewKey(),
                     txOutPublicKey
             );
+
+            // Verify reconstructed commitment
+            final byte reconstructedCommitment[] = maskedAmount.getCommitment();
+            final int reconstructedCrc32 = Util.computeCommittmentCrc32(reconstructedCommitment);
+            if(txOutRecord.getTxOutAmountCommitmentData().size() > 0) {
+                final byte commitmentBytes[] = txOutRecord.getTxOutAmountCommitmentData().toByteArray();
+                if(reconstructedCrc32 != Util.computeCommittmentCrc32(commitmentBytes)) {
+                    throw(new SerializationException("Commitment CRC mismatch"));
+                }
+            }
+            else {
+                if(reconstructedCrc32 != txOutRecord.getTxOutAmountCommitmentDataCrc32()) {
+                    throw(new SerializationException("Commitment CRC mismatch"));
+                }
+            }
 
             MobileCoinAPI.TxOut.Builder txOutProtoBuilder = MobileCoinAPI.TxOut.newBuilder()
                     .setMaskedAmount(maskedAmount.toProtoBufObject())

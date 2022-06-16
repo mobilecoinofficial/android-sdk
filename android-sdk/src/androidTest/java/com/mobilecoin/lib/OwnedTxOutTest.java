@@ -1,10 +1,14 @@
 package com.mobilecoin.lib;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import android.os.Parcel;
 import android.util.Log;
 
+import com.google.protobuf.ByteString;
+import com.mobilecoin.lib.exceptions.SerializationException;
 import com.mobilecoin.lib.util.Hex;
 
 import org.junit.Assert;
@@ -13,6 +17,9 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
+import java.util.Arrays;
+
+import fog_view.View;
 import fog_view.View.TxOutRecord;
 
 @RunWith(JUnit4.class)
@@ -162,6 +169,56 @@ public class OwnedTxOutTest {
       assertEquals(parcelInput, parcelOutput);
       parcel.recycle();
     }
+  }
+
+  @Test
+  public void testMatchingCrc32ParsesCorrectly() throws Exception {
+    // Test parsing of valid and invalid TxOuts with no commitment data but with commitment crc32
+
+    // Test valid with CRC32
+    View.TxOutRecord recordWithCrc32 = TxOutRecord.parseFrom(Hex.toByteArray(viewRecordWithSenderMemoHexProtoBytes));
+    View.TxOutRecord invalidRecordWithCrc32 = TxOutRecord.newBuilder(recordWithCrc32)
+            .setTxOutAmountCommitmentDataCrc32(
+                    recordWithCrc32.getTxOutAmountCommitmentDataCrc32() - 1
+            ).build();
+    OwnedTxOut txOutFromCrc32 = new OwnedTxOut(recordWithCrc32, receiverAccountKey);
+
+    // Test invalid with CRC32
+    try {
+      OwnedTxOut txOutFromInvalidCrc32 = new OwnedTxOut(invalidRecordWithCrc32, receiverAccountKey);
+      fail("Parsing of invalid record must fail");
+    } catch(IllegalArgumentException e) {
+      assertEquals(SerializationException.class, e.getCause().getClass());
+    }
+
+    // Test valid with commitment
+    RistrettoPublic txOutSharedSecret =
+            Util.getSharedSecret(receiverAccountKey.getViewKey(), txOutFromCrc32.getPublicKey());
+    byte validCommitmentData[] = new MaskedAmount(
+            txOutSharedSecret,
+            recordWithCrc32.getTxOutAmountMaskedValue(),
+            recordWithCrc32.getTxOutAmountMaskedTokenId().toByteArray()
+    ).getCommitment();
+    View.TxOutRecord recordWithCommitment = TxOutRecord.newBuilder(recordWithCrc32)
+            .setTxOutAmountCommitmentDataCrc32(0)
+            .setTxOutAmountCommitmentData(ByteString.copyFrom(validCommitmentData))
+            .build();
+    OwnedTxOut txOutFromCommitment = new OwnedTxOut(recordWithCommitment, receiverAccountKey);
+
+    // Test invalid with commitment
+    byte invalidCommitmentData[] = Arrays.copyOf(validCommitmentData, validCommitmentData.length);
+    invalidCommitmentData[0] = (byte)(validCommitmentData[0] - 1);
+    View.TxOutRecord recordWithInvalidCommitment = TxOutRecord.newBuilder(recordWithCrc32)
+            .setTxOutAmountCommitmentDataCrc32(0)
+            .setTxOutAmountCommitmentData(ByteString.copyFrom(invalidCommitmentData))
+            .build();
+    try {
+      OwnedTxOut txOutFromInvalidCommitment = new OwnedTxOut(recordWithInvalidCommitment, receiverAccountKey);
+      fail("Parsing of invalid record must fail");
+    } catch(IllegalArgumentException e) {
+      assertEquals(SerializationException.class, e.getCause().getClass());
+    }
+
   }
 
 }
