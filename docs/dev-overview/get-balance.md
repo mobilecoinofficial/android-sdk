@@ -1,4 +1,4 @@
-# Get balance
+# Get balances
 
 ### User experience
 
@@ -8,15 +8,22 @@ In order for users to receive transactions (that is, get their balance), they mu
 
 ### Implementation
 
-As an Android developer, you will need the following code to enable the user to get their balance:
+As an Android developer, you will need the following code to enable the user to get their MOB balance:
 
 ```java
-MobileCoinClient mobileCoinClient =
-new MobileCoinClient(
-account,
-FOG_URI,
-CONSENSUS_URI
+MobileCoinClient mobileCoinClient = new MobileCoinClient(
+    account,
+    FOG_URI,
+    CONSENSUS_URI,
+    TransportProtocol.forGRPC()
 );
-BigInteger balance =
-mobileCoinClient.getBalance();
+Balance balance = mobileCoinClient.getBalance(TokenId.MOB);
 ```
+
+The balance of any token ID can retrieved using:
+
+```java mobileCoinClient.getBalance(TokenId.from(myTokenId));```
+
+Balances of all tokens on the account can be fetched all at once using:
+
+```java Map<TokenId, Balance> balances = mobileCoinClient.getBalances();```
