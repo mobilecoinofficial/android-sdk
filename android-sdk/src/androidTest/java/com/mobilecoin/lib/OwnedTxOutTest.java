@@ -170,7 +170,7 @@ public class OwnedTxOutTest {
   }
 
   @Test
-  public void testMatchingCrc32ParsesCorrectly() throws Exception {
+  public void testVerifyCorrectCommitment() throws Exception {
     // Test parsing of valid and invalid TxOuts with no commitment data but with commitment crc32
 
     // Test valid with CRC32
