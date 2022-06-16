@@ -22,8 +22,12 @@ Balance balance = mobileCoinClient.getBalance(TokenId.MOB);
 
 The balance of any token ID can retrieved using:
 
-```java mobileCoinClient.getBalance(TokenId.from(myTokenId));```
+```java
+mobileCoinClient.getBalance(TokenId.from(myTokenId));
+```
 
 Balances of all tokens on the account can be fetched all at once using:
 
-```java Map<TokenId, Balance> balances = mobileCoinClient.getBalances();```
+```java
+Map<TokenId, Balance> balances = mobileCoinClient.getBalances();
+```
