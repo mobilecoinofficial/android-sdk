@@ -92,4 +92,11 @@ final class Util extends Native {
         }
         return trustRoots;
     }
+
+    private static native int compute_commitment_crc32(byte committment_bytes[]);
+
+    static int computeCommittmentCrc32(byte committmentBytes[]) {
+        return compute_commitment_crc32(committmentBytes);
+    }
+
 }
