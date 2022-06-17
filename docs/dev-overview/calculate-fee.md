@@ -11,11 +11,12 @@ In order for users to send transactions, users must pay the **transaction fee**:
 As an Android developer, you will need the following code enable the user to be charged a transaction fee:
 
 ```java
+Amount amountToSend = Amount.ofMOB(valueToSend);
 try {
-  BigInteger minimalFee = mobileCoinClient.calculateMinimalFee(amount);
+    Amount minimalFee = mobileCoinClient.calculateMinimalFee(amountToSend);
 } catch (FragmentedAccountException ex) {
-  // notify user of an increased fee
-  mobileCoinClient.defragmentAccount();
+    // notify user of an increased fee
+    mobileCoinClient.defragmentAccount(txAmount, defragmentationDelegate);
 } catch (...) {}
 ```
 
