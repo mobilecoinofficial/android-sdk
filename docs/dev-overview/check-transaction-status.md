@@ -1,22 +1,22 @@
 # Check transaction status (for sender)
 
-### User experience
+### Motivation
 
-Senders can check their transaction status on their smartphone’s MobileCoin wallet app by looking up their balance history in the app's _Settings_:
-
-![Locate the balance history in the app's Settings.](../images/balance-history.jpeg) ![Users can check their transaction status of their recent sent payments in their balance history.](../images/transaction-status.jpeg)
+Applications enabling users to send MobileCoin transactions will need to provide the ability to check
+the status of those transactions. This process is different depending on whether the status is being
+checked by the sender or the recipient.
 
 ### Implementation
 
-As an Android developer, you will need the following code to enable the user to check their transaction status:
+Using the MobileCoin Android SDK, the transaction status can be checked by the sender using the
+following code:
 
 ```java
-mobileCoinClient
-.postTransaction(pendingTx);
-status = client
-.getTransactionStatus(pendingTx);
+Transaction transaction = pendingTransaction.getTransaction();
+Transaction.Status txStatus = senderClient.getTransactionStatus(transaction);
 ```
 
-{% hint style="info" %}
-The code provided by the MobileCoin SDK enables the users to access a secure, pre-processed version of their data on the MobileCoin Ledger in MobileCoin Fog Services through their mobile wallet app.
-{% endhint %}
+[^note]:
+    The code provided by the MobileCoin SDK enables the users to access a secure, pre-processed
+    version of their data on the MobileCoin Ledger in MobileCoin Fog Services through their mobile
+    wallet app.

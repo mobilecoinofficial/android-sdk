@@ -1,10 +1,9 @@
 # Send transaction
 
-### User experience
+### Motivation
 
-To send a transaction, users need to enter the transaction amount and send to a specific user’s public address or QR code. Users can also send a transaction to a public address that's already in their contacts.
-
-![Users can send transactions to other users, if they know their public addresses (QR Codes).](../images/send-transaction.jpeg)
+Users will need the ability to send funds to other MobileCoin wallets. This enables the user to do
+things such as make purchases or transfer funds to other apps/services (sending to exchanges, etc.).
 
 ### Implementation
 
