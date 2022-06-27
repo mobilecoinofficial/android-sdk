@@ -14,7 +14,7 @@ The code provided below can be used to fetch the MobileCoin balance of a user's 
 
 ```java
 MobileCoinClient mobileCoinClient = new MobileCoinClient(
-    account,
+    accountKey,
     FOG_URI,
     CONSENSUS_URI,
     TransportProtocol.forGRPC()

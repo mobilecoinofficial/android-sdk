@@ -15,8 +15,8 @@ application integrating MobileCoin will need to incorporate.
 The following structure is provided for each section:
 
 1. Motivation
-    ⋅⋅* Why is this feature needed?
-    ..* What are the use-cases?
+  * Why is this feature needed?
+  * What are the use-cases?
 2. Example code
-    ..* How can the SDK be utilized to accomplish this requirement?
-    ..* Are there different ways to implement this?
+  * How can the SDK be utilized to accomplish this requirement?
+  * Are there different ways to implement this?

@@ -15,8 +15,3 @@ following code:
 Transaction transaction = pendingTransaction.getTransaction();
 Transaction.Status txStatus = senderClient.getTransactionStatus(transaction);
 ```
-
-[^note]:
-    The code provided by the MobileCoin SDK enables the users to access a secure, pre-processed
-    version of their data on the MobileCoin Ledger in MobileCoin Fog Services through their mobile
-    wallet app.

@@ -5,10 +5,12 @@
 In order for a user to receive MobileCoin transactions, they must share their `PublicAddress` with
 a sender. The sender can save this `PublicAddress` for future transactions. A user's `PublicAddress`
 is not considered secret and does not expose any information about the corresponding account
-information,  past/future transactions, or balances.
+information, past/future transactions, or balances. 
 
-[^note]:
-    Users can share their public addresses without sending a transaction.
+Users can share their public addresses without sending a transaction. Public addresses can be
+exchanged prior to any transactions taking place and saved as part of a contact or contact-like data
+structure. This could allow for reconstruction of transaction history between known contacts using
+Recoverable Transaction History (RTH).
 
 ### Implementation
 

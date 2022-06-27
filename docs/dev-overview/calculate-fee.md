@@ -19,7 +19,3 @@ try {
     mobileCoinClient.defragmentAccount(txAmount, defragmentationDelegate);
 } catch (...) {}
 ```
-
-[^note]:
-    The code provided by the MobileCoin Wallet SDK enables the users to select a transaction fee
-    based on the number of seconds they are willing to wait for their transaction to be sent.
