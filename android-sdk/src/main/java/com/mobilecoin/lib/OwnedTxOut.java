@@ -125,6 +125,20 @@ public class OwnedTxOut implements Parcelable {
         }
     }
 
+    OwnedTxOut(OwnedTxOut original) {
+        this.txOutGlobalIndex = original.txOutGlobalIndex;
+        this.receivedBlockIndex = original.receivedBlockIndex;
+        this.receivedBlockTimestamp = original.receivedBlockTimestamp;
+        this.spentBlockTimestamp = original.spentBlockTimestamp;
+        this.spentBlockIndex = original.spentBlockIndex;
+        this.cachedTxOutMemo = original.cachedTxOutMemo;
+        this.amount = original.amount;
+        this.txOutPublicKey = original.txOutPublicKey;
+        this.txOutTargetKey = original.txOutTargetKey;
+        this.keyImage = Arrays.copyOf(original.keyImage, original.keyImage.length);
+        this.keyImageHash = original.keyImageHash;
+    }
+
     /** Retrieves the {@link TxOutMemo} for the given TxOut. */
     @NonNull
     public TxOutMemo getTxOutMemo() {
