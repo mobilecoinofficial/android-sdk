@@ -21,7 +21,6 @@ For quick reference of functionality, see [Developing the code](dev-overview/).
 * [About this guide](about.md)
   * Who should read this guide
   * How to use this guide
-  * Special notations used in this guide
 * [MobileCoin overview](/docs/mobilecoin.md)
   * About MobileCoin
   * Understanding the MobileCoin SDK
