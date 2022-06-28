@@ -275,7 +275,7 @@ public final class MobileCoinClient implements MobileCoinAccountClient, MobileCo
                 : storeIndex;
         Set<OwnedTxOut> txOuts = txOutStore.getSyncedTxOuts().stream()
                 .filter(txOut -> txOut.getReceivedBlockIndex().compareTo(finalBlockIndex) <= 0)
-                .map(otxo -> new OwnedTxOut(otxo))//TODO: HERE!
+                .map(OwnedTxOut::new)//TODO: HERE!
                 .collect(Collectors.toSet());
 
         return new AccountSnapshot(this, txOuts, finalBlockIndex);
@@ -799,7 +799,7 @@ public final class MobileCoinClient implements MobileCoinAccountClient, MobileCo
             AttestationException, FogSyncException {
         txOutStore.refresh(viewClient, ledgerClient, fogBlockClient);
         Set<OwnedTxOut> txOuts = txOutStore.getSyncedTxOuts()
-                .stream().map(otxo -> new OwnedTxOut(otxo)).collect(Collectors.toSet());//TODO: HERE!
+                .stream().map(OwnedTxOut::new).collect(Collectors.toSet());//TODO: HERE!
         return new AccountActivity(txOuts,
                 getTxOutStore().getCurrentBlockIndex().add(UnsignedLong.ONE));
     }

@@ -1,7 +1,13 @@
 package com.mobilecoin.lib;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotSame;
 import static org.junit.Assert.fail;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import android.os.Parcel;
 import android.util.Log;
@@ -17,6 +23,9 @@ import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
 
 import fog_view.View.TxOutRecord;
 
@@ -217,6 +226,50 @@ public class OwnedTxOutTest {
       assertEquals(SerializationException.class, e.getCause().getClass());
     }
 
+  }
+
+  @Test
+  public void testCopyConstructor() throws Exception {
+    OwnedTxOut original = new OwnedTxOut(
+            TxOutRecord.parseFrom(Hex.toByteArray(viewRecordWithSenderMemoHexProtoBytes)),
+            receiverAccountKey
+    );
+    OwnedTxOut copy = new OwnedTxOut(original);
+    assertEquals(original, copy);
+    assertNotSame(original, copy);
+  }
+
+  @Test
+  public void testPublicAPITxOutsCopied() throws Exception {
+    OwnedTxOut originalOtxo = new OwnedTxOut(
+            TxOutRecord.parseFrom(Hex.toByteArray(viewRecordWithSenderMemoHexProtoBytes)),
+            receiverAccountKey
+    );
+    Set<OwnedTxOut> syncedTxOuts = new HashSet<OwnedTxOut>();
+    syncedTxOuts.add(originalOtxo);
+    TxOutStore txOutStore = mock(TxOutStore.class);
+    when(txOutStore.getSyncedTxOuts()).thenReturn(syncedTxOuts);
+    when(txOutStore.getCurrentBlockIndex()).thenReturn(originalOtxo.getReceivedBlockIndex());
+    doNothing().when(txOutStore).refresh(any(), any(), any());
+    MobileCoinClient client = new MobileCoinClient(
+            null,
+            txOutStore,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null
+    );
+    AccountSnapshot snapshot = client.getAccountSnapshot();
+    AccountActivity activity = snapshot.getAccountActivity();
+    assertEquals(1, activity.getAllTokenTxOuts().size());// Check must pass for next line to be a valid
+    OwnedTxOut copiedOtxo = activity.getAllTokenTxOuts().stream().findFirst().get();
+    assertNotSame(originalOtxo, copiedOtxo);
+    assertEquals(originalOtxo, copiedOtxo);
   }
 
 }
