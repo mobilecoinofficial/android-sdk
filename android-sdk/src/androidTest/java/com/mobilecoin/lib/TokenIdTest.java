@@ -205,6 +205,7 @@ public class TokenIdTest {
 
     @Test
     public void testAccountHasBalance() throws Exception {
+        if(Environment.CURRENT_TEST_ENV != Environment.TestEnvironment.MOBILE_DEV) return;// TODO: remove check when token IDs on other nets
         MobileCoinClient client = MobileCoinClientBuilder.newBuilder()
                 .setAccountKey(createAccountKeyFromMnemonic(ACCOUNT_WITH_MOBUSD_1))
                 .build();
@@ -219,6 +220,7 @@ public class TokenIdTest {
 
     @Test
     public void testGetBalances() throws Exception {
+        if(Environment.CURRENT_TEST_ENV != Environment.TestEnvironment.MOBILE_DEV) return;// TODO: remove check when token IDs on other nets
         MobileCoinClient client1 = MobileCoinClientBuilder.newBuilder()
                 .setAccountKey(createAccountKeyFromMnemonic(ACCOUNT_WITH_MOBUSD_1))
                 .build();
@@ -239,6 +241,7 @@ public class TokenIdTest {
 
     @Test
     public void testMobUsdTransfer() throws Exception {
+        if(Environment.CURRENT_TEST_ENV != Environment.TestEnvironment.MOBILE_DEV) return;// TODO: remove check when token IDs on other nets
         MobileCoinClient senderClient = MobileCoinClientBuilder.newBuilder()
                 .setAccountKey(createAccountKeyFromMnemonic(ACCOUNT_WITH_MOBUSD_1))
                 .build();
@@ -292,6 +295,7 @@ public class TokenIdTest {
 
     @Test
     public void testMobUSDWithWrongFee() throws Exception {
+        if(Environment.CURRENT_TEST_ENV != Environment.TestEnvironment.MOBILE_DEV) return;// TODO: remove check when token IDs on other nets
         MobileCoinClient senderClient = MobileCoinClientBuilder.newBuilder()
                 .setAccountKey(createAccountKeyFromMnemonic(ACCOUNT_WITH_MOBUSD_1))
                 .build();
@@ -319,6 +323,7 @@ public class TokenIdTest {
 
     @Test
     public void testMobUsdSnapshotTransfer() throws Exception {
+        if(Environment.CURRENT_TEST_ENV != Environment.TestEnvironment.MOBILE_DEV) return;// TODO: remove check when token IDs on other nets
         MobileCoinClient senderClient = MobileCoinClientBuilder.newBuilder()
                 .setAccountKey(createAccountKeyFromMnemonic(ACCOUNT_WITH_MOBUSD_1))
                 .build();
@@ -374,6 +379,7 @@ public class TokenIdTest {
 
     @Test// TODO: Update with KnownTokenId
     public void testClientGetFeeHasCorrectTokenId() throws Exception {
+        if(Environment.CURRENT_TEST_ENV != Environment.TestEnvironment.MOBILE_DEV) return;// TODO: remove check when token IDs on other nets
         AccountKey key = createAccountKeyFromMnemonic(ACCOUNT_WITH_MOBUSD_1);
         MobileCoinClient client = MobileCoinClientBuilder.newBuilder().setAccountKey(key).build();
         Amount amountToSendMOB = new Amount(BigInteger.TEN, TokenId.MOB);
@@ -387,6 +393,7 @@ public class TokenIdTest {
 
     @Test// TODO: Update with KnownTokenId
     public void testSnapshotGetFeeHasCorrectTokenId() throws Exception {
+        if(Environment.CURRENT_TEST_ENV != Environment.TestEnvironment.MOBILE_DEV) return;// TODO: remove check when token IDs on other nets
         AccountKey key = createAccountKeyFromMnemonic(ACCOUNT_WITH_MOBUSD_1);
         MobileCoinClient client = MobileCoinClientBuilder.newBuilder().setAccountKey(key).build();
         AccountSnapshot snapshot = client.getAccountSnapshot();
