@@ -10,5 +10,4 @@ public class Base64 {
         return java.util.Base64.getDecoder().decode(str);
     }
 
-    // add other methods if required...
 }
