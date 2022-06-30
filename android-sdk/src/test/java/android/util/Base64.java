@@ -6,8 +6,4 @@ public class Base64 {
         return java.util.Base64.getEncoder().encodeToString(input);
     }
 
-    public static byte[] decode(String str, int flags) {
-        return java.util.Base64.getDecoder().decode(str);
-    }
-
 }
