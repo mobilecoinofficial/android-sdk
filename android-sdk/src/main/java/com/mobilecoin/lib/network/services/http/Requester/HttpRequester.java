@@ -11,10 +11,9 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.net.Authenticator;
 import java.net.HttpURLConnection;
-import java.net.PasswordAuthentication;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -26,14 +25,12 @@ import java.util.Set;
 
 public class HttpRequester implements Requester {
     private static final String HEADER_CONTENT_TYPE_KEY = "Content-Type";
+    private final String credentials;
 
     public HttpRequester(String username, String password) {
-        Authenticator.setDefault(new Authenticator() {
-            @Override
-            protected PasswordAuthentication getPasswordAuthentication() {
-                return new PasswordAuthentication(username, password.toCharArray());
-            }
-        });
+        byte credentialBytes[] = (username + ":" + password).getBytes(StandardCharsets.ISO_8859_1);
+        this.credentials = "Basic " + android.util.Base64.encodeToString(credentialBytes, 0);
+        password = null;
     }
 
     /**
@@ -56,6 +53,7 @@ public class HttpRequester implements Requester {
                                     @NonNull Map<String, String> headers,
                                     @NonNull byte[] body,
                                     @NonNull String contentType) throws IOException {
+        headers.put("Authorization", credentials);
         HttpURLConnection connection = createConnection(httpMethod, uri, headers, body, contentType);
         ByteArrayOutputStream byteArrayOutputStream = parseResponse(connection);
         int responseCode = connection.getResponseCode();
