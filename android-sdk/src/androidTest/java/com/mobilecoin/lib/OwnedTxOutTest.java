@@ -1,7 +1,13 @@
 package com.mobilecoin.lib;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotSame;
 import static org.junit.Assert.fail;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import android.os.Parcel;
 import android.util.Log;
@@ -16,7 +22,12 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
+import java.math.BigInteger;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import fog_view.View.TxOutRecord;
 
@@ -217,6 +228,80 @@ public class OwnedTxOutTest {
       assertEquals(SerializationException.class, e.getCause().getClass());
     }
 
+  }
+
+  @Test
+  public void testCopyConstructor() throws Exception {
+    OwnedTxOut original = new OwnedTxOut(
+            TxOutRecord.parseFrom(Hex.toByteArray(viewRecordWithSenderMemoHexProtoBytes)),
+            receiverAccountKey
+    );
+    OwnedTxOut copy = new OwnedTxOut(original);
+    assertEquals(original, copy);
+    assertNotSame(original, copy);
+  }
+
+  @Test
+  public void testPublicAPITxOutsCopied() throws Exception {
+    OwnedTxOut originalOtxo = new OwnedTxOut(
+            TxOutRecord.parseFrom(Hex.toByteArray(viewRecordWithSenderMemoHexProtoBytes)),
+            receiverAccountKey
+    );
+    Set<OwnedTxOut> syncedTxOuts = new HashSet<OwnedTxOut>();
+    syncedTxOuts.add(originalOtxo);
+    TxOutStore txOutStore = mock(TxOutStore.class);
+    when(txOutStore.getSyncedTxOuts()).thenReturn(syncedTxOuts);
+    when(txOutStore.getCurrentBlockIndex()).thenReturn(originalOtxo.getReceivedBlockIndex());
+    doNothing().when(txOutStore).refresh(any(), any(), any());
+    MobileCoinClient client = new MobileCoinClient(
+            null,
+            txOutStore,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null
+    );
+    AccountSnapshot snapshot = client.getAccountSnapshot();
+    AccountActivity activity = snapshot.getAccountActivity();
+    assertEquals(1, activity.getAllTokenTxOuts().size());// Check must pass for next line to be a valid
+    OwnedTxOut copiedOtxo = activity.getAllTokenTxOuts().stream().findFirst().get();
+    assertNotSame(originalOtxo, copiedOtxo);
+    assertEquals(originalOtxo, copiedOtxo);
+  }
+
+  @Test
+  public void copiedOwnedTxOutIntegrationTest() throws Exception {
+    MobileCoinClient client = MobileCoinClientBuilder.newBuilder().build();
+    AccountActivity activityBefore = client.getAccountActivity();
+    Set<OwnedTxOut> publicUnspentTxOutsBefore = activityBefore.getAllTokenTxOuts()
+            .stream().filter(p -> !p.isSpent(client.getTxOutStore().getCurrentBlockIndex()))
+            .collect(Collectors.toCollection(HashSet::new));
+    Set<OwnedTxOut> privateUnspentTxOutsBefore = client.getUnspentTxOuts(TokenId.MOB);
+    Amount amountToSend = Amount.ofMOB(BigInteger.TEN);
+    PendingTransaction pendingTransaction = client.prepareTransaction(
+            TestKeysManager.getNextAccountKey().getPublicAddress(),
+            amountToSend,
+            client.estimateTotalFee(amountToSend),
+            TxOutMemoBuilder.createSenderAndDestinationRTHMemoBuilder(client.getAccountKey())
+    );
+    client.submitTransaction(pendingTransaction.getTransaction());
+    UtilTest.waitForTransactionStatus(client, pendingTransaction.getTransaction());
+    for(OwnedTxOut otxo : publicUnspentTxOutsBefore) {
+      if((otxo.getSpentBlockIndex() != null) || (otxo.getSpentBlockTimestamp() != null)) {
+        fail("Unspent TxOut from old AccountActivity marked spent");
+      }
+    }
+    for(OwnedTxOut otxo : privateUnspentTxOutsBefore) {
+      if((otxo.getSpentBlockIndex() != null) && (otxo.getSpentBlockTimestamp() != null)) {
+        return;// pass
+      }
+    }
+    fail("No private API TxOuts marked spent");
   }
 
 }
