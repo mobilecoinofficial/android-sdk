@@ -18,7 +18,10 @@ and how to send and receive transactions.
 This guide should be read and referenced by developers who have been entrusted with setting up and
 managing the integration of MobileCoin wallet functionality within an Android mobile application.
 The developer will be implementing a unique MobileCoin wallet application to integrate with
-MobileCoin’s network.
+MobileCoin’s network. 
+
+If you are looking for the iOS Integration Guide, click
+[here](https://github.com/mobilecoinofficial/MobileCoin-Swift/blob/master/docs/SUMMARY.md).
 
 ## How to use this guide
 
