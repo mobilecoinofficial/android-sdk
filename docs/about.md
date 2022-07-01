@@ -22,6 +22,6 @@ MobileCoin’s network.
 
 ## How to use this guide
 
-Take a moment to familiarize yourself with this iOS/SWIFT Integration Guide by reading the Table of
+Take a moment to familiarize yourself with this Android SDK Integration Guide by reading the Table of
 Contents. Each section referenced in the TOC should be read carefully so that you can quickly and
 easily integrate your wallet app with the MobileCoin network.
