@@ -95,33 +95,34 @@ public final class AccountActivity {
         List<HistoricalTransaction> historicalTransactions = new ArrayList<>();
         for (OwnedTxOut txOut: ownedTxOut) {
             for (PublicAddressProvider contact: contacts) {
-                switch (txOut.getTxOutMemo().memoType) {
-                    case SENDER:
-                    case SENDER_WITH_PAYMENT_REQUEST:
-                        if (recover(contact.getPublicAddress(), (SenderMemo) txOut.getTxOutMemo())) {
+                TxOutMemo memo = txOut.getTxOutMemo();
+                if (contact.getPublicAddress().calculateAddressHash() == memo.memoData.getAddressHash()) {
+                    switch (memo.memoType) {
+                        case SENDER:
+                        case SENDER_WITH_PAYMENT_REQUEST:
+                            if (validateSenderMemo(contact.getPublicAddress(), (SenderMemo) memo)) {
+                                historicalTransactions.add(new HistoricalTransaction(txOut));
+                            }
+                            break;
+                        case DESTINATION:
                             historicalTransactions.add(new HistoricalTransaction(txOut));
-                        }
-                        break;
-                    case DESTINATION:
-                        historicalTransactions.add(new HistoricalTransaction(txOut));
-                        break;
+                            break;
+                    }
                 }
             }
         }
         return historicalTransactions;
     }
 
-    private boolean recover(PublicAddress contact, SenderMemo memo) {
-        if (contact.getPublicAddress().calculateAddressHash() == memo.memoData.getAddressHash()) {
-            try {
-                memo.getSenderMemoData(
-                        accountKey.getPublicAddress(),
-                        accountKey.getDefaultSubAddressViewKey()
-                );
-                return true;
-            } catch (InvalidTxOutMemoException e) {
-                // Unable to validate contact public address with memo
-            }
+    private boolean validateSenderMemo(PublicAddress contact, SenderMemo memo) {
+        try {
+            memo.getSenderMemoData(
+                    contact.getPublicAddress(),
+                    accountKey.getDefaultSubAddressViewKey()
+            );
+            return true;
+        } catch (InvalidTxOutMemoException e) {
+            // Unable to validate contact public address with memo
         }
         return false;
     }
