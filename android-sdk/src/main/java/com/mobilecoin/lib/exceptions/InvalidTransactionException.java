@@ -2,10 +2,12 @@
 
 package com.mobilecoin.lib.exceptions;
 
-import androidx.annotation.Nullable;
-
 public final class InvalidTransactionException extends MobileCoinException {
-    public InvalidTransactionException(@Nullable String message) {
+    public final String message;
+
+    public InvalidTransactionException(String message) {
         super(message);
+
+        this.message = message;
     }
 }
