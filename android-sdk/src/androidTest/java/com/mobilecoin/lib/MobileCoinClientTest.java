@@ -414,6 +414,15 @@ public class MobileCoinClientTest {
             }
 
             @Override
+            public boolean onStepReady(@NonNull PendingTransaction defragStepTx,
+                                       @NonNull BigInteger fee)
+                    throws NetworkException, InvalidTransactionException, AttestationException {
+                Logger.d(TAG, "Defragmentation step");
+                fragmentedClient.submitTransaction(defragStepTx.getTransaction());
+                return true;
+            }
+
+            @Override
             public DefragmentationStepResult onStepReady(@NonNull DefragmentationStep defragStep)
                     throws NetworkException, AttestationException {
                 Logger.d(TAG, "Defragmentation step");

@@ -690,8 +690,24 @@ public final class MobileCoinClient implements MobileCoinAccountClient, MobileCo
                         selectionFee,
                         txOutMemoBuilder
                 );
-                DefragmentationStep defragStep = new DefragmentationStep(pendingTransaction, selection.fee);
-                DefragmentationStepResult defragStepResult = delegate.onStepReady(defragStep);
+                DefragmentationStepResult defragStepResult;
+                try {
+                    DefragmentationStep defragStep = new DefragmentationStep(
+                            pendingTransaction.getTransaction(),
+                            selection.fee
+                    );
+                    defragStepResult = delegate.onStepReady(defragStep);
+                } catch(AbstractMethodError e) {
+                    Logger.w(TAG, "Using deprecated method! DefragmentationStep#onStepReady(PendingTransaction, BigInteger) will be removed in a future release. " +
+                            "Please use the new DefragmentationDelegate#onStepReady(DefragmentationStep).");
+                    defragStepResult = new DefragmentationStepResult(
+                            delegate.onStepReady(
+                                    pendingTransaction,
+                                    selection.fee
+                            ),
+                            ConsensusCommon.ProposeTxResult.Ok
+                    );
+                }
                 if (!defragStepResult.shouldContinue()) {
                     delegate.onCancel();
                     return;

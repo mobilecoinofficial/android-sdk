@@ -31,23 +31,29 @@ public interface DefragmentationDelegate {
      * @param fee          cost to submit provided transaction to the ledger
      * @return whether or not defragmentation process should continue
      * @deprecated Deprecated as of 1.2.2. Please use {@link DefragmentationDelegate#onStepReady(DefragmentationStep)}
+     * @since 1.0.0
      */
     @Deprecated
     default boolean onStepReady(@NonNull PendingTransaction defragStepTx, @NonNull BigInteger fee)
             throws NetworkException, InvalidTransactionException, AttestationException {
-        return this.onStepReady(new DefragmentationStep(defragStepTx, fee)).shouldContinue();
+        throw new AbstractMethodError("Unimplemented");
     }
 
     /**
      * Called for each step of the defragmentation process.
-     * The delegate is responsible for the submission of the provided defrag step
-     * This method should return false to cancel the defragmentation process
+     * The delegate is responsible for the submission of the provided {@link DefragmentationStep}
      *
-     * @param defragStep TODO: doc
-     * @return whether or not defragmentation process should continue
+     * @param defragStep The next step in the defragmentation process
+     * @return the result of the {@link DefragmentationStep}
+     * @see DefragmentationStep
+     * @see DefragmentationStepResult
+     * @since 1.2.2
      */
-    DefragmentationStepResult onStepReady(@NonNull DefragmentationStep defragStep)
-            throws NetworkException, AttestationException;
+    @NonNull
+    default DefragmentationStepResult onStepReady(@NonNull DefragmentationStep defragStep)
+            throws NetworkException, AttestationException {
+        throw new AbstractMethodError("Unimplemented");
+    }
 
     /**
      * Called upon the successful completion of the defragmentation process

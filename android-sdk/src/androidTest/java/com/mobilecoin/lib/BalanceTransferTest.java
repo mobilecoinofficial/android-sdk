@@ -54,6 +54,14 @@ public class BalanceTransferTest {
                 }
 
                 @Override
+                public boolean onStepReady(@NonNull PendingTransaction defragStepTx,
+                                           @NonNull BigInteger fee) throws NetworkException,
+                        InvalidTransactionException, AttestationException {
+                    balanceAccount.submitTransaction(defragStepTx.getTransaction());
+                    return true;
+                }
+
+                @Override
                 public DefragmentationStepResult onStepReady(@NonNull DefragmentationStep defragStep) throws NetworkException,
                         AttestationException {
                     try {
