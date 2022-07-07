@@ -38,6 +38,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import consensus_common.ConsensusCommon;
+
 /**
  * Instrumented test, which will execute on an Android device.
  *
@@ -412,12 +414,15 @@ public class MobileCoinClientTest {
             }
 
             @Override
-            public boolean onStepReady(@NonNull PendingTransaction defragStepTx,
-                                       @NonNull BigInteger fee)
-                    throws NetworkException, InvalidTransactionException, AttestationException {
+            public DefragmentationStepResult onStepReady(@NonNull DefragmentationStep defragStep)
+                    throws NetworkException, AttestationException {
                 Logger.d(TAG, "Defragmentation step");
-                fragmentedClient.submitTransaction(defragStepTx.getTransaction());
-                return true;
+                try {
+                    fragmentedClient.submitTransaction(defragStep.getTransaction());
+                } catch (InvalidTransactionException e) {
+                    return new DefragmentationStepResult(false, e.getResult());
+                }
+                return new DefragmentationStepResult(true, ConsensusCommon.ProposeTxResult.Ok);
             }
 
             @Override

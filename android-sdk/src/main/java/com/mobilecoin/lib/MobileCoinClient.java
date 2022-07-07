@@ -567,9 +567,8 @@ public final class MobileCoinClient implements MobileCoinAccountClient, MobileCo
         int code = txResponse.getResult().getNumber();
         if (0 != code) {
             blockchainClient.resetCache();
-            String message = txResponse.getResult().toString();
             InvalidTransactionException invalidTransactionException =
-                    new InvalidTransactionException(message);
+                    new InvalidTransactionException(txResponse.getResult());
             Util.logException(TAG, invalidTransactionException);
             throw invalidTransactionException;
         }
@@ -691,34 +690,29 @@ public final class MobileCoinClient implements MobileCoinAccountClient, MobileCo
                         selectionFee,
                         txOutMemoBuilder
                 );
-                if (!delegate.onStepReady(pendingTransaction, selection.fee)) {
+                DefragmentationStep defragStep = new DefragmentationStep(pendingTransaction, selection.fee);
+                DefragmentationStepResult defragStepResult = delegate.onStepReady(defragStep);
+                if (!defragStepResult.shouldContinue()) {
                     delegate.onCancel();
                     return;
                 }
                 // make sure the previous Tx is posted
-                Receipt.Status status;
+                Transaction.Status status;
                 int queryTries = 0;
-                try {
-                    while ((status = getReceiptStatus(pendingTransaction.getReceipt()))
-                            == Receipt.Status.UNKNOWN) {
-                        if (queryTries++ == STATUS_MAX_RETRIES) {
-                            Logger.w(TAG, "Exceeded waiting time for the transaction to post");
-                            throw new TimeoutException();
-                        }
-                        try {
-                            Thread.sleep(STATUS_CHECK_DELAY_MS);
-                        } catch (InterruptedException interruptedException) {
-                            Logger.w(TAG, "Sleep interruption during defragmentation");
-                        }
+                while ((status = getTransactionStatus(pendingTransaction.getTransaction()))
+                        == Transaction.Status.UNKNOWN) {
+                    if (queryTries++ == STATUS_MAX_RETRIES) {
+                        Logger.w(TAG, "Exceeded waiting time for the transaction to post");
+                        throw new TimeoutException();
                     }
-                } catch (InvalidReceiptException invalidReceiptException) {
-                    IllegalStateException illegalStateException =
-                            new IllegalStateException(invalidReceiptException);
-                    Logger.e(TAG, "BUG: unreachable code", illegalStateException);
-                    throw illegalStateException;
+                    try {
+                        Thread.sleep(STATUS_CHECK_DELAY_MS);
+                    } catch (InterruptedException interruptedException) {
+                        Logger.w(TAG, "Sleep interruption during defragmentation");
+                    }
                 }
-                if (status == Receipt.Status.FAILED) {
-                    throw new InvalidTransactionException("Defrag step transaction has failed");
+                if (status == Transaction.Status.FAILED) {
+                    throw new InvalidTransactionException(defragStepResult.getStepTxResult());
                 }
             }
         } while (inputSelectionForAmount == null);

@@ -11,6 +11,8 @@ import org.junit.Test;
 
 import java.math.BigInteger;
 
+import consensus_common.ConsensusCommon;
+
 public class BalanceTransferTest {
 
     // send multiple TxOuts from a test account to a new account to make sure it's fragmented
@@ -52,11 +54,14 @@ public class BalanceTransferTest {
                 }
 
                 @Override
-                public boolean onStepReady(@NonNull PendingTransaction defragStepTx,
-                                           @NonNull BigInteger fee) throws NetworkException,
-                        InvalidTransactionException, AttestationException {
-                    balanceAccount.submitTransaction(defragStepTx.getTransaction());
-                    return true;
+                public DefragmentationStepResult onStepReady(@NonNull DefragmentationStep defragStep) throws NetworkException,
+                        AttestationException {
+                    try {
+                        balanceAccount.submitTransaction(defragStep.getTransaction());
+                    } catch (InvalidTransactionException e) {
+                        return new DefragmentationStepResult(false, e.getResult());
+                    }
+                    return new DefragmentationStepResult(true, ConsensusCommon.ProposeTxResult.Ok);
                 }
 
                 @Override
