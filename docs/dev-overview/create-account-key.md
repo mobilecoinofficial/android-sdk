@@ -3,8 +3,11 @@
 ### Motivation
 
 In order for a user to have a MobileCoin wallet, they must have an [**account key**](../glossary.md).
-A MobileCoin wallet application must provide the functionality to allow users to either import an
-existing `AccountKey` or to create a new one.
+An `AccountKey` can be thought of as a username+password used to access an *account* on the
+MobileCoin blockchain.
+
+Any application integrating MobileCoin must provide the functionality to allow users to either import
+an existing `AccountKey` or to create a new one.
 
 ### Implementation
 

@@ -2,9 +2,9 @@
 
 ### Motivation
 
-To show what a user currently has in their account, MobileCoin wallet applications must be able to
-fetch the account's `Balance`s. A user's account will have a `Balance` for every token/asset which
-the account has received. `Balance`s for various tokens can be fetched individually or all at once.
+To show what a user currently has in their account, applications must be able to fetch the account's 
+`Balance`s. A user's account will have a `Balance` for every token/asset which the account has
+received. `Balance`s for various tokens can be fetched individually or all at once.
 
 ### Implementation
 

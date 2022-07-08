@@ -2,8 +2,9 @@
 
 ### Motivation
 
-Similar to checking [transaction statuses](check-transaction-status.md), users of a MobileCoin wallet
-application will need to check the status of payments received.
+While senders may check the status of their transaction using
+[transaction status](check-transaction-status.md), receivers of a transaction must use a different
+method to check status. The receiver of a transaction must use the `Receipt` status.
 
 ### Implementation
 
