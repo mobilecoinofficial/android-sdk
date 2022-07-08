@@ -1,26 +1,43 @@
-# Share public addresses
+# Share public address
 
-### User experience
+### Motivation
 
-Users can share **public addresses** from their MobileCoin wallet app with other individuals, and enable transactions to occur between the two users’ smartphones.
+In order for a user to receive MobileCoin transactions, they must share their `PublicAddress` with
+a sender. The sender can save this `PublicAddress` for future transactions. A user's `PublicAddress`
+is not considered secret and does not expose any information about the corresponding account
+information, past/future transactions, or balances. 
 
-In order for new users to share their public addresses from their MobileCoin wallet on their smartphone, they must generate their request code after they enter the amount of a transaction to send.
-
-{% hint style="info" %}
-Users can share their public addresses without sending a transaction.
-{% endhint %}
-
-![Share public address](../images/share-public-address.jpeg)
+Users can share their public addresses without sending a transaction. Public addresses can be
+exchanged prior to any transactions taking place and saved as part of a contact or contact-like data
+structure. This could allow for reconstruction of transaction history between known contacts using
+Recoverable Transaction History (RTH).
 
 ### Implementation
 
-As an Android developer, you will need the following code to enable the user to generate a request code:
+Using the MobileCoin Android SDK, a user's `PublicAddress` can be obtained using the following code:
 
 ```java
-PublicAddress pubAddress =
-account.getPublicAddress();
-byte[] bytes = pubAddress.toByteArray()
-/* -------------------------- */
-PublicAddress recipient =
-PublicAddress.fromBytes(bytes);
+PublicAddress pubAddress = accountKey.getPublicAddress();
+```
+
+To generate the printable `String` that can be shared with another user, the following code can be used:
+
+```java
+PrintableWrapper wrapper = PrintableWrapper.fromPublicAddress(pubAddress);
+String printablePubAddress = wrapper.toB58String();
+```
+
+This `String` can then be shared with a potential sender using any suitable method (Copied text, 
+QR code, etc.). Subsequently, a sender may recover the `PublicAddress` using this example code:
+
+```java
+PrintableWrapper wrapper = PrintableWrapper.fromB58String(printablePubAddress);
+
+if(wrapper.hasPublicAddress()) {
+    PublicAddress pubAddress = wrapper.getPublicAddress();
+        ...
+}
+else {
+    // notify user of invalid PublicAddress
+}
 ```

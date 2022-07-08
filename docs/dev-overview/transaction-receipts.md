@@ -1,19 +1,16 @@
 # Transaction receipts (for recipient)
 
-### User experience
+### Motivation
 
-Similar to checking [transaction statuses](check-transaction-status.md), users can check the status of sent payments by looking up their balance history in their app's _Settings_:
-
-![Locate the balance history in the app's Settings.](../images/balance-history.jpeg) ![Users can check the status of sent transaction statuses in their balance history.](../images/transaction-receipts.jpeg)
+While senders may check the status of their transaction using
+[transaction status](check-transaction-status.md), receivers of a transaction must use a different
+method to check status. The receiver of a transaction must use the `Receipt` status.
 
 ### Implementation
 
-As an Android developer, you will need the following code to enable the user to check their recipients’ transaction statuses:
+Using the MobileCoin Android SDK, the transaction status can be checked by the recipient using the
+following code:
 
 ```java
-byte[] receiptBytes = pendingTx
-.getReceipt().toByteArray();
-/* ------------------------- */
-pendingTx = PendingTransaction
-.fromReceipt(bytes); client.getTransactionStatus(pending);
+Receipt.Status status = recipientClient.getReceiptStatus(receipt);
 ```

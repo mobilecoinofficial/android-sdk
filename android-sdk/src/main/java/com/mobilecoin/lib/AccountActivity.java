@@ -10,13 +10,17 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
- * <pre>
- * The {@code AccountActivity} class provides a low-level info about the account activity.
- *
- * The activity is comprised from the individual TxOuts that the account has received and spent.
- * Each TxOut contains the information about the block indexes and the timestamps when it was
- * received and spent (if it was spent).
- * </pre>
+ * <p>
+ * The {@link AccountActivity} class provides a low-level info about the account activity up to the
+ * block index at which it was created.
+ * <br /><br />
+ * The activity consists of a {@link Set} of {@link OwnedTxOut}s that the account has received and spent.
+ * Each {@link OwnedTxOut} contains the information about the block index and the timestamp at which it was
+ * received and/or spent (if it was spent).
+ * </p>
+ * @see OwnedTxOut
+ * @see MobileCoinClient#getAccountActivity()
+ * @since 1.0.0
  */
 public final class AccountActivity {
     private final static String TAG = AccountActivity.class.getName();
@@ -44,6 +48,7 @@ public final class AccountActivity {
     /**
      * @return all account MOB TxOuts at the particular block count, see
      * {@link AccountActivity#getBlockCount}
+     * @since 1.0.0
      */
     @Deprecated
     @NonNull
