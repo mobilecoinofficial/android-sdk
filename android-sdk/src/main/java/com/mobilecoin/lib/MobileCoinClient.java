@@ -567,9 +567,8 @@ public final class MobileCoinClient implements MobileCoinAccountClient, MobileCo
         int code = txResponse.getResult().getNumber();
         if (0 != code) {
             blockchainClient.resetCache();
-            String message = txResponse.getResult().toString();
             InvalidTransactionException invalidTransactionException =
-                    new InvalidTransactionException(message);
+                    new InvalidTransactionException(txResponse.getResult());
             Util.logException(TAG, invalidTransactionException);
             throw invalidTransactionException;
         }
@@ -718,7 +717,7 @@ public final class MobileCoinClient implements MobileCoinAccountClient, MobileCo
                     throw illegalStateException;
                 }
                 if (status == Receipt.Status.FAILED) {
-                    throw new InvalidTransactionException("Defrag step transaction has failed");
+                    throw new TransactionBuilderException("Defrag step transaction has failed");
                 }
             }
         } while (inputSelectionForAmount == null);
