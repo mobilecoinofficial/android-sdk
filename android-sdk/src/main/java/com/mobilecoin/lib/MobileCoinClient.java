@@ -711,6 +711,7 @@ public final class MobileCoinClient implements MobileCoinAccountClient, MobileCo
                     }
                 }
                 if (status == Transaction.Status.FAILED) {
+                    //Status only set to FAILED on TombstoneBlockExceeded. See getTransactionStatus(Transaction transaction)
                     throw new InvalidTransactionException(ConsensusCommon.ProposeTxResult.TombstoneBlockExceeded);
                 }
             }
