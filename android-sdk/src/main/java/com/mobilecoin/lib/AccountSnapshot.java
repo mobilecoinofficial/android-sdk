@@ -181,7 +181,7 @@ public final class AccountSnapshot {
         if (keyMapping.isEmpty()) {
             Set<RistrettoPublic> outputPublicKeys = transaction.getOutputPublicKeys();
             Ledger.TxOutResponse response =
-                    mobileCoinClient.untrustedClient.fetchTxOuts(outputPublicKeys);
+                    mobileCoinClient.getUntrustedClient().fetchTxOuts(outputPublicKeys);
             List<Ledger.TxOutResult> results = response.getResultsList();
 
             boolean allTxOutsFound = true;

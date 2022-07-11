@@ -1,3 +1,5 @@
+package com.mobilecoin.lib.network.services.http.Requester;
+
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
@@ -8,10 +10,6 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import android.net.Uri;
-
-import com.mobilecoin.lib.network.services.http.Requester.HttpRequester;
-import com.mobilecoin.lib.network.services.http.Requester.Requester;
-
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
