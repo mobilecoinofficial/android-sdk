@@ -77,7 +77,7 @@ public class HttpRequester implements Requester {
 
     @NonNull
     @VisibleForTesting
-    public HttpURLConnection createConnection(@NonNull String httpMethod,
+    HttpURLConnection createConnection(@NonNull String httpMethod,
                                               @NonNull Uri uri,
                                               @NonNull Map<String, String> headers,
                                               @NonNull byte[] body,

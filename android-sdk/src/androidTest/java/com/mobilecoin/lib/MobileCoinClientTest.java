@@ -23,6 +23,7 @@ import com.mobilecoin.lib.exceptions.NetworkException;
 import com.mobilecoin.lib.log.Logger;
 import com.mobilecoin.lib.network.TransportProtocol;
 import com.mobilecoin.lib.network.uri.FogUri;
+import com.mobilecoin.lib.util.SimpleRequester;
 
 import org.junit.Assert;
 import org.junit.Rule;

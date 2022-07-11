@@ -118,6 +118,7 @@ dependencies {
 
     // Testing
     testImplementation deps.testing.junit
+    testImplementation deps.testing.robolectric
     testImplementation deps.testing.mockito_core
     androidTestImplementation deps.testing.mockito_android
     androidTestImplementation deps.testing.core

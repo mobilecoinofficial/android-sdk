@@ -1,4 +1,4 @@
-package com.mobilecoin.lib;
+package com.mobilecoin.lib.util;
 
 import android.net.Uri;
 

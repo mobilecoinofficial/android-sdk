@@ -192,6 +192,11 @@ public final class MobileCoinClient implements MobileCoinAccountClient, MobileCo
         this.blockchainClient = blockchainClient;
     }
 
+    @NonNull
+    FogUntrustedClient getUntrustedClient() {
+        return untrustedClient;
+    }
+
     private List<MobileCoinUri> createNormalizedConsensusUris(List<Uri> consensusUris)
         throws InvalidUriException {
         List<MobileCoinUri> normalizedConsensusUris = new ArrayList<>();
@@ -925,7 +930,7 @@ public final class MobileCoinClient implements MobileCoinAccountClient, MobileCo
                 username,
                 password
         );
-        untrustedClient.setAuthorization(
+        getUntrustedClient().setAuthorization(
                 username,
                 password
         );
@@ -950,7 +955,7 @@ public final class MobileCoinClient implements MobileCoinAccountClient, MobileCo
         consensusClient.setTransportProtocol(protocol);
         blockchainClient.setTransportProtocol(protocol);
         fogBlockClient.setTransportProtocol(protocol);
-        untrustedClient.setTransportProtocol(protocol);
+        getUntrustedClient().setTransportProtocol(protocol);
         fogReportsManager.setTransportProtocol(protocol);
     }
 
@@ -971,9 +976,7 @@ public final class MobileCoinClient implements MobileCoinAccountClient, MobileCo
         if (null != blockchainClient) {
             blockchainClient.shutdown();
         }
-        if (null != untrustedClient) {
-            untrustedClient.shutdown();
-        }
+        getUntrustedClient().shutdown();
     }
 
     @Override
