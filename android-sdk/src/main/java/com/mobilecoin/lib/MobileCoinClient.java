@@ -568,8 +568,8 @@ public final class MobileCoinClient implements MobileCoinAccountClient, MobileCo
                 "transaction:", transaction);
         ConsensusCommon.ProposeTxResponse txResponse =
                 consensusClient.proposeTx(transaction.toProtoBufObject());
-        final long blockCount = txResponse.getBlockCount() > 0 ? txResponse.getBlockCount() - 1L : 0;
-        this.txOutStore.setConsensusBlockIndex(UnsignedLong.fromLongBits(blockCount));
+        final long blockIndex = txResponse.getBlockCount() > 0 ? txResponse.getBlockCount() - 1L : 0;
+        this.txOutStore.setConsensusBlockIndex(UnsignedLong.fromLongBits(blockIndex));
         ConsensusCommon.ProposeTxResult txResult = txResponse.getResult();
         int code = txResult.getNumber();
         if (0 != code) {
