@@ -11,6 +11,7 @@ import com.mobilecoin.lib.PendingTransaction;
 import com.mobilecoin.lib.PublicAddress;
 import com.mobilecoin.lib.Transaction;
 import com.mobilecoin.lib.TxOutMemoBuilder;
+import com.mobilecoin.lib.UnsignedLong;
 
 import java.math.BigInteger;
 
@@ -32,17 +33,21 @@ public final class InvalidTransactionException extends MobileCoinException {
 
     @Nullable
     private final ConsensusCommon.ProposeTxResult result;
+    @Nullable
+    private final UnsignedLong blockIndex;
 
     /**
      * Creates an {@code InvalidTransactionException} with the given {@link ConsensusCommon.ProposeTxResult}.
      *
-     * @param result the result of a {@link com.mobilecoin.lib.Transaction} proposal
+     * @param result the result of a {@link Transaction} proposal
+     * @param blockIndex the blockIndex from consensus
      * @see ConsensusCommon.ProposeTxResult
      * @since 1.2.2
      */
-    public InvalidTransactionException(@NonNull ConsensusCommon.ProposeTxResult result) {
+    public InvalidTransactionException(@NonNull ConsensusCommon.ProposeTxResult result, @NonNull UnsignedLong blockIndex) {
         super(result.toString());
         this.result = result;
+        this.blockIndex = blockIndex;
     }
 
     /**
@@ -50,8 +55,8 @@ public final class InvalidTransactionException extends MobileCoinException {
      *
      * @param message the {@link Exception} message
      * @deprecated Deprecated as of 1.2.2. Please use
-     * {@link InvalidTransactionException#InvalidTransactionException(ConsensusCommon.ProposeTxResult)}.
-     * @see InvalidTransactionException#InvalidTransactionException(ConsensusCommon.ProposeTxResult).
+     * {@link InvalidTransactionException#InvalidTransactionException(ConsensusCommon.ProposeTxResult, UnsignedLong)}.
+     * @see InvalidTransactionException#InvalidTransactionException(ConsensusCommon.ProposeTxResult, UnsignedLong) .
      * @see ConsensusCommon.ProposeTxResult
      * @since 1.0.0
      */
@@ -59,6 +64,7 @@ public final class InvalidTransactionException extends MobileCoinException {
     public InvalidTransactionException(@Nullable String message) {
         super(message);
         this.result = null;
+        this.blockIndex = null;
     }
 
     /**
@@ -71,6 +77,18 @@ public final class InvalidTransactionException extends MobileCoinException {
     @Nullable
     public ConsensusCommon.ProposeTxResult getResult() {
         return this.result;
+    }
+
+    /**
+     * Returns the consensus blockIndex.
+     *
+     * @return blockIndex at the time of consensus that returned the error
+     * @see ConsensusCommon.ProposeTxResult
+     * @since 1.2.2
+     */
+    @Nullable
+    public UnsignedLong getBlockIndex() {
+        return this.blockIndex;
     }
 
 }
