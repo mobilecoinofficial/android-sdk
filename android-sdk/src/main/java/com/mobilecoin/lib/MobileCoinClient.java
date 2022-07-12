@@ -579,7 +579,7 @@ public final class MobileCoinClient implements MobileCoinAccountClient, MobileCo
             Util.logException(TAG, invalidTransactionException);
             throw invalidTransactionException;
         }
-        return blockCount;
+        return blockIndex;
     }
 
     @Override
