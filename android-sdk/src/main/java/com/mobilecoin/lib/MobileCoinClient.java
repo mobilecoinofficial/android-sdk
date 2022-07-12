@@ -575,7 +575,7 @@ public final class MobileCoinClient implements MobileCoinAccountClient, MobileCo
         if (0 != code) {
             blockchainClient.resetCache();
             InvalidTransactionException invalidTransactionException =
-                    new InvalidTransactionException(txResult);
+                    new InvalidTransactionException(txResult, UnsignedLong.fromLongBits(blockIndex));
             Util.logException(TAG, invalidTransactionException);
             throw invalidTransactionException;
         }
@@ -719,7 +719,9 @@ public final class MobileCoinClient implements MobileCoinAccountClient, MobileCo
                 }
                 if (status == Transaction.Status.FAILED) {
                     //Status only set to FAILED on TombstoneBlockExceeded. See getTransactionStatus(Transaction transaction)
-                    throw new InvalidTransactionException(ConsensusCommon.ProposeTxResult.TombstoneBlockExceeded);
+                    throw new InvalidTransactionException(
+                            ConsensusCommon.ProposeTxResult.TombstoneBlockExceeded,
+                            status.getBlockIndex());
                 }
             }
         } while (inputSelectionForAmount == null);
