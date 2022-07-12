@@ -321,7 +321,7 @@ public final class MobileCoinClient implements MobileCoinAccountClient, MobileCo
             throw new NetworkException(NetworkResult.INTERNAL, e);
         }
     }
-    
+
     @Override
     @NonNull
     public Amount getTransferableAmount(@NonNull TokenId tokenId) throws NetworkException, InvalidFogResponse,
@@ -568,7 +568,8 @@ public final class MobileCoinClient implements MobileCoinAccountClient, MobileCo
                 "transaction:", transaction);
         ConsensusCommon.ProposeTxResponse txResponse =
                 consensusClient.proposeTx(transaction.toProtoBufObject());
-        this.txOutStore.setConsensusBlockIndex(UnsignedLong.fromLongBits(txResponse.getBlockCount() - 1L));
+        final long blockCount = txResponse.getBlockCount() > 0 ? txResponse.getBlockCount() - 1L : 0;
+        this.txOutStore.setConsensusBlockIndex(UnsignedLong.fromLongBits(blockCount));
         ConsensusCommon.ProposeTxResult txResult = txResponse.getResult();
         int code = txResult.getNumber();
         if (0 != code) {
@@ -578,7 +579,7 @@ public final class MobileCoinClient implements MobileCoinAccountClient, MobileCo
             Util.logException(TAG, invalidTransactionException);
             throw invalidTransactionException;
         }
-        return txResponse.getBlockCount() - 1;
+        return blockCount;
     }
 
     @Override
