@@ -562,7 +562,7 @@ public final class MobileCoinClient implements MobileCoinAccountClient, MobileCo
     }
 
     @Override
-    public void submitTransaction(@NonNull Transaction transaction)
+    public long submitTransaction(@NonNull Transaction transaction)
             throws InvalidTransactionException, NetworkException, AttestationException {
         Logger.i(TAG, "SubmitTransaction call", null,
                 "transaction:", transaction);
@@ -578,6 +578,7 @@ public final class MobileCoinClient implements MobileCoinAccountClient, MobileCo
             Util.logException(TAG, invalidTransactionException);
             throw invalidTransactionException;
         }
+        return txResponse.getBlockCount() - 1;
     }
 
     @Override

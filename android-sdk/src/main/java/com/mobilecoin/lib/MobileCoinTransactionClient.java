@@ -81,7 +81,7 @@ public interface MobileCoinTransactionClient {
    *
    * @param transaction a valid transaction object to submit (see {@link MobileCoinClient#prepareTransaction}}
    */
-  void submitTransaction(@NonNull Transaction transaction)
+  long submitTransaction(@NonNull Transaction transaction)
       throws InvalidTransactionException, NetworkException, AttestationException;
 
   /**
