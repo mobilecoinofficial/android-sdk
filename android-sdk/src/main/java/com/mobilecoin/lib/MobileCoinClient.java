@@ -565,7 +565,7 @@ public final class MobileCoinClient implements MobileCoinAccountClient, MobileCo
             changeTxOutContext = txBuilder.addOutput(change, accountKey.getPublicAddress(), rngSeed, null);
         }
         else {
-            changeTxOutContext = txBuilder.addChangeOutput(change, accountKey, null);
+            changeTxOutContext = txBuilder.addChangeOutput(change, accountKey, rngSeed, null);
         }
 
         Transaction transaction = txBuilder.build();

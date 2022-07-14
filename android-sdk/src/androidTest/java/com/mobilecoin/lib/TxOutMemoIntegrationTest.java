@@ -102,7 +102,7 @@ public class TxOutMemoIntegrationTest {
         .unmaskAmount(senderAccountKey.getViewKey(), realTxOut.getPublicKey()).getValue();
     BigInteger changeValue = realTxOutValue.subtract(fee.getValue())
         .subtract(sentTxOutValue);
-    transactionBuilder.addChangeOutput(changeValue, senderAccountKey, null);
+    transactionBuilder.addChangeOutput(changeValue, senderAccountKey, null, null);
     Transaction transaction = transactionBuilder.build();
 
     List<MobileCoinAPI.TxOut> outputsList = transaction.toProtoBufObject().getPrefix()
@@ -162,7 +162,7 @@ public class TxOutMemoIntegrationTest {
     BigInteger realTxOutValue = realTxOut.getMaskedAmount()
         .unmaskAmount(senderAccountKey.getViewKey(), realTxOut.getPublicKey()).getValue();
     BigInteger changeValue = realTxOutValue.subtract(fee.getValue()).subtract(txValue);
-    transactionBuilder.addChangeOutput(changeValue, senderAccountKey, null);
+    transactionBuilder.addChangeOutput(changeValue, senderAccountKey, null, null);
     Transaction transaction = transactionBuilder.build();
 
     List<MobileCoinAPI.TxOut> outputsList = transaction.toProtoBufObject().getPrefix()
@@ -224,7 +224,7 @@ public class TxOutMemoIntegrationTest {
         .unmaskAmount(senderAccountKey.getViewKey(), realTxOut.getPublicKey()).getValue();
     BigInteger changeValue = realTxOutValue.subtract(fee.getValue())
         .subtract(sentTxOutValue);
-    transactionBuilder.addChangeOutput(changeValue, senderAccountKey, null);
+    transactionBuilder.addChangeOutput(changeValue, senderAccountKey, null, null);
     Transaction transaction = transactionBuilder.build();
 
     List<MobileCoinAPI.TxOut> outputsList = transaction.toProtoBufObject().getPrefix()
@@ -284,7 +284,7 @@ public class TxOutMemoIntegrationTest {
             .unmaskAmount(senderAccountKey.getViewKey(), realTxOut.getPublicKey()).getValue();
     BigInteger changeValue = realTxOutValue.subtract(fee.getValue())
             .subtract(sentTxOutValue);
-    transactionBuilder.addChangeOutput(changeValue, senderAccountKey, null);
+    transactionBuilder.addChangeOutput(changeValue, senderAccountKey, null, null);
     Transaction transaction = transactionBuilder.build();
 
     List<MobileCoinAPI.TxOut> outputsList = transaction.toProtoBufObject().getPrefix()

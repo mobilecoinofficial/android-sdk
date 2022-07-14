@@ -89,18 +89,18 @@ final class TransactionBuilder extends Native {
     TxOutContext addChangeOutput(
         @NonNull BigInteger value,
         @NonNull AccountKey accountKey,
+        @NonNull byte[] rngSeed,
         @Nullable byte[] confirmationNumberOut
     ) throws TransactionBuilderException {
         Logger.i(TAG, "Adding transaction output");
-        byte[] confirmationOut = new byte[Receipt.CONFIRMATION_NUMBER_LENGTH];
         try {
-            long rustObj = add_change_output(value, accountKey, confirmationOut);
+            long rustObj = add_change_output(value, accountKey, rngSeed);
             if (confirmationNumberOut != null) {
                 if (confirmationNumberOut.length < Receipt.CONFIRMATION_NUMBER_LENGTH) {
                     throw new IllegalArgumentException("ConfirmationNumber buffer is too small");
                 }
-                System.arraycopy(confirmationOut, 0, confirmationNumberOut, 0,
-                    confirmationOut.length);
+                System.arraycopy(rngSeed, 0, confirmationNumberOut, 0,
+                    rngSeed.length);
             }
             return TxOutContext.fromJNI(rustObj);
         } catch (Exception exception) {
