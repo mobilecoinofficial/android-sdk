@@ -97,7 +97,7 @@ public class TxOutMemoIntegrationTest {
     transactionBuilder.setTombstoneBlockIndex(UnsignedLong.valueOf(2000));
     BigInteger sentTxOutValue = BigInteger.ONE;
 
-    transactionBuilder.addOutput(sentTxOutValue, recipientAccountKey.getPublicAddress(), null);
+    transactionBuilder.addOutput(sentTxOutValue, recipientAccountKey.getPublicAddress(), null, null);
     BigInteger realTxOutValue = realTxOut.getMaskedAmount()
         .unmaskAmount(senderAccountKey.getViewKey(), realTxOut.getPublicKey()).getValue();
     BigInteger changeValue = realTxOutValue.subtract(fee.getValue())
@@ -158,7 +158,7 @@ public class TxOutMemoIntegrationTest {
     transactionBuilder.setTombstoneBlockIndex(UnsignedLong.valueOf(2000));
     BigInteger txValue = BigInteger.ONE;
 
-    transactionBuilder.addOutput(txValue, recipientAccountKey.getPublicAddress(), null);
+    transactionBuilder.addOutput(txValue, recipientAccountKey.getPublicAddress(), null, null);
     BigInteger realTxOutValue = realTxOut.getMaskedAmount()
         .unmaskAmount(senderAccountKey.getViewKey(), realTxOut.getPublicKey()).getValue();
     BigInteger changeValue = realTxOutValue.subtract(fee.getValue()).subtract(txValue);
@@ -219,7 +219,7 @@ public class TxOutMemoIntegrationTest {
     transactionBuilder.setTombstoneBlockIndex(UnsignedLong.valueOf(2000));
     BigInteger sentTxOutValue = BigInteger.ONE;
 
-    transactionBuilder.addOutput(sentTxOutValue, recipientAccountKey.getPublicAddress(), null);
+    transactionBuilder.addOutput(sentTxOutValue, recipientAccountKey.getPublicAddress(), null, null);
     BigInteger realTxOutValue = realTxOut.getMaskedAmount()
         .unmaskAmount(senderAccountKey.getViewKey(), realTxOut.getPublicKey()).getValue();
     BigInteger changeValue = realTxOutValue.subtract(fee.getValue())
@@ -279,7 +279,7 @@ public class TxOutMemoIntegrationTest {
     transactionBuilder.setTombstoneBlockIndex(UnsignedLong.valueOf(2000));
     BigInteger sentTxOutValue = BigInteger.ONE;
 
-    transactionBuilder.addOutput(sentTxOutValue, recipientAccountKey.getPublicAddress(), null);
+    transactionBuilder.addOutput(sentTxOutValue, recipientAccountKey.getPublicAddress(), null, null);
     BigInteger realTxOutValue = realTxOut.getMaskedAmount()
             .unmaskAmount(senderAccountKey.getViewKey(), realTxOut.getPublicKey()).getValue();
     BigInteger changeValue = realTxOutValue.subtract(fee.getValue())

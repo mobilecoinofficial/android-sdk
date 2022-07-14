@@ -75,6 +75,28 @@ public interface MobileCoinTransactionClient {
           InvalidFogResponse, AttestationException, NetworkException,
           TransactionBuilderException, FogReportException, FogSyncException;
 
+  /**
+   * Prepares a {@link PendingTransaction} to be executed.
+   *
+   * @param recipient {@link PublicAddress} of the recipient
+   * @param amount    transaction amount
+   * @param fee       transaction fee (see {@link MobileCoinClient#estimateTotalFee})
+   * @param txOutMemoBuilder
+   * @param rngSeed   seed used for generating public key
+   * @return {@link PendingTransaction} which encapsulates the {@link Transaction} and {@link
+   * Receipt} objects
+   */
+  @NonNull
+  PendingTransaction prepareTransaction(
+      @NonNull final PublicAddress recipient,
+      @NonNull final Amount amount,
+      @NonNull final Amount fee,
+      @NonNull TxOutMemoBuilder txOutMemoBuilder,
+      byte[] rngSeed
+  ) throws InsufficientFundsException, FragmentedAccountException, FeeRejectedException,
+          InvalidFogResponse, AttestationException, NetworkException,
+          TransactionBuilderException, FogReportException, FogSyncException;
+
 
   /**
    * Submits a {@link Transaction} to the consensus service.

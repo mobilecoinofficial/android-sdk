@@ -361,6 +361,25 @@ public final class MobileCoinClient implements MobileCoinAccountClient, MobileCo
     ) throws InsufficientFundsException, FragmentedAccountException, FeeRejectedException,
             InvalidFogResponse, AttestationException, NetworkException,
             TransactionBuilderException, FogReportException, FogSyncException {
+        return prepareTransaction(
+                recipient,
+                amount,
+                fee,
+                txOutMemoBuilder,
+                new byte[Receipt.CONFIRMATION_NUMBER_LENGTH]
+        );
+    }
+
+    @NonNull
+    public PendingTransaction prepareTransaction(
+        @NonNull final PublicAddress recipient,
+        @NonNull final Amount amount,
+        @NonNull final Amount fee,
+        @NonNull TxOutMemoBuilder txOutMemoBuilder,
+        byte[] rngSeed
+    ) throws InsufficientFundsException, FragmentedAccountException, FeeRejectedException,
+            InvalidFogResponse, AttestationException, NetworkException,
+            TransactionBuilderException, FogReportException, FogSyncException {
         Logger.i(TAG, "PrepareTransaction call", null,
                 "recipient:", recipient,
                 "amount:", amount,
@@ -389,7 +408,8 @@ public final class MobileCoinClient implements MobileCoinAccountClient, MobileCo
                 amount,
                 selection.txOuts,
                 fee,
-                txOutMemoBuilder
+                txOutMemoBuilder,
+                rngSeed
         );
     }
 
@@ -399,7 +419,8 @@ public final class MobileCoinClient implements MobileCoinAccountClient, MobileCo
         @NonNull final Amount amount,
         @NonNull final List<OwnedTxOut> txOuts,
         @NonNull final Amount fee,
-        TxOutMemoBuilder txOutMemoBuilder
+        TxOutMemoBuilder txOutMemoBuilder,
+        byte[] rngSeed
     ) throws InvalidFogResponse, AttestationException, NetworkException,
             TransactionBuilderException, FogReportException {
         Logger.i(TAG, "PrepareTransaction with TxOuts call", null,
@@ -531,6 +552,7 @@ public final class MobileCoinClient implements MobileCoinAccountClient, MobileCo
         final TxOutContext payloadTxOutContext = txBuilder.addOutput(
                 amount.getValue(),
                 recipient,
+                rngSeed,
                 confirmationNumberOut
         );
         TxOut pendingTxo = payloadTxOutContext.getTxOut();
@@ -540,7 +562,7 @@ public final class MobileCoinClient implements MobileCoinAccountClient, MobileCo
         BigInteger change = totalAmount.subtract(finalAmount);
         TxOutContext changeTxOutContext;
         if(blockchainClient.getOrFetchNetworkBlockVersion() < 1) {
-            changeTxOutContext = txBuilder.addOutput(change, accountKey.getPublicAddress(), null);
+            changeTxOutContext = txBuilder.addOutput(change, accountKey.getPublicAddress(), rngSeed, null);
         }
         else {
             changeTxOutContext = txBuilder.addChangeOutput(change, accountKey, null);
@@ -549,7 +571,7 @@ public final class MobileCoinClient implements MobileCoinAccountClient, MobileCo
         Transaction transaction = txBuilder.build();
         MaskedAmount pendingMaskedAmount = pendingTxo.getMaskedAmount();
         Receipt receipt = new Receipt(pendingTxo.getPublicKey(),
-                confirmationNumberOut,
+                rngSeed,
                 pendingMaskedAmount,
                 tombstoneBlockIndex
         );
@@ -696,7 +718,8 @@ public final class MobileCoinClient implements MobileCoinAccountClient, MobileCo
                         totalValue.subtract(selectionFee),
                         selection.txOuts,
                         selectionFee,
-                        txOutMemoBuilder
+                        txOutMemoBuilder,
+                        new byte[Receipt.CONFIRMATION_NUMBER_LENGTH]
                 );
                 if (!delegate.onStepReady(pendingTransaction, selection.fee)) {
                     delegate.onCancel();
