@@ -21,6 +21,8 @@ public class TestFogConfig {
     public static final short FOG_LEDGER_PRODUCT_ID = 2;
     public static final short FOG_VIEW_PRODUCT_ID = 3;
     public static final short FOG_REPORT_PRODUCT_ID = 4;
+    public static final String CONFIG_ADVISORIES[] = null;
+    public static final String HARDENING_ADVISORIES[] = {"INTEL-SA-00334", "INTEL-SA-00615"};
 
     private final Uri fogUri;
     private final List<Uri> consensusUris;
@@ -159,32 +161,32 @@ public class TestFogConfig {
                             .withMrSigner(Hex.toByteArray(
                                     "7ee5e29d74623fdbc6fbf1454be6f3bb0b86c12366b7b478ad13353e44de8411"),
                                     FOG_VIEW_PRODUCT_ID, SECURITY_VERSION,
-                                    null,
-                                    new String[]{"INTEL-SA-00334"}))
+                                    CONFIG_ADVISORIES,
+                                    HARDENING_ADVISORIES))
                     .withTrustRoots(getDevTrustRoots());
             clientConfig.fogLedger = new ClientConfig.Service()
                     .withVerifier((new Verifier())
                             .withMrSigner(Hex.toByteArray(
                                     "7ee5e29d74623fdbc6fbf1454be6f3bb0b86c12366b7b478ad13353e44de8411"),
                                     FOG_LEDGER_PRODUCT_ID, SECURITY_VERSION,
-                                    null,
-                                    new String[]{"INTEL-SA-00334"}))
+                                    CONFIG_ADVISORIES,
+                                    HARDENING_ADVISORIES))
                     .withTrustRoots(getDevTrustRoots());
             clientConfig.consensus = new ClientConfig.Service()
                     .withVerifier((new Verifier())
                             .withMrSigner(Hex.toByteArray(
                                     "7ee5e29d74623fdbc6fbf1454be6f3bb0b86c12366b7b478ad13353e44de8411"),
                                     CONSENSUS_PRODUCT_ID, SECURITY_VERSION,
-                                    null,
-                                    new String[]{"INTEL-SA-00334"}))
+                                    CONFIG_ADVISORIES,
+                                    HARDENING_ADVISORIES))
                     .withTrustRoots(getDevTrustRoots());
             clientConfig.report = new ClientConfig.Service()
                     .withVerifier((new Verifier())
                             .withMrSigner(Hex.toByteArray(
                                     "7ee5e29d74623fdbc6fbf1454be6f3bb0b86c12366b7b478ad13353e44de8411"),
                                     FOG_REPORT_PRODUCT_ID, SECURITY_VERSION,
-                                    null,
-                                    new String[]{"INTEL-SA-00334"})
+                                    CONFIG_ADVISORIES,
+                                    HARDENING_ADVISORIES)
                     );
             return clientConfig;
         } catch (AttestationException ex) {
@@ -204,32 +206,32 @@ public class TestFogConfig {
                             .withMrSigner(Hex.toByteArray(
                                     "bf7fa957a6a94acb588851bc8767e0ca57706c79f4fc2aa6bcb993012c3c386c"),
                                     FOG_VIEW_PRODUCT_ID, SECURITY_VERSION,
-                                    null,
-                                    new String[]{"INTEL-SA-00334"}))
+                                    CONFIG_ADVISORIES,
+                                    HARDENING_ADVISORIES))
                     .withTrustRoots(getDevTrustRoots());
             clientConfig.fogLedger = new ClientConfig.Service()
                     .withVerifier((new Verifier())
                             .withMrSigner(Hex.toByteArray(
                                     "bf7fa957a6a94acb588851bc8767e0ca57706c79f4fc2aa6bcb993012c3c386c"),
                                     FOG_LEDGER_PRODUCT_ID, SECURITY_VERSION,
-                                    null,
-                                    new String[]{"INTEL-SA-00334"}))
+                                    CONFIG_ADVISORIES,
+                                    HARDENING_ADVISORIES))
                     .withTrustRoots(getDevTrustRoots());
             clientConfig.consensus = new ClientConfig.Service()
                     .withVerifier((new Verifier())
                             .withMrSigner(Hex.toByteArray(
                                     "bf7fa957a6a94acb588851bc8767e0ca57706c79f4fc2aa6bcb993012c3c386c"),
                                     CONSENSUS_PRODUCT_ID, SECURITY_VERSION,
-                                    null,
-                                    new String[]{"INTEL-SA-00334"}))
+                                    CONFIG_ADVISORIES,
+                                    HARDENING_ADVISORIES))
                     .withTrustRoots(getDevTrustRoots());
             clientConfig.report = new ClientConfig.Service()
                     .withVerifier((new Verifier())
                             .withMrSigner(Hex.toByteArray(
                                     "bf7fa957a6a94acb588851bc8767e0ca57706c79f4fc2aa6bcb993012c3c386c"),
                                     FOG_REPORT_PRODUCT_ID, SECURITY_VERSION,
-                                    null,
-                                    new String[]{"INTEL-SA-00334"})
+                                    CONFIG_ADVISORIES,
+                                    HARDENING_ADVISORIES)
                     );
             return clientConfig;
         } catch (AttestationException ex) {
