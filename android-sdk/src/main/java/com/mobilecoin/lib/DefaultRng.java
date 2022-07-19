@@ -16,7 +16,7 @@ public class DefaultRng extends Native implements Rng {
 
     @Override
     public int nextInt() {
-        return (int)(this.next_long() & Integer.MAX_VALUE);
+        return (int)(this.next_long() & (int)(-1));
     }
 
     @Override
@@ -29,10 +29,20 @@ public class DefaultRng extends Native implements Rng {
         return this.next_bytes(length);
     }
 
+    @Override
+    protected void finalize() throws Throwable {
+        if(rustObj != 0) {
+            finalize_jni();
+        }
+        super.finalize();
+    }
+
     private static native DefaultRng init_jni();
 
     private native long next_long();
 
     private native byte[] next_bytes(int length);
+
+    private native void finalize_jni();
 
 }
