@@ -147,6 +147,9 @@ public class OwnedTxOut implements Parcelable {
 
     /**
      * @return The value of this TxOut
+     *
+     * @deprecated Deprecated as of 1.2.0. Please use {@link OwnedTxOut#getAmount()}.
+     * @see OwnedTxOut#getAmount()
      */
     @Deprecated
     @NonNull
@@ -156,6 +159,9 @@ public class OwnedTxOut implements Parcelable {
 
     /**
      * @return The token ID of this TxOut
+     *
+     * @deprecated Deprecated as of 1.2.0. Please use {@link OwnedTxOut#getAmount()}.
+     * @see OwnedTxOut#getAmount()
      */
     @Deprecated
     @NonNull

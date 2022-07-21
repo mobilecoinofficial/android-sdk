@@ -43,6 +43,21 @@ some issues caused by `OwnedTxOut`s being updated after being fetched from the p
 - FogSyncException will be thrown if Fog View and Ledger are out of sync with each other or Consensus.
   This signifies that balances may temporarily be out of date or incorrect.
 
+### Upgrading
+- The constructor for `MobileCoinClient` now requires one additional parameter, a `TransportProtocol`
+This can either be `TransportProtocol.forGRPC()` or `TransportProtocol.forHTTP(Requester)`.
+- Some methods that interact with network services now throw a `FogSyncException`. This signifies
+that the information gathered from the network may be temporarily out of date.
+- With support for multiple token types, various account and transaction related methods have been
+deprecated. Many of these deprecated methods have simply been parameterized for a `TokenId`. Refer
+to the Javadoc of deprecated methods for instructions on what to use instead. Until they are removed,
+deprecated API methods will continue to function identically to how they did in 1.1.
+- For sending transactions, a `TxOutMemoBuilder` will be required to create `TxOutMemo`s. These can
+be used to reconstruct
+[Recoverable Transaction History (RTH)](https://github.com/mobilecoinfoundation/mcips/blob/main/text/0004-recoverable-transaction-history.md).
+This will be required on network version 1.2.0. `TxOutMemoBuilder.createSenderAndDestinationRTHMemoBuilder()`
+can be used to satisfy this requirement and is reverse compatible with network version 1.1.
+
 ## [1.2.0-pre0] - 2021-09-15
 ### Added
 - Network Robustness. Host applications now have the ability to choose which transport protocols

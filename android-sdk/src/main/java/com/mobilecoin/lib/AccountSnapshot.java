@@ -63,6 +63,11 @@ public final class AccountSnapshot {
 
     /**
      * Computes the account's balance as it was at the snapshot's block index
+     * 
+     * @deprecated Deprecated as of 1.2.0. Please use {@link AccountSnapshot#getBalance(TokenId)} or
+     * {@link AccountSnapshot#getBalances()}
+     * @see AccountSnapshot#getBalance(TokenId)
+     * @see AccountSnapshot#getBalances()
      */
     @NonNull
     @Deprecated
@@ -215,6 +220,9 @@ public final class AccountSnapshot {
      *
      * @param minimumTxFee minimum transaction fee, see
      * {@link MobileCoinClient#getOrFetchMinimumTxFee}
+     *                     
+     * @deprecated Deprecated as of 1.2.0. Please use {@link AccountSnapshot#getTransferableAmount(Amount)}.
+     * @see AccountSnapshot#getTransferableAmount(Amount)
      */
     @Deprecated
     @NonNull
@@ -255,6 +263,8 @@ public final class AccountSnapshot {
      * @param amountPicoMOB       an amount value in picoMob
      * @param minimumTxFee minimum transaction fee, see
      *                     {@link MobileCoinClient#getOrFetchMinimumTxFee}
+     * @deprecated Deprecated as of 1.2.0. Please use {@link AccountSnapshot#estimateTotalFee(Amount, Amount)}.
+     * @see AccountSnapshot#estimateTotalFee(Amount, Amount)
      */
     @Deprecated
     @NonNull
@@ -306,6 +316,9 @@ public final class AccountSnapshot {
      * @param feePicoMOB    transaction fee (see {@link MobileCoinClient#estimateTotalFee})
      * @return {@link PendingTransaction} which encapsulates the {@link Transaction} and {@link
      * Receipt} objects
+     * 
+     * @deprecated Deprecated as of 1.2.0. Please use {@link AccountSnapshot#prepareTransaction(PublicAddress, Amount, Amount, TxOutMemoBuilder)}.
+     * @see AccountSnapshot#prepareTransaction(PublicAddress, Amount, Amount, TxOutMemoBuilder) 
      */
     @Deprecated
     @NonNull

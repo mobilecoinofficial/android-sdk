@@ -48,6 +48,9 @@ public final class AccountActivity {
     /**
      * @return all account MOB TxOuts at the particular block count, see
      * {@link AccountActivity#getBlockCount}
+     *
+     * @deprecated Deprecated as of 1.2.0. Please use {@link AccountActivity#getAllTokenTxOuts()}.
+     * @see AccountActivity#getAllTokenTxOuts()
      * @since 1.0.0
      */
     @Deprecated
