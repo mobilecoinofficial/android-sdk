@@ -4,6 +4,21 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.2.2] - 2022-07-21
+### Added
+- Added a `ProposeTxResult` field to `InvalidTransactionException`. This field indicates why the
+`Transaction` was not accepted.
+- `MobileCoinTransactionClient.submitTransaction` now returns Consensus block count at submission time.
+
+### Changed
+- Updated bindings to version 1.2.2
+
+### Fixes
+- `OwnedTxOut`s returned through the public API are copied from internal `OwnedTxOut`s. This fixes
+some issues caused by `OwnedTxOut`s being updated after being fetched from the public API.
+- Fixed default HttpRequester authentication
+- Fixed a dependency issue introduced by some project structure changes
+
 ## [1.2.1] - 2022-06-07
 ### Added
 - Added Amount.ofMOB(BigInteger value) to create an Amount with MOB token ID
