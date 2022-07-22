@@ -4,12 +4,42 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.2.2] - 2022-07-21
+### Added
+- Added a `ProposeTxResult` field to `InvalidTransactionException`. This field indicates why the
+`Transaction` was not accepted.
+- `MobileCoinTransactionClient.submitTransaction` now returns Consensus block count at submission time.
+
+### Changed
+- Updated bindings to version 1.2.2
+
+### Fixes
+- `OwnedTxOut`s returned through the public API are copied from internal `OwnedTxOut`s. This fixes
+some issues caused by `OwnedTxOut`s being updated after being fetched from the public API.
+- Fixed default HttpRequester authentication
+- Fixed a dependency issue introduced by some project structure changes
+
+### Upgrading
+
+No code changes are *required* to upgrade from 1.2.1 to 1.2.2
+
+- To easily handle various types of transaction failure differently, code such as the following
+can be used: `switch(invalidTransactionException.getResult())`
+- To obtain the Consensus block index at the time of `Transaction` submission, check the return
+value of `MobileCoinTransactionClient.submitTransaction`
+
 ## [1.2.1] - 2022-06-07
 ### Added
 - Added Amount.ofMOB(BigInteger value) to create an Amount with MOB token ID
 
 ### Changed
 - Updated bindings to version 1.2.1
+
+### Upgrading
+
+No code changes are *required* to upgrade from 1.2.0 to 1.2.1
+
+- Calls to `new Amount(value, TokenId.MOB)` may be replaced with `Amount.ofMOB(value)`.
 
 ## [1.2.0] - 2022-06-03
 ### Added
@@ -27,6 +57,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fixed API level 24 support
 - FogSyncException will be thrown if Fog View and Ledger are out of sync with each other or Consensus.
   This signifies that balances may temporarily be out of date or incorrect.
+
+### Upgrading
+- The constructor for `MobileCoinClient` now requires one additional parameter, a `TransportProtocol`
+This can either be `TransportProtocol.forGRPC()` or `TransportProtocol.forHTTP(Requester)`.
+- Some methods that interact with network services now throw a `FogSyncException`. This signifies
+that the information gathered from the network may be temporarily out of date.
+- With support for multiple token types, various account and transaction related methods have been
+deprecated. Many of these deprecated methods have simply been parameterized for a `TokenId`. Refer
+to the Javadoc of deprecated methods for instructions on what to use instead. Until they are removed,
+deprecated API methods will continue to function identically to how they did in 1.1.
+- For sending transactions, a `TxOutMemoBuilder` will be required to create `TxOutMemo`s. These can
+be used to reconstruct
+[Recoverable Transaction History (RTH)](https://github.com/mobilecoinfoundation/mcips/blob/main/text/0004-recoverable-transaction-history.md).
+This will be required on network version 1.2.0. `TxOutMemoBuilder.createSenderAndDestinationRTHMemoBuilder()`
+can be used to satisfy this requirement and is reverse compatible with network version 1.1.
 
 ## [1.2.0-pre0] - 2021-09-15
 ### Added

@@ -23,6 +23,9 @@ public interface MobileCoinTransactionClient {
 
   /**
    * Calculate the total transferable amount of picoMOB excluding all the required fees for such transfer.
+   *
+   * @deprecated Deprecated as of 1.2.0. Please use {@link MobileCoinTransactionClient#getTransferableAmount(TokenId)}
+   * @see MobileCoinTransactionClient#getTransferableAmount(TokenId)
    */
   @Deprecated
   @NonNull
@@ -44,6 +47,9 @@ public interface MobileCoinTransactionClient {
    * @param feePicoMOB       transaction fee (see {@link MobileCoinClient#estimateTotalFee})
    * @return {@link PendingTransaction} which encapsulates the {@link Transaction} and {@link
    * Receipt} objects
+   *
+   * @deprecated Deprecated as of 1.2.0. Please use {@link MobileCoinTransactionClient#prepareTransaction(PublicAddress, Amount, Amount, TxOutMemoBuilder)}
+   * @see MobileCoinTransactionClient#prepareTransaction(PublicAddress, Amount, Amount, TxOutMemoBuilder)
    */
   @Deprecated
   @NonNull
@@ -117,6 +123,9 @@ public interface MobileCoinTransactionClient {
    * defragmented in order to send the specified amount. See {@link MobileCoinAccountClient#defragmentAccount}.
    *
    * @param amountPicoMOB amount to send in picoMOB
+   *
+   * @deprecated Deprecated as of 1.2.0. Please use {@link MobileCoinTransactionClient#estimateTotalFee(Amount)}
+   * @see MobileCoinTransactionClient#estimateTotalFee(Amount)
    */
   @Deprecated
   @NonNull
@@ -139,6 +148,9 @@ public interface MobileCoinTransactionClient {
 
   /**
    * Fetches or returns the cached minimum MOB transaction fee in picoMOB
+   *
+   * @deprecated Deprecated as of 1.2.0. Please use {@link MobileCoinTransactionClient#getOrFetchMinimumTxFee(TokenId)}
+   * @see MobileCoinTransactionClient#getOrFetchMinimumTxFee(TokenId)
    */
   @Deprecated
   @NonNull

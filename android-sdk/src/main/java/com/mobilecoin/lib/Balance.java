@@ -25,6 +25,8 @@ final public class Balance {
 
     /**
      * Returns the balance amount in pico MOBs
+     * @deprecated Deprecated as of 1.2.0. Please use {@link Balance#getValue()}.
+     * @see Balance#getValue()
      */
     @NonNull
     @Deprecated

@@ -116,6 +116,9 @@ public final class Receipt {
 
     /**
      * @return {@link BigInteger} decoded receipt value
+     *
+     * @deprecated Deprecated as of 1.2.0. Please use {@link Receipt#getAmountData(AccountKey)}
+     * @see Receipt#getAmountData(AccountKey)
      */
     @NonNull
     @Deprecated
