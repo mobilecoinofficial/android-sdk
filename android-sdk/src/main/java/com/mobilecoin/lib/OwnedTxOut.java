@@ -172,7 +172,8 @@ public class OwnedTxOut implements Parcelable {
     /**
      * @return The amount of this TxOut
      */
-    @NonNull Amount getAmount() {
+    @NonNull
+    public Amount getAmount() {
         return amount;
     }
 
