@@ -64,8 +64,25 @@ public final class AccountActivity {
     }
 
     /**
+     * @return all account TxOuts for the specified TokenId at the particular block count
+     * @param tokenId the {@link TokenId} to filter by
+     * @see AccountActivity#getBlockCount
+     * @since 1.2.2.1
+     */
+    @NonNull
+    public Set<OwnedTxOut> getAllTokenTxOuts(TokenId tokenId) {
+        Logger.i(TAG, "GetAllTxOuts", null,
+                "txOuts count:", txOuts.size());
+        return txOuts.stream()
+                .filter(otxo -> tokenId.equals(otxo.getAmount().getTokenId()))
+                .collect(Collectors.toSet());
+    }
+
+    /**
      * @return all account TxOuts at the particular block count, see
      * {@link AccountActivity#getBlockCount}
+     *
+     * @since 1.2.0
      */
     @NonNull
     public Set<OwnedTxOut> getAllTokenTxOuts() {
