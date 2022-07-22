@@ -19,12 +19,27 @@ some issues caused by `OwnedTxOut`s being updated after being fetched from the p
 - Fixed default HttpRequester authentication
 - Fixed a dependency issue introduced by some project structure changes
 
+### Upgrading
+
+No code changes are *required* to upgrade from 1.2.1 to 1.2.2
+
+- To easily handle various types of transaction failure differently, code such as the following
+can be used: `switch(invalidTransactionException.getResult())`
+- To obtain the Consensus block index at the time of `Transaction` submission, check the return
+value of `MobileCoinTransactionClient.submitTransaction`
+
 ## [1.2.1] - 2022-06-07
 ### Added
 - Added Amount.ofMOB(BigInteger value) to create an Amount with MOB token ID
 
 ### Changed
 - Updated bindings to version 1.2.1
+
+### Upgrading
+
+No code changes are *required* to upgrade from 1.2.0 to 1.2.1
+
+- Calls to `new Amount(value, TokenId.MOB)` may be replaced with `Amount.ofMOB(value)`.
 
 ## [1.2.0] - 2022-06-03
 ### Added
