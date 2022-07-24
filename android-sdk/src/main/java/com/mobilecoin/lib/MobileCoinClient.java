@@ -352,12 +352,33 @@ public final class MobileCoinClient implements MobileCoinAccountClient, MobileCo
         }
     }
 
+    @Override
+    @NonNull
+    public PendingTransaction prepareTransaction(
+            @NonNull final PublicAddress recipient,
+            @NonNull final Amount amount,
+            @NonNull final Amount fee,
+            @NonNull final TxOutMemoBuilder txOutMemoBuilder
+    ) throws InsufficientFundsException, FragmentedAccountException, FeeRejectedException,
+            InvalidFogResponse, AttestationException, NetworkException,
+            TransactionBuilderException, FogReportException, FogSyncException {
+        return this.prepareTransaction(
+                recipient,
+                amount,
+                fee,
+                txOutMemoBuilder,
+                ChaCha20Rng.fromSeed(DefaultRng.createInstance().nextBytes(32))
+        );
+    }
+
+    @Override
     @NonNull
     public PendingTransaction prepareTransaction(
         @NonNull final PublicAddress recipient,
         @NonNull final Amount amount,
         @NonNull final Amount fee,
-        @NonNull TxOutMemoBuilder txOutMemoBuilder
+        @NonNull final TxOutMemoBuilder txOutMemoBuilder,
+        @NonNull final ChaCha20Rng rng
     ) throws InsufficientFundsException, FragmentedAccountException, FeeRejectedException,
             InvalidFogResponse, AttestationException, NetworkException,
             TransactionBuilderException, FogReportException, FogSyncException {
@@ -389,7 +410,8 @@ public final class MobileCoinClient implements MobileCoinAccountClient, MobileCo
                 amount,
                 selection.txOuts,
                 fee,
-                txOutMemoBuilder
+                txOutMemoBuilder,
+                rng
         );
     }
 
@@ -399,7 +421,8 @@ public final class MobileCoinClient implements MobileCoinAccountClient, MobileCo
         @NonNull final Amount amount,
         @NonNull final List<OwnedTxOut> txOuts,
         @NonNull final Amount fee,
-        TxOutMemoBuilder txOutMemoBuilder
+        @NonNull final TxOutMemoBuilder txOutMemoBuilder,
+        @NonNull final ChaCha20Rng rng
     ) throws InvalidFogResponse, AttestationException, NetworkException,
             TransactionBuilderException, FogReportException {
         Logger.i(TAG, "PrepareTransaction with TxOuts call", null,
@@ -504,7 +527,8 @@ public final class MobileCoinClient implements MobileCoinAccountClient, MobileCo
                 txOutMemoBuilder,
                 blockchainClient.getOrFetchNetworkBlockVersion(),
                 amount.getTokenId(),
-                fee
+                fee,
+                rng
         );
         txBuilder.setFee(fee);
         txBuilder.setTombstoneBlockIndex(tombstoneBlockIndex);
@@ -656,9 +680,26 @@ public final class MobileCoinClient implements MobileCoinAccountClient, MobileCo
 
     @Override
     public void defragmentAccount(
-        @NonNull Amount amountToSend,
-        @NonNull DefragmentationDelegate delegate,
-        boolean shouldWriteRTHMemos
+            @NonNull final Amount amountToSend,
+            @NonNull final DefragmentationDelegate delegate,
+            final boolean shouldWriteRTHMemos
+    ) throws InvalidFogResponse, AttestationException, NetworkException, InsufficientFundsException,
+            TransactionBuilderException, InvalidTransactionException,
+            FogReportException, TimeoutException, FogSyncException {
+        this.defragmentAccount(
+                amountToSend,
+                delegate,
+                shouldWriteRTHMemos,
+                ChaCha20Rng.fromSeed(DefaultRng.createInstance().nextBytes(32))
+        );
+    }
+
+    @Override
+    public void defragmentAccount(
+        @NonNull final Amount amountToSend,
+        @NonNull final DefragmentationDelegate delegate,
+        final boolean shouldWriteRTHMemos,
+        @NonNull final ChaCha20Rng rng
     ) throws InvalidFogResponse, AttestationException, NetworkException, InsufficientFundsException,
             TransactionBuilderException, InvalidTransactionException,
             FogReportException, TimeoutException, FogSyncException {
@@ -696,7 +737,8 @@ public final class MobileCoinClient implements MobileCoinAccountClient, MobileCo
                         totalValue.subtract(selectionFee),
                         selection.txOuts,
                         selectionFee,
-                        txOutMemoBuilder
+                        txOutMemoBuilder,
+                        rng
                 );
                 if (!delegate.onStepReady(pendingTransaction, selection.fee)) {
                     delegate.onCancel();

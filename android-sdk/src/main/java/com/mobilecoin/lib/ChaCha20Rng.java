@@ -20,7 +20,6 @@ public class ChaCha20Rng extends Native implements SeedableRng {
 
     @Override
     public int nextInt() {
-        //return (int)(this.next_long() & (int)(-1));
         return this.next_int();
     }
 

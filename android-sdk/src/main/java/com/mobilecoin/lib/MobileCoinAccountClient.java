@@ -116,15 +116,40 @@ public interface MobileCoinAccountClient {
    * <p>If the account is too fragmented, it might be necessary to defragment the account more than
    * once. However, wallet fragmentation is a rare occurrence since there is an internal mechanism
    * to defragment the account during other operations.
-   *  @param delegate monitors and controls the defragmentation process
+   * @param amountToSend the Amount to send for the desired {@link Transaction}
+   * @param delegate monitors and controls the defragmentation process
    * @param shouldWriteRTHMemos writes sender and destination memos for a defrag transaction if true.
    */
   void defragmentAccount(
-      @NonNull Amount amountToSend,
-      @NonNull DefragmentationDelegate delegate,
-      boolean shouldWriteRTHMemos) throws InvalidFogResponse, AttestationException, NetworkException, 
-      InsufficientFundsException, TransactionBuilderException, InvalidTransactionException,
-      FogReportException, TimeoutException, FogSyncException;
+      @NonNull final Amount amountToSend,
+      @NonNull final DefragmentationDelegate delegate,
+      final boolean shouldWriteRTHMemos
+  ) throws InvalidFogResponse, AttestationException, NetworkException, InsufficientFundsException,
+          TransactionBuilderException, InvalidTransactionException,
+          FogReportException, TimeoutException, FogSyncException;
+
+  /**
+   * Defragments the user's account.
+   *
+   * <p>An account needs to be defragmented when an account balance consists of multiple coins and
+   * there are no big enough coins to successfully send the transaction.
+   *
+   * <p>If the account is too fragmented, it might be necessary to defragment the account more than
+   * once. However, wallet fragmentation is a rare occurrence since there is an internal mechanism
+   * to defragment the account during other operations.
+   * @param amountToSend the Amount to send for the desired {@link Transaction}
+   * @param delegate monitors and controls the defragmentation process
+   * @param shouldWriteRTHMemos writes sender and destination memos for a defrag transaction if true.
+   * @param rng the Random Number Generator for {@link TransactionBuilder} to use
+   */
+  void defragmentAccount(
+          @NonNull final Amount amountToSend,
+          @NonNull final DefragmentationDelegate delegate,
+          final boolean shouldWriteRTHMemos,
+          @NonNull final ChaCha20Rng rng
+  ) throws InvalidFogResponse, AttestationException, NetworkException, InsufficientFundsException,
+          TransactionBuilderException, InvalidTransactionException,
+          FogReportException, TimeoutException, FogSyncException;
 
   /**
    * Retrieves the account activity.

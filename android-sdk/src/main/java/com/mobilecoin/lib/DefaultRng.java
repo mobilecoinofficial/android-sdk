@@ -1,6 +1,6 @@
 package com.mobilecoin.lib;
 
-public class DefaultRng extends Native implements Rng {
+public final class DefaultRng extends Native implements Rng {
 
     public static DefaultRng createInstance() {
         return init_jni();
@@ -16,7 +16,6 @@ public class DefaultRng extends Native implements Rng {
 
     @Override
     public int nextInt() {
-        //return (int)(this.next_long() & (int)(-1));
         return this.next_int();
     }
 
