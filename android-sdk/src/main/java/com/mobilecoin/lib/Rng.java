@@ -2,10 +2,10 @@ package com.mobilecoin.lib;
 
 public interface Rng {
 
-    int nextInt();
+    public int nextInt();
 
-    long nextLong();
+    public long nextLong();
 
-    byte[] nextBytes(int length);
+    public byte[] nextBytes(int length);
 
 }

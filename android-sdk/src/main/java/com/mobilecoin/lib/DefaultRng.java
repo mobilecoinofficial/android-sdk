@@ -16,7 +16,8 @@ public class DefaultRng extends Native implements Rng {
 
     @Override
     public int nextInt() {
-        return (int)(this.next_long() & (int)(-1));
+        //return (int)(this.next_long() & (int)(-1));
+        return this.next_int();
     }
 
     @Override
@@ -38,6 +39,8 @@ public class DefaultRng extends Native implements Rng {
     }
 
     private static native DefaultRng init_jni();
+
+    private native int next_int();
 
     private native long next_long();
 
