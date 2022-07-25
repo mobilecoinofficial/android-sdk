@@ -1,17 +1,25 @@
 package com.mobilecoin.lib;
 
+/**
+ * This class represents the default MobileCoin RNG
+ *
+ * @see Rng
+ * @since 1.2.3
+ */
 public final class DefaultRng extends Native implements Rng {
 
+    /**
+     * Create an instance of DefaultRng
+     * The newly created DefaultRng is seeded randomly
+     *
+     * @return a new instance of DefaultRng
+     */
     public static DefaultRng createInstance() {
         return init_jni();
     }
 
     private DefaultRng(long rustObj) {
         this.rustObj = rustObj;
-    }
-
-    static DefaultRng fromJNI(long rustObj) {
-        return new DefaultRng(rustObj);
     }
 
     @Override
