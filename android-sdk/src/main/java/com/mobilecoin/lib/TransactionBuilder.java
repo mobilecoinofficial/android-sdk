@@ -55,7 +55,7 @@ final class TransactionBuilder extends Native {
                 blockVersion,
                 tokenId,
                 fee,
-                ChaCha20Rng.fromSeed(DefaultRng.createInstance().nextBytes(32))
+                ChaCha20Rng.withRandomSeed()
         );
     }
 

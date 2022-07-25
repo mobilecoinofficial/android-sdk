@@ -41,7 +41,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Random;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
@@ -367,7 +366,7 @@ public final class MobileCoinClient implements MobileCoinAccountClient, MobileCo
                 amount,
                 fee,
                 txOutMemoBuilder,
-                ChaCha20Rng.fromSeed(DefaultRng.createInstance().nextBytes(32))
+                ChaCha20Rng.withRandomSeed()
         );
     }
 
@@ -463,7 +462,8 @@ public final class MobileCoinClient implements MobileCoinAccountClient, MobileCo
             public List<Ring> execute() throws Exception {
                 return getRingsForUTXOs(
                         txOuts,
-                        getTxOutStore().getLedgerTotalTxCount()
+                        getTxOutStore().getLedgerTotalTxCount(),
+                        rng
                 );
             }
         };
@@ -690,7 +690,7 @@ public final class MobileCoinClient implements MobileCoinAccountClient, MobileCo
                 amountToSend,
                 delegate,
                 shouldWriteRTHMemos,
-                ChaCha20Rng.fromSeed(DefaultRng.createInstance().nextBytes(32))
+                ChaCha20Rng.withRandomSeed()
         );
     }
 
@@ -852,7 +852,8 @@ public final class MobileCoinClient implements MobileCoinAccountClient, MobileCo
     @NonNull
     List<Ring> getRingsForUTXOs(
             @NonNull List<OwnedTxOut> utxos,
-            @NonNull UnsignedLong numTxOutsInLedger
+            @NonNull UnsignedLong numTxOutsInLedger,
+            @NonNull Rng rng
     ) throws InvalidFogResponse, NetworkException, AttestationException {
         // Sanity check to ensure all UTXOs have unique indices
         HashSet<UnsignedLong> indices = new HashSet<>();
@@ -870,9 +871,8 @@ public final class MobileCoinClient implements MobileCoinAccountClient, MobileCo
 
         HashSet<UnsignedLong> realIndices = new HashSet<>(indices);
         // Continue selecting random indices until we got our desired amount.
-        Random rnd = new Random();
         while (indices.size() != count) {
-            UnsignedLong index = UnsignedLong.valueOf(Math.abs(rnd.nextLong()))
+            UnsignedLong index = UnsignedLong.valueOf(Math.abs(rng.nextLong()))
                     .remainder(numTxOutsInLedger);
             indices.add(index);
         }
@@ -911,7 +911,7 @@ public final class MobileCoinClient implements MobileCoinAccountClient, MobileCo
         // Construct the list of rings.
         List<Ring> rings = new ArrayList<>();
         for (OwnedTxOut utxo : utxos) {
-            short realIndex = (short) rnd.nextInt(DEFAULT_RING_SIZE);
+            short realIndex = (short)(Math.abs(rng.nextInt()) % DEFAULT_RING_SIZE);
             List<MobileCoinAPI.TxOut> txOuts = new ArrayList<>();
             List<MobileCoinAPI.TxOutMembershipProof> proofs = new ArrayList<>();
 

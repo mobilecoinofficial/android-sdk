@@ -345,7 +345,7 @@ public final class AccountSnapshot {
                 amount,
                 fee,
                 txOutMemoBuilder,
-                ChaCha20Rng.fromSeed(DefaultRng.createInstance().nextBytes(32))
+                ChaCha20Rng.withRandomSeed()
         );
     }
 
