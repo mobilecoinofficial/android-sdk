@@ -23,6 +23,7 @@ import com.mobilecoin.lib.exceptions.NetworkException;
 import com.mobilecoin.lib.log.Logger;
 import com.mobilecoin.lib.network.TransportProtocol;
 import com.mobilecoin.lib.network.uri.FogUri;
+import com.mobilecoin.lib.util.Hex;
 import com.mobilecoin.lib.util.SimpleRequester;
 
 import org.junit.Assert;
@@ -97,7 +98,7 @@ public class MobileCoinClientTest {
     @Test
     public void test_balance_updates_correctly() throws Exception {
 
-        BigInteger amount = BigInteger.TEN;
+        BigInteger amount = new BigInteger("995200000030");
 
         MobileCoinClient mobileCoinClient = MobileCoinClientBuilder.newBuilder().build();
         PublicAddress recipient = TestKeysManager.getNextAccountKey().getPublicAddress();
@@ -105,6 +106,8 @@ public class MobileCoinClientTest {
             BigInteger minimumFee = mobileCoinClient.estimateTotalFee(
                     amount
             );
+            Logger.d("Balance: fee", ""+minimumFee);
+
             PendingTransaction pending = mobileCoinClient.prepareTransaction(
                     recipient,
                     amount,
@@ -112,6 +115,7 @@ public class MobileCoinClientTest {
             );
 
             Balance balanceBefore = mobileCoinClient.getBalance();
+            Logger.d("Balance", ""+balanceBefore);
             mobileCoinClient.submitTransaction(pending.getTransaction());
             Transaction.Status txStatus = waitForTransactionStatus(mobileCoinClient,
                     pending.getTransaction());
@@ -119,6 +123,8 @@ public class MobileCoinClientTest {
             Balance balanceAfter;
             do {
                 balanceAfter = mobileCoinClient.getBalance();
+                Logger.d("Balance", ""+balanceAfter);
+
             } while (balanceAfter.getBlockIndex().compareTo(txStatus.getBlockIndex()) < 0);
             Assert.assertEquals(balanceBefore.getAmountPicoMob()
                             .subtract(amount)
@@ -134,11 +140,12 @@ public class MobileCoinClientTest {
     public void test_post_to_serialized_public_address() throws Exception {
         MobileCoinClient mobileCoinClient = MobileCoinClientBuilder.newBuilder().build();
         AccountKey recipient = TestKeysManager.getNextAccountKey();
-        try {
-            byte[] serializedAddress = recipient.getPublicAddress().toByteArray();
-            PublicAddress recipientAddress = PublicAddress.fromBytes(serializedAddress);
+        PrintableWrapper wrapper = PrintableWrapper.fromB58String("7J6ui8xmT9Vv7JgG1eKL4ZWa4ycWYMZG3DqpYHADikpmybztGgQ1H3B7pvB9ptAp1Hau1iAsBf5TDCm83GNY3LUgPHUcMbwuL9LPPaXEXDmWm7Z9QNeo3njeHTzf4pBtnPpDK57o8tZa7B3EKFLe9vDZPipagfHnbcnVw8CZCMEt14Kdk8wgeJbQw4nYaeiFmKLczWTepgwr3YhgJdaSJ4G9pRpXK3a7TCBJDSVt3sxUqY");
 
-            BigInteger amount = BigInteger.TEN;
+        try {
+            PublicAddress recipientAddress = wrapper.getPublicAddress();
+
+            BigInteger amount = new BigInteger("1000000000000");
             BigInteger minimumFee = mobileCoinClient.estimateTotalFee(
                     amount
             );
@@ -199,7 +206,7 @@ public class MobileCoinClientTest {
         MobileCoinClient mobileCoinClient = MobileCoinClientBuilder.newBuilder().build();
         AccountKey recipient = TestKeysManager.getNextAccountKey();
         try {
-            BigInteger amount = BigInteger.TEN;
+            BigInteger amount = new BigInteger("1000000000000");
             BigInteger minimumFee = mobileCoinClient.estimateTotalFee(
                     amount
             );

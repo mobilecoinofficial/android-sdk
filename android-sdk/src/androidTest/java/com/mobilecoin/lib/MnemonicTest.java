@@ -65,9 +65,7 @@ public class MnemonicTest {
 
     @Test
     public void mnemonic_to_entropy_24_words() throws BadMnemonicException {
-        byte[] entropy = Mnemonics.bip39EntropyFromMnemonic("health reflect aware glory ignore " +
-                "veteran bag mango cup glimpse lottery master space finger civil sock wall swarm " +
-                "ribbon sponsor frame delay marriage oyster");
+        byte[] entropy = Mnemonics.bip39EntropyFromMnemonic("bridge shove toe ginger actual robot few office post bid flag main void creek radio already claw image switch section front pond goat victory");
         assertEquals("6a36844131c70de644643935ac6610445d04adca6670f6bb6ee46935c873e214",
                 Hex.toString(entropy));
     }

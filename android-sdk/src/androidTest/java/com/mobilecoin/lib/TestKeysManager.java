@@ -2,8 +2,11 @@
 
 package com.mobilecoin.lib;
 
+import android.util.Log;
+
 import androidx.test.platform.app.InstrumentationRegistry;
 
+import com.mobilecoin.lib.log.Logger;
 import com.mobilecoin.lib.util.Hex;
 
 import java.io.InputStream;
@@ -52,6 +55,7 @@ class TestKeysManager {
                     currentAccountIndex = 0;
                 }
                 try {
+                    Logger.d("Varsha", "Varsha: " + testNetMnemonics[currentAccountIndex]);
                     return AccountKey.fromMnemonicPhrase(
                             testNetMnemonics[currentAccountIndex++],
                             DEFAULT_ACCOUNT_INDEX,
