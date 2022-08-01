@@ -131,13 +131,16 @@ public class MobileCoinClientTest {
 
     @Test
     public void test_post_to_serialized_public_address() throws Exception {
-        MobileCoinClient mobileCoinClient = MobileCoinClientBuilder.newBuilder().build();
-        AccountKey recipient = TestKeysManager.getNextAccountKey();
-        try {
-            byte[] serializedAddress = recipient.getPublicAddress().toByteArray();
-            PublicAddress recipientAddress = PublicAddress.fromBytes(serializedAddress);
 
-            BigInteger amount = BigInteger.TEN;
+        PrintableWrapper wrapper = PrintableWrapper.fromB58String("BC18tQFdfmsmnBunUsfT86f3v3Ek262YXvNAF5Z8NhJ6SRCGQECnAca3teZonF47iNCoNCHWLorSW7dMTJvg11W8iTFeaszY2jqmvQ1xMAocfwZzN2iZnt7S3WijUR7D3LwQnkthSAXxMPhCRBUwYHJyd5admw7rSwK78UtgD3B7ntYov7x2cH2WVWu3wxTt66113XcjksFiQ5vqgMqyT1Kdo8PSUaVKGtUR2FayU23Ega");
+        MobileCoinClient mobileCoinClient = MobileCoinClientBuilder.newBuilder().build();
+        PublicAddress recipientAddress = wrapper.getPublicAddress();
+
+        try {
+//            byte[] serializedAddress = recipient.getPublicAddress().toByteArray();
+//            PublicAddress recipientAddress = PublicAddress.fromBytes(serializedAddress);
+
+            BigInteger amount = new BigInteger("999604037885");
             BigInteger minimumFee = mobileCoinClient.estimateTotalFee(
                     amount
             );

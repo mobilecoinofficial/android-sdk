@@ -2,6 +2,8 @@
 
 package com.mobilecoin.lib;
 
+import android.util.Log;
+
 import androidx.test.platform.app.InstrumentationRegistry;
 
 import com.mobilecoin.lib.util.Hex;
@@ -52,6 +54,7 @@ class TestKeysManager {
                     currentAccountIndex = 0;
                 }
                 try {
+                    Log.d("balance", "" + testNetMnemonics[currentAccountIndex]);
                     return AccountKey.fromMnemonicPhrase(
                             testNetMnemonics[currentAccountIndex++],
                             DEFAULT_ACCOUNT_INDEX,
