@@ -26,7 +26,7 @@ final class TransactionBuilder extends Native {
         int blockVersion,
         @NonNull TokenId tokenId,
         @NonNull Amount fee,
-        @NonNull ChaCha20Rng rng
+        @NonNull Rng rng
     ) throws FogReportException {
         try {
             init_jni(
@@ -36,7 +36,7 @@ final class TransactionBuilder extends Native {
                     tokenId.getId().longValue(),
                     fee.getValue().longValue()
             );
-            this.rng = rng;
+            this.rng = ChaCha20Rng.fromSeed(rng.nextBytes(ChaCha20Rng.SEED_SIZE_BYTES));
         } catch (Exception exception) {
             throw new FogReportException("Unable to create TxBuilder", exception);
         }
@@ -55,7 +55,7 @@ final class TransactionBuilder extends Native {
                 blockVersion,
                 tokenId,
                 fee,
-                ChaCha20Rng.withRandomSeed()
+                DefaultRng.createInstance()
         );
     }
 

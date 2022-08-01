@@ -345,7 +345,7 @@ public final class AccountSnapshot {
                 amount,
                 fee,
                 txOutMemoBuilder,
-                ChaCha20Rng.withRandomSeed()
+                DefaultRng.createInstance()
         );
     }
 
@@ -363,7 +363,7 @@ public final class AccountSnapshot {
             @NonNull final Amount amount,
             @NonNull final Amount fee,
             @NonNull final TxOutMemoBuilder txOutMemoBuilder,
-            @NonNull final ChaCha20Rng rng
+            @NonNull final Rng rng
     ) throws InsufficientFundsException, FragmentedAccountException, FeeRejectedException,
             InvalidFogResponse, AttestationException, NetworkException,
             TransactionBuilderException, FogReportException {

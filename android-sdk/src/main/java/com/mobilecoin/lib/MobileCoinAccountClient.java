@@ -146,7 +146,7 @@ public interface MobileCoinAccountClient {
           @NonNull final Amount amountToSend,
           @NonNull final DefragmentationDelegate delegate,
           final boolean shouldWriteRTHMemos,
-          @NonNull final ChaCha20Rng rng
+          @NonNull final Rng rng
   ) throws InvalidFogResponse, AttestationException, NetworkException, InsufficientFundsException,
           TransactionBuilderException, InvalidTransactionException,
           FogReportException, TimeoutException, FogSyncException;

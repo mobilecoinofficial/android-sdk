@@ -151,7 +151,7 @@ public class ChaCha20Rng extends Native implements SeedableRng {
 
     private static native ChaCha20Rng seed_from_bytes(byte seed[]);
 
-    private static final int SEED_SIZE_BYTES = 32;
-    private static final int WORD_POS_SIZE_BYTES = 16;
+    public static final int SEED_SIZE_BYTES = 32;
+    public static final int WORD_POS_SIZE_BYTES = 16;
 
 }

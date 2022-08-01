@@ -92,7 +92,7 @@ public interface MobileCoinTransactionClient {
           @NonNull final Amount amount,
           @NonNull final Amount fee,
           @NonNull final TxOutMemoBuilder txOutMemoBuilder,
-          @NonNull final ChaCha20Rng rng
+          @NonNull final Rng rng
   ) throws InsufficientFundsException, FragmentedAccountException, FeeRejectedException,
           InvalidFogResponse, AttestationException, NetworkException,
           TransactionBuilderException, FogReportException, FogSyncException;

@@ -366,7 +366,7 @@ public final class MobileCoinClient implements MobileCoinAccountClient, MobileCo
                 amount,
                 fee,
                 txOutMemoBuilder,
-                ChaCha20Rng.withRandomSeed()
+                DefaultRng.createInstance()
         );
     }
 
@@ -377,7 +377,7 @@ public final class MobileCoinClient implements MobileCoinAccountClient, MobileCo
         @NonNull final Amount amount,
         @NonNull final Amount fee,
         @NonNull final TxOutMemoBuilder txOutMemoBuilder,
-        @NonNull final ChaCha20Rng rng
+        @NonNull final Rng rng
     ) throws InsufficientFundsException, FragmentedAccountException, FeeRejectedException,
             InvalidFogResponse, AttestationException, NetworkException,
             TransactionBuilderException, FogReportException, FogSyncException {
@@ -421,7 +421,7 @@ public final class MobileCoinClient implements MobileCoinAccountClient, MobileCo
         @NonNull final List<OwnedTxOut> txOuts,
         @NonNull final Amount fee,
         @NonNull final TxOutMemoBuilder txOutMemoBuilder,
-        @NonNull final ChaCha20Rng rng
+        @NonNull final Rng rng
     ) throws InvalidFogResponse, AttestationException, NetworkException,
             TransactionBuilderException, FogReportException {
         Logger.i(TAG, "PrepareTransaction with TxOuts call", null,
@@ -690,7 +690,7 @@ public final class MobileCoinClient implements MobileCoinAccountClient, MobileCo
                 amountToSend,
                 delegate,
                 shouldWriteRTHMemos,
-                ChaCha20Rng.withRandomSeed()
+                DefaultRng.createInstance()
         );
     }
 
@@ -699,7 +699,7 @@ public final class MobileCoinClient implements MobileCoinAccountClient, MobileCo
         @NonNull final Amount amountToSend,
         @NonNull final DefragmentationDelegate delegate,
         final boolean shouldWriteRTHMemos,
-        @NonNull final ChaCha20Rng rng
+        @NonNull final Rng rng
     ) throws InvalidFogResponse, AttestationException, NetworkException, InsufficientFundsException,
             TransactionBuilderException, InvalidTransactionException,
             FogReportException, TimeoutException, FogSyncException {
