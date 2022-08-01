@@ -132,6 +132,11 @@ final class TransactionBuilder extends Native {
         }
     }
 
+    @NonNull
+    ChaCha20Rng getRng() {
+        return this.rng;
+    }
+
     void setTombstoneBlockIndex(@NonNull UnsignedLong value) throws TransactionBuilderException {
         Logger.i(TAG, String.format(Locale.US, "Set transaction tombstone %s", value.toString()));
         try {
