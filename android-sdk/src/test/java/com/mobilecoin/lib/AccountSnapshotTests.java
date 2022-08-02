@@ -164,11 +164,13 @@ public class AccountSnapshotTests {
         PublicAddress publicAddress = mock(PublicAddress.class);
         TxOutMemoBuilder memoBuilder = mock(TxOutMemoBuilder.class);
         PendingTransaction expectedTransaction = mock(PendingTransaction.class);
-        when(client.prepareTransaction(eq(publicAddress), eq(TEN_MOB), any(), eq(ONE_MOB), eq(memoBuilder))).thenReturn(expectedTransaction);
+        ChaCha20Rng rng = mock(ChaCha20Rng.class);
+        when(rng.nextBytes(32)).thenReturn(new byte[32]);
+        when(client.prepareTransaction(eq(publicAddress), eq(TEN_MOB), any(), eq(ONE_MOB), eq(memoBuilder), any())).thenReturn(expectedTransaction);
 
         AccountSnapshot accountSnapshot = new AccountSnapshot(client, txOuts, blockIndexOne);
 
-        assertEquals(expectedTransaction, accountSnapshot.prepareTransaction(publicAddress, TEN_MOB, ONE_MOB, memoBuilder));
+        assertEquals(expectedTransaction, accountSnapshot.prepareTransaction(publicAddress, TEN_MOB, ONE_MOB, memoBuilder, rng));
     }
 
     @Test
