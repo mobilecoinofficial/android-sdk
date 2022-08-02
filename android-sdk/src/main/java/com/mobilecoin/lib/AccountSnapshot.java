@@ -353,6 +353,33 @@ public final class AccountSnapshot {
     ) throws InsufficientFundsException, FragmentedAccountException, FeeRejectedException,
             InvalidFogResponse, AttestationException, NetworkException,
             TransactionBuilderException, FogReportException {
+        return this.prepareTransaction(
+                recipient,
+                amount,
+                fee,
+                txOutMemoBuilder,
+                DefaultRng.createInstance()
+        );
+    }
+
+    /**
+     * @param recipient {@link PublicAddress} of the recipient
+     * @param amount    transaction amount
+     * @param fee       transaction fee (see {@link MobileCoinClient#estimateTotalFee})
+     * @param rng       Random Number Generator to pass to {@link TransactionBuilder}
+     * @return {@link PendingTransaction} which encapsulates the {@link Transaction} and {@link
+     * Receipt} objects
+     */
+    @NonNull
+    public PendingTransaction prepareTransaction(
+            @NonNull final PublicAddress recipient,
+            @NonNull final Amount amount,
+            @NonNull final Amount fee,
+            @NonNull final TxOutMemoBuilder txOutMemoBuilder,
+            @NonNull final Rng rng
+    ) throws InsufficientFundsException, FragmentedAccountException, FeeRejectedException,
+            InvalidFogResponse, AttestationException, NetworkException,
+            TransactionBuilderException, FogReportException {
         Logger.i(TAG, "PrepareTransaction call", null,
                 "recipient:", recipient,
                 "amount:", amount,
@@ -386,7 +413,8 @@ public final class AccountSnapshot {
                 amount,
                 selection.txOuts,
                 fee,
-                txOutMemoBuilder
+                txOutMemoBuilder,
+                rng
         );
     }
 }
