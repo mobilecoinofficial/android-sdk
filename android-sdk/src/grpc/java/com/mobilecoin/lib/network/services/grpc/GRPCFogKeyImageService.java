@@ -44,7 +44,11 @@ public class GRPCFogKeyImageService
     }
 
     @Override
-    public Attest.Message checkKeyImages(Attest.Message request) {
-        return getApiBlockingStub().checkKeyImages(request);
+    public Attest.Message checkKeyImages(Attest.Message request) throws NetworkException {
+        try {
+            return getApiBlockingStub().checkKeyImages(request);
+        } catch (StatusRuntimeException e) {
+            throw new NetworkException(new NetworkResult(new GRPCStatusResponse(e.getStatus())), e);
+        }
     }
 }
