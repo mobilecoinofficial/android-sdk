@@ -50,5 +50,4 @@ public class GRPCFogKeyImageService
         } catch (StatusRuntimeException e) {
             throw new NetworkException(new NetworkResult(new GRPCStatusResponse(e.getStatus())), e);
         }
-    }
 }
