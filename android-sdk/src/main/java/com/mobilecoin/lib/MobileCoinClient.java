@@ -618,10 +618,68 @@ public final class MobileCoinClient implements MobileCoinAccountClient, MobileCo
     @Override
     @NonNull
     public Transaction.Status getTransactionStatus(@NonNull Transaction transaction)
-            throws InvalidFogResponse, AttestationException,
-            NetworkException, FogSyncException {
+            throws NetworkException, AttestationException, FogSyncException, InvalidFogResponse {
         Logger.i(TAG, "GetTransactionStatus call");
         return getAccountSnapshot().getTransactionStatus(transaction);
+    }
+
+    /**
+     * Returns transaction status without waiting for all of the Fog services to sync up.
+     * Caution: since this transaction check does not wait for all services to sync up the balance
+     * may need a bit of time to catch up to a block where the transaction was posted.
+     * To wait for all services to be in sync use regular {@link #getTransactionStatus}
+     *
+     * <pre>
+     * Transaction.Status status = mobileCoinClient.getTransactionStatusQuick(transaction);
+     * switch (status) {
+     * case Transaction.Status.ACCEPTED:
+     *     postedBlockIndex = status.getBlockIndex;
+     *         ...
+     *     }
+     * ...
+     * balance = mobileCoinClient.getBalance();
+     * balanceBlockIndex = balance.getBlockIndex();
+     *
+     * if (postedBlockIndex.compare(balanceBlockIndex) < 0) {
+     *     // balance hasn't caught up yet
+     * }
+     * </pre>
+     */
+    @NonNull
+    public Transaction.Status getTransactionStatusQuick(@NonNull Transaction transaction)
+            throws NetworkException {
+        Logger.i(TAG, "GetTransactionStatus call");
+        Set<RistrettoPublic> outputPublicKeys = transaction.getOutputPublicKeys();
+        Ledger.TxOutResponse response = getUntrustedClient().fetchTxOuts(outputPublicKeys);
+        List<Ledger.TxOutResult> results = response.getResultsList();
+        UnsignedLong blockIndex = UnsignedLong.fromLongBits(response.getNumBlocks());
+        if (blockIndex.compareTo(UnsignedLong.ZERO) > 0) {
+            blockIndex = blockIndex.sub(UnsignedLong.ONE);
+        }
+
+        boolean allTxOutsFound = true;
+        UnsignedLong outputBlockIndex = UnsignedLong.ZERO;
+
+        for (Ledger.TxOutResult txOutResult : results) {
+            if (txOutResult.getResultCode() != Ledger.TxOutResultCode.Found) {
+                allTxOutsFound = false;
+                break;
+            } else {
+                UnsignedLong txOutBlockIndex =
+                        UnsignedLong.fromLongBits(txOutResult.getBlockIndex());
+                if (outputBlockIndex.compareTo(txOutBlockIndex) < 0) {
+                    outputBlockIndex = txOutBlockIndex;
+                }
+            }
+        }
+        if (allTxOutsFound) {
+            return Transaction.Status.ACCEPTED.atBlock(outputBlockIndex);
+        }
+        if (blockIndex.compareTo(
+                UnsignedLong.fromLongBits(transaction.getTombstoneBlockIndex())) >= 0) {
+            return Transaction.Status.FAILED.atBlock(blockIndex);
+        }
+        return Transaction.Status.UNKNOWN.atBlock(blockIndex);
     }
 
     @Deprecated
