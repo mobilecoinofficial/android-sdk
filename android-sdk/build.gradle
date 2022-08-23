@@ -34,6 +34,7 @@ protobuf {
 }
 
 android {
+    buildToolsVersion "30.0.3"
     compileSdkVersion build_versions.compile_sdk
     useLibrary 'android.test.runner'
     useLibrary 'android.test.base'

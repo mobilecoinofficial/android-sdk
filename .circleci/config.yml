@@ -30,12 +30,10 @@ jobs:
           name: Provide Alpha root entropies
           command: echo $DEV_NET_TEST_ENTROPIES > android-sdk/src/androidTest/res/raw/dev_net_root_entropies
 
-      - run: make setup
-      - run: make build
       - run:
           name: make tests
           command: make tests
-          no_output_timeout: 20m
+          no_output_timeout: 30m
 
       - store_artifacts:
           path: android-sdk/build/reports
