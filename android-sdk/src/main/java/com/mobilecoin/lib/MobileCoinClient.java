@@ -648,7 +648,7 @@ public final class MobileCoinClient implements MobileCoinAccountClient, MobileCo
     @NonNull
     public Transaction.Status getTransactionStatusQuick(@NonNull Transaction transaction)
             throws NetworkException {
-        Logger.i(TAG, "GetTransactionStatus call");
+        Logger.i(TAG, "GetTransactionStatusQuick call");
         Set<RistrettoPublic> outputPublicKeys = transaction.getOutputPublicKeys();
         Ledger.TxOutResponse response = getUntrustedClient().fetchTxOuts(outputPublicKeys);
         List<Ledger.TxOutResult> results = response.getResultsList();
