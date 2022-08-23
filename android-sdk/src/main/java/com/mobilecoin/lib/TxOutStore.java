@@ -213,6 +213,7 @@ class TxOutStore implements Parcelable {
         HashSet<BlockRange> missedRanges = new HashSet<>();
         pendingSeeds.addAll(seeds.values());
         long blockCount = 0L;
+        int requests = 0;//TODO: this
         do {
             FogSeed seed = null;
             if (pendingSeeds.size() > 0) {
@@ -229,6 +230,7 @@ class TxOutStore implements Parcelable {
                 }
                 View.QueryResponse result = viewClient
                     .request(searchKeys, lastKnownFogViewEventId, viewBlockIndex.longValue());
+                requests++;//TODO: this
                 blockCount = result.getHighestProcessedBlockCount();
                 lastKnownFogViewEventId = result.getNextStartFromUserEventId();
                 for (DecommissionedIngestInvocation decommissionedIngestInvocation : result
@@ -243,6 +245,7 @@ class TxOutStore implements Parcelable {
                         result.getMissedBlockRangesCount()));
                 Logger.d(TAG, String.format(Locale.US, "Received %d RNGs", result.getRngsCount()));
                 for (View.RngRecord rngRecord : result.getRngsList()) {
+                    int x = result.getRngsCount();// TODO: this
                     FogSeed existingSeed =
                             seeds.get(Arrays.hashCode(rngRecord.getPubkey().getPubkey().toByteArray()));
                     if (existingSeed == null) {
@@ -301,11 +304,11 @@ class TxOutStore implements Parcelable {
                         break;
                         case View.TxOutSearchResultCode.BadSearchKey_VALUE: {
                             throw new InvalidFogResponse(
-                                    "Received invalid reply from fog view - " + "bad search key");
+                                    "Received invalid reply from fog view - bad search key");
                         }
                         case View.TxOutSearchResultCode.InternalError_VALUE: {
                             throw new InvalidFogResponse(
-                                    "Received invalid reply from fog view - " + "Internal Error");
+                                    "Received invalid reply from fog view - Internal Error");
                         }
                         case View.TxOutSearchResultCode.NotFound_VALUE: {
                             allTXOsRetrieved = true;
@@ -323,6 +326,7 @@ class TxOutStore implements Parcelable {
                     : UnsignedLong.ZERO;
             Logger.i(TAG, "View Request completed blockIndex = " + viewBlockIndex);
         } while (pendingSeeds.size() > 0);
+        Logger.e("TAG", "HERE! " + requests);
         return missedRanges;
     }
 

@@ -56,6 +56,12 @@ public class MobileCoinClientTest {
             GrantPermissionRule.grant(Manifest.permission.READ_EXTERNAL_STORAGE);
 
     @Test
+    public void testTestTest() throws Exception {//TODO: delete when done test
+        MobileCoinClient client = MobileCoinClientBuilder.newBuilder().build();
+        client.getBalances();
+    }
+
+    @Test
     public void test_balance_consistency() throws Exception {
         MobileCoinClient mobileCoinClient = MobileCoinClientBuilder.newBuilder().build();
         try {
