@@ -267,7 +267,7 @@ class TxOutStore implements Parcelable {
                 }
                 for (View.TxOutSearchResult txResult : result.getTxOutSearchResultsList()) {
                     FogSeed seed = searchKeys.get(txResult.getSearchKey());
-                    if(!searchKeyProvider.hasSeed(seed)) continue;
+                    //if(!searchKeyProvider.hasSeed(seed)) continue;
                     // Sanity check - Fog should be returning results from the expected search keys
                     /*if(null == seed || !Arrays.equals(//TODO: HERE! don't need this anymore
                             seed.getOutput(),
@@ -317,7 +317,7 @@ class TxOutStore implements Parcelable {
                     }
                     //if (allTXOsRetrieved) break;//TODO: break once all seeds are complete//TODO: HERE!
                 }
-            } while (!allTXOsRetrieved);//TODO: break logic
+            } while (!allTXOsRetrieved || searchKeyProvider.hasKeys());//TODO: break logic
             viewBlockIndex = (blockCount != 0)
                     ? UnsignedLong.fromLongBits(blockCount).sub(UnsignedLong.ONE)
                     : UnsignedLong.ZERO;
