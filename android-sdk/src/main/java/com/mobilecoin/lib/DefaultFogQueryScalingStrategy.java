@@ -9,7 +9,7 @@ final class DefaultFogQueryScalingStrategy implements FogQueryScalingStrategy {
     private int currentQuerySize = MIN_QUERY_SIZE;
 
     @Override
-    public int nextQuerySize() {//TODO: this
+    public int nextQuerySize() {
         try {
             return currentQuerySize;
         } finally {

@@ -59,8 +59,10 @@ public class MobileCoinClientTest {
     public void testTestTest() throws Exception {//TODO: delete when done test
         for(int i = 0; i < TestKeysManager.getTotalTestKeysCount(); i++) {
             MobileCoinClient client = MobileCoinClientBuilder.newBuilder().build();
-            Balance mobBalance = client.getBalance(TokenId.MOB);
-            Logger.e("HERE!", i + ":\t" + mobBalance);
+            long before = System.nanoTime();
+            Map<TokenId, Balance> balances = client.getBalances();
+            long after = System.nanoTime();
+            Logger.e("HERE!", "Account: " + i + "\ttime:" + String.format("%1.2fs", (after - before) / 1E9D));
             client.shutdown();
         }
     }
