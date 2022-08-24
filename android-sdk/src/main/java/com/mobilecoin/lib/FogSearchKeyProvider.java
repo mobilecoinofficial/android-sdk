@@ -33,7 +33,10 @@ class FogSearchKeyProvider {
         int numKeysAdded = 0;
         while(n > numKeysAdded) {
             for(FogSeed seed : this.fogSeeds.keySet()) {
-                int keysToGenerate = Math.min(getNumKeysForRunCount(this.fogSeeds.get(seed)), n - numKeysAdded);
+                int runsForThisSeed = this.fogSeeds.get(seed);
+                int keysToGenerate = Math.min(getNumKeysForRunCount(runsForThisSeed), n - numKeysAdded);
+                this.fogSeeds.put(seed, runsForThisSeed + 1);
+                if(keysToGenerate <= 0) break;
                 Arrays.stream(seed.getNextN(keysToGenerate)).forEach(key -> nextKeys.put(ByteString.copyFrom(key), seed));
                 numKeysAdded += keysToGenerate;
             }
