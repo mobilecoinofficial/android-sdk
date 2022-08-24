@@ -212,7 +212,6 @@ class TxOutStore implements Parcelable {
         HashSet<BlockRange> missedRanges = new HashSet<>();
         FogSearchKeyProvider searchKeyProvider = new FogSearchKeyProvider(this.seeds.values());
         long blockCount = 0L;
-        int requests = 0;//TODO: this
         do {
             Map<ByteString, FogSeed> searchKeys = searchKeyProvider.getNSearchKeys(scalingStrategy.nextQuerySize());
             View.QueryResponse result = viewClient
@@ -220,7 +219,6 @@ class TxOutStore implements Parcelable {
                         searchKeys.keySet().stream().map(ByteString::toByteArray).collect(Collectors.toList()),
                         lastKnownFogViewEventId, viewBlockIndex.longValue()
                 );
-            requests++;//TODO: this
             blockCount = result.getHighestProcessedBlockCount();
             lastKnownFogViewEventId = result.getNextStartFromUserEventId();
             for (DecommissionedIngestInvocation decommissionedIngestInvocation : result
@@ -231,7 +229,6 @@ class TxOutStore implements Parcelable {
                 BlockRange range = new BlockRange(fogRange);
                 missedRanges.add(range);
             }
-            int x = result.getRngsCount();// TODO: this
             Logger.d(TAG, String.format(Locale.US, "Received %d missed block ranges",
                     result.getMissedBlockRangesCount()));
             Logger.d(TAG, String.format(Locale.US, "Received %d RNGs", result.getRngsCount()));
@@ -262,15 +259,6 @@ class TxOutStore implements Parcelable {
             }
             for (View.TxOutSearchResult txResult : result.getTxOutSearchResultsList()) {
                 FogSeed seed = searchKeys.get(txResult.getSearchKey());
-                //if(!searchKeyProvider.hasSeed(seed)) continue;
-                // Sanity check - Fog should be returning results from the expected search keys
-                /*if(null == seed || !Arrays.equals(//TODO: HERE! don't need this anymore
-                        seed.getOutput(),
-                        txResult.getSearchKey().toByteArray()
-                )){
-                    throw new InvalidFogResponse("Received invalid reply from fog view - " +
-                            "search key mismatch");
-                }*/
                 switch (txResult.getResultCode()) {
                     case View.TxOutSearchResultCode.Found_VALUE: {
                         // Decrypt the TxOut
