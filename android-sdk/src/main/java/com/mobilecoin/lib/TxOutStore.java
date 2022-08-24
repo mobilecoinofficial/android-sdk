@@ -214,116 +214,107 @@ class TxOutStore implements Parcelable {
         long blockCount = 0L;
         int requests = 0;//TODO: this
         do {
-
-            boolean allTXOsRetrieved;
-            do {
-                Map<ByteString, FogSeed> searchKeys = searchKeyProvider.getNSearchKeys(scalingStrategy.nextQuerySize());
-                allTXOsRetrieved = searchKeys.size() <= 0;
-                View.QueryResponse result = viewClient
-                    .request(
-                            searchKeys.keySet().stream().map(ByteString::toByteArray).collect(Collectors.toList()),
-                            lastKnownFogViewEventId, viewBlockIndex.longValue()
+            Map<ByteString, FogSeed> searchKeys = searchKeyProvider.getNSearchKeys(scalingStrategy.nextQuerySize());
+            View.QueryResponse result = viewClient
+                .request(
+                        searchKeys.keySet().stream().map(ByteString::toByteArray).collect(Collectors.toList()),
+                        lastKnownFogViewEventId, viewBlockIndex.longValue()
+                );
+            requests++;//TODO: this
+            blockCount = result.getHighestProcessedBlockCount();
+            lastKnownFogViewEventId = result.getNextStartFromUserEventId();
+            for (DecommissionedIngestInvocation decommissionedIngestInvocation : result
+                .getDecommissionedIngestInvocationsList()) {
+              decommissionedIngestInvocationIds.add(decommissionedIngestInvocation.getIngestInvocationId());
+            }
+            for (FogCommon.BlockRange fogRange : result.getMissedBlockRangesList()) {
+                BlockRange range = new BlockRange(fogRange);
+                missedRanges.add(range);
+            }
+            int x = result.getRngsCount();// TODO: this
+            Logger.d(TAG, String.format(Locale.US, "Received %d missed block ranges",
+                    result.getMissedBlockRangesCount()));
+            Logger.d(TAG, String.format(Locale.US, "Received %d RNGs", result.getRngsCount()));
+            for (View.RngRecord rngRecord : result.getRngsList()) {
+                FogSeed existingSeed =
+                        seeds.get(Arrays.hashCode(rngRecord.getPubkey().getPubkey().toByteArray()));
+                if (existingSeed == null) {
+                    Logger.d(TAG, String.format(TAG, "Adding the RNG seed %s",
+                            Hex.toString(rngRecord.getPubkey().getPubkey().toByteArray()))
                     );
-                requests++;//TODO: this
-                blockCount = result.getHighestProcessedBlockCount();
-                lastKnownFogViewEventId = result.getNextStartFromUserEventId();
-                for (DecommissionedIngestInvocation decommissionedIngestInvocation : result
-                    .getDecommissionedIngestInvocationsList()) {
-                  decommissionedIngestInvocationIds.add(decommissionedIngestInvocation.getIngestInvocationId());
+                    FogSeed newSeed = fogSeedProvider.fogSeedFor(
+                            accountKey.getDefaultSubAddressViewKey(),
+                            rngRecord
+                    );
+                    seeds.put(
+                            Arrays.hashCode(rngRecord.getPubkey().getPubkey().toByteArray()),
+                            newSeed
+                    );
+                    // received a new seed
+                    searchKeyProvider.addFogSeed(newSeed);
+                } else {
+                    Logger.d(TAG, String.format(TAG,
+                            "The RNG seed %s is found in cache, updating the record",
+                            Hex.toString(rngRecord.getPubkey().getPubkey().toByteArray()))
+                    );
+                    existingSeed.update(rngRecord);
                 }
-                for (FogCommon.BlockRange fogRange : result.getMissedBlockRangesList()) {
-                    BlockRange range = new BlockRange(fogRange);
-                    missedRanges.add(range);
-                }
-                int x = result.getRngsCount();// TODO: this
-                Logger.d(TAG, String.format(Locale.US, "Received %d missed block ranges",
-                        result.getMissedBlockRangesCount()));
-                Logger.d(TAG, String.format(Locale.US, "Received %d RNGs", result.getRngsCount()));
-                for (View.RngRecord rngRecord : result.getRngsList()) {
-                    FogSeed existingSeed =
-                            seeds.get(Arrays.hashCode(rngRecord.getPubkey().getPubkey().toByteArray()));
-                    if (existingSeed == null) {
-                        Logger.d(TAG, String.format(TAG, "Adding the RNG seed %s",
-                                Hex.toString(rngRecord.getPubkey().getPubkey().toByteArray()))
-                        );
-                        FogSeed newSeed = fogSeedProvider.fogSeedFor(
-                                accountKey.getDefaultSubAddressViewKey(),
-                                rngRecord
-                        );
-                        seeds.put(
-                                Arrays.hashCode(rngRecord.getPubkey().getPubkey().toByteArray()),
-                                newSeed
-                        );
-                        // received a new seed
-                        searchKeyProvider.addFogSeed(newSeed);
-                        allTXOsRetrieved = false;// Set this to false because we need to check new seeds next iteration
-                    } else {
-                        Logger.d(TAG, String.format(TAG,
-                                "The RNG seed %s is found in cache, updating the record",
-                                Hex.toString(rngRecord.getPubkey().getPubkey().toByteArray()))
-                        );
-                        existingSeed.update(rngRecord);
-                    }
-                }
-                for (View.TxOutSearchResult txResult : result.getTxOutSearchResultsList()) {
-                    FogSeed seed = searchKeys.get(txResult.getSearchKey());
-                    //if(!searchKeyProvider.hasSeed(seed)) continue;
-                    // Sanity check - Fog should be returning results from the expected search keys
-                    /*if(null == seed || !Arrays.equals(//TODO: HERE! don't need this anymore
-                            seed.getOutput(),
-                            txResult.getSearchKey().toByteArray()
-                    )){
-                        throw new InvalidFogResponse("Received invalid reply from fog view - " +
-                                "search key mismatch");
-                    }*/
-                    switch (txResult.getResultCode()) {
-                        case View.TxOutSearchResultCode.Found_VALUE: {
-                            // Decrypt the TxOut
-                            try {
-                                byte[] plainText = cryptoBox.versionedCryptoBoxDecrypt(
-                                        accountKey.getDefaultSubAddressViewKey(),
-                                        txResult.getCiphertext().toByteArray()
-                                );
-                                View.TxOutRecord record = View.TxOutRecord.parseFrom(plainText);
-                                seed.addTXO(cryptoBox.ownedTxOutFor(
-                                        record,
-                                        accountKey
-                                ));
-                                Logger.d(TAG, "Found TxOut in block with index " +
-                                        record.getBlockIndex()
-                                );
-                            } catch (InvalidProtocolBufferException exception) {
-                                Logger.w(TAG, "Unable to process TxOutRecord", exception);
-                                throw new InvalidFogResponse("Unable to process TxOutRecord");
-                            }
+            }
+            for (View.TxOutSearchResult txResult : result.getTxOutSearchResultsList()) {
+                FogSeed seed = searchKeys.get(txResult.getSearchKey());
+                //if(!searchKeyProvider.hasSeed(seed)) continue;
+                // Sanity check - Fog should be returning results from the expected search keys
+                /*if(null == seed || !Arrays.equals(//TODO: HERE! don't need this anymore
+                        seed.getOutput(),
+                        txResult.getSearchKey().toByteArray()
+                )){
+                    throw new InvalidFogResponse("Received invalid reply from fog view - " +
+                            "search key mismatch");
+                }*/
+                switch (txResult.getResultCode()) {
+                    case View.TxOutSearchResultCode.Found_VALUE: {
+                        // Decrypt the TxOut
+                        try {
+                            byte[] plainText = cryptoBox.versionedCryptoBoxDecrypt(
+                                    accountKey.getDefaultSubAddressViewKey(),
+                                    txResult.getCiphertext().toByteArray()
+                            );
+                            View.TxOutRecord record = View.TxOutRecord.parseFrom(plainText);
+                            seed.addTXO(cryptoBox.ownedTxOutFor(
+                                    record,
+                                    accountKey
+                            ));
+                            Logger.d(TAG, "Found TxOut in block with index " +
+                                    record.getBlockIndex()
+                            );
+                        } catch (InvalidProtocolBufferException exception) {
+                            Logger.w(TAG, "Unable to process TxOutRecord", exception);
+                            throw new InvalidFogResponse("Unable to process TxOutRecord");
                         }
+                    }
+                    break;
+                    case View.TxOutSearchResultCode.BadSearchKey_VALUE: {
+                        throw new InvalidFogResponse(
+                                "Received invalid reply from fog view - bad search key");
+                    }
+                    case View.TxOutSearchResultCode.InternalError_VALUE: {
+                        throw new InvalidFogResponse(
+                                "Received invalid reply from fog view - Internal Error");
+                    }
+                    case View.TxOutSearchResultCode.NotFound_VALUE: {
+                        if (isSeedDecommissioned(seed)) {
+                            seed.markObsolete();
+                        }
+                        searchKeyProvider.removeSeed(seed);
                         break;
-                        case View.TxOutSearchResultCode.BadSearchKey_VALUE: {
-                            throw new InvalidFogResponse(
-                                    "Received invalid reply from fog view - bad search key");
-                        }
-                        case View.TxOutSearchResultCode.InternalError_VALUE: {
-                            throw new InvalidFogResponse(
-                                    "Received invalid reply from fog view - Internal Error");
-                        }
-                        case View.TxOutSearchResultCode.NotFound_VALUE: {
-                            //allTXOsRetrieved = true;//TODO: HERE!
-                            if (isSeedDecommissioned(seed)) {
-                                seed.markObsolete();
-                            }
-                            searchKeyProvider.removeSeed(seed);
-                            break;
-                        }
                     }
-                    //if (allTXOsRetrieved) break;//TODO: break once all seeds are complete//TODO: HERE!
                 }
-            } while (!allTXOsRetrieved || searchKeyProvider.hasKeys());//TODO: break logic
-            viewBlockIndex = (blockCount != 0)
-                    ? UnsignedLong.fromLongBits(blockCount).sub(UnsignedLong.ONE)
-                    : UnsignedLong.ZERO;
-            Logger.i(TAG, "View Request completed blockIndex = " + viewBlockIndex);
+            }
         } while (searchKeyProvider.hasKeys());
-        Logger.e("TAG", "HERE! " + requests);
+        viewBlockIndex = (blockCount != 0)
+                ? UnsignedLong.fromLongBits(blockCount).sub(UnsignedLong.ONE)
+                : UnsignedLong.ZERO;
+        Logger.i(TAG, "View Request completed blockIndex = " + viewBlockIndex);
         return missedRanges;
     }
 
