@@ -272,6 +272,7 @@ class TxOutStore implements Parcelable {
                                     record,
                                     accountKey
                             ));
+                            searchKeyProvider.resetSeed(seed);
                             Logger.d(TAG, "Found TxOut in block with index " +
                                     record.getBlockIndex()
                             );
@@ -293,7 +294,7 @@ class TxOutStore implements Parcelable {
                         if (isSeedDecommissioned(seed)) {
                             seed.markObsolete();
                         }
-                        searchKeyProvider.removeSeed(seed);
+                        searchKeyProvider.markSeedComplete(seed);
                         break;
                     }
                 }
