@@ -8,6 +8,7 @@ import android.os.Parcelable;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import com.google.protobuf.ByteString;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.mobilecoin.lib.exceptions.AttestationException;
 import com.mobilecoin.lib.exceptions.FogSyncException;
@@ -28,7 +29,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
-import java.util.Stack;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
@@ -209,27 +209,21 @@ class TxOutStore implements Parcelable {
             throws InvalidFogResponse, NetworkException, AttestationException, KexRngException {
         Logger.i(TAG, "Updating owned TxOuts");
 
-        Stack<FogSeed> pendingSeeds = new Stack<>();
         HashSet<BlockRange> missedRanges = new HashSet<>();
-        pendingSeeds.addAll(seeds.values());
+        FogSearchKeyProvider searchKeyProvider = new FogSearchKeyProvider(this.seeds.values());
         long blockCount = 0L;
         int requests = 0;//TODO: this
         do {
-            FogSeed seed = null;
-            if (pendingSeeds.size() > 0) {
-                seed = pendingSeeds.pop();
-            }
 
-            boolean allTXOsRetrieved = false;
+            boolean allTXOsRetrieved;
             do {
-                List<byte[]> searchKeys = null;
-                if (seed != null && !seed.isObsolete()) {
-                    searchKeys = Arrays.asList(seed.getNextN(scalingStrategy.nextQuerySize()));
-                } else {
-                    allTXOsRetrieved = true;
-                }
+                Map<ByteString, FogSeed> searchKeys = searchKeyProvider.getNSearchKeys(scalingStrategy.nextQuerySize());
+                allTXOsRetrieved = searchKeys.size() <= 0;
                 View.QueryResponse result = viewClient
-                    .request(searchKeys, lastKnownFogViewEventId, viewBlockIndex.longValue());
+                    .request(
+                            searchKeys.keySet().stream().map(ByteString::toByteArray).collect(Collectors.toList()),
+                            lastKnownFogViewEventId, viewBlockIndex.longValue()
+                    );
                 requests++;//TODO: this
                 blockCount = result.getHighestProcessedBlockCount();
                 lastKnownFogViewEventId = result.getNextStartFromUserEventId();
@@ -241,11 +235,11 @@ class TxOutStore implements Parcelable {
                     BlockRange range = new BlockRange(fogRange);
                     missedRanges.add(range);
                 }
+                int x = result.getRngsCount();// TODO: this
                 Logger.d(TAG, String.format(Locale.US, "Received %d missed block ranges",
                         result.getMissedBlockRangesCount()));
                 Logger.d(TAG, String.format(Locale.US, "Received %d RNGs", result.getRngsCount()));
                 for (View.RngRecord rngRecord : result.getRngsList()) {
-                    int x = result.getRngsCount();// TODO: this
                     FogSeed existingSeed =
                             seeds.get(Arrays.hashCode(rngRecord.getPubkey().getPubkey().toByteArray()));
                     if (existingSeed == null) {
@@ -261,7 +255,8 @@ class TxOutStore implements Parcelable {
                                 newSeed
                         );
                         // received a new seed
-                        pendingSeeds.add(newSeed);
+                        searchKeyProvider.addFogSeed(newSeed);
+                        allTXOsRetrieved = false;// Set this to false because we need to check new seeds next iteration
                     } else {
                         Logger.d(TAG, String.format(TAG,
                                 "The RNG seed %s is found in cache, updating the record",
@@ -271,14 +266,16 @@ class TxOutStore implements Parcelable {
                     }
                 }
                 for (View.TxOutSearchResult txResult : result.getTxOutSearchResultsList()) {
-                    // Sanity check - fog should be returning results in the order we expect.
-                    if (null == seed || !Arrays.equals(
+                    FogSeed seed = searchKeys.get(txResult.getSearchKey());
+                    if(!searchKeyProvider.hasSeed(seed)) continue;
+                    // Sanity check - Fog should be returning results from the expected search keys
+                    /*if(null == seed || !Arrays.equals(//TODO: HERE! don't need this anymore
                             seed.getOutput(),
                             txResult.getSearchKey().toByteArray()
-                    )) {
+                    )){
                         throw new InvalidFogResponse("Received invalid reply from fog view - " +
-                                "search key order mismatch");
-                    }
+                                "search key mismatch");
+                    }*/
                     switch (txResult.getResultCode()) {
                         case View.TxOutSearchResultCode.Found_VALUE: {
                             // Decrypt the TxOut
@@ -288,7 +285,6 @@ class TxOutStore implements Parcelable {
                                         txResult.getCiphertext().toByteArray()
                                 );
                                 View.TxOutRecord record = View.TxOutRecord.parseFrom(plainText);
-                                // Advance RNG.
                                 seed.addTXO(cryptoBox.ownedTxOutFor(
                                         record,
                                         accountKey
@@ -311,21 +307,22 @@ class TxOutStore implements Parcelable {
                                     "Received invalid reply from fog view - Internal Error");
                         }
                         case View.TxOutSearchResultCode.NotFound_VALUE: {
-                            allTXOsRetrieved = true;
+                            //allTXOsRetrieved = true;//TODO: HERE!
                             if (isSeedDecommissioned(seed)) {
                                 seed.markObsolete();
                             }
+                            searchKeyProvider.removeSeed(seed);
                             break;
                         }
                     }
-                    if (allTXOsRetrieved) break;
+                    //if (allTXOsRetrieved) break;//TODO: break once all seeds are complete//TODO: HERE!
                 }
-            } while (!allTXOsRetrieved);
+            } while (!allTXOsRetrieved);//TODO: break logic
             viewBlockIndex = (blockCount != 0)
                     ? UnsignedLong.fromLongBits(blockCount).sub(UnsignedLong.ONE)
                     : UnsignedLong.ZERO;
             Logger.i(TAG, "View Request completed blockIndex = " + viewBlockIndex);
-        } while (pendingSeeds.size() > 0);
+        } while (searchKeyProvider.hasKeys());
         Logger.e("TAG", "HERE! " + requests);
         return missedRanges;
     }
