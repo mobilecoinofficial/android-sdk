@@ -57,8 +57,12 @@ public class MobileCoinClientTest {
 
     @Test
     public void testTestTest() throws Exception {//TODO: delete when done test
-        MobileCoinClient client = MobileCoinClientBuilder.newBuilder().build();
-        client.getBalances();
+        for(int i = 0; i < TestKeysManager.getTotalTestKeysCount(); i++) {
+            MobileCoinClient client = MobileCoinClientBuilder.newBuilder().build();
+            Balance mobBalance = client.getBalance(TokenId.MOB);
+            Logger.e("HERE!", i + ":\t" + mobBalance);
+            client.shutdown();
+        }
     }
 
     @Test

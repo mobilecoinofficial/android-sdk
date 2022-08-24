@@ -620,6 +620,7 @@ public final class MobileCoinClient implements MobileCoinAccountClient, MobileCo
      *     // balance hasn't caught up yet
      * }
      * </pre>
+     * @since 1.2.2.3
      */
     @NonNull
     public Transaction.Status getTransactionStatusQuick(@NonNull Transaction transaction)
