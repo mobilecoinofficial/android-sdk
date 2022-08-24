@@ -22,10 +22,6 @@ class FogSearchKeyProvider {
         this.fogSeeds.put(fogSeed, 0);
     }
 
-    void addAllFogSeeds(Collection<FogSeed> fogSeeds) {
-        fogSeeds.stream().forEach(seed -> this.fogSeeds.put(seed, 0));
-    }
-
     Map<ByteString, FogSeed> getNSearchKeys(int n) throws KexRngException {
         HashMap<ByteString, FogSeed> nextKeys = new HashMap<ByteString, FogSeed>();
         if(this.fogSeeds.size() == 0) return nextKeys;
@@ -51,25 +47,12 @@ class FogSearchKeyProvider {
         this.fogSeeds.remove(fogSeed);
     }
 
-    boolean hasSeed(FogSeed fogSeed) {
-        return this.fogSeeds.keySet().contains(fogSeed);
-    }
-
     boolean hasKeys() {
         return this.fogSeeds.size() > 0;
     }
 
-    private static class FogSeedStateInfo {
-        int runs;
-        boolean finished;
-        FogSeedStateInfo() {
-            this.runs = 0;
-            this.finished = false;
-        }
-    }
-
     private static int getNumKeysForRunCount(int runCount) {
-        return 2 * runCount + 2;
+        return 3 * runCount + 2;
     }
 
 }

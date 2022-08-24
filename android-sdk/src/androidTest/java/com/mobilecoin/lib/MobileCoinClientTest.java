@@ -56,18 +56,6 @@ public class MobileCoinClientTest {
             GrantPermissionRule.grant(Manifest.permission.READ_EXTERNAL_STORAGE);
 
     @Test
-    public void testTestTest() throws Exception {//TODO: delete when done test
-        for(int i = 0; i < TestKeysManager.getTotalTestKeysCount(); i++) {
-            MobileCoinClient client = MobileCoinClientBuilder.newBuilder().build();
-            long before = System.nanoTime();
-            Map<TokenId, Balance> balances = client.getBalances();
-            long after = System.nanoTime();
-            Logger.e("HERE!", "Account: " + i + "\ttime:" + String.format("%1.2fs", (after - before) / 1E9D));
-            client.shutdown();
-        }
-    }
-
-    @Test
     public void test_balance_consistency() throws Exception {
         MobileCoinClient mobileCoinClient = MobileCoinClientBuilder.newBuilder().build();
         try {
