@@ -3,7 +3,6 @@ package com.mobilecoin.lib;
 import com.google.protobuf.ByteString;
 import com.mobilecoin.lib.exceptions.KexRngException;
 
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
@@ -37,7 +36,11 @@ class FogSearchKeyProvider {
                 int keysToGenerate = Math.min(getNumKeysForRunCount(runsForThisSeed), n - numKeysAdded);
                 this.fogSeeds.put(seed, runsForThisSeed + 1);
                 if(keysToGenerate <= 0) break;
-                Arrays.stream(seed.getNextN(keysToGenerate)).forEach(key -> nextKeys.put(ByteString.copyFrom(key), seed));
+                //Arrays.stream(seed.getNextN(keysToGenerate)).forEach(key -> nextKeys.put(ByteString.copyFrom(key), seed));//TODO: bindings patch for ClientKexRng
+                for(byte key[] : seed.getNextN(keysToGenerate)) {
+                    nextKeys.put(ByteString.copyFrom(key), seed);
+                    seed.advance();//TODO: bindings patch for ClientKexRng
+                }
                 numKeysAdded += keysToGenerate;
             }
         }
