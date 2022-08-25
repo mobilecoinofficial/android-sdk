@@ -50,8 +50,8 @@ public class NetworkingCall<T> {
     }
 
     public static class RetryPolicy {
-        int[] statusCodes;
-        int retryCount;
+        protected int[] statusCodes;
+        protected int retryCount;
     }
 
     public static class DefaultRetryPolicy extends RetryPolicy {
