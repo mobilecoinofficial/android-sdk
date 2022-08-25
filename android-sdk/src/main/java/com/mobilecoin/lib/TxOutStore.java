@@ -8,6 +8,7 @@ import android.os.Parcelable;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import com.google.protobuf.ByteString;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.mobilecoin.lib.exceptions.AttestationException;
 import com.mobilecoin.lib.exceptions.FogSyncException;
@@ -28,7 +29,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
-import java.util.Stack;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
@@ -209,120 +209,101 @@ class TxOutStore implements Parcelable {
             throws InvalidFogResponse, NetworkException, AttestationException, KexRngException {
         Logger.i(TAG, "Updating owned TxOuts");
 
-        Stack<FogSeed> pendingSeeds = new Stack<>();
         HashSet<BlockRange> missedRanges = new HashSet<>();
-        pendingSeeds.addAll(seeds.values());
+        FogSearchKeyProvider searchKeyProvider = new FogSearchKeyProvider(this.seeds.values());
         long blockCount = 0L;
         do {
-            FogSeed seed = null;
-            if (pendingSeeds.size() > 0) {
-                seed = pendingSeeds.pop();
+            Map<ByteString, FogSeed> searchKeys = searchKeyProvider.getNSearchKeys(scalingStrategy.nextQuerySize());
+            View.QueryResponse result = viewClient
+                .request(
+                        searchKeys.keySet().stream().map(ByteString::toByteArray).collect(Collectors.toList()),
+                        lastKnownFogViewEventId, viewBlockIndex.longValue()
+                );
+            blockCount = result.getHighestProcessedBlockCount();
+            lastKnownFogViewEventId = result.getNextStartFromUserEventId();
+            for (DecommissionedIngestInvocation decommissionedIngestInvocation : result
+                .getDecommissionedIngestInvocationsList()) {
+              decommissionedIngestInvocationIds.add(decommissionedIngestInvocation.getIngestInvocationId());
             }
-
-            boolean allTXOsRetrieved = false;
-            do {
-                List<byte[]> searchKeys = null;
-                if (seed != null && !seed.isObsolete()) {
-                    searchKeys = Arrays.asList(seed.getNextN(scalingStrategy.nextQuerySize()));
+            for (FogCommon.BlockRange fogRange : result.getMissedBlockRangesList()) {
+                BlockRange range = new BlockRange(fogRange);
+                missedRanges.add(range);
+            }
+            Logger.d(TAG, String.format(Locale.US, "Received %d missed block ranges",
+                    result.getMissedBlockRangesCount()));
+            Logger.d(TAG, String.format(Locale.US, "Received %d RNGs", result.getRngsCount()));
+            for (View.RngRecord rngRecord : result.getRngsList()) {
+                FogSeed existingSeed =
+                        seeds.get(Arrays.hashCode(rngRecord.getPubkey().getPubkey().toByteArray()));
+                if (existingSeed == null) {
+                    Logger.d(TAG, String.format(TAG, "Adding the RNG seed %s",
+                            Hex.toString(rngRecord.getPubkey().getPubkey().toByteArray()))
+                    );
+                    FogSeed newSeed = fogSeedProvider.fogSeedFor(
+                            accountKey.getDefaultSubAddressViewKey(),
+                            rngRecord
+                    );
+                    seeds.put(
+                            Arrays.hashCode(rngRecord.getPubkey().getPubkey().toByteArray()),
+                            newSeed
+                    );
+                    // received a new seed
+                    searchKeyProvider.addFogSeed(newSeed);
                 } else {
-                    allTXOsRetrieved = true;
+                    Logger.d(TAG, String.format(TAG,
+                            "The RNG seed %s is found in cache, updating the record",
+                            Hex.toString(rngRecord.getPubkey().getPubkey().toByteArray()))
+                    );
+                    existingSeed.update(rngRecord);
                 }
-                View.QueryResponse result = viewClient
-                    .request(searchKeys, lastKnownFogViewEventId, viewBlockIndex.longValue());
-                blockCount = result.getHighestProcessedBlockCount();
-                lastKnownFogViewEventId = result.getNextStartFromUserEventId();
-                for (DecommissionedIngestInvocation decommissionedIngestInvocation : result
-                    .getDecommissionedIngestInvocationsList()) {
-                  decommissionedIngestInvocationIds.add(decommissionedIngestInvocation.getIngestInvocationId());
-                }
-                for (FogCommon.BlockRange fogRange : result.getMissedBlockRangesList()) {
-                    BlockRange range = new BlockRange(fogRange);
-                    missedRanges.add(range);
-                }
-                Logger.d(TAG, String.format(Locale.US, "Received %d missed block ranges",
-                        result.getMissedBlockRangesCount()));
-                Logger.d(TAG, String.format(Locale.US, "Received %d RNGs", result.getRngsCount()));
-                for (View.RngRecord rngRecord : result.getRngsList()) {
-                    FogSeed existingSeed =
-                            seeds.get(Arrays.hashCode(rngRecord.getPubkey().getPubkey().toByteArray()));
-                    if (existingSeed == null) {
-                        Logger.d(TAG, String.format(TAG, "Adding the RNG seed %s",
-                                Hex.toString(rngRecord.getPubkey().getPubkey().toByteArray()))
-                        );
-                        FogSeed newSeed = fogSeedProvider.fogSeedFor(
-                                accountKey.getDefaultSubAddressViewKey(),
-                                rngRecord
-                        );
-                        seeds.put(
-                                Arrays.hashCode(rngRecord.getPubkey().getPubkey().toByteArray()),
-                                newSeed
-                        );
-                        // received a new seed
-                        pendingSeeds.add(newSeed);
-                    } else {
-                        Logger.d(TAG, String.format(TAG,
-                                "The RNG seed %s is found in cache, updating the record",
-                                Hex.toString(rngRecord.getPubkey().getPubkey().toByteArray()))
-                        );
-                        existingSeed.update(rngRecord);
-                    }
-                }
-                for (View.TxOutSearchResult txResult : result.getTxOutSearchResultsList()) {
-                    // Sanity check - fog should be returning results in the order we expect.
-                    if (null == seed || !Arrays.equals(
-                            seed.getOutput(),
-                            txResult.getSearchKey().toByteArray()
-                    )) {
-                        throw new InvalidFogResponse("Received invalid reply from fog view - " +
-                                "search key order mismatch");
-                    }
-                    switch (txResult.getResultCode()) {
-                        case View.TxOutSearchResultCode.Found_VALUE: {
-                            // Decrypt the TxOut
-                            try {
-                                byte[] plainText = cryptoBox.versionedCryptoBoxDecrypt(
-                                        accountKey.getDefaultSubAddressViewKey(),
-                                        txResult.getCiphertext().toByteArray()
-                                );
-                                View.TxOutRecord record = View.TxOutRecord.parseFrom(plainText);
-                                // Advance RNG.
-                                seed.addTXO(cryptoBox.ownedTxOutFor(
-                                        record,
-                                        accountKey
-                                ));
-                                Logger.d(TAG, "Found TxOut in block with index " +
-                                        record.getBlockIndex()
-                                );
-                            } catch (InvalidProtocolBufferException exception) {
-                                Logger.w(TAG, "Unable to process TxOutRecord", exception);
-                                throw new InvalidFogResponse("Unable to process TxOutRecord");
-                            }
+            }
+            for (View.TxOutSearchResult txResult : result.getTxOutSearchResultsList()) {
+                FogSeed seed = searchKeys.get(txResult.getSearchKey());
+                switch (txResult.getResultCode()) {
+                    case View.TxOutSearchResultCode.Found_VALUE: {
+                        // Decrypt the TxOut
+                        try {
+                            byte[] plainText = cryptoBox.versionedCryptoBoxDecrypt(
+                                    accountKey.getDefaultSubAddressViewKey(),
+                                    txResult.getCiphertext().toByteArray()
+                            );
+                            View.TxOutRecord record = View.TxOutRecord.parseFrom(plainText);
+                            seed.addTXO(cryptoBox.ownedTxOutFor(
+                                    record,
+                                    accountKey
+                            ));
+                            searchKeyProvider.resetSeed(seed);
+                            Logger.d(TAG, "Found TxOut in block with index " +
+                                    record.getBlockIndex()
+                            );
+                        } catch (InvalidProtocolBufferException exception) {
+                            Logger.w(TAG, "Unable to process TxOutRecord", exception);
+                            throw new InvalidFogResponse("Unable to process TxOutRecord");
                         }
+                    }
+                    break;
+                    case View.TxOutSearchResultCode.BadSearchKey_VALUE: {
+                        throw new InvalidFogResponse(
+                                "Received invalid reply from fog view - bad search key");
+                    }
+                    case View.TxOutSearchResultCode.InternalError_VALUE: {
+                        throw new InvalidFogResponse(
+                                "Received invalid reply from fog view - Internal Error");
+                    }
+                    case View.TxOutSearchResultCode.NotFound_VALUE: {
+                        if (isSeedDecommissioned(seed)) {
+                            seed.markObsolete();
+                        }
+                        searchKeyProvider.markSeedComplete(seed);
                         break;
-                        case View.TxOutSearchResultCode.BadSearchKey_VALUE: {
-                            throw new InvalidFogResponse(
-                                    "Received invalid reply from fog view - " + "bad search key");
-                        }
-                        case View.TxOutSearchResultCode.InternalError_VALUE: {
-                            throw new InvalidFogResponse(
-                                    "Received invalid reply from fog view - " + "Internal Error");
-                        }
-                        case View.TxOutSearchResultCode.NotFound_VALUE: {
-                            allTXOsRetrieved = true;
-                            if (isSeedDecommissioned(seed)) {
-                                seed.markObsolete();
-                            }
-                            break;
-                        }
                     }
-                    if (allTXOsRetrieved) break;
                 }
-            } while (!allTXOsRetrieved);
-            viewBlockIndex = (blockCount != 0)
-                    ? UnsignedLong.fromLongBits(blockCount).sub(UnsignedLong.ONE)
-                    : UnsignedLong.ZERO;
-            Logger.i(TAG, "View Request completed blockIndex = " + viewBlockIndex);
-        } while (pendingSeeds.size() > 0);
+            }
+        } while (searchKeyProvider.hasKeys());
+        viewBlockIndex = (blockCount != 0)
+                ? UnsignedLong.fromLongBits(blockCount).sub(UnsignedLong.ONE)
+                : UnsignedLong.ZERO;
+        Logger.i(TAG, "View Request completed blockIndex = " + viewBlockIndex);
         return missedRanges;
     }
 
