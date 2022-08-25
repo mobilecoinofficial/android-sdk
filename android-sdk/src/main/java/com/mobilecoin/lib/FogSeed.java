@@ -20,7 +20,7 @@ import java.util.Objects;
 
 import fog_view.View;
 
-class FogSeed implements Parcelable {
+class FogSeed implements Parcelable, Comparable<FogSeed> {
     private final static String TAG = FogSeed.class.getName();
 
     // Bump serial version and read/write code if fields change
@@ -194,6 +194,19 @@ class FogSeed implements Parcelable {
             Objects.equals(utxos, fogSeed.utxos);
     }
 
+    @Override
+    public int hashCode() {
+        return Objects.hash(
+                this.rngVersion,
+                this.isObsolete,
+                this.ingestInvocationId,
+                this.kexRng,
+                Arrays.hashCode(this.nonce),
+                this.startBlock,
+                this.utxos
+        );
+    }
+
     /**
      * @return The flags needed to write and read this object to or from a parcel
      */
@@ -252,4 +265,8 @@ class FogSeed implements Parcelable {
         }
     };
 
+    @Override
+    public int compareTo(FogSeed fogSeed) {
+        return this.startBlock.compareTo(fogSeed.startBlock);
+    }
 }
