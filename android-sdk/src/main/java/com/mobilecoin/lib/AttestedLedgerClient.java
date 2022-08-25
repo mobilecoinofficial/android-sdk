@@ -114,27 +114,29 @@ class AttestedLedgerClient extends AttestedClient {
                         indexes.stream().map(UnsignedLong::longValue).collect(Collectors.toList()))
                         .setMerkleRootBlock(merkleRootBlock).build();
         NetworkingCall<Ledger.GetOutputsResponse> networkingCall =
-                new NetworkingCall<>(() -> {
-                    try {
-                        FogMerkleProofService fogMerkleProofService =
-                                getAPIManager().getFogMerkleProofService(getNetworkTransport());
-                        Attest.Message message = encryptMessage(request);
-                        Attest.Message responseMessage = fogMerkleProofService.getOutputs(message);
-                        Attest.Message response = decryptMessage(responseMessage);
-                        return Ledger.GetOutputsResponse.parseFrom(response.getData());
-                    } catch (NetworkException exception) {
-                        attestReset();
-                        throw exception;
-                    } catch (InvalidProtocolBufferException exception) {
-                        attestReset();
-                        throw new InvalidFogResponse("GetOutputsResponse contains invalid data",
-                                exception);
-                    }
-                });
+                new NetworkingCall<>(
+                        () -> {
+                            try {
+                                FogMerkleProofService fogMerkleProofService =
+                                        getAPIManager().getFogMerkleProofService(getNetworkTransport());
+                                Attest.Message message = encryptMessage(request);
+                                Attest.Message responseMessage = fogMerkleProofService.getOutputs(message);
+                                Attest.Message response = decryptMessage(responseMessage);
+                                return Ledger.GetOutputsResponse.parseFrom(response.getData());
+                            } catch (NetworkException exception) {
+                                attestReset();
+                                throw exception;
+                            } catch (InvalidProtocolBufferException exception) {
+                                attestReset();
+                                throw new InvalidFogResponse("GetOutputsResponse contains invalid data",
+                                        exception);
+                            }
+                        },
+                        this::attestReset
+                );
         try {
             return networkingCall.run();
         } catch (InvalidFogResponse | AttestationException | NetworkException | RuntimeException exception) {
-            attestReset();
             Util.logException(TAG, exception);
             throw exception;
         } catch (Exception exception) {
@@ -164,27 +166,29 @@ class AttestedLedgerClient extends AttestedClient {
                 Ledger.CheckKeyImagesRequest.newBuilder().addAllQueries(keyImageQueries)
                         .build();
         NetworkingCall<Ledger.CheckKeyImagesResponse> networkingCall =
-                new NetworkingCall<>(() -> {
-                    try {
-                        FogKeyImageService fogKeyImageService =
-                                getAPIManager().getFogKeyImageService(getNetworkTransport());
-                        Attest.Message encryptedRequest = encryptMessage(imagesRequest);
-                        Attest.Message encryptedResponse = fogKeyImageService.checkKeyImages(encryptedRequest);
-                        Attest.Message response = decryptMessage(encryptedResponse);
-                        return Ledger.CheckKeyImagesResponse.parseFrom(response.getData().toByteArray());
-                    } catch (InvalidProtocolBufferException exception) {
-                        attestReset();
-                        throw new InvalidFogResponse(
-                                "CheckKeyImagesResponse contains invalid data", exception);
-                    } catch (NetworkException exception) {
-                        attestReset();
-                        throw exception;
-                    }
-                });
+                new NetworkingCall<>(
+                        () -> {
+                            try {
+                                FogKeyImageService fogKeyImageService =
+                                        getAPIManager().getFogKeyImageService(getNetworkTransport());
+                                Attest.Message encryptedRequest = encryptMessage(imagesRequest);
+                                Attest.Message encryptedResponse = fogKeyImageService.checkKeyImages(encryptedRequest);
+                                Attest.Message response = decryptMessage(encryptedResponse);
+                                return Ledger.CheckKeyImagesResponse.parseFrom(response.getData().toByteArray());
+                            } catch (InvalidProtocolBufferException exception) {
+                                attestReset();
+                                throw new InvalidFogResponse(
+                                        "CheckKeyImagesResponse contains invalid data", exception);
+                            } catch (NetworkException exception) {
+                                attestReset();
+                                throw exception;
+                            }
+                        },
+                        this::attestReset
+                );
         try {
             return networkingCall.run();
         } catch (InvalidFogResponse | AttestationException | NetworkException | RuntimeException exception) {
-            attestReset();
             Util.logException(TAG, exception);
             throw exception;
         } catch (Exception exception) {

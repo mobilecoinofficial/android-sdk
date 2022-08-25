@@ -111,21 +111,24 @@ class AttestedViewClient extends AttestedClient {
         aadRequestBuilder.setStartFromUserEventId(lastKnownEventId);
         aadRequestBuilder.setStartFromBlockIndex(lastKnownBlockIndex);
 
-        NetworkingCall<View.QueryResponse> networkingCall = new NetworkingCall<>(() -> {
-            try {
-                FogViewService fogViewService = getAPIManager().getFogViewService(getNetworkTransport());
-                Attest.Message message = encryptMessage(requestBuilder.build(), aadRequestBuilder.build());
-                Attest.Message encryptedResponse = fogViewService.query(message);
-                Attest.Message response = decryptMessage(encryptedResponse);
-                View.QueryResponse queryResponse = View.QueryResponse.parseFrom(response.getData());
-                return queryResponse;
-            } catch (InvalidProtocolBufferException exception) {
-                InvalidFogResponse invalidFogResponse = new InvalidFogResponse("View response " +
-                        "contains invalid data", exception);
-                Util.logException(TAG, invalidFogResponse);
-                throw invalidFogResponse;
-            }
-        });
+        NetworkingCall<View.QueryResponse> networkingCall = new NetworkingCall<>(
+                () -> {
+                    try {
+                        FogViewService fogViewService = getAPIManager().getFogViewService(getNetworkTransport());
+                        Attest.Message message = encryptMessage(requestBuilder.build(), aadRequestBuilder.build());
+                        Attest.Message encryptedResponse = fogViewService.query(message);
+                        Attest.Message response = decryptMessage(encryptedResponse);
+                        View.QueryResponse queryResponse = View.QueryResponse.parseFrom(response.getData());
+                        return queryResponse;
+                    } catch (InvalidProtocolBufferException exception) {
+                        InvalidFogResponse invalidFogResponse = new InvalidFogResponse("View response " +
+                                "contains invalid data", exception);
+                        Util.logException(TAG, invalidFogResponse);
+                        throw invalidFogResponse;
+                    }
+                },
+                this::attestReset
+        );
         try {
             return networkingCall.run();
         } catch (InvalidFogResponse | AttestationException | NetworkException | RuntimeException exception) {

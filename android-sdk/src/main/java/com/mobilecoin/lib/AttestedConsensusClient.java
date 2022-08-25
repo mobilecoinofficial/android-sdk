@@ -100,12 +100,12 @@ class AttestedConsensusClient extends AttestedClient {
                                     getAPIManager().getConsensusClientService(getNetworkTransport());
                             Attest.Message encryptedRequest = encryptMessage(tx);
                             return consensusClientService.clientTxPropose(encryptedRequest);
-                        }
+                        },
+                        this::attestReset
                 );
         try {
             return networkingCall.run();
         } catch (AttestationException | NetworkException | RuntimeException exception) {
-            attestReset();
             Util.logException(TAG, exception);
             throw exception;
         } catch (Exception exception) {
