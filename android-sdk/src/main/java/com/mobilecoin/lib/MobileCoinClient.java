@@ -21,6 +21,7 @@ import com.mobilecoin.lib.exceptions.InvalidTransactionException;
 import com.mobilecoin.lib.exceptions.InvalidUriException;
 import com.mobilecoin.lib.exceptions.NetworkException;
 import com.mobilecoin.lib.exceptions.SerializationException;
+import com.mobilecoin.lib.exceptions.SignedContingentInputBuilderException;
 import com.mobilecoin.lib.exceptions.StorageNotFoundException;
 import com.mobilecoin.lib.exceptions.TransactionBuilderException;
 import com.mobilecoin.lib.log.LogAdapter;
@@ -48,6 +49,8 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeoutException;
 import java.util.stream.Collectors;
+
+import javax.annotation.Signed;
 
 import consensus_common.ConsensusCommon;
 import fog_ledger.Ledger;
@@ -327,6 +330,68 @@ public final class MobileCoinClient implements MobileCoinAccountClient, MobileCo
             AttestationException, FogSyncException {
         Logger.i(TAG, "GetTransferableAmount call");
         return getAccountSnapshot().getTransferableAmount(getOrFetchMinimumTxFee(tokenId));
+    }
+
+    @NonNull
+    public SignedContingentInput createSignedContingentInput(
+            @NonNull final Amount amountToSpend,
+            @NonNull final Amount amountToReceive,
+            @NonNull final PublicAddress recipient
+    ) throws InsufficientFundsException, AttestationException, FogSyncException, InvalidFogResponse,
+            NetworkException, TransactionBuilderException, SignedContingentInputBuilderException, FogReportException {
+        Set<OwnedTxOut> unspent = getUnspentTxOuts(amountToSpend.getTokenId());
+        Amount totalAvailable = unspent.stream()
+                .map(OwnedTxOut::getAmount)
+                .reduce(new Amount(BigInteger.ZERO, amountToSpend.getTokenId()), Amount::add);
+        if (totalAvailable.compareTo(amountToSpend) < 0) {
+            throw new InsufficientFundsException();
+        }
+        UnsignedLong blockIndex = txOutStore.getCurrentBlockIndex();
+        UnsignedLong tombstoneBlockIndex = blockIndex
+                .add(UnsignedLong.fromLongBits(DEFAULT_NEW_TX_BLOCK_ATTEMPTS));
+        HashSet<FogUri> reportUris = new HashSet<>();
+        try {
+            if (recipient.hasFogInfo()) {
+                reportUris.add(new FogUri(recipient.getFogReportUri()));
+            }
+            reportUris.add(new FogUri(getAccountKey().getFogReportUri()));
+        } catch (InvalidUriException exception) {
+            FogReportException reportException = new FogReportException("Invalid Fog Report " +
+                    "Uri in the public address");
+            Util.logException(TAG, reportException);
+            throw reportException;
+        }
+        for(OwnedTxOut otxo : unspent) {
+            if(otxo.getAmount().equals(amountToSpend)) {
+                List<OwnedTxOut> txos = new ArrayList<>();
+                txos.add(otxo);
+                List<Ring> rings = getRingsForUTXOs(
+                        txos,
+                        getTxOutStore().getLedgerTotalTxCount(),
+                        DefaultRng.createInstance()
+                );
+                FogReportResponses reportsResponse = fogReportsManager.fetchReports(reportUris,
+                        tombstoneBlockIndex, clientConfig.report);
+                RistrettoPrivate onetimePrivateKey = Util.recoverOnetimePrivateKey(
+                        otxo.getPublicKey(),
+                        otxo.getTargetKey(),
+                        accountKey
+                );
+                SignedContingentInputBuilder sciBuilder = new SignedContingentInputBuilder(
+                        new FogResolver(reportsResponse, clientConfig.report.getVerifier()),
+                        TxOutMemoBuilder.createDefaultRTHMemoBuilder(),
+                        //blockchainClient.getOrFetchNetworkBlockVersion(),
+                        3,//TODO: this
+                        rings.get(0).getNativeTxOuts().toArray(new TxOut[0]),
+                        rings.get(0).getNativeTxOutMembershipProofs().toArray(new TxOutMembershipProof[0]),
+                        rings.get(0).realIndex,
+                        onetimePrivateKey,
+                        accountKey.getViewKey()
+                );
+                return sciBuilder.build();
+            }
+        }
+        throw new ArithmeticException("TODO: remove this");
     }
 
     @Deprecated
