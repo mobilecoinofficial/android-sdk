@@ -12,6 +12,7 @@ import com.mobilecoin.lib.exceptions.InvalidFogResponse;
 import com.mobilecoin.lib.exceptions.InvalidReceiptException;
 import com.mobilecoin.lib.exceptions.InvalidTransactionException;
 import com.mobilecoin.lib.exceptions.NetworkException;
+import com.mobilecoin.lib.exceptions.SignedContingentInputBuilderException;
 import com.mobilecoin.lib.exceptions.TransactionBuilderException;
 
 import java.math.BigInteger;
@@ -38,6 +39,26 @@ public interface MobileCoinTransactionClient {
   @NonNull
   Amount getTransferableAmount(@NonNull TokenId tokenId) throws NetworkException,
           InvalidFogResponse, AttestationException, FogSyncException;
+
+  /**
+   * TODO: doc
+   */
+  SignedContingentInput createSignedContingentInput(
+          @NonNull final Amount amountToSpend,
+          @NonNull final Amount amountToReceive
+  ) throws InsufficientFundsException, AttestationException, FogSyncException, InvalidFogResponse,
+          NetworkException, TransactionBuilderException, SignedContingentInputBuilderException, FogReportException, FragmentedAccountException;
+
+  /**
+   * TODO: doc
+   */
+  @NonNull
+  SignedContingentInput createSignedContingentInput(
+          @NonNull final Amount amountToSpend,
+          @NonNull final Amount amountToReceive,
+          @NonNull final PublicAddress recipient
+  ) throws InsufficientFundsException, AttestationException, FogSyncException, InvalidFogResponse,
+          NetworkException, TransactionBuilderException, SignedContingentInputBuilderException, FogReportException, FragmentedAccountException;
 
   /**
    * Prepares a {@link PendingTransaction} to be executed.

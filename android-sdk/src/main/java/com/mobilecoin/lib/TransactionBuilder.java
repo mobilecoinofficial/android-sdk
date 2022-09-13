@@ -82,14 +82,16 @@ final class TransactionBuilder extends Native {
 
     @NonNull
     TxOutContext addOutput(
-            @NonNull BigInteger value,
+            @NonNull Amount amount,
             @NonNull PublicAddress recipient,
             @Nullable byte[] confirmationNumberOut
     ) throws TransactionBuilderException {
         Logger.i(TAG, "Adding transaction output");
         byte[] confirmationOut = new byte[Receipt.CONFIRMATION_NUMBER_LENGTH];
         try {
-            long rustObj = add_output(value,
+            long rustObj = add_output(
+                    amount.getValue(),
+                    amount.getTokenId().getId().longValue(),
                     recipient,
                     confirmationOut,
                     this.rng
@@ -110,14 +112,20 @@ final class TransactionBuilder extends Native {
 
     @NonNull
     TxOutContext addChangeOutput(
-        @NonNull BigInteger value,
+        @NonNull Amount amount,
         @NonNull AccountKey accountKey,
         @Nullable byte[] confirmationNumberOut
     ) throws TransactionBuilderException {
         Logger.i(TAG, "Adding transaction output");
         byte[] confirmationOut = new byte[Receipt.CONFIRMATION_NUMBER_LENGTH];
         try {
-            long rustObj = add_change_output(value, accountKey, confirmationOut, this.rng);
+            long rustObj = add_change_output(
+                    amount.getValue(),
+                    amount.getTokenId().getId().longValue(),
+                    accountKey,
+                    confirmationOut,
+                    this.rng
+            );
             if (confirmationNumberOut != null) {
                 if (confirmationNumberOut.length < Receipt.CONFIRMATION_NUMBER_LENGTH) {
                     throw new IllegalArgumentException("ConfirmationNumber buffer is too small");
@@ -198,6 +206,7 @@ final class TransactionBuilder extends Native {
 
     private native long add_output(
             @NonNull BigInteger value,
+            long tokenId,
             @NonNull PublicAddress recipient,
             @NonNull byte[] confirmationNumberOut,
             @NonNull ChaCha20Rng rng
@@ -205,10 +214,13 @@ final class TransactionBuilder extends Native {
 
     private native long add_change_output(
         @NonNull BigInteger value,
+        long tokenId,
         @NonNull AccountKey accountKey,
         @NonNull byte[] confirmationNumberOut,
         @NonNull ChaCha20Rng rng
     );
+
+    private native void add_presigned_input(@NonNull SignedContingentInput signedInput);
 
     private native void set_tombstone_block(long value);
 

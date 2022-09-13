@@ -7,7 +7,7 @@ import com.mobilecoin.lib.exceptions.SignedContingentInputBuilderException;
 import java.math.BigInteger;
 import java.util.List;
 
-public class SignedContingentInputBuilder extends Native {
+class SignedContingentInputBuilder extends Native {
 
     @NonNull private final ChaCha20Rng rng;
 
