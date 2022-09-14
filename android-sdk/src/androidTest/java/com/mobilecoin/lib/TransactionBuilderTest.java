@@ -39,7 +39,6 @@ public class TransactionBuilderTest {
                 TxOutMemoBuilder.createSenderAndDestinationRTHMemoBuilder(client.getAccountKey()),
                 rng
         ).getTransaction();
-        assertEquals(transaction1.getTombstoneBlockIndex(), transaction2.getTombstoneBlockIndex());
         assertEquals(transaction1.getFee(), transaction2.getFee());
         assertEquals(transaction1.getKeyImages(), transaction2.getKeyImages());
         assertEquals(transaction1.getOutputPublicKeys(), transaction2.getOutputPublicKeys());
@@ -62,7 +61,6 @@ public class TransactionBuilderTest {
                 TxOutMemoBuilder.createSenderAndDestinationRTHMemoBuilder(client.getAccountKey()),
                 rng
         ).getTransaction();
-        assertEquals(transaction1.getTombstoneBlockIndex(), transaction2.getTombstoneBlockIndex());
         assertEquals(transaction1.getFee(), transaction2.getFee());
         assertEquals(transaction1.getKeyImages(), transaction2.getKeyImages());
         assertEquals(transaction1.getOutputPublicKeys(), transaction2.getOutputPublicKeys());
@@ -78,7 +76,6 @@ public class TransactionBuilderTest {
         ).getTransaction();
 
         // Should still be same with different RNG state
-        assertEquals(transaction1.getTombstoneBlockIndex(), transaction2.getTombstoneBlockIndex());
         assertEquals(transaction1.getFee(), transaction2.getFee());
         assertEquals(transaction1.getKeyImages(), transaction2.getKeyImages());
         // These should be different if RNG with different state used
