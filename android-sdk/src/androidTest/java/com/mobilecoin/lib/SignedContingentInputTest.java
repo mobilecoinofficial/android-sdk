@@ -1,6 +1,7 @@
 package com.mobilecoin.lib;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 
@@ -25,6 +26,7 @@ public class SignedContingentInputTest {
         Amount requiredAmounts[] = sci.getRequiredOutputAmounts();
         Amount pseudoOutputAmount = sci.getPseudoOutputAmount();
 
+        assertTrue(sci.isValid());
         assertEquals(2, requiredAmounts.length);
 
     }

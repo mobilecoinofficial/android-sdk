@@ -44,6 +44,18 @@ public class SignedContingentInput extends Native {
         return totalOutlays;
     }
 
+    public boolean isValid() {
+        return is_valid();
+    }
+
+    @Override
+    protected void finalize() throws Throwable {
+        if (rustObj != 0) {
+            finalize_jni();
+        }
+        super.finalize();
+    }
+
     @NonNull
     public Amount[] getRequiredOutputAmounts() {
         return get_required_output_amounts();
@@ -59,5 +71,9 @@ public class SignedContingentInput extends Native {
 
     @NonNull
     private native Amount get_pseudo_output_amount();
+
+    private native boolean is_valid();
+
+    private native void finalize_jni();
 
 }
