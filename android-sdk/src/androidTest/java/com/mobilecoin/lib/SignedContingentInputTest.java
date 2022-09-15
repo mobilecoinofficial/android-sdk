@@ -4,6 +4,8 @@ import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
+import android.os.Parcel;
+
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 
 import org.junit.Test;
@@ -36,6 +38,14 @@ public class SignedContingentInputTest {
         assertArrayEquals(serializedSci, reconstructed.toByteArray());
         assertEquals(sci.getPseudoOutputAmount(), reconstructed.getPseudoOutputAmount());
         assertArrayEquals(sci.getRequiredOutputAmounts(), reconstructed.getRequiredOutputAmounts());
+
+        // Test Parcelable
+        Parcel parcel = Parcel.obtain();
+        parcel.writeParcelable(sci, 0);
+        parcel.setDataPosition(0);
+        SignedContingentInput deparceled = parcel.readParcelable(SignedContingentInput.class.getClassLoader());
+        assertEquals(sci, deparceled);
+        assertArrayEquals(sci.toByteArray(), deparceled.toByteArray());
 
     }
 

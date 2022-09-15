@@ -1,5 +1,8 @@
 package com.mobilecoin.lib;
 
+import android.os.Parcel;
+import android.os.Parcelable;
+
 import androidx.annotation.NonNull;
 
 import com.mobilecoin.lib.exceptions.SerializationException;
@@ -10,7 +13,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
-public class SignedContingentInput extends Native {
+public class SignedContingentInput extends Native implements Parcelable {
 
     private SignedContingentInput(long rustObj) {
         this.rustObj = rustObj;
@@ -90,8 +93,13 @@ public class SignedContingentInput extends Native {
     }
 
     @NonNull
-    public byte[] toByteArray() {
-        return to_byte_array();
+    public byte[] toByteArray() throws SerializationException {
+        try {
+            return to_byte_array();
+        } catch(Exception e) {
+            Logger.e(TAG, e);
+            throw new SerializationException(e.getLocalizedMessage(), e);
+        }
     }
 
     @NonNull
@@ -121,6 +129,22 @@ public class SignedContingentInput extends Native {
         return get_pseudo_output_amount();
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if(this == o) return true;
+        if(o == null) return false;
+        if(o instanceof SignedContingentInput) {
+            SignedContingentInput that = (SignedContingentInput)o;
+            try {
+                return Arrays.equals(this.toByteArray(), that.toByteArray());
+            } catch(Exception e) {
+                Logger.e(TAG, e);
+                return false;
+            }
+        }
+        return false;
+    }
+
     @NonNull
     private native Amount[] get_required_output_amounts();
 
@@ -137,5 +161,45 @@ public class SignedContingentInput extends Native {
     private native void finalize_jni();
 
     private static final String TAG = SignedContingentInput.class.getName();
+
+    protected SignedContingentInput(Parcel parcel) throws SerializationException {
+        try {
+            init_from_bytes(parcel.createByteArray());
+        } catch(Exception e) {
+            throw new SerializationException(e.getLocalizedMessage(), e);
+        }
+    }
+
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    @Override
+    public void writeToParcel(Parcel parcel, int flags) {
+        try {
+            parcel.writeByteArray(toByteArray());
+        } catch (SerializationException e) {
+            Logger.e(TAG, e);
+        }
+    }
+
+    public static final Creator<SignedContingentInput> CREATOR = new Creator<SignedContingentInput>() {
+        @Override
+        public SignedContingentInput createFromParcel(Parcel parcel) {
+            try {
+                return new SignedContingentInput(parcel);
+            } catch(SerializationException e) {
+                Logger.e(TAG, e);
+                return null;
+            }
+
+        }
+
+        @Override
+        public SignedContingentInput[] newArray(int length) {
+            return new SignedContingentInput[length];
+        }
+    };
 
 }
