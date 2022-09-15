@@ -2,19 +2,27 @@ package com.mobilecoin.lib;
 
 import androidx.annotation.NonNull;
 
+import com.mobilecoin.lib.exceptions.SerializationException;
+import com.mobilecoin.lib.log.Logger;
+
 import java.math.BigInteger;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
-import java.util.function.IntFunction;
-import java.util.stream.Collectors;
 
 public class SignedContingentInput extends Native {
 
     private SignedContingentInput(long rustObj) {
         this.rustObj = rustObj;
+    }
+
+    private SignedContingentInput(@NonNull final byte[] serializedBytes) throws SerializationException {
+        try {
+            init_from_bytes(serializedBytes);
+        } catch(Exception e) {
+            Logger.e(TAG, e);
+            throw new SerializationException(e.getLocalizedMessage(), e);
+        }
     }
 
     @NonNull
@@ -24,12 +32,18 @@ public class SignedContingentInput extends Native {
 
     @NonNull
     public Amount getIncomeAmount() {
-        return getPseudoOutputAmount();
+        Amount grossIncome = getPseudoOutputAmount();
+        // It is likely that if there is a required input with the same TokenId of the pseudo_output_amount, it is a change output
+        // Still, it would be possible for required outputs of the same TokenId to be added, so we need to handle these cases
+        Amount changeDeduction = Arrays.stream(getRequiredOutputAmounts())
+                .filter(amount -> grossIncome.getTokenId().equals(amount.getTokenId()))
+                .reduce(Amount::add).get();
+        return grossIncome.subtract(changeDeduction);
     }
 
     @NonNull
     public Map<TokenId, Amount> getTotalOutlays() {
-        final Amount requiredAmounts[] = getRequiredOutputAmounts();
+        final Amount[] requiredAmounts = getRequiredOutputAmounts();
         Map<TokenId, Amount> totalOutlays = new HashMap<>();
         for(Amount amount : requiredAmounts) {
             //TODO: on API level 24, we can use getOrDefault to simplify the logic here
@@ -42,6 +56,16 @@ public class SignedContingentInput extends Native {
         if(null == changeAdjustment) changeAdjustment = new Amount(BigInteger.ZERO, pseudoOutputAmount.getTokenId());
         totalOutlays.put(pseudoOutputAmount.getTokenId(), pseudoOutputAmount.subtract(changeAdjustment));
         return totalOutlays;
+    }
+
+    @NonNull
+    public byte[] toByteArray() {
+        return to_byte_array();
+    }
+
+    @NonNull
+    public static SignedContingentInput fromByteArray(@NonNull final byte[] serializedBytes) throws SerializationException {
+        return new SignedContingentInput(serializedBytes);
     }
 
     public boolean isValid() {
@@ -72,8 +96,15 @@ public class SignedContingentInput extends Native {
     @NonNull
     private native Amount get_pseudo_output_amount();
 
+    @NonNull
+    private native byte[] to_byte_array();
+
+    private native void init_from_bytes(@NonNull byte[] bytes);
+
     private native boolean is_valid();
 
     private native void finalize_jni();
+
+    private static final String TAG = SignedContingentInput.class.getName();
 
 }

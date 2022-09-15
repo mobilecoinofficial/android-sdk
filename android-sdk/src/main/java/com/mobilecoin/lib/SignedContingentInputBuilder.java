@@ -3,9 +3,9 @@ package com.mobilecoin.lib;
 import androidx.annotation.NonNull;
 
 import com.mobilecoin.lib.exceptions.SignedContingentInputBuilderException;
+import com.mobilecoin.lib.log.Logger;
 
 import java.math.BigInteger;
-import java.util.List;
 
 class SignedContingentInputBuilder extends Native {
 
@@ -15,8 +15,8 @@ class SignedContingentInputBuilder extends Native {
             @NonNull final FogResolver fogResolver,
             @NonNull final TxOutMemoBuilder txOutMemoBuilder,
             final int blockVersion,
-            @NonNull final TxOut ring[],
-            @NonNull final TxOutMembershipProof membershipProofs[],
+            @NonNull final TxOut[] ring,
+            @NonNull final TxOutMembershipProof[] membershipProofs,
             final short realIndex,
             @NonNull final RistrettoPrivate onetimePrivateKey,
             @NonNull final RistrettoPrivate viewPrivateKey,
@@ -43,8 +43,8 @@ class SignedContingentInputBuilder extends Native {
             @NonNull final FogResolver fogResolver,
             @NonNull final TxOutMemoBuilder txOutMemoBuilder,
             final int blockVersion,
-            @NonNull final TxOut ring[],
-            @NonNull final TxOutMembershipProof membershipProofs[],
+            @NonNull final TxOut[] ring,
+            @NonNull final TxOutMembershipProof[] membershipProofs,
             final short realIndex,
             @NonNull final RistrettoPrivate onetimePrivateKey,
             @NonNull final RistrettoPrivate viewPrivateKey
@@ -77,6 +77,7 @@ class SignedContingentInputBuilder extends Native {
                     )
             );
         } catch(Exception e) {
+            Logger.e(TAG, e);
             throw new SignedContingentInputBuilderException("Failed to add required output", e);
         }
     }
@@ -96,6 +97,7 @@ class SignedContingentInputBuilder extends Native {
                     )
             );
         } catch(Exception e) {
+            Logger.e(TAG, e);
             throw new SignedContingentInputBuilderException("Failed to add required change output", e);
         }
     }
@@ -109,6 +111,7 @@ class SignedContingentInputBuilder extends Native {
         try {
             return SignedContingentInput.fromJNI(build_sci(rng));
         } catch(Exception e) {
+            Logger.e(TAG, e);
             throw new SignedContingentInputBuilderException("Failed to build SignedContingentInput", e);
         }
     }
@@ -125,8 +128,8 @@ class SignedContingentInputBuilder extends Native {
             @NonNull FogResolver fog_resolver,
             @NonNull TxOutMemoBuilder txOutMemoBuilder,
             int blockVersion,
-            @NonNull TxOut ring[],
-            @NonNull TxOutMembershipProof membershipProofs[],
+            @NonNull TxOut[] ring,
+            @NonNull TxOutMembershipProof[] membershipProofs,
             short realIndex,
             @NonNull RistrettoPrivate onetimePrivateKey,
             @NonNull RistrettoPrivate viewPrivateKey
