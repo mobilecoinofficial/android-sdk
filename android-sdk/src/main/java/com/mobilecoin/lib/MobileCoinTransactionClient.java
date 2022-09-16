@@ -40,25 +40,12 @@ public interface MobileCoinTransactionClient {
   Amount getTransferableAmount(@NonNull TokenId tokenId) throws NetworkException,
           InvalidFogResponse, AttestationException, FogSyncException;
 
-  /**
-   * TODO: doc
-   */
-  SignedContingentInput createSignedContingentInput(
-          @NonNull final Amount amountToSpend,
-          @NonNull final Amount amountToReceive
-  ) throws InsufficientFundsException, AttestationException, FogSyncException, InvalidFogResponse,
-          NetworkException, TransactionBuilderException, SignedContingentInputBuilderException, FogReportException, FragmentedAccountException;
-
-  /**
-   * TODO: doc
-   */
+  // TODO: doc
   @NonNull
-  SignedContingentInput createSignedContingentInput(
-          @NonNull final Amount amountToSpend,
-          @NonNull final Amount amountToReceive,
-          @NonNull final PublicAddress recipient
-  ) throws InsufficientFundsException, AttestationException, FogSyncException, InvalidFogResponse,
-          NetworkException, TransactionBuilderException, SignedContingentInputBuilderException, FogReportException, FragmentedAccountException;
+  public PendingTransaction preparePresignedTransaction(
+          @NonNull final SignedContingentInput presignedInput,
+          @NonNull final Amount fee
+  );
 
   /**
    * Prepares a {@link PendingTransaction} to be executed.

@@ -20,11 +20,15 @@ public class SignedContingentInputTest {
     public void testSignedContingentInputBuilder() throws Exception {
 
         MobileCoinClient client = MobileCoinClientBuilder.newBuilder().build();
-        SignedContingentInput sci = client.createSignedContingentInput(
+        SignedContingentInputBuilder sciBuilder = SignedContingentInputBuilder.newBuilder(
                 Amount.ofMOB(new BigInteger("10000000000000")),
-                new Amount(new BigInteger("10000000"), TokenId.from(UnsignedLong.ONE))
+                client
         );
-        client.shutdown();
+        sciBuilder.addRequiredAmount(
+                new Amount(new BigInteger("10000000"), TokenId.from(UnsignedLong.ONE)),
+                client.getAccountKey().getPublicAddress()
+        );
+        SignedContingentInput sci = sciBuilder.build();
 
         Amount[] requiredAmounts = sci.getRequiredOutputAmounts();
         Amount pseudoOutputAmount = sci.getPseudoOutputAmount();
@@ -41,13 +45,14 @@ public class SignedContingentInputTest {
 
         // Test Parcelable
         Parcel parcel = Parcel.obtain();
-        parcel.writeParcelable(sci, 0);
+        sci.writeToParcel(parcel, 0);
         parcel.setDataPosition(0);
-        SignedContingentInput deparceled = parcel.readParcelable(SignedContingentInput.class.getClassLoader());
+        SignedContingentInput deparceled = SignedContingentInput.CREATOR.createFromParcel(parcel);
         assertEquals(sci, deparceled);
         assertArrayEquals(sci.toByteArray(), deparceled.toByteArray());
 
         assertEquals(11, sci.getRing().length);
+        client.shutdown();
 
     }
 

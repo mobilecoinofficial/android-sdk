@@ -13,6 +13,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
+//TODO: doc
 public class SignedContingentInput extends Native implements Parcelable {
 
     private SignedContingentInput(long rustObj) {
@@ -33,6 +34,7 @@ public class SignedContingentInput extends Native implements Parcelable {
         return new SignedContingentInput(rustObj);
     }
 
+    // TODO: doc
     @NonNull
     public Amount getIncomeAmount() {
         Amount grossIncome = getPseudoOutputAmount();
@@ -52,6 +54,7 @@ public class SignedContingentInput extends Native implements Parcelable {
         return grossIncome.subtract(changeDeduction);
     }
 
+    // TODO: doc
     @NonNull
     public Map<TokenId, Amount> getTotalOutlays() {
 
@@ -92,6 +95,7 @@ public class SignedContingentInput extends Native implements Parcelable {
 
     }
 
+    // TODO: doc
     @NonNull
     public byte[] toByteArray() throws SerializationException {
         try {
@@ -102,11 +106,13 @@ public class SignedContingentInput extends Native implements Parcelable {
         }
     }
 
+    // TODO: doc
     @NonNull
     public static SignedContingentInput fromByteArray(@NonNull final byte[] serializedBytes) throws SerializationException {
         return new SignedContingentInput(serializedBytes);
     }
 
+    // TODO: doc
     public boolean isValid() {
         return is_valid();
     }
@@ -120,12 +126,12 @@ public class SignedContingentInput extends Native implements Parcelable {
     }
 
     @NonNull
-    public Amount[] getRequiredOutputAmounts() {
+    Amount[] getRequiredOutputAmounts() {
         return get_required_output_amounts();
     }
 
     @NonNull
-    public Amount getPseudoOutputAmount() {
+    Amount getPseudoOutputAmount() {
         return get_pseudo_output_amount();
     }
 
@@ -178,7 +184,7 @@ public class SignedContingentInput extends Native implements Parcelable {
 
     private static final String TAG = SignedContingentInput.class.getName();
 
-    protected SignedContingentInput(Parcel parcel) throws SerializationException {
+    protected SignedContingentInput(@NonNull Parcel parcel) throws SerializationException {
         try {
             init_from_bytes(parcel.createByteArray());
         } catch(Exception e) {
@@ -192,7 +198,7 @@ public class SignedContingentInput extends Native implements Parcelable {
     }
 
     @Override
-    public void writeToParcel(Parcel parcel, int flags) {
+    public void writeToParcel(@NonNull Parcel parcel, int flags) {
         try {
             parcel.writeByteArray(toByteArray());
         } catch (SerializationException e) {
@@ -202,7 +208,7 @@ public class SignedContingentInput extends Native implements Parcelable {
 
     public static final Creator<SignedContingentInput> CREATOR = new Creator<SignedContingentInput>() {
         @Override
-        public SignedContingentInput createFromParcel(Parcel parcel) {
+        public SignedContingentInput createFromParcel(@NonNull Parcel parcel) {
             try {
                 return new SignedContingentInput(parcel);
             } catch(SerializationException e) {

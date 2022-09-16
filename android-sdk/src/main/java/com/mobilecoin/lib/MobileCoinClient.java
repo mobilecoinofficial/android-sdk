@@ -21,7 +21,6 @@ import com.mobilecoin.lib.exceptions.InvalidTransactionException;
 import com.mobilecoin.lib.exceptions.InvalidUriException;
 import com.mobilecoin.lib.exceptions.NetworkException;
 import com.mobilecoin.lib.exceptions.SerializationException;
-import com.mobilecoin.lib.exceptions.SignedContingentInputBuilderException;
 import com.mobilecoin.lib.exceptions.StorageNotFoundException;
 import com.mobilecoin.lib.exceptions.TransactionBuilderException;
 import com.mobilecoin.lib.log.LogAdapter;
@@ -36,7 +35,6 @@ import com.mobilecoin.lib.util.Task;
 
 import java.math.BigInteger;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -50,8 +48,6 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeoutException;
 import java.util.stream.Collectors;
-
-import javax.annotation.Signed;
 
 import consensus_common.ConsensusCommon;
 import fog_ledger.Ledger;
@@ -76,9 +72,9 @@ public final class MobileCoinClient implements MobileCoinAccountClient, MobileCo
     private static final long DEFAULT_NEW_TX_BLOCK_ATTEMPTS = 50;
     private final AccountKey accountKey;
     private final TxOutStore txOutStore;
-    private final ClientConfig clientConfig;
+    final ClientConfig clientConfig;
     private final StorageAdapter cacheStorage;
-    private final FogReportsManager fogReportsManager;
+    final FogReportsManager fogReportsManager;
     final FogBlockClient fogBlockClient;
     final FogUntrustedClient untrustedClient;
     final AttestedViewClient viewClient;
@@ -334,103 +330,6 @@ public final class MobileCoinClient implements MobileCoinAccountClient, MobileCo
     }
 
     @Override
-    @NonNull
-    public SignedContingentInput createSignedContingentInput(
-            @NonNull final Amount amountToSpend,
-            @NonNull final Amount amountToReceive
-    ) throws InsufficientFundsException, AttestationException, FogSyncException, InvalidFogResponse,
-            NetworkException, TransactionBuilderException, SignedContingentInputBuilderException, FogReportException, FragmentedAccountException {
-        return this.createSignedContingentInput(
-                amountToSpend,
-                amountToReceive,
-                accountKey.getPublicAddress()
-        );
-    }
-
-    @Override
-    @NonNull
-    public SignedContingentInput createSignedContingentInput(
-            @NonNull final Amount amountToSpend,
-            @NonNull final Amount amountToReceive,
-            @NonNull final PublicAddress recipient
-    ) throws InsufficientFundsException, AttestationException, FogSyncException, InvalidFogResponse,
-            NetworkException, TransactionBuilderException, SignedContingentInputBuilderException, FogReportException, FragmentedAccountException {
-        final int blockVersion = blockchainClient.getOrFetchNetworkBlockVersion();
-        //if(blockVersion < 3) throw new UnsupportedOperationException("Unsupported until block version 3");// TODO: HERE
-        Set<OwnedTxOut> unspent = getUnspentTxOuts(amountToSpend.getTokenId());
-        final Amount totalAvailable = unspent.stream()
-                .map(OwnedTxOut::getAmount)
-                .reduce(new Amount(BigInteger.ZERO, amountToSpend.getTokenId()), Amount::add);
-        if (totalAvailable.compareTo(amountToSpend) < 0) {
-            throw new InsufficientFundsException();
-        }
-        UnsignedLong blockIndex = txOutStore.getCurrentBlockIndex();
-        UnsignedLong tombstoneBlockIndex = blockIndex
-                .add(UnsignedLong.fromLongBits(DEFAULT_NEW_TX_BLOCK_ATTEMPTS));
-        HashSet<FogUri> reportUris = new HashSet<>();
-        try {
-            if (recipient.hasFogInfo()) {
-                reportUris.add(new FogUri(recipient.getFogReportUri()));
-            }
-            reportUris.add(new FogUri(getAccountKey().getFogReportUri()));
-        } catch (InvalidUriException exception) {
-            FogReportException reportException = new FogReportException("Invalid Fog Report " +
-                    "Uri in the public address");
-            Util.logException(TAG, reportException);
-            throw reportException;
-        }
-
-        OwnedTxOut txOutToSpend = null;
-        for(OwnedTxOut otxo : unspent) {
-            if(amountToSpend.compareTo(otxo.getAmount()) <= 0) {
-                txOutToSpend = otxo;
-                break;
-            }
-        }
-        if(null == txOutToSpend) {
-            throw new FragmentedAccountException("No single TxOut big enough to satisfy input conditions. Defragmentation required");
-        }
-
-        List<OwnedTxOut> txos = new ArrayList<>();
-        txos.add(txOutToSpend);
-        Ring ring = getRingsForUTXOs(
-                txos,
-                getTxOutStore().getLedgerTotalTxCount(),
-                DefaultRng.createInstance()
-        ).get(0);
-        FogReportResponses reportsResponse = fogReportsManager.fetchReports(reportUris,
-                tombstoneBlockIndex, clientConfig.report);
-        RistrettoPrivate onetimePrivateKey = Util.recoverOnetimePrivateKey(
-                txOutToSpend.getPublicKey(),
-                txOutToSpend.getTargetKey(),
-                accountKey
-        );
-        SignedContingentInputBuilder sciBuilder = new SignedContingentInputBuilder(
-                new FogResolver(reportsResponse, clientConfig.report.getVerifier()),
-                TxOutMemoBuilder.createDefaultRTHMemoBuilder(),
-                //blockVersion,
-                3,//TODO: this
-                ring.getNativeTxOuts().toArray(new TxOut[0]),
-                ring.getNativeTxOutMembershipProofs().toArray(new TxOutMembershipProof[0]),
-                ring.realIndex,
-                onetimePrivateKey,
-                accountKey.getViewKey()
-        );
-
-        final Amount changeAmount = txOutToSpend.getAmount().subtract(amountToSpend);
-        sciBuilder.addRequiredChangeOutput(
-                changeAmount,
-                accountKey
-        );
-        sciBuilder.addRequiredOutput(
-                amountToReceive,
-                recipient
-        );
-
-        return sciBuilder.build();
-
-    }
-
     @NonNull
     public PendingTransaction preparePresignedTransaction(
             @NonNull final SignedContingentInput presignedInput,
