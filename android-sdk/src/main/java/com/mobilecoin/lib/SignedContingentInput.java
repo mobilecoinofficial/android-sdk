@@ -129,6 +129,19 @@ public class SignedContingentInput extends Native implements Parcelable {
         return get_pseudo_output_amount();
     }
 
+    @NonNull
+    TxOut[] getRing() throws SerializationException {
+        final byte[][] ringBytes = get_ring_bytes();
+        final TxOut[] ring = new TxOut[ringBytes.length];
+
+        for(int i = 0; i < ring.length; i++) {
+            ring[i] = TxOut.fromBytes(ringBytes[i]);
+        }
+
+        return ring;
+
+    }
+
     @Override
     public boolean equals(Object o) {
         if(this == o) return true;
@@ -150,6 +163,9 @@ public class SignedContingentInput extends Native implements Parcelable {
 
     @NonNull
     private native Amount get_pseudo_output_amount();
+
+    @NonNull
+    private native byte[][] get_ring_bytes();
 
     @NonNull
     private native byte[] to_byte_array();

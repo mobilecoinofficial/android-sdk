@@ -47,6 +47,8 @@ public class SignedContingentInputTest {
         assertEquals(sci, deparceled);
         assertArrayEquals(sci.toByteArray(), deparceled.toByteArray());
 
+        assertEquals(11, sci.getRing().length);
+
     }
 
     @Test
