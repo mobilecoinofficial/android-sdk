@@ -224,4 +224,14 @@ public class SignedContingentInput extends Native implements Parcelable {
         }
     };
 
+    public enum CancelationResult {
+
+        SUCCESS,
+        FAILED_ALREADY_SPENT,
+        FAILED_UNOWNED_TX_OUT,
+        FAILED_INVALID,
+        FAILED_UNKNOWN
+
+    }
+
 }

@@ -331,6 +331,69 @@ public final class MobileCoinClient implements MobileCoinAccountClient, MobileCo
 
     @Override
     @NonNull
+    public synchronized SignedContingentInput.CancelationResult cancelPresignedTransaction(@NonNull final SignedContingentInput presignedInput)
+            throws SerializationException, NetworkException, TransactionBuilderException, AttestationException, FogReportException,
+            InvalidFogResponse, FogSyncException {
+        if(!presignedInput.isValid()) {
+            Logger.w(TAG, "Attempted to cancel invalid SignedContingentInput");
+            return SignedContingentInput.CancelationResult.FAILED_INVALID;
+        }
+        final List<OwnedTxOut> txOutToSpend = new ArrayList<>(1);
+        final Set<RistrettoPublic> publicKeySet = new HashSet<>();
+        for(TxOut txOut : presignedInput.getRing()) {
+            publicKeySet.add(txOut.getPublicKey());
+        }
+        for(OwnedTxOut otxo : getTxOutStore().getSyncedTxOuts()) {
+            if(!otxo.getAmount().getTokenId().equals(presignedInput.getIncomeAmount().getTokenId())) continue;
+            if(!publicKeySet.add(otxo.getPublicKey())) {
+                txOutToSpend.add(otxo);
+                break;
+            }
+        }
+        if(txOutToSpend.isEmpty()) {
+            Logger.w(TAG, "Attempted to cancel a SignedContingent client does not own");
+            return SignedContingentInput.CancelationResult.FAILED_UNOWNED_TX_OUT;
+        }
+        if(txOutToSpend.get(0).isSpent(getTxOutStore().getCurrentBlockIndex())) {
+            Logger.i(TAG, "Failed to cancel previously spent SignedContingentInput");
+            return SignedContingentInput.CancelationResult.FAILED_ALREADY_SPENT;
+        }
+        Transaction spendInputTransaction = prepareTransaction(
+                accountKey.getPublicAddress(),
+                presignedInput.getIncomeAmount(),
+                txOutToSpend,
+                getOrFetchMinimumTxFee(presignedInput.getIncomeAmount().getTokenId()),
+                TxOutMemoBuilder.createSenderAndDestinationRTHMemoBuilder(accountKey),
+                DefaultRng.createInstance()
+        ).getTransaction();
+        try {
+            submitTransaction(spendInputTransaction);
+        } catch(InvalidTransactionException e) {
+            switch(e.getResult()) {
+                case ContainsSpentKeyImage:
+                    Logger.i(TAG, "Failed to cancel previously spent SignedContingentInput");
+                    return SignedContingentInput.CancelationResult.FAILED_ALREADY_SPENT;
+                default:
+                    Logger.e(TAG, "Failed to cancel a SignedContingent for unknown reason");
+                    return SignedContingentInput.CancelationResult.FAILED_UNKNOWN;
+            }
+        }
+        while(getTransactionStatus(spendInputTransaction).equals(Transaction.Status.UNKNOWN)) {
+            try {
+                Thread.sleep(STATUS_CHECK_DELAY_MS);
+            } catch (InterruptedException e) {
+                Logger.e(TAG, e);
+            }
+        }
+        if(getTransactionStatus(spendInputTransaction).equals(Transaction.Status.ACCEPTED)) {
+            return SignedContingentInput.CancelationResult.SUCCESS;
+        }
+        Logger.e(TAG, "Failed to cancel a SignedContingent for unknown reason");
+        return SignedContingentInput.CancelationResult.FAILED_UNKNOWN;
+    }
+
+    @Override
+    @NonNull
     public PendingTransaction preparePresignedTransaction(
             @NonNull final SignedContingentInput presignedInput,
             @NonNull final Amount fee

@@ -24,10 +24,7 @@ public class SignedContingentInputTest {
                 Amount.ofMOB(new BigInteger("10000000000000")),
                 client
         );
-        sciBuilder.addRequiredAmount(
-                new Amount(new BigInteger("10000000"), TokenId.from(UnsignedLong.ONE)),
-                client.getAccountKey().getPublicAddress()
-        );
+        sciBuilder.addRequiredAmount(new Amount(new BigInteger("10000000"), TokenId.from(UnsignedLong.ONE)));
         SignedContingentInput sci = sciBuilder.build();
 
         Amount[] requiredAmounts = sci.getRequiredOutputAmounts();
@@ -53,6 +50,26 @@ public class SignedContingentInputTest {
 
         assertEquals(11, sci.getRing().length);
         client.shutdown();
+
+    }
+
+    @Test
+    public void testCancelSignedContingentInput() throws Exception {
+
+        MobileCoinClient client = MobileCoinClientBuilder.newBuilder().build();
+        SignedContingentInputBuilder sciBuilder = SignedContingentInputBuilder.newBuilder(
+                Amount.ofMOB(new BigInteger("10000000000000")),
+                client
+        );
+        sciBuilder.addRequiredAmount(new Amount(new BigInteger("10000000"), TokenId.from(UnsignedLong.ONE)));
+        SignedContingentInput sci = sciBuilder.build();
+
+        MobileCoinClient otherClient = MobileCoinClientBuilder.newBuilder().build();
+        assertEquals(SignedContingentInput.CancelationResult.FAILED_UNOWNED_TX_OUT, otherClient.cancelPresignedTransaction(sci));
+        assertEquals(SignedContingentInput.CancelationResult.SUCCESS, client.cancelPresignedTransaction(sci));
+
+        client.shutdown();
+        otherClient.shutdown();
 
     }
 

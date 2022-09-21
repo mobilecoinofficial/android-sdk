@@ -12,7 +12,7 @@ import com.mobilecoin.lib.exceptions.InvalidFogResponse;
 import com.mobilecoin.lib.exceptions.InvalidReceiptException;
 import com.mobilecoin.lib.exceptions.InvalidTransactionException;
 import com.mobilecoin.lib.exceptions.NetworkException;
-import com.mobilecoin.lib.exceptions.SignedContingentInputBuilderException;
+import com.mobilecoin.lib.exceptions.SerializationException;
 import com.mobilecoin.lib.exceptions.TransactionBuilderException;
 
 import java.math.BigInteger;
@@ -42,7 +42,13 @@ public interface MobileCoinTransactionClient {
 
   // TODO: doc
   @NonNull
-  public PendingTransaction preparePresignedTransaction(
+  SignedContingentInput.CancelationResult cancelPresignedTransaction(@NonNull final SignedContingentInput presignedInput)
+          throws SerializationException, NetworkException, TransactionBuilderException, AttestationException, FogReportException,
+          InvalidFogResponse, FogSyncException;
+
+  // TODO: doc
+  @NonNull
+  PendingTransaction preparePresignedTransaction(
           @NonNull final SignedContingentInput presignedInput,
           @NonNull final Amount fee
   );
