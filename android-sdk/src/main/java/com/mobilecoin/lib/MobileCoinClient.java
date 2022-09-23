@@ -463,7 +463,7 @@ public final class MobileCoinClient implements MobileCoinAccountClient, MobileCo
                 return getRingsForUTXOs(
                         txOuts,
                         getTxOutStore().getLedgerTotalTxCount(),
-                        rng
+                        DefaultRng.createInstance()
                 );
             }
         };
