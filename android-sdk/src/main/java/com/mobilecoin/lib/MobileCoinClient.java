@@ -730,6 +730,7 @@ public final class MobileCoinClient implements MobileCoinAccountClient, MobileCo
         if(!amount.getTokenId().equals(fee.getTokenId())) {
             throw new IllegalArgumentException("Mixed token type transactions not supported");
         }
+        final byte[] rngSeed = rng.nextBytes(ChaCha20Rng.SEED_SIZE_BYTES);
         UnsignedLong blockIndex = txOutStore.getCurrentBlockIndex();
         UnsignedLong tombstoneBlockIndex = blockIndex
                 .add(UnsignedLong.fromLongBits(DEFAULT_NEW_TX_BLOCK_ATTEMPTS));
@@ -827,7 +828,7 @@ public final class MobileCoinClient implements MobileCoinAccountClient, MobileCo
                 blockchainClient.getOrFetchNetworkBlockVersion(),
                 amount.getTokenId(),
                 fee,
-                rng
+                rngSeed
         );
         txBuilder.setFee(fee);
         txBuilder.setTombstoneBlockIndex(tombstoneBlockIndex);
