@@ -5,21 +5,20 @@ import android.net.Uri;
 import androidx.annotation.NonNull;
 
 import com.mobilecoin.lib.network.services.http.Requester.Requester;
-import com.squareup.okhttp.Authenticator;
-import com.squareup.okhttp.Credentials;
-import com.squareup.okhttp.Headers;
-import com.squareup.okhttp.MediaType;
-import com.squareup.okhttp.OkHttpClient;
-import com.squareup.okhttp.Request;
-import com.squareup.okhttp.RequestBody;
-import com.squareup.okhttp.Response;
 
 import java.io.IOException;
-import java.net.Proxy;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
+
+import okhttp3.Credentials;
+import okhttp3.Headers;
+import okhttp3.MediaType;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.RequestBody;
+import okhttp3.Response;
 
 /**
  * Simple Requester is intended to be used for the integration tests
@@ -27,21 +26,11 @@ import java.util.Set;
 public class SimpleRequester implements Requester {
 
     private final OkHttpClient httpClient;
+    private final String basicAuthHeader;
 
     public SimpleRequester(String username, String password) {
         httpClient = new OkHttpClient();
-        final String credential = Credentials.basic(username, password);
-        httpClient.setAuthenticator(new Authenticator() {
-            @Override
-            public Request authenticate(Proxy proxy, Response response) throws IOException {
-                return response.request().newBuilder().header("Authorization", credential).build();
-            }
-
-            @Override
-            public Request authenticateProxy(Proxy proxy, Response response) throws IOException {
-                return response.request().newBuilder().header("Proxy-Authorization", credential).build();
-            }
-        });
+        basicAuthHeader = Credentials.basic(username, password);
     }
 
     @NonNull
@@ -58,6 +47,7 @@ public class SimpleRequester implements Requester {
                 body
         );
 
+        headers.put("Authorization", basicAuthHeader);
         Request request = new Request.Builder()
                 .method(httpMethod, requestBody)
                 .headers(Headers.of(headers))
