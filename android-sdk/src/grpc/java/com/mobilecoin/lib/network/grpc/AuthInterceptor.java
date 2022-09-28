@@ -4,8 +4,6 @@ package com.mobilecoin.lib.network.grpc;
 
 import androidx.annotation.NonNull;
 
-import com.squareup.okhttp.Credentials;
-
 import io.grpc.CallOptions;
 import io.grpc.Channel;
 import io.grpc.ClientCall;
@@ -14,6 +12,7 @@ import io.grpc.ForwardingClientCall;
 import io.grpc.ForwardingClientCallListener;
 import io.grpc.Metadata;
 import io.grpc.MethodDescriptor;
+import io.grpc.okhttp.internal.Credentials;
 
 /**
  * AuthInterceptor intercepts GRPC API calls to adds basic authorization header
