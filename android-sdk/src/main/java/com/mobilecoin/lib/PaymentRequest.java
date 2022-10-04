@@ -15,15 +15,18 @@ public final class PaymentRequest {
     private final PublicAddress publicAddress;
     private final UnsignedLong value;
     private final String memo;
+    private final TokenId tokenId;
 
     public PaymentRequest(
             @NonNull PublicAddress publicAddress,
             @NonNull UnsignedLong value,
-            @NonNull String memo
+            @NonNull String memo,
+            @NonNull TokenId tokenId
     ) {
         this.publicAddress = publicAddress;
         this.value = value;
         this.memo = memo;
+        this.tokenId = tokenId;
     }
 
     @NonNull
@@ -31,10 +34,14 @@ public final class PaymentRequest {
             throws SerializationException {
         Logger.i(TAG, "Deserializing PaymentRequest from protobuf");
         PublicAddress publicAddress = PublicAddress.fromProtoBufObject(protoBuf.getPublicAddress());
+        TokenId tokenId = TokenId.from(
+                UnsignedLong.fromLongBits(protoBuf.getTokenId())
+        );
         return new PaymentRequest(
                 publicAddress,
                 UnsignedLong.fromLongBits(protoBuf.getValue()),
-                protoBuf.getMemo()
+                protoBuf.getMemo(),
+                tokenId
         );
     }
 
@@ -57,16 +64,24 @@ public final class PaymentRequest {
     }
 
     @NonNull
+    public TokenId getTokenId() {
+        return tokenId;
+    }
+
+    @NonNull
     Printable.PaymentRequest toProtoBufObject() {
         Logger.i(TAG, "Serializing to protobuf");
-        return Printable.PaymentRequest.newBuilder().setMemo(getMemo())
-                .setPublicAddress(getPublicAddress().toProtoBufObject()).setValue(getValue().longValue())
+        return Printable.PaymentRequest.newBuilder()
+                .setMemo(getMemo())
+                .setPublicAddress(getPublicAddress().toProtoBufObject())
+                .setValue(getValue().longValue())
+                .setTokenId(tokenId.getId().longValue())
                 .build();
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(publicAddress, value, memo);
+        return Objects.hash(publicAddress, value, memo, tokenId);
     }
 
     @Override
@@ -76,6 +91,7 @@ public final class PaymentRequest {
         PaymentRequest that = (PaymentRequest) o;
         return publicAddress.equals(that.publicAddress) &&
                 value.equals(that.value) &&
+                tokenId.equals(that.tokenId) &&
                 memo.equals(that.memo);
     }
 }
