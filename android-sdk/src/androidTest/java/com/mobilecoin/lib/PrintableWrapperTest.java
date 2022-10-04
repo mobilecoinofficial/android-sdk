@@ -61,9 +61,11 @@ public class PrintableWrapperTest {
     @Test
     public void test_payment_request_payload() throws SerializationException {
         PublicAddress publicAddress = TestKeysManager.getNextAccountKey().getPublicAddress();
+        TokenId tokenId = TokenId.MOB;
         PaymentRequest paymentRequest = new PaymentRequest(publicAddress,
                 PAYLOAD_AMOUNT,
-                MEMO
+                MEMO,
+                tokenId
         );
         PrintableWrapper printableWrapper = PrintableWrapper.fromPaymentRequest(paymentRequest);
         Assert.assertFalse(
@@ -96,6 +98,9 @@ public class PrintableWrapperTest {
                 printableWrapper.getPaymentRequest(),
                 paymentRequest
         );
+        Assert.assertEquals("Payment request must include token id",
+                printableWrapper.getPaymentRequest().getTokenId(),
+                tokenId);
     }
 
     @Test
