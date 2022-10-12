@@ -11,7 +11,24 @@ import com.mobilecoin.lib.log.Logger;
 import java.math.BigInteger;
 import java.util.Arrays;
 
-//TODO: doc
+/**
+ * This class represents a MobileCoin <a href="https://github.com/mobilecoinfoundation/mcips/blob/main/text/0031-transactions-with-contingent-inputs.md">Signed Contingent Input</a>.
+ * A {@link SignedContingentInput} represents an {@link Amount} that a user has signed to be spent by another user.
+ * The spending of the pre-signed {@link Amount} is contingent on another user supplying an {@link Amount}
+ * of a different {@link TokenId} in exchange. This allows users to perform swaps of different tokens
+ * safely and conveniently. There is no way for the other party to spend the provided {@link Amount} without
+ * supplying the required {@link Amount} to the user that built the {@link SignedContingentInput}.
+ * The user that creates a {@link SignedContingentInput} may also cancel it before it has been spent.
+ * This is accomplished by spending the input that was previously signed by sending it back to the user that signed it.
+ * In order for the transaction to be accepted, a transaction fee will be required.
+ *
+ * @see <a href="https://github.com/mobilecoinfoundation/mcips/blob/main/text/0031-transactions-with-contingent-inputs.md">Signed Contingent Inputs</a>
+ * @see MobileCoinTransactionClient#createSignedContingentInput(Amount, Amount)
+ * @see MobileCoinTransactionClient#createSignedContingentInput(Amount, Amount, PublicAddress)
+ * @see MobileCoinTransactionClient#cancelSignedContingentInput(SignedContingentInput, Amount)
+ * @see MobileCoinTransactionClient#prepareTransaction(SignedContingentInput, Amount)
+ * @see MobileCoinTransactionClient#prepareTransaction(SignedContingentInput, Amount, Rng)
+ */
 public class SignedContingentInput extends Native implements Parcelable {
 
     private Amount cachedRewardAmount;
@@ -66,7 +83,16 @@ public class SignedContingentInput extends Native implements Parcelable {
         return cachedRequiredAmount;
     }
 
-    // TODO: doc
+    /**
+     * Serializes this {@link SignedContingentInput} to a byte array. The resultant byte array can be transmitted
+     * or shared with another client. A client receiving a serialized {@link SignedContingentInput} can recover the
+     * object using {@link SignedContingentInput#fromByteArray(byte[])}.
+     * @return a byte array containing all of the data in this {@link SignedContingentInput}
+     * @throws SerializationException if an {@link Exception} is encountered during serialization
+     * @see SignedContingentInput
+     * @see SignedContingentInput#fromByteArray(byte[])
+     * @since 1.3.0
+     */
     @NonNull
     public byte[] toByteArray() throws SerializationException {
         try {
@@ -77,13 +103,34 @@ public class SignedContingentInput extends Native implements Parcelable {
         }
     }
 
-    // TODO: doc
+    /**
+     * Deserializes a {@link SignedContingentInput} from the provided array of bytes. If the provided byte
+     * array cannot be deserialized as a {@link SignedContingentInput}, a {@link SerializationException}
+     * will be thrown.
+     *
+     * @param serializedBytes a byte array representing a serialized {@link SignedContingentInput}
+     * @return a {@link SignedContingentInput} that is strictly equal to the one originally serialized
+     * @throws SerializationException if the byte array does not represent a serialized {@link SignedContingentInput}
+     * @see SignedContingentInput
+     * @see SignedContingentInput#toByteArray()
+     * @since 1.3.0
+     */
     @NonNull
     public static SignedContingentInput fromByteArray(@NonNull final byte[] serializedBytes) throws SerializationException {
         return new SignedContingentInput(serializedBytes);
     }
 
-    // TODO: doc
+    /**
+     * Checks whether or not this {@link SignedContingentInput} is valid. A valid {@link SignedContingentInput}
+     * is one that can be successfully spent using the MobileCoin mobile SDKs (so long as the contingent Amount is supplied).
+     * Conversely, an invalid {@link SignedContingentInput} will not be able to be spent. This could be
+     * due to the data becoming corrupted or being built using an incompatible client.
+     *
+     * @return true if this {@link SignedContingentInput} is valid, false otherwise
+     * @see MobileCoinTransactionClient#prepareTransaction(SignedContingentInput, Amount)
+     * @see MobileCoinTransactionClient#prepareTransaction(SignedContingentInput, Amount, Rng rng)
+     * @since 1.3.0
+     */
     public boolean isValid() {
         if(!is_valid()) return false;
         final Amount[] requiredOutputAmounts = getRequiredOutputAmounts();
