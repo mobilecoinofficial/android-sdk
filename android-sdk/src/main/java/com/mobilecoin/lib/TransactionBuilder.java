@@ -80,6 +80,15 @@ final class TransactionBuilder extends Native {
         }
     }
 
+    void addPresignedInput(@NonNull final SignedContingentInput sci) throws TransactionBuilderException {
+        try {
+            add_presigned_input(sci);
+        } catch(Exception e) {
+            Logger.e(TAG, "Unable to add SignedContingentInput", e);
+            throw new TransactionBuilderException("Unable to add SignedContingentInput", e);
+        }
+    }
+
     @NonNull
     TxOutContext addOutput(
             @NonNull Amount amount,

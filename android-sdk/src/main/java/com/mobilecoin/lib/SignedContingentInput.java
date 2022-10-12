@@ -10,11 +10,13 @@ import com.mobilecoin.lib.log.Logger;
 
 import java.math.BigInteger;
 import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
 
 //TODO: doc
 public class SignedContingentInput extends Native implements Parcelable {
+
+    private Amount cachedRewardAmount;
+    private Amount cachedChangeAmount;
+    private Amount cachedRequiredAmount;
 
     private SignedContingentInput(long rustObj) {
         this.rustObj = rustObj;
@@ -34,65 +36,34 @@ public class SignedContingentInput extends Native implements Parcelable {
         return new SignedContingentInput(rustObj);
     }
 
-    // TODO: doc
     @NonNull
-    public Amount getIncomeAmount() {
-        Amount grossIncome = getPseudoOutputAmount();
-        // It is likely that if there is a required input with the same TokenId of the pseudo_output_amount, it is a change output
-        // Still, it would be possible for required outputs of the same TokenId to be added, so we need to handle these cases
-        Amount changeDeduction = Arrays.stream(getRequiredOutputAmounts())
-                .filter(amount -> grossIncome.getTokenId().equals(amount.getTokenId()))
-                .reduce(Amount::add).get();
-        if(changeDeduction.compareTo(grossIncome) >= 0) {
-            /*
-            If the "change" amount is more than the income, there is no income.
-            Instead of returning a negative income, the (income - change) will appear as a positive
-            outlay in {@link SignedContingentInput#getTotalOutlays}
-            */
-            return new Amount(BigInteger.ZERO, grossIncome.getTokenId());
+    Amount getChangeAmount() {
+        if(null == cachedChangeAmount) {
+            cachedChangeAmount = Arrays.stream(getRequiredOutputAmounts())
+                    .filter(amount -> amount.getTokenId().equals(getPseudoOutputAmount().getTokenId())).findFirst()
+                    .orElse(new Amount(BigInteger.ZERO, getPseudoOutputAmount().getTokenId()));
         }
-        return grossIncome.subtract(changeDeduction);
+        return cachedChangeAmount;
     }
 
     // TODO: doc
     @NonNull
-    public Map<TokenId, Amount> getTotalOutlays() {
-
-        final Amount[] requiredAmounts = getRequiredOutputAmounts();
-        Map<TokenId, Amount> totalOutlays = new HashMap<>();
-
-        final Amount pseudoOutputAmount = getPseudoOutputAmount();
-        Amount changeAmount = new Amount(BigInteger.ZERO, pseudoOutputAmount.getTokenId());
-
-        for(Amount amount : requiredAmounts) {
-            if(changeAmount.getTokenId().equals(amount.getTokenId())) {
-                /*
-                If there are any required amounts that have the same token ID as pseudoOutputAmount,
-                they are likely change. There should be at most one. But these amounts may have been
-                added as regular outputs. This doesn't really make sense, but valid SignedContingentInputs
-                can be built like this.
-                */
-                changeAmount = changeAmount.add(amount);
-            }
-            else {
-                //TODO: on API level 24, we can use getOrDefault to simplify the logic here
-                Amount existingAmount = totalOutlays.get(amount.getTokenId());
-                if(null == existingAmount) existingAmount = new Amount(BigInteger.ZERO, amount.getTokenId());
-                totalOutlays.put(amount.getTokenId(), existingAmount.add(amount));
-            }
+    public Amount getRewardAmount() {
+        if(null == cachedRewardAmount) {
+            cachedRewardAmount = getPseudoOutputAmount().subtract(getChangeAmount());
         }
+        return cachedRewardAmount;
+    }
 
-        /*
-        This can happen if the party building a SignedContingentInput requests more than their entire
-        payment as a required output. In such a case, the consumer of the SCI only spends tokens and does
-        not receive anything.
-         */
-        if(changeAmount.compareTo(pseudoOutputAmount) > 0) {
-            totalOutlays.put(changeAmount.getTokenId(), changeAmount);
+    // TODO: doc
+    @NonNull
+    public Amount getRequiredAmount() {
+        if(null == cachedRequiredAmount) {
+            cachedRequiredAmount = Arrays.stream(getRequiredOutputAmounts())
+                    .filter(amount -> !amount.getTokenId().equals(getPseudoOutputAmount().getTokenId())).findFirst()
+                    .orElse(new Amount(BigInteger.ZERO, getPseudoOutputAmount().getTokenId()));
         }
-
-        return totalOutlays;
-
+        return cachedRequiredAmount;
     }
 
     // TODO: doc
@@ -114,7 +85,23 @@ public class SignedContingentInput extends Native implements Parcelable {
 
     // TODO: doc
     public boolean isValid() {
-        return is_valid();
+        if(!is_valid()) return false;
+        final Amount[] requiredOutputAmounts = getRequiredOutputAmounts();
+        final int numAmounts = requiredOutputAmounts.length;
+        if((numAmounts > 0) && (numAmounts < 3)) {
+            final TokenId changeTokenId = getChangeAmount().getTokenId();
+            int numChangeOutputs = 0;
+            int numRequiredOutputs = 0;
+            for (Amount requiredAmount : requiredOutputAmounts) {
+                if (requiredAmount.getTokenId().equals(changeTokenId)) {
+                    numChangeOutputs += 1;
+                } else {
+                    numRequiredOutputs += 1;
+                }
+            }
+            return ((numRequiredOutputs == 1) && (numChangeOutputs <= 1));
+        }
+        return false;
     }
 
     @Override

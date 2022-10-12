@@ -13,6 +13,7 @@ import com.mobilecoin.lib.exceptions.InvalidReceiptException;
 import com.mobilecoin.lib.exceptions.InvalidTransactionException;
 import com.mobilecoin.lib.exceptions.NetworkException;
 import com.mobilecoin.lib.exceptions.SerializationException;
+import com.mobilecoin.lib.exceptions.SignedContingentInputBuilderException;
 import com.mobilecoin.lib.exceptions.TransactionBuilderException;
 
 import java.math.BigInteger;
@@ -40,18 +41,45 @@ public interface MobileCoinTransactionClient {
   Amount getTransferableAmount(@NonNull TokenId tokenId) throws NetworkException,
           InvalidFogResponse, AttestationException, FogSyncException;
 
-  // TODO: doc
+  //TODO: doc
   @NonNull
-  SignedContingentInput.CancelationResult cancelPresignedTransaction(@NonNull final SignedContingentInput presignedInput)
-          throws SerializationException, NetworkException, TransactionBuilderException, AttestationException, FogReportException,
-          InvalidFogResponse, FogSyncException;
+  SignedContingentInput createSignedContingentInput(
+          @NonNull final Amount amountToSend,
+          @NonNull final Amount amountToReceive,
+          @NonNull final PublicAddress recipientPublicAddress
+  ) throws InsufficientFundsException, NetworkException, FogReportException, FragmentedAccountException,
+          AttestationException, InvalidFogResponse, TransactionBuilderException, SignedContingentInputBuilderException, FogSyncException;
+
+  //TODO: doc
+  @NonNull
+  SignedContingentInput createSignedContingentInput(
+          @NonNull final Amount amountToSend,
+          @NonNull final Amount amountToReceive
+  ) throws InsufficientFundsException, NetworkException, FogReportException, FragmentedAccountException,
+          AttestationException, InvalidFogResponse, TransactionBuilderException, SignedContingentInputBuilderException, FogSyncException;
 
   // TODO: doc
   @NonNull
-  PendingTransaction preparePresignedTransaction(
+  SignedContingentInput.CancelationResult cancelSignedContingentInput(
           @NonNull final SignedContingentInput presignedInput,
           @NonNull final Amount fee
-  );
+  ) throws SerializationException, NetworkException, TransactionBuilderException, AttestationException, FogReportException, InvalidFogResponse, FogSyncException;
+
+  //TODO: doc
+  @NonNull
+  Transaction prepareTransaction(
+          @NonNull final SignedContingentInput presignedInput,
+          @NonNull final Amount fee
+  ) throws TransactionBuilderException, AttestationException, FogSyncException, InvalidFogResponse,
+          NetworkException, InsufficientFundsException, FragmentedAccountException, FogReportException;
+
+  // TODO: doc
+  @NonNull
+  Transaction prepareTransaction(
+          @NonNull final SignedContingentInput presignedInput,
+          @NonNull final Amount fee,
+          @NonNull final Rng rng
+  ) throws TransactionBuilderException, AttestationException, FogSyncException, InvalidFogResponse, NetworkException, InsufficientFundsException, FragmentedAccountException, FogReportException;
 
   /**
    * Prepares a {@link PendingTransaction} to be executed.

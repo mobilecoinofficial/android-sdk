@@ -16,35 +16,37 @@ import java.math.BigInteger;
 @RunWith(AndroidJUnit4.class)
 public class SignedContingentInputTest {
 
+
+    private static final TokenId eUSD = TokenId.from(UnsignedLong.ONE);
+
     @Test
     public void testSignedContingentInputBuilder() throws Exception {
 
-        MobileCoinClient client = MobileCoinClientBuilder.newBuilder().build();
-        SignedContingentInputBuilder sciBuilder = SignedContingentInputBuilder.newBuilder(
-                Amount.ofMOB(new BigInteger("10000000000000")),
-                client
-        );
-        sciBuilder.addRequiredAmount(new Amount(new BigInteger("10000000"), TokenId.from(UnsignedLong.ONE)));
-        SignedContingentInput sci = sciBuilder.build();
+        final MobileCoinClient client = MobileCoinClientBuilder.newBuilder().build();
 
-        Amount[] requiredAmounts = sci.getRequiredOutputAmounts();
-        Amount pseudoOutputAmount = sci.getPseudoOutputAmount();
+        final SignedContingentInput sci = client.createSignedContingentInput(
+                Amount.ofMOB(new BigInteger("10000000000000")),
+                new Amount(new BigInteger("10000000"),TokenId.from(UnsignedLong.ONE))
+        );
+
+        final Amount[] requiredAmounts = sci.getRequiredOutputAmounts();
+        final Amount pseudoOutputAmount = sci.getPseudoOutputAmount();
 
         assertTrue(sci.isValid());
-        assertEquals(2, requiredAmounts.length);
+        assertTrue((requiredAmounts.length > 0) && (requiredAmounts.length <= 2));
 
         // Test Serialization
         byte[] serializedSci = sci.toByteArray();
-        SignedContingentInput reconstructed = SignedContingentInput.fromByteArray(serializedSci);
+        final SignedContingentInput reconstructed = SignedContingentInput.fromByteArray(serializedSci);
         assertArrayEquals(serializedSci, reconstructed.toByteArray());
         assertEquals(sci.getPseudoOutputAmount(), reconstructed.getPseudoOutputAmount());
         assertArrayEquals(sci.getRequiredOutputAmounts(), reconstructed.getRequiredOutputAmounts());
 
         // Test Parcelable
-        Parcel parcel = Parcel.obtain();
+        final Parcel parcel = Parcel.obtain();
         sci.writeToParcel(parcel, 0);
         parcel.setDataPosition(0);
-        SignedContingentInput deparceled = SignedContingentInput.CREATOR.createFromParcel(parcel);
+        final SignedContingentInput deparceled = SignedContingentInput.CREATOR.createFromParcel(parcel);
         assertEquals(sci, deparceled);
         assertArrayEquals(sci.toByteArray(), deparceled.toByteArray());
 
@@ -56,17 +58,19 @@ public class SignedContingentInputTest {
     @Test
     public void testCancelSignedContingentInput() throws Exception {
 
-        MobileCoinClient client = MobileCoinClientBuilder.newBuilder().build();
-        SignedContingentInputBuilder sciBuilder = SignedContingentInputBuilder.newBuilder(
-                Amount.ofMOB(new BigInteger("10000000000000")),
-                client
-        );
-        sciBuilder.addRequiredAmount(new Amount(new BigInteger("10000000"), TokenId.from(UnsignedLong.ONE)));
-        SignedContingentInput sci = sciBuilder.build();
+        final MobileCoinClient client = MobileCoinClientBuilder.newBuilder().build();
+        final MobileCoinClient otherClient = MobileCoinClientBuilder.newBuilder().build();
 
-        MobileCoinClient otherClient = MobileCoinClientBuilder.newBuilder().build();
-        assertEquals(SignedContingentInput.CancelationResult.FAILED_UNOWNED_TX_OUT, otherClient.cancelPresignedTransaction(sci));
-        assertEquals(SignedContingentInput.CancelationResult.SUCCESS, client.cancelPresignedTransaction(sci));
+        final Amount requiredAmount = new Amount(new BigInteger("10000000"), eUSD);
+        final SignedContingentInput sci = client.createSignedContingentInput(
+                Amount.ofMOB(new BigInteger("10000000000000")),
+                requiredAmount
+        );
+
+        final Amount fee = client.estimateTotalFee(requiredAmount);
+
+        assertEquals(SignedContingentInput.CancelationResult.FAILED_UNOWNED_TX_OUT, otherClient.cancelSignedContingentInput(sci, fee));
+        assertEquals(SignedContingentInput.CancelationResult.SUCCESS, client.cancelSignedContingentInput(sci, fee));
 
         client.shutdown();
         otherClient.shutdown();
@@ -75,7 +79,20 @@ public class SignedContingentInputTest {
 
     @Test
     public void testBuildTransactionWithPresignedInput() throws Exception {
-        //
+
+        final MobileCoinClient builderClient = MobileCoinClientBuilder.newBuilder().build();
+        final MobileCoinClient consumerClient = MobileCoinClientBuilder.newBuilder().build();
+
+        final Amount requiredAmount = new Amount(new BigInteger("10000000"), eUSD);
+        final SignedContingentInput sci = builderClient.createSignedContingentInput(
+                Amount.ofMOB(new BigInteger("10000000000000")),
+                requiredAmount
+        );
+
+        assertTrue(sci.isValid());
+
+        consumerClient.prepareTransaction(sci, consumerClient.estimateTotalFee(sci.getRewardAmount()));
+
     }
 
 }
