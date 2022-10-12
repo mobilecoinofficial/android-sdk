@@ -334,12 +334,12 @@ public final class MobileCoinClient implements MobileCoinAccountClient, MobileCo
     @Override
     @NonNull
     public SignedContingentInput createSignedContingentInput(
-            @NonNull final Amount amountToSpend,
+            @NonNull final Amount amountToSend,
             @NonNull final Amount amountToReceive
     ) throws InsufficientFundsException, NetworkException, FogReportException, FragmentedAccountException,
             AttestationException, InvalidFogResponse, TransactionBuilderException, SignedContingentInputBuilderException, FogSyncException {
         return createSignedContingentInput(
-                amountToSpend,
+                amountToSend,
                 amountToReceive,
                 accountKey.getPublicAddress()
         );
@@ -348,16 +348,16 @@ public final class MobileCoinClient implements MobileCoinAccountClient, MobileCo
     @Override
     @NonNull
     public SignedContingentInput createSignedContingentInput(
-            @NonNull final Amount amountToSpend,
+            @NonNull final Amount amountToSend,
             @NonNull final Amount amountToReceive,
             @NonNull final PublicAddress recipientPublicAddress
     ) throws InsufficientFundsException, NetworkException, FogReportException, FragmentedAccountException,
             AttestationException, InvalidFogResponse, TransactionBuilderException, SignedContingentInputBuilderException, FogSyncException {
         final int blockVersion = blockchainClient.getOrFetchNetworkBlockVersion();
         if(blockVersion < 3) throw new UnsupportedOperationException("Unsupported until block version 3");
-        final TokenId tokenId = amountToSpend.getTokenId();
+        final TokenId tokenId = amountToSend.getTokenId();
         final Balance availableBalance = getBalance(tokenId);
-        if(availableBalance.getValue().compareTo(amountToSpend.getValue()) < 0) {
+        if(availableBalance.getValue().compareTo(amountToSend.getValue()) < 0) {
             throw new InsufficientFundsException();
         }
 
@@ -385,7 +385,7 @@ public final class MobileCoinClient implements MobileCoinAccountClient, MobileCo
                 .collect(Collectors.toCollection(TreeSet::new));
         OwnedTxOut txOutToSpend = null;
         for(OwnedTxOutAmountTreeNode otxoNode : unspent) {
-            if(amountToSpend.compareTo(otxoNode.otxo.getAmount()) <= 0) {
+            if(amountToSend.compareTo(otxoNode.otxo.getAmount()) <= 0) {
                 // Find first TxOut at least as big as we want to spend, so we tie up as little money as possible
                 txOutToSpend = otxoNode.otxo;
                 break;
@@ -419,7 +419,7 @@ public final class MobileCoinClient implements MobileCoinAccountClient, MobileCo
                 accountKey.getViewKey()
         );
 
-        final Amount changeAmount = txOutToSpend.getAmount().subtract(amountToSpend);
+        final Amount changeAmount = txOutToSpend.getAmount().subtract(amountToSend);
         sciBuilder.addRequiredChangeOutput(
                 changeAmount,
                 accountKey
@@ -439,22 +439,25 @@ public final class MobileCoinClient implements MobileCoinAccountClient, MobileCo
     @Override
     @NonNull
     public synchronized SignedContingentInput.CancelationResult cancelSignedContingentInput(
-            @NonNull final SignedContingentInput presignedInput,
+            @NonNull final SignedContingentInput sci,
             @NonNull final Amount fee
     ) throws SerializationException, NetworkException, TransactionBuilderException, AttestationException, FogReportException,
             InvalidFogResponse, FogSyncException {
-        if(!presignedInput.isValid()) {
+        if(!sci.isValid()) {
             Logger.w(TAG, "Attempted to cancel invalid SignedContingentInput");
             return SignedContingentInput.CancelationResult.FAILED_INVALID;
         }
         final List<OwnedTxOut> txOutToSpend = new ArrayList<>(1);
         final Set<RistrettoPublic> publicKeySet = new HashSet<>();
-        for(TxOut txOut : presignedInput.getRing()) {
+        for(TxOut txOut : sci.getRing()) {
             publicKeySet.add(txOut.getPublicKey());
         }
         for(OwnedTxOut otxo : getTxOutStore().getSyncedTxOuts()) {
-            if(!otxo.getAmount().getTokenId().equals(presignedInput.getPseudoOutputAmount().getTokenId())) continue;
+            if(!otxo.getAmount().getTokenId().equals(sci.getPseudoOutputAmount().getTokenId())) continue;
             if(!publicKeySet.add(otxo.getPublicKey())) {
+                if(!fee.getTokenId().equals(otxo.getAmount().getTokenId())) {
+                    throw new IllegalArgumentException("Mixed token type transactions not supported");
+                }
                 txOutToSpend.add(otxo);
                 break;
             }
@@ -469,7 +472,7 @@ public final class MobileCoinClient implements MobileCoinAccountClient, MobileCo
         }
         Transaction spendInputTransaction = prepareTransaction(
                 accountKey.getPublicAddress(),
-                presignedInput.getPseudoOutputAmount(),
+                sci.getPseudoOutputAmount().subtract(fee),
                 txOutToSpend,
                 fee,
                 TxOutMemoBuilder.createSenderAndDestinationRTHMemoBuilder(accountKey),

@@ -67,10 +67,12 @@ public class SignedContingentInputTest {
                 requiredAmount
         );
 
-        final Amount fee = client.estimateTotalFee(requiredAmount);
+        //final Amount fee = client.estimateTotalFee(requiredAmount);
+        final Amount fee = new Amount(new BigInteger("1000000"), eUSD);
+        final Amount cancelationFee = client.estimateTotalFee(Amount.ofMOB(new BigInteger("10000000000000")));
 
-        assertEquals(SignedContingentInput.CancelationResult.FAILED_UNOWNED_TX_OUT, otherClient.cancelSignedContingentInput(sci, fee));
-        assertEquals(SignedContingentInput.CancelationResult.SUCCESS, client.cancelSignedContingentInput(sci, fee));
+        assertEquals(SignedContingentInput.CancelationResult.FAILED_UNOWNED_TX_OUT, otherClient.cancelSignedContingentInput(sci, cancelationFee));
+        assertEquals(SignedContingentInput.CancelationResult.SUCCESS, client.cancelSignedContingentInput(sci, cancelationFee));
 
         client.shutdown();
         otherClient.shutdown();

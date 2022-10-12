@@ -61,7 +61,7 @@ public interface MobileCoinTransactionClient {
   // TODO: doc
   @NonNull
   SignedContingentInput.CancelationResult cancelSignedContingentInput(
-          @NonNull final SignedContingentInput presignedInput,
+          @NonNull final SignedContingentInput sci,
           @NonNull final Amount fee
   ) throws SerializationException, NetworkException, TransactionBuilderException, AttestationException, FogReportException, InvalidFogResponse, FogSyncException;
 
