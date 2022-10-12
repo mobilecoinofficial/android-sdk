@@ -28,6 +28,7 @@ import java.util.Arrays;
  * @see MobileCoinTransactionClient#cancelSignedContingentInput(SignedContingentInput, Amount)
  * @see MobileCoinTransactionClient#prepareTransaction(SignedContingentInput, Amount)
  * @see MobileCoinTransactionClient#prepareTransaction(SignedContingentInput, Amount, Rng)
+ * @since 1.3.0
  */
 public class SignedContingentInput extends Native implements Parcelable {
 
@@ -63,7 +64,20 @@ public class SignedContingentInput extends Native implements Parcelable {
         return cachedChangeAmount;
     }
 
-    // TODO: doc
+    /**
+     * Returns the {@link Amount} that will go to the party that provides the required {@link Amount}
+     * and fulfills this {@link SignedContingentInput}. This {@link Amount} (minus any {@link Transaction} fees)
+     * can be kept by the fulfilling party and is provided by the builder of this {@link SignedContingentInput}.
+     *
+     * @return the {@link Amount} rewarded to the fulfilling party of this {@link SignedContingentInput}
+     * @see SignedContingentInput#getRequiredAmount()
+     * @see SignedContingentInput
+     * @see MobileCoinTransactionClient#prepareTransaction(SignedContingentInput, Amount, Rng)
+     * @see MobileCoinTransactionClient#prepareTransaction(SignedContingentInput, Amount)
+     * @see MobileCoinTransactionClient#estimateTotalFee(Amount)
+     * @see Amount
+     * @since 1.3.0
+     */
     @NonNull
     public Amount getRewardAmount() {
         if(null == cachedRewardAmount) {
@@ -72,7 +86,22 @@ public class SignedContingentInput extends Native implements Parcelable {
         return cachedRewardAmount;
     }
 
-    // TODO: doc
+    /**
+     * Returns the {@link Amount} that must be provided in order to spend this {@link SignedContingentInput}.
+     * This {@link Amount} is provided by the fulfilling party and will be sent to the {@link PublicAddress}
+     * optionally specified when building this {@link SignedContingentInput}
+     * (see {@link MobileCoinTransactionClient#createSignedContingentInput(Amount, Amount, PublicAddress)}).
+     * If not {@link PublicAddress} is specified, the {@link Amount} is sent back to the user who built
+     * this {@link SignedContingentInput}.
+     *
+     * @return the {@link Amount} that must be provided in order to fulfill this {@link SignedContingentInput}
+     * @see SignedContingentInput#getRewardAmount()
+     * @see SignedContingentInput
+     * @see MobileCoinTransactionClient#prepareTransaction(SignedContingentInput, Amount, Rng)
+     * @see MobileCoinTransactionClient#prepareTransaction(SignedContingentInput, Amount)
+     * @see Amount
+     * @since 1.3.0
+     */
     @NonNull
     public Amount getRequiredAmount() {
         if(null == cachedRequiredAmount) {

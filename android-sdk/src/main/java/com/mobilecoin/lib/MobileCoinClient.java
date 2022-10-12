@@ -439,21 +439,21 @@ public final class MobileCoinClient implements MobileCoinAccountClient, MobileCo
     @Override
     @NonNull
     public synchronized SignedContingentInput.CancelationResult cancelSignedContingentInput(
-            @NonNull final SignedContingentInput sci,
+            @NonNull final SignedContingentInput presignedInput,
             @NonNull final Amount fee
     ) throws SerializationException, NetworkException, TransactionBuilderException, AttestationException, FogReportException,
             InvalidFogResponse, FogSyncException {
-        if(!sci.isValid()) {
+        if(!presignedInput.isValid()) {
             Logger.w(TAG, "Attempted to cancel invalid SignedContingentInput");
             return SignedContingentInput.CancelationResult.FAILED_INVALID;
         }
         final List<OwnedTxOut> txOutToSpend = new ArrayList<>(1);
         final Set<RistrettoPublic> publicKeySet = new HashSet<>();
-        for(TxOut txOut : sci.getRing()) {
+        for(TxOut txOut : presignedInput.getRing()) {
             publicKeySet.add(txOut.getPublicKey());
         }
         for(OwnedTxOut otxo : getTxOutStore().getSyncedTxOuts()) {
-            if(!otxo.getAmount().getTokenId().equals(sci.getPseudoOutputAmount().getTokenId())) continue;
+            if(!otxo.getAmount().getTokenId().equals(presignedInput.getPseudoOutputAmount().getTokenId())) continue;
             if(!publicKeySet.add(otxo.getPublicKey())) {
                 if(!fee.getTokenId().equals(otxo.getAmount().getTokenId())) {
                     throw new IllegalArgumentException("Mixed token type transactions not supported");
@@ -472,7 +472,7 @@ public final class MobileCoinClient implements MobileCoinAccountClient, MobileCo
         }
         Transaction spendInputTransaction = prepareTransaction(
                 accountKey.getPublicAddress(),
-                sci.getPseudoOutputAmount().subtract(fee),
+                presignedInput.getPseudoOutputAmount().subtract(fee),
                 txOutToSpend,
                 fee,
                 TxOutMemoBuilder.createSenderAndDestinationRTHMemoBuilder(accountKey),

@@ -41,7 +41,30 @@ public interface MobileCoinTransactionClient {
   Amount getTransferableAmount(@NonNull TokenId tokenId) throws NetworkException,
           InvalidFogResponse, AttestationException, FogSyncException;
 
-  //TODO: doc
+  /**
+   * Creates a {@link SignedContingentInput} to swap the two provided {@link Amount}s.
+   *
+   * @param amountToSend the {@link Amount} that is provided by the client calling this method contingent on the amountToReceive being provided
+   * @param amountToReceive the {@link Amount} that will be sent from the fulfilling party to the provided {@link PublicAddress}
+   * @param recipientPublicAddress the {@link PublicAddress} that the contingent amountToReceive will be sent to
+   * @return a {@link SignedContingentInput} to swap the two provided {@link Amount}s
+   * @throws InsufficientFundsException if this {@link MobileCoinTransactionClient} does not have sufficient {@link Balance} to provide amountToSend
+   * @throws NetworkException if there is an error reaching or authenticating with the MobileCoin network
+   * @throws FogReportException if there is an error fetching info from MobileCoin Fog
+   * @throws FragmentedAccountException if this {@link MobileCoinTransactionClient} is too fragmented to provide amountToSend
+   * @throws AttestationException if attestation fails
+   * @throws InvalidFogResponse if invalid data is received from MobileCoin fog
+   * @throws TransactionBuilderException if this {@link MobileCoinTransactionClient} fails to create credentials to sign the {@link SignedContingentInput}
+   * @throws SignedContingentInputBuilderException if attempting to build the {@link SignedContingentInput} from invalid data
+   * @throws FogSyncException if, due to temporary network state, the {@link Balance} of this {@link MobileCoinTransactionClient} cannot be verified
+   * @see SignedContingentInput
+   * @see MobileCoinTransactionClient#prepareTransaction(SignedContingentInput, Amount)
+   * @see MobileCoinTransactionClient#prepareTransaction(SignedContingentInput, Amount, Rng)
+   * @see MobileCoinTransactionClient#cancelSignedContingentInput(SignedContingentInput, Amount)
+   * @see Amount
+   * @see Balance
+   * @since 1.3.0
+   */
   @NonNull
   SignedContingentInput createSignedContingentInput(
           @NonNull final Amount amountToSend,
@@ -50,7 +73,29 @@ public interface MobileCoinTransactionClient {
   ) throws InsufficientFundsException, NetworkException, FogReportException, FragmentedAccountException,
           AttestationException, InvalidFogResponse, TransactionBuilderException, SignedContingentInputBuilderException, FogSyncException;
 
-  //TODO: doc
+  /**
+   * Creates a {@link SignedContingentInput} to swap the two provided {@link Amount}s.
+   *
+   * @param amountToSend the {@link Amount} that is provided by the client calling this method contingent on the amountToReceive being provided
+   * @param amountToReceive the {@link Amount} that will be sent from the fulfilling party to this {@link MobileCoinTransactionClient}
+   * @return a {@link SignedContingentInput} to swap the two provided {@link Amount}s
+   * @throws InsufficientFundsException if this {@link MobileCoinTransactionClient} does not have sufficient {@link Balance} to provide amountToSend
+   * @throws NetworkException if there is an error reaching or authenticating with the MobileCoin network
+   * @throws FogReportException if there is an error fetching info from MobileCoin Fog
+   * @throws FragmentedAccountException if this {@link MobileCoinTransactionClient} is too fragmented to provide amountToSend
+   * @throws AttestationException if attestation fails
+   * @throws InvalidFogResponse if invalid data is received from MobileCoin Fog
+   * @throws TransactionBuilderException if this {@link MobileCoinTransactionClient} fails to create credentials to sign the {@link SignedContingentInput}
+   * @throws SignedContingentInputBuilderException if attempting to build the {@link SignedContingentInput} from invalid data
+   * @throws FogSyncException if, due to temporary network state, the {@link Balance} of this {@link MobileCoinTransactionClient} cannot be verified
+   * @see SignedContingentInput
+   * @see MobileCoinTransactionClient#prepareTransaction(SignedContingentInput, Amount)
+   * @see MobileCoinTransactionClient#prepareTransaction(SignedContingentInput, Amount, Rng)
+   * @see MobileCoinTransactionClient#cancelSignedContingentInput(SignedContingentInput, Amount)
+   * @see Amount
+   * @see Balance
+   * @since 1.3.0
+   */
   @NonNull
   SignedContingentInput createSignedContingentInput(
           @NonNull final Amount amountToSend,
@@ -58,14 +103,60 @@ public interface MobileCoinTransactionClient {
   ) throws InsufficientFundsException, NetworkException, FogReportException, FragmentedAccountException,
           AttestationException, InvalidFogResponse, TransactionBuilderException, SignedContingentInputBuilderException, FogSyncException;
 
-  // TODO: doc
+  /**
+   * Cancels the provided {@link SignedContingentInput} so that it cannot be fulfilled.
+   * This is accomplished by creating a new {@link Transaction} to spend the input that was previously
+   * signed. This can fail if the {@link SignedContingentInput} was already fulfilled, if the user
+   * attempting to cancel the {@link SignedContingentInput} is not the user who created it, or if
+   * there is a network issue.
+   *
+   * @param presignedInput the {@link SignedContingentInput} to cancel
+   * @param fee the {@link Transaction} fee that must be paid to process the cancelation {@link Transaction}
+   * @return the result of the cancelation {@link Transaction}
+   * @throws SerializationException if the {@link SignedContingentInput} does not contain valid data
+   * @throws NetworkException if there is an error reaching or authenticating with the MobileCoin network
+   * @throws TransactionBuilderException if the cancelation {@link Transaction} cannot be built
+   * @throws AttestationException if attestation fails
+   * @throws FogReportException if there is an error fetching info from MobileCoin Fog
+   * @throws InvalidFogResponse if invalid data is received from MobileCoin Fog
+   * @throws FogSyncException if, due to a temporary network state, the account cannot be verified as being up-to-date
+   * @see SignedContingentInput.CancelationResult
+   * @see SignedContingentInput
+   * @since 1.3.0
+   */
   @NonNull
   SignedContingentInput.CancelationResult cancelSignedContingentInput(
-          @NonNull final SignedContingentInput sci,
+          @NonNull final SignedContingentInput presignedInput,
           @NonNull final Amount fee
   ) throws SerializationException, NetworkException, TransactionBuilderException, AttestationException, FogReportException, InvalidFogResponse, FogSyncException;
 
-  //TODO: doc
+  /**
+   * Creates a {@link Transaction} to fulfill the provided {@link SignedContingentInput}. The resultant
+   * {@link Transaction} can be submitted using {@link MobileCoinTransactionClient#submitTransaction(Transaction)}.
+   * To process the {@link Transaction}, a small fee must be paid. The fee is subtracted from the reward
+   * amount of the {@link SignedContingentInput} (see {@link SignedContingentInput#getRewardAmount()}).
+   * If the current network fee is more than the reward {@link Amount}, the {@link Transaction} cannot be built.
+   * Upon completing the {@link Transaction}, the {@link SignedContingentInput} required {@link Amount} will be paid
+   * by this {@link MobileCoinTransactionClient} (see {@link SignedContingentInput#getRequiredAmount()}).
+   *
+   * @param presignedInput the {@link SignedContingentInput} to fulfill with the {@link Transaction}
+   * @param fee the {@link Transaction} fee paid from the reward amount of this {@link SignedContingentInput}
+   * @return the {@link Transaction} to submit in order to fulfill this {@link SignedContingentInput}
+   * @throws TransactionBuilderException if there is an error building the {@link Transaction}
+   * @throws AttestationException if attestation fails
+   * @throws FogSyncException if, due to a temporary network state, the account cannot be verified as being up-to-date
+   * @throws InvalidFogResponse if invalid data is received from MobileCoin Fog
+   * @throws NetworkException if there is an error reaching or authenticating with the MobileCoin network
+   * @throws InsufficientFundsException if this {@link MobileCoinTransactionClient} does not have access to enough funds to fulfill the {@link SignedContingentInput}
+   * @throws FragmentedAccountException if this {@link MobileCoinTransactionClient} is too fragmented to fulfill the {@link SignedContingentInput}
+   * @throws FogReportException if there is an error fetching info from MobileCoin Fog
+   * @see SignedContingentInput#getRewardAmount()
+   * @see SignedContingentInput#getRequiredAmount()
+   * @see SignedContingentInput
+   * @see MobileCoinTransactionClient#submitTransaction(Transaction)
+   * @see Transaction
+   * @since 1.3.0
+   */
   @NonNull
   Transaction prepareTransaction(
           @NonNull final SignedContingentInput presignedInput,
@@ -73,13 +164,42 @@ public interface MobileCoinTransactionClient {
   ) throws TransactionBuilderException, AttestationException, FogSyncException, InvalidFogResponse,
           NetworkException, InsufficientFundsException, FragmentedAccountException, FogReportException;
 
-  // TODO: doc
+  /**
+   * Creates a {@link Transaction} to fulfill the provided {@link SignedContingentInput}. The resultant
+   * {@link Transaction} can be submitted using {@link MobileCoinTransactionClient#submitTransaction(Transaction)}.
+   * To process the {@link Transaction}, a small fee must be paid. The fee is subtracted from the reward
+   * amount of the {@link SignedContingentInput} (see {@link SignedContingentInput#getRewardAmount()}).
+   * If the current network fee is more than the reward {@link Amount}, the {@link Transaction} cannot be built.
+   * Upon completing the {@link Transaction}, the {@link SignedContingentInput} required {@link Amount} will be paid
+   * by this {@link MobileCoinTransactionClient} (see {@link SignedContingentInput#getRequiredAmount()}).
+   *
+   * @param presignedInput the {@link SignedContingentInput} to fulfill with the {@link Transaction}
+   * @param fee the {@link Transaction} fee paid from the reward amount of this {@link SignedContingentInput}
+   * @param rng the {@link Rng} to use for building the {@link Transaction}
+   * @return the {@link Transaction} to submit in order to fulfill this {@link SignedContingentInput}
+   * @throws TransactionBuilderException if there is an error building the {@link Transaction}
+   * @throws AttestationException if attestation fails
+   * @throws FogSyncException if, due to a temporary network state, the account cannot be verified as being up-to-date
+   * @throws InvalidFogResponse if invalid data is received from MobileCoin Fog
+   * @throws NetworkException if there is an error reaching or authenticating with the MobileCoin network
+   * @throws InsufficientFundsException if this {@link MobileCoinTransactionClient} does not have access to enough funds to fulfill the {@link SignedContingentInput}
+   * @throws FragmentedAccountException if this {@link MobileCoinTransactionClient} is too fragmented to fulfill the {@link SignedContingentInput}
+   * @throws FogReportException if there is an error fetching info from MobileCoin Fog
+   * @see SignedContingentInput#getRewardAmount()
+   * @see SignedContingentInput#getRequiredAmount()
+   * @see SignedContingentInput
+   * @see MobileCoinTransactionClient#submitTransaction(Transaction)
+   * @see Transaction
+   * @see Rng
+   * @since 1.3.0
+   */
   @NonNull
   Transaction prepareTransaction(
           @NonNull final SignedContingentInput presignedInput,
           @NonNull final Amount fee,
           @NonNull final Rng rng
-  ) throws TransactionBuilderException, AttestationException, FogSyncException, InvalidFogResponse, NetworkException, InsufficientFundsException, FragmentedAccountException, FogReportException;
+  ) throws TransactionBuilderException, AttestationException, FogSyncException, InvalidFogResponse,
+          NetworkException, InsufficientFundsException, FragmentedAccountException, FogReportException;
 
   /**
    * Prepares a {@link PendingTransaction} to be executed.
