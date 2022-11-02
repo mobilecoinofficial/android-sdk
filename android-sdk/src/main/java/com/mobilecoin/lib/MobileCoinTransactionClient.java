@@ -136,6 +136,8 @@ public interface MobileCoinTransactionClient {
    * To process the {@link Transaction}, a small fee must be paid. The fee is subtracted from the reward
    * amount of the {@link SignedContingentInput} (see {@link SignedContingentInput#getRewardAmount()}).
    * If the current network fee is more than the reward {@link Amount}, the {@link Transaction} cannot be built.
+   * It is recommended to fetch the fee using {@link MobileCoinTransactionClient#getOrFetchMinimumTxFee(TokenId)}
+   * and the {@link TokenId} of the reward {@link Amount}.
    * Upon completing the {@link Transaction}, the {@link SignedContingentInput} required {@link Amount} will be paid
    * by this {@link MobileCoinTransactionClient} (see {@link SignedContingentInput#getRequiredAmount()}).
    *
@@ -153,7 +155,10 @@ public interface MobileCoinTransactionClient {
    * @see SignedContingentInput#getRewardAmount()
    * @see SignedContingentInput#getRequiredAmount()
    * @see SignedContingentInput
+   * @see MobileCoinTransactionClient#getOrFetchMinimumTxFee(TokenId)
    * @see MobileCoinTransactionClient#submitTransaction(Transaction)
+   * @see Amount
+   * @see TokenId
    * @see Transaction
    * @since 1.3.0
    */
@@ -170,6 +175,8 @@ public interface MobileCoinTransactionClient {
    * To process the {@link Transaction}, a small fee must be paid. The fee is subtracted from the reward
    * amount of the {@link SignedContingentInput} (see {@link SignedContingentInput#getRewardAmount()}).
    * If the current network fee is more than the reward {@link Amount}, the {@link Transaction} cannot be built.
+   * It is recommended to fetch the fee using {@link MobileCoinTransactionClient#getOrFetchMinimumTxFee(TokenId)}
+   * and the {@link TokenId} of the reward {@link Amount}.
    * Upon completing the {@link Transaction}, the {@link SignedContingentInput} required {@link Amount} will be paid
    * by this {@link MobileCoinTransactionClient} (see {@link SignedContingentInput#getRequiredAmount()}).
    *
@@ -188,7 +195,10 @@ public interface MobileCoinTransactionClient {
    * @see SignedContingentInput#getRewardAmount()
    * @see SignedContingentInput#getRequiredAmount()
    * @see SignedContingentInput
+   * @see MobileCoinTransactionClient#getOrFetchMinimumTxFee(TokenId)
    * @see MobileCoinTransactionClient#submitTransaction(Transaction)
+   * @see Amount
+   * @see TokenId
    * @see Transaction
    * @see Rng
    * @since 1.3.0

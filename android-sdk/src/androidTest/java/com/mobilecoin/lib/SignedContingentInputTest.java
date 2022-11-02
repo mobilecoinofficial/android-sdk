@@ -12,12 +12,13 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import java.math.BigInteger;
+import java.util.Map;
 
 @RunWith(AndroidJUnit4.class)
 public class SignedContingentInputTest {
 
 
-    private static final TokenId eUSD = TokenId.from(UnsignedLong.ONE);
+    private static final TokenId eUSD = TokenId.from(UnsignedLong.fromLongBits(8192));
 
     @Test
     public void testSignedContingentInputBuilder() throws Exception {
@@ -67,8 +68,6 @@ public class SignedContingentInputTest {
                 requiredAmount
         );
 
-        //final Amount fee = client.estimateTotalFee(requiredAmount);
-        final Amount fee = new Amount(new BigInteger("1000000"), eUSD);
         final Amount cancelationFee = client.estimateTotalFee(Amount.ofMOB(new BigInteger("10000000000000")));
 
         assertEquals(SignedContingentInput.CancelationResult.FAILED_UNOWNED_TX_OUT, otherClient.cancelSignedContingentInput(sci, cancelationFee));
@@ -93,7 +92,9 @@ public class SignedContingentInputTest {
 
         assertTrue(sci.isValid());
 
-        consumerClient.prepareTransaction(sci, consumerClient.estimateTotalFee(sci.getRewardAmount()));
+        final Amount fee = consumerClient.getOrFetchMinimumTxFee(TokenId.MOB);
+
+        consumerClient.prepareTransaction(sci, fee);
 
     }
 

@@ -63,6 +63,7 @@ class TestKeysManager {
                     throw new IllegalStateException("Bug: All test keys must be valid");
                 }
             case ALPHA:
+            case MASTER:
                 if (currentAccountIndex >= devNetRootEntropies.length) {
                     currentAccountIndex = 0;
                 }

@@ -6,7 +6,7 @@ import androidx.annotation.VisibleForTesting;
 
 @VisibleForTesting
 public class Environment {
-    public static final TestEnvironment CURRENT_TEST_ENV = TestEnvironment.TEST_NET;
+    public static final TestEnvironment CURRENT_TEST_ENV = TestEnvironment.MASTER;
 
     static public TestFogConfig getTestFogConfig() {
         return TestFogConfig.getFogConfig(CURRENT_TEST_ENV);
@@ -19,7 +19,8 @@ public class Environment {
     enum TestEnvironment {
         MOBILE_DEV("mobiledev"),
         ALPHA("alpha.development"),
-        TEST_NET("test");
+        TEST_NET("test"),
+        MASTER("mc-master.development");
 
         private final String name;
 
