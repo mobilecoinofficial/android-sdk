@@ -48,6 +48,7 @@ public class OwnedTxOut implements Parcelable {
     private final Amount amount;
     private final RistrettoPublic txOutPublicKey;
     private final RistrettoPublic txOutTargetKey;
+    private final UnsignedLong subaddressIndex;
     private final byte[] keyImage;
     private int keyImageHash;
 
@@ -113,6 +114,7 @@ public class OwnedTxOut implements Parcelable {
 
             // Calculated fields
             TxOut nativeTxOut = TxOut.fromProtoBufObject(txOutProtoBuilder.build());
+            subaddressIndex = nativeTxOut.getSubaddressIndex(accountKey);
             byte decryptedMemoPayload[] = nativeTxOut.decryptMemoPayload(accountKey);
             keyImage = nativeTxOut.computeKeyImage(accountKey);
             cachedTxOutMemo = TxOutMemoParser
@@ -133,6 +135,7 @@ public class OwnedTxOut implements Parcelable {
         this.spentBlockIndex = original.spentBlockIndex;
         this.cachedTxOutMemo = original.cachedTxOutMemo;
         this.amount = original.amount;
+        this.subaddressIndex = original.subaddressIndex;
         this.txOutPublicKey = original.txOutPublicKey;
         this.txOutTargetKey = original.txOutTargetKey;
         this.keyImage = Arrays.copyOf(original.keyImage, original.keyImage.length);
@@ -286,6 +289,7 @@ public class OwnedTxOut implements Parcelable {
         keyImage = parcel.createByteArray();
         keyImageHash = parcel.readInt();
         cachedTxOutMemo = parcel.readParcelable(TxOutMemo.class.getClassLoader());
+        subaddressIndex = parcel.readParcelable(UnsignedLong.class.getClassLoader());
     }
 
     /**
@@ -306,6 +310,7 @@ public class OwnedTxOut implements Parcelable {
         parcel.writeByteArray(keyImage);
         parcel.writeInt(keyImageHash);
         parcel.writeParcelable(cachedTxOutMemo, flags);
+        parcel.writeParcelable(subaddressIndex, flags);
     }
 
     /**
