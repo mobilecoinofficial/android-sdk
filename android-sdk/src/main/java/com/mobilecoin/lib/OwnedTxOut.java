@@ -216,6 +216,11 @@ public class OwnedTxOut implements Parcelable {
     }
 
     @NonNull
+    public UnsignedLong getSubaddressIndex() {
+        return subaddressIndex;
+    }
+
+    @NonNull
     public RistrettoPublic getSharedSecret(AccountKey accountKey) throws TransactionBuilderException {
         return Util.getSharedSecret(accountKey.getViewKey(), txOutPublicKey);
     }
