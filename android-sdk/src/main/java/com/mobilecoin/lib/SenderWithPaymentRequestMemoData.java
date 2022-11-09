@@ -11,7 +11,7 @@ import java.util.Objects;
  *
  * <p>The data has been validated, which means that we've verified that the correct sender
  * wrote the memo and that the data has not been corrupted.
- **/
+ **///TODO: doc
 public final class SenderWithPaymentRequestMemoData extends MemoData {
 
   @NonNull
@@ -19,7 +19,7 @@ public final class SenderWithPaymentRequestMemoData extends MemoData {
 
   /**
    * Creates a {@link SenderWithPaymentRequestMemoData} instance with all of the expected fields.
-   * */
+   * */// TODO: doc
   public static SenderWithPaymentRequestMemoData create(
       @NonNull AddressHash addressHash,
       @NonNull UnsignedLong paymentRequestId
@@ -32,6 +32,7 @@ public final class SenderWithPaymentRequestMemoData extends MemoData {
     this.paymentRequestId = paymentRequestId;
   }
 
+  //TODO: doc
   @NonNull
   public UnsignedLong getPaymentRequestId() {
     return paymentRequestId;
