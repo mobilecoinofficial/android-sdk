@@ -28,7 +28,15 @@ public class TxOutMemoBuilder extends Native {
    * RTH memos enabled.
    **/
   public static TxOutMemoBuilder createSenderPaymentRequestAndDestinationRTHMemoBuilder(AccountKey accountKey, UnsignedLong paymentRequestId) throws TransactionBuilderException {
-    return new TxOutMemoBuilder(accountKey, paymentRequestId);
+    return new TxOutMemoBuilder(accountKey, paymentRequestId, false);
+  }
+
+  /**
+   * Creates an {@link TxOutMemoBuilder} with the sender with payment intent id and destination
+   * RTH memos enabled.
+   **/
+  public static TxOutMemoBuilder createSenderPaymentIntentAndDestinationRTHMemoBuilder(AccountKey accountKey, UnsignedLong paymentIntentId) throws TransactionBuilderException {
+    return new TxOutMemoBuilder(accountKey, paymentIntentId, true);
   }
 
    /**
@@ -39,12 +47,20 @@ public class TxOutMemoBuilder extends Native {
     return new TxOutMemoBuilder();
   }
 
-  private TxOutMemoBuilder(@NonNull AccountKey accountKey, UnsignedLong paymentRequestId) throws TransactionBuilderException {
+  private TxOutMemoBuilder(@NonNull AccountKey accountKey, UnsignedLong paymentId, boolean isPaymentIntent) throws TransactionBuilderException {
     try {
-      init_jni_with_sender_payment_request_and_destination_rth_memo(
-          accountKey,
-          paymentRequestId.longValue()
-      );
+      if(isPaymentIntent) {
+        init_jni_with_sender_payment_intent_and_destination_rth_memo(
+                accountKey,
+                paymentId.longValue()
+        );
+      }
+      else {
+        init_jni_with_sender_payment_request_and_destination_rth_memo(
+                accountKey,
+                paymentId.longValue()
+        );
+      }
     } catch (Exception exception) {
       throw new TransactionBuilderException("Unable to create TxOutMemoBuilder", exception);
     }
@@ -69,6 +85,8 @@ public class TxOutMemoBuilder extends Native {
   private native void init_jni_with_sender_and_destination_rth_memo(@NonNull AccountKey accountKey);
 
   private native void init_jni_with_sender_payment_request_and_destination_rth_memo(@NonNull AccountKey accountKey, long paymentRequestId);
+
+  private native void init_jni_with_sender_payment_intent_and_destination_rth_memo(@NonNull AccountKey accountKey, long paymentIntentId);
 
   private native void init_jni_with_default_rth_memo();
 

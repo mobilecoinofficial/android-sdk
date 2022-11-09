@@ -8,10 +8,7 @@ import com.mobilecoin.lib.exceptions.InvalidTxOutMemoException;
 
 import java.util.Objects;
 
-/**
- * Represents a sender memo with a payment request id, which corresponds to the
- * "AuthenticatedSenderWithPaymentRequestIdMemo" specification.
- **/
+// TODO: doc
 public final class SenderWithPaymentRequestMemo extends TxOutMemo {
 
   private static final String TAG = SenderWithPaymentRequestMemo.class.getSimpleName();
@@ -54,11 +51,7 @@ public final class SenderWithPaymentRequestMemo extends TxOutMemo {
   }
 
 
-  /**
-   * Retrieves the {@link AddressHash} that hasn't been validated yet.
-   *
-   * <p>This is used to see if the user who wrote the sender memo is known by the current user.
-   * */
+  // TODO: doc
   public AddressHash getUnvalidatedAddressHash() {
     return getAddressHash();
   }
@@ -75,7 +68,7 @@ public final class SenderWithPaymentRequestMemo extends TxOutMemo {
    * {@link AddressHash} corresponds to a {@link PublicAddress} that is known by the user.
    * If the {@link PublicAddress} is not known by the user, then do not call this method because the
    * memo is automatically invalid.
-   **/
+   **/// TODO: doc
   public SenderWithPaymentRequestMemoData getSenderWithPaymentRequestMemoData(
       @NonNull PublicAddress senderPublicAddress,
       @NonNull RistrettoPrivate receiverSubaddressViewKey) throws InvalidTxOutMemoException {

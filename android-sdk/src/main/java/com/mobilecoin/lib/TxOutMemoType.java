@@ -18,12 +18,26 @@ public enum TxOutMemoType implements Parcelable {
   NOT_SET(""),
   // Corresponds to the "UnusedMemo."
   UNUSED("0000"),
-  // Corresponds to the "AuthenticatedSenderMemo".
+  // Corresponds to the "BurnRedemptionMemo."
+  //BURN_REDEPMTION_MEMO("0001"),
+  // Corresponds to the "GiftCodeSenderMemo."
+  //GIFT_CODE_SENDER_MEMO("0002"),
+  // Corresponds to the "AuthenticatedSenderMemo."
   SENDER("0100"),
   // Corresponds to the "AuthenticatedSenderWithPaymentRequestIdMemo."
   SENDER_WITH_PAYMENT_REQUEST("0101"),
+  // Corresponds to the "AuthenticatedSenderWithPaymentIntentIdMemo."
+  SENDER_WITH_PAYMENT_INTENT("0102"),
   // Corresponds to the "DestinationMemo."
   DESTINATION("0200"),
+  // Corresponds to the "GiftCodeFundingMemo."
+  //GIFT_CODE_FUNDING_MEMO("0201"),
+  // Corresponds to the "GiftCodeCancellationMemo."
+  //GIFT_CODE_CANCELLATION_MEMO("0202"),
+  // Corresponds to the "DestinationWithPaymentRequestMemo."
+  DESTINATION_WITH_PAYMENT_REQUEST("0203"),
+  // Corresponds to the "DestinationWithPaymentIntentMemo."
+  DESTINATION_WITH_PAYMENT_INTENT("0204"),
   // Corresponds to when the sender wrote a memo type that isn't understood by the client yet.
   UNKNOWN("----");
 
@@ -39,22 +53,17 @@ public enum TxOutMemoType implements Parcelable {
     }
     else if (memoTypeBytes.length != TxOutMemo.TX_OUT_MEMO_TYPE_SIZE_BYTES) {
       throw new IllegalArgumentException("Memo type bytes should be of length " +
-              TxOutMemo.TX_OUT_MEMO_TYPE_SIZE_BYTES+ ". Was: " + memoTypeBytes.length);
+              TxOutMemo.TX_OUT_MEMO_TYPE_SIZE_BYTES + ". Was: " + memoTypeBytes.length);
     }
 
-    if (Arrays.equals(memoTypeBytes, UNUSED.memoTypeBytes)) {
-      return UNUSED;
+    for(TxOutMemoType memoType : TxOutMemoType.values()) {
+      if(Arrays.equals(memoTypeBytes, memoType.memoTypeBytes)) {
+        return memoType;
+      }
     }
-    if (Arrays.equals(memoTypeBytes, SENDER.memoTypeBytes)) {
-      return SENDER;
-    }
-    if (Arrays.equals(memoTypeBytes, DESTINATION.memoTypeBytes)) {
-      return DESTINATION;
-    }
-    if (Arrays.equals(memoTypeBytes, SENDER_WITH_PAYMENT_REQUEST.memoTypeBytes)) {
-      return SENDER_WITH_PAYMENT_REQUEST;
-    }
-    return UNKNOWN;
+
+    return TxOutMemoType.UNKNOWN;
+
   }
 
   @Override

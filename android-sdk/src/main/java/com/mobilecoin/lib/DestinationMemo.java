@@ -9,9 +9,9 @@ import com.mobilecoin.lib.exceptions.InvalidTxOutMemoException;
 import java.util.Objects;
 
 /** Represents a destination memo, which corresponds to the "DestinationMemo" specification. */
-public final class DestinationMemo extends TxOutMemo {
+public class DestinationMemo extends TxOutMemo {
 
-  private static final String TAG = SenderMemo.class.getSimpleName();
+  private static final String TAG = DestinationMemo.class.getSimpleName();
 
   private final DestinationMemoData destinationMemoData;
 
@@ -58,7 +58,7 @@ public final class DestinationMemo extends TxOutMemo {
   /** Retrieves the destination memo data. **/
   public DestinationMemoData getDestinationMemoData() throws InvalidTxOutMemoException {
     if(!validated) {
-      throw new InvalidTxOutMemoException("The sender memo is invalid.");
+      throw new InvalidTxOutMemoException("The Destination is invalid.");
     }
     return destinationMemoData;
   }
