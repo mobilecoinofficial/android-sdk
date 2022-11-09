@@ -8,7 +8,19 @@ import com.mobilecoin.lib.exceptions.InvalidTxOutMemoException;
 
 import java.util.Objects;
 
-// TODO: doc
+/**
+ * This class represents a {@link SenderMemo} tied to a specific <strong>payment request</strong>.
+ *
+ * This should be interpreted the same as a {@link SenderMemo} but has one additional field, a <strong>payment request</strong> ID.
+ * This memo is paired with a {@link DestinationWithPaymentRequestMemo} which the sender sends to themselves and contains the same <strong>payment request</strong> ID.
+ *
+ * @see SenderMemo
+ * @see DestinationWithPaymentRequestMemo
+ * @see SenderWithPaymentRequestMemoData
+ * @see SenderWithPaymentRequestMemoData#getPaymentRequestId()
+ * @see TxOutMemo
+ * @since 1.2.0
+ */
 public final class SenderWithPaymentRequestMemo extends TxOutMemo {
 
   private static final String TAG = SenderWithPaymentRequestMemo.class.getSimpleName();
@@ -20,7 +32,7 @@ public final class SenderWithPaymentRequestMemo extends TxOutMemo {
    * validated yet.
    *
    * @param memoData - The {@value TxOutMemo#TX_OUT_MEMO_DATA_SIZE_BYTES} bytes that correspond to the memo payload.
-   **/
+   */
   static SenderWithPaymentRequestMemo create(
       @NonNull RistrettoPublic txOutPublicKey,
       @NonNull byte[] memoData
@@ -51,7 +63,25 @@ public final class SenderWithPaymentRequestMemo extends TxOutMemo {
   }
 
 
-  // TODO: doc
+  /**
+   * Returns the {@link AddressHash} stored in this {@link SenderWithPaymentRequestMemo} without validating it first.
+   *
+   * To get the validated {@link AddressHash}, use {@link SenderWithPaymentRequestMemoData#getAddressHash()}.
+   *
+   * It is recommended to compare the output of this method to {@link AddressHash}es of known {@link PublicAddress}.
+   * If the output of this method matches any known {@link PublicAddress} {@link AddressHash}, the memo
+   * can be validated using that {@link PublicAddress}.
+   *
+   * @return the {@link AddressHash} in this memo without validating it first
+   *
+   * @see AddressHash
+   * @see SenderWithPaymentRequestMemoData
+   * @see SenderWithPaymentRequestMemoData#getAddressHash()
+   * @see SenderWithPaymentRequestMemo#getSenderWithPaymentRequestMemoData(PublicAddress, RistrettoPrivate)
+   * @see SenderMemo
+   * @see SenderMemo#getUnvalidatedAddressHash()
+   * @since 1.2.0
+   */
   public AddressHash getUnvalidatedAddressHash() {
     return getAddressHash();
   }
@@ -62,13 +92,23 @@ public final class SenderWithPaymentRequestMemo extends TxOutMemo {
   }
 
   /**
-   * Validates then retrieves the sender with payment request memo data.
+   * Returns the {@link SenderWithPaymentRequestMemoData} for this {@link SenderWithPaymentRequestMemo} if valid.
    *
-   * <p>Before calling this method, call {@link #getUnvalidatedAddressHash()} and see if the
+   * If validation of the memo fails, an {@link InvalidTxOutMemoException} is thrown
+   *
+   * Before calling this method, call {@link SenderWithPaymentRequestMemo#getUnvalidatedAddressHash()} and see if the
    * {@link AddressHash} corresponds to a {@link PublicAddress} that is known by the user.
    * If the {@link PublicAddress} is not known by the user, then do not call this method because the
    * memo is automatically invalid.
-   **/// TODO: doc
+   *
+   * @return the {@link SenderWithPaymentRequestMemoData}, if valid
+   * @throws InvalidTxOutMemoException if validation of the memo fails
+   *
+   * @see SenderWithPaymentRequestMemoData
+   * @see MemoData
+   * @see InvalidTxOutMemoException
+   * @since 1.2.0
+   */
   public SenderWithPaymentRequestMemoData getSenderWithPaymentRequestMemoData(
       @NonNull PublicAddress senderPublicAddress,
       @NonNull RistrettoPrivate receiverSubaddressViewKey) throws InvalidTxOutMemoException {

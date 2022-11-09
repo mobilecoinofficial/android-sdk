@@ -32,4 +32,14 @@ public class TxOutMemoBuilderTest {
         .createSenderPaymentRequestAndDestinationRTHMemoBuilder(accountKey, paymentRequestId);
   }
 
+  @Test
+  public void createSenderPaymentIntentAndDestinationRTHMemoBuilder_validAccountKey_paymentIntentId_constructsRTHMemoBuilder()
+          throws Exception {
+    AccountKey accountKey = TestKeysManager.getNextAccountKey();
+    UnsignedLong paymentIntentId = UnsignedLong.TEN;
+
+    TxOutMemoBuilder txOutMemoBuilder = TxOutMemoBuilder
+            .createSenderPaymentIntentAndDestinationRTHMemoBuilder(accountKey, paymentIntentId);
+  }
+
 }

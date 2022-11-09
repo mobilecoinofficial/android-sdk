@@ -24,16 +24,42 @@ public class TxOutMemoBuilder extends Native {
   }
 
   /**
-   * Creates an {@link TxOutMemoBuilder} with the sender with payment request id and destination
-   * RTH memos enabled.
+   * Creates a {@link TxOutMemoBuilder} that will build a {@link SenderWithPaymentRequestMemo} for a
+   * {@link Transaction} recipient and a {@link DestinationWithPaymentRequestMemo} for the sender.
+   *
+   * This field uniquely identifies a <strong>payment request</strong>. This ID is not guaranteed to be unique
+   * on the blockchain. Any value can be selected for this field. Clients should, however, select this field in such
+   * a way as to keep it unique at minimum for a pair of users. Whatever value is chosen, it should be agreed upon by
+   * both the sender and recipient outside of the blockchain in order to be useful.
+   *
+   * @see SenderWithPaymentRequestMemo
+   * @see SenderWithPaymentRequestMemoData
+   * @see SenderWithPaymentRequestMemoData#getPaymentRequestId()
+   * @see DestinationWithPaymentRequestMemo
+   * @see DestinationWithPaymentRequestMemoData
+   * @see DestinationWithPaymentRequestMemoData#getPaymentRequestId()
+   * @since 1.2.0
    **/
   public static TxOutMemoBuilder createSenderPaymentRequestAndDestinationRTHMemoBuilder(AccountKey accountKey, UnsignedLong paymentRequestId) throws TransactionBuilderException {
     return new TxOutMemoBuilder(accountKey, paymentRequestId, false);
   }
 
   /**
-   * Creates an {@link TxOutMemoBuilder} with the sender with payment intent id and destination
-   * RTH memos enabled.
+   * Creates a {@link TxOutMemoBuilder} that will build a {@link SenderWithPaymentIntentMemo} for a
+   * {@link Transaction} recipient and a {@link DestinationWithPaymentIntentMemo} for the sender.
+   *
+   * This field uniquely identifies a <strong>payment intent</strong>. This ID is not guaranteed to be unique
+   * on the blockchain. Any value can be selected for this field. Clients should, however, select this field in such
+   * a way as to keep it unique at minimum for a pair of users. Whatever value is chosen, it should be agreed upon by
+   * both the sender and recipient outside of the blockchain in order to be useful.
+   *
+   * @see SenderWithPaymentIntentMemo
+   * @see SenderWithPaymentIntentMemoData
+   * @see SenderWithPaymentIntentMemoData#getPaymentIntentId()
+   * @see DestinationWithPaymentIntentMemo
+   * @see DestinationWithPaymentIntentMemoData
+   * @see DestinationWithPaymentIntentMemoData#getPaymentIntentId()
+   * @since 2.0.0
    **/
   public static TxOutMemoBuilder createSenderPaymentIntentAndDestinationRTHMemoBuilder(AccountKey accountKey, UnsignedLong paymentIntentId) throws TransactionBuilderException {
     return new TxOutMemoBuilder(accountKey, paymentIntentId, true);
