@@ -6,7 +6,17 @@ import androidx.annotation.NonNull;
 
 import java.util.Objects;
 
-// TODO: doc
+/**
+ * Contains data associated with a {@link DestinationWithPaymentIntentMemo}.
+ *
+ * The data has been validated, which means that the account accessing this {@link DestinationWithPaymentIntentMemoData}
+ * is the same one which send the associated {@link Transaction}.
+ *
+ * @see DestinationWithPaymentIntentMemo
+ * @see MemoData
+ * @see AddressHash
+ * @since 2.0.0
+ */
 public class DestinationWithPaymentIntentMemoData extends MemoData {
 
     @NonNull
@@ -14,8 +24,7 @@ public class DestinationWithPaymentIntentMemoData extends MemoData {
 
     private final int numberOfRecipients;
 
-    // TODO: doc
-    public static DestinationWithPaymentIntentMemoData create(
+    static DestinationWithPaymentIntentMemoData create(
             @NonNull final AddressHash addressHash,
             final int numberOfRecipients,
             @NonNull final UnsignedLong fee,
@@ -39,24 +48,80 @@ public class DestinationWithPaymentIntentMemoData extends MemoData {
         this.paymentIntentId = paymentIntentId;
     }
 
-    // TODO: doc
+    /**
+     * Gets the number of recipients from the {@link Transaction} that created the associated {@link DestinationWithPaymentIntentMemo}
+     *
+     * As of 2.0.0, {@link Transaction}s built using this SDK are limited to a single recipient. As a result,
+     * for {@link Transaction}s built using this SDK, this value will always be 1. This may not be the case if the
+     * account is also used with different client implementation.
+     *
+     * @return the number of recipients of the associated {@link Transaction}
+     *
+     * @see MobileCoinClient#prepareTransaction(PublicAddress, Amount, Amount, TxOutMemoBuilder)
+     * @since 2.0.0
+     */
     public int getNumberOfRecipients() {
         return numberOfRecipients;
     }
 
-    // TODO: doc
+    /**
+     * Gets the fee that was paid to submit the associated {@link Transaction}
+     *
+     * The value returned does not come with a {@link TokenId}. To get the {@link TokenId} of the fee,
+     * check the {@link OwnedTxOut#getAmount()} of the {@link OwnedTxOut} to which the {@link DestinationWithPaymentIntentMemo}
+     * is attached.
+     *
+     * @return the value of the fee paid to submit the {@link Transaction}
+     *
+     * @see MobileCoinClient#prepareTransaction(PublicAddress, Amount, Amount, TxOutMemoBuilder)
+     * @see OwnedTxOut
+     * @see OwnedTxOut#getAmount()
+     * @see Amount
+     * @see Amount#getTokenId()
+     * @see OwnedTxOut#getTxOutMemo()
+     * @since 2.0.0
+     */
     @NonNull
     public UnsignedLong getFee() {
         return fee;
     }
 
-    //TODO: doc
+    /**
+     * Gets the <strong>total outlay</strong> of the associated {@link Transaction}.
+     *
+     * The <strong>total outlay</strong> is the amount being sent plus fees.
+     * The value returned does not come with a {@link TokenId}. To get the {@link TokenId} of the fee,
+     * check the {@link OwnedTxOut#getAmount()} of the {@link OwnedTxOut} to which the {@link DestinationWithPaymentIntentMemo}
+     * is attached.
+     *
+     * @return the value of the <strong>total outlay</strong> of the {@link Transaction}
+     *
+     * @see MobileCoinClient#prepareTransaction(PublicAddress, Amount, Amount, TxOutMemoBuilder)
+     * @see OwnedTxOut
+     * @see OwnedTxOut#getAmount()
+     * @see Amount
+     * @see Amount#getTokenId()
+     * @see OwnedTxOut#getTxOutMemo()
+     * @since 2.0.0
+     */
     @NonNull
     public UnsignedLong getTotalOutlay() {
         return totalOutlay;
     }
 
-    //TODO: doc
+    /**
+     * Gets the <strong>payment intent</strong> ID stored in this {@link DestinationWithPaymentIntentMemoData}
+     *
+     * For additional information about this field, see
+     * {@link TxOutMemoBuilder#createSenderPaymentIntentAndDestinationRTHMemoBuilder(AccountKey, UnsignedLong)}.
+     *
+     * @return the ID of a <strong>payment intent</strong>
+     *
+     * @see TxOutMemoBuilder#createSenderPaymentIntentAndDestinationRTHMemoBuilder(AccountKey, UnsignedLong)
+     * @see DestinationWithPaymentIntentMemo
+     * @see SenderWithPaymentIntentMemoData#getPaymentIntentId()
+     * @since 2.0.0
+     */
     @NonNull
     public UnsignedLong getPaymentIntentId() {
         return paymentIntentId;

@@ -8,7 +8,18 @@ import com.mobilecoin.lib.exceptions.InvalidTxOutMemoException;
 
 import java.util.Objects;
 
-// TODO: doc
+/***
+ * This class represents a {@link DestinationMemo} tied to a specific <strong>payment request</strong>.
+ *
+ * This should be interpreted the same as a {@link DestinationMemo} but has one additional field, a <strong>payment request</strong> ID.
+ * This memo is paired with a {@link SenderWithPaymentRequestMemo} which is sent to the recipient and contains the same <strong>payment request</strong> ID.
+ *
+ * @see DestinationMemo
+ * @see SenderWithPaymentRequestMemo
+ * @see DestinationWithPaymentRequestMemoData
+ * @see TxOutMemo
+ * @since 2.0.0
+ */
 public class DestinationWithPaymentRequestMemo extends TxOutMemo {
 
     private static final String TAG = DestinationWithPaymentRequestMemo.class.getSimpleName();
@@ -57,7 +68,19 @@ public class DestinationWithPaymentRequestMemo extends TxOutMemo {
         );
     }
 
-    // TODO: Doc
+    /**
+     * Returns the {@link DestinationWithPaymentRequestMemoData} for this {@link DestinationWithPaymentRequestMemo} if valid.
+     *
+     * If validation of the memo fails, an {@link InvalidTxOutMemoException} is thrown
+     *
+     * @return the {@link DestinationWithPaymentRequestMemoData}, if valid
+     * @throws InvalidTxOutMemoException if validation of the memo fails
+     *
+     * @see DestinationWithPaymentRequestMemoData
+     * @see MemoData
+     * @see InvalidTxOutMemoException
+     * @since 2.0.0
+     */
     public DestinationWithPaymentRequestMemoData getDestinationWithPaymentRequestMemoData() throws InvalidTxOutMemoException {
         if (!validated) {
             throw new InvalidTxOutMemoException("The DestinationWithPaymentRequestMemo is invalid.");

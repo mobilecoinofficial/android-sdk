@@ -233,13 +233,17 @@ public class TxOutMemoIntegrationTest {
     TxOut txOut2 = TxOut.fromProtoBufObject(outputsList.get(1));
 
     TxOut sentTxOut;
+    TxOut changeTxOut;
     try {
       txOut1.getMaskedAmount().unmaskAmount(recipientAccountKey.getViewKey(), txOut1.getPublicKey());
       sentTxOut = txOut1;
+      changeTxOut = txOut2;
     } catch(Exception e) {
       sentTxOut = txOut2;
+      changeTxOut = txOut1;
     }
 
+    // Verify the type and contents of send TxOut memo
     byte[] sentWithPaymentRequestMemoPayload = sentTxOut.decryptMemoPayload(recipientAccountKey);
 
     AddressHash senderAddressHash = senderAccountKey.getPublicAddress().calculateAddressHash();
@@ -251,6 +255,101 @@ public class TxOutMemoIntegrationTest {
 
     assertEquals(senderAddressHash, senderWithPaymentRequestMemoData.getAddressHash());
     assertEquals(paymentRequestId, senderWithPaymentRequestMemoData.getPaymentRequestId());
+
+    // Verify type and contents of change TxOut memo
+    byte[] changeWithPaymentRequestMemoPayload = changeTxOut.decryptMemoPayload(senderAccountKey);
+
+    AddressHash recipientAddressHash = recipientAccountKey.getPublicAddress().calculateAddressHash();
+    DestinationWithPaymentRequestMemo destinationWithPaymentRequestMemo = (DestinationWithPaymentRequestMemo) TxOutMemoParser
+            .parseTxOutMemo(changeWithPaymentRequestMemoPayload, senderAccountKey, changeTxOut);
+    DestinationWithPaymentRequestMemoData destinationWithPaymentRequestMemoData = destinationWithPaymentRequestMemo
+            .getDestinationWithPaymentRequestMemoData();
+    assertEquals(recipientAddressHash, destinationWithPaymentRequestMemoData.getAddressHash());
+    assertEquals(1, destinationWithPaymentRequestMemoData.getNumberOfRecipients());
+    assertEquals(UnsignedLong.fromBigInteger(fee.getValue()), destinationWithPaymentRequestMemoData.getFee());
+    assertEquals(UnsignedLong.fromBigInteger(fee.add(sentTxOutAmount).getValue()), destinationWithPaymentRequestMemoData.getTotalOutlay());
+    assertEquals(paymentRequestId, destinationWithPaymentRequestMemoData.getPaymentRequestId());
+
+  }
+
+  @Test
+  public void buildTransaction_senderWithPaymentIntentAndDestinationMemoBuilder_buildsCorrectSenderWithPaymentIntentMemo() throws Exception {
+    UnsignedLong paymentIntentId = UnsignedLong.valueOf(4855282172840142080L);
+    TxOutMemoBuilder txOutMemoBuilder = TxOutMemoBuilder
+            .createSenderPaymentIntentAndDestinationRTHMemoBuilder(senderAccountKey, paymentIntentId);
+    TxOut realTxOut = txOuts.get(realIndex);
+    Amount fee = new Amount(BigInteger.TEN, TokenId.MOB);
+    transactionBuilder = new TransactionBuilder(
+            fogResolver,
+            txOutMemoBuilder,
+            MEMO_BLOCK_VERSION,
+            TokenId.MOB,
+            fee
+    );
+
+    RistrettoPrivate onetimePrivateKey = Util.recoverOnetimePrivateKey(
+            realTxOut.getPublicKey(),
+            realTxOut.getTargetKey(),
+            senderAccountKey
+    );
+    transactionBuilder
+            .addInput(txOuts, txOutMembershipProofs, realIndex, onetimePrivateKey,
+                    senderAccountKey.getViewKey());
+
+    transactionBuilder.setTombstoneBlockIndex(UnsignedLong.valueOf(2000));
+    Amount sentTxOutAmount = Amount.ofMOB(BigInteger.ONE);
+
+    transactionBuilder.addOutput(sentTxOutAmount, recipientAccountKey.getPublicAddress(), null);
+    Amount realTxOutAmount = realTxOut.getMaskedAmount()
+            .unmaskAmount(senderAccountKey.getViewKey(), realTxOut.getPublicKey());
+    Amount change = realTxOutAmount.subtract(fee)
+            .subtract(sentTxOutAmount);
+    transactionBuilder.addChangeOutput(change, senderAccountKey, null);
+    Transaction transaction = transactionBuilder.build();
+
+    List<MobileCoinAPI.TxOut> outputsList = transaction.toProtoBufObject().getPrefix()
+            .getOutputsList();
+    TxOut txOut1 = TxOut.fromProtoBufObject(outputsList.get(0));
+    TxOut txOut2 = TxOut.fromProtoBufObject(outputsList.get(1));
+
+    TxOut sentTxOut;
+    TxOut changeTxOut;
+    try {
+      txOut1.getMaskedAmount().unmaskAmount(recipientAccountKey.getViewKey(), txOut1.getPublicKey());
+      sentTxOut = txOut1;
+      changeTxOut = txOut2;
+    } catch(Exception e) {
+      sentTxOut = txOut2;
+      changeTxOut = txOut1;
+    }
+
+    // Verify the type and contents of send TxOut memo
+    byte[] sentWithPaymentIntentMemoPayload = sentTxOut.decryptMemoPayload(recipientAccountKey);
+
+    AddressHash senderAddressHash = senderAccountKey.getPublicAddress().calculateAddressHash();
+    SenderWithPaymentIntentMemo senderWithPaymentIntentMemo = (SenderWithPaymentIntentMemo) TxOutMemoParser
+            .parseTxOutMemo(sentWithPaymentIntentMemoPayload, recipientAccountKey, sentTxOut);
+    assertEquals(senderAddressHash, senderWithPaymentIntentMemo.getUnvalidatedAddressHash());
+    SenderWithPaymentIntentMemoData senderWithPaymentIntentMemoData = senderWithPaymentIntentMemo
+            .getSenderWithPaymentIntentMemoData(senderAccountKey.getPublicAddress(), recipientAccountKey.getDefaultSubAddressViewKey());
+
+    assertEquals(senderAddressHash, senderWithPaymentIntentMemoData.getAddressHash());
+    assertEquals(paymentIntentId, senderWithPaymentIntentMemoData.getPaymentIntentId());
+
+    // Verify type and contents of change TxOut memo
+    byte[] changeWithPaymentIntentMemoPayload = changeTxOut.decryptMemoPayload(senderAccountKey);
+
+    AddressHash recipientAddressHash = recipientAccountKey.getPublicAddress().calculateAddressHash();
+    DestinationWithPaymentIntentMemo destinationWithPaymentIntentMemo = (DestinationWithPaymentIntentMemo) TxOutMemoParser
+            .parseTxOutMemo(changeWithPaymentIntentMemoPayload, senderAccountKey, changeTxOut);
+    DestinationWithPaymentIntentMemoData destinationWithPaymentIntentMemoData = destinationWithPaymentIntentMemo
+            .getDestinationWithPaymentIntentMemoData();
+    assertEquals(recipientAddressHash, destinationWithPaymentIntentMemoData.getAddressHash());
+    assertEquals(1, destinationWithPaymentIntentMemoData.getNumberOfRecipients());
+    assertEquals(UnsignedLong.fromBigInteger(fee.getValue()), destinationWithPaymentIntentMemoData.getFee());
+    assertEquals(UnsignedLong.fromBigInteger(fee.add(sentTxOutAmount).getValue()), destinationWithPaymentIntentMemoData.getTotalOutlay());
+    assertEquals(paymentIntentId, destinationWithPaymentIntentMemoData.getPaymentIntentId());
+
   }
 
   @Test

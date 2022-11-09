@@ -7,11 +7,16 @@ import androidx.annotation.NonNull;
 import java.util.Objects;
 
 /**
- * Contains data associated with a sender with payment intent memo.
+ * Contains data associated with a {@link SenderWithPaymentIntentMemo}.
  *
- * <p>The data has been validated, which means that we've verified that the correct sender
- * wrote the memo and that the data has not been corrupted.
- **///TODO: doc
+ * The data has been validated, which means that the sender of the {@link SenderWithPaymentIntentMemo}
+ * has been verified and that the data has not been corrupted.
+ *
+ * @see SenderWithPaymentIntentMemo
+ * @see MemoData
+ * @see AddressHash
+ * @since 2.0.0
+ */
 public final class SenderWithPaymentIntentMemoData extends MemoData {
 
     @NonNull
@@ -19,8 +24,8 @@ public final class SenderWithPaymentIntentMemoData extends MemoData {
 
     /**
      * Creates a {@link SenderWithPaymentIntentMemoData} instance with all of the expected fields.
-     * */// TODO: doc
-    public static SenderWithPaymentIntentMemoData create(
+     */
+    static SenderWithPaymentIntentMemoData create(
             @NonNull AddressHash addressHash,
             @NonNull UnsignedLong paymentIntentId
     ) {
@@ -32,7 +37,19 @@ public final class SenderWithPaymentIntentMemoData extends MemoData {
         this.paymentIntentId = paymentIntentId;
     }
 
-    //TODO: doc
+    /**
+     * Gets the <strong>payment intent</strong> ID stored in this {@link SenderWithPaymentIntentMemoData}
+     *
+     * For additional information about this field, see
+     * {@link TxOutMemoBuilder#createSenderPaymentIntentAndDestinationRTHMemoBuilder(AccountKey, UnsignedLong)}.
+     *
+     * @return the ID of a <strong>payment intent</strong>
+     *
+     * @see TxOutMemoBuilder#createSenderPaymentIntentAndDestinationRTHMemoBuilder(AccountKey, UnsignedLong)
+     * @see SenderWithPaymentIntentMemo
+     * @see DestinationWithPaymentIntentMemoData#getPaymentIntentId()
+     * @since 2.0.0
+     */
     @NonNull
     public UnsignedLong getPaymentIntentId() {
         return paymentIntentId;

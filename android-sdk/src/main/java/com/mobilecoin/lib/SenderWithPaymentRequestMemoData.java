@@ -7,11 +7,16 @@ import androidx.annotation.NonNull;
 import java.util.Objects;
 
 /**
- * Contains data associated with a sender with payment request memo.
+ * Contains data associated with a {@link SenderWithPaymentRequestMemo}.
  *
- * <p>The data has been validated, which means that we've verified that the correct sender
- * wrote the memo and that the data has not been corrupted.
- **///TODO: doc
+ * The data has been validated, which means that the sender of the {@link SenderWithPaymentRequestMemo}
+ * has been verified and that the data has not been corrupted.
+ *
+ * @see SenderWithPaymentRequestMemo
+ * @see MemoData
+ * @see AddressHash
+ * @since 1.2.0
+ */
 public final class SenderWithPaymentRequestMemoData extends MemoData {
 
   @NonNull
@@ -19,8 +24,8 @@ public final class SenderWithPaymentRequestMemoData extends MemoData {
 
   /**
    * Creates a {@link SenderWithPaymentRequestMemoData} instance with all of the expected fields.
-   * */// TODO: doc
-  public static SenderWithPaymentRequestMemoData create(
+   */
+  static SenderWithPaymentRequestMemoData create(
       @NonNull AddressHash addressHash,
       @NonNull UnsignedLong paymentRequestId
   ) {
@@ -32,7 +37,19 @@ public final class SenderWithPaymentRequestMemoData extends MemoData {
     this.paymentRequestId = paymentRequestId;
   }
 
-  //TODO: doc
+  /**
+   * Gets the <strong>payment request</strong> ID stored in this {@link SenderWithPaymentRequestMemoData}
+   *
+   * For additional information about this field, see
+   * {@link TxOutMemoBuilder#createSenderPaymentRequestAndDestinationRTHMemoBuilder(AccountKey, UnsignedLong)}.
+   *
+   * @return the ID of a <strong>payment request</strong>
+   *
+   * @see TxOutMemoBuilder#createSenderPaymentRequestAndDestinationRTHMemoBuilder(AccountKey, UnsignedLong)
+   * @see SenderWithPaymentRequestMemo
+   * @see DestinationWithPaymentRequestMemoData#getPaymentRequestId()
+   * @since 1.2.0
+   */
   @NonNull
   public UnsignedLong getPaymentRequestId() {
     return paymentRequestId;
