@@ -84,9 +84,9 @@ final class TxOut extends Native {
     }
 
     @NonNull
-    public MaskedAmount getMaskedAmount() {
+    public MaskedAmountV1 getMaskedAmount() {
         try {
-            return MaskedAmount.fromProtoBufObject(protoBufTxOut.getMaskedAmount());
+            return MaskedAmountV1.fromProtoBufObject(protoBufTxOut.getMaskedAmountV1());
         } catch (AmountDecoderException exception) {
             // the amount is validated during the object construction
             IllegalStateException illegalStateException = new IllegalStateException(exception);

@@ -871,10 +871,10 @@ public final class MobileCoinClient implements MobileCoinAccountClient, MobileCo
         }
 
         Transaction transaction = txBuilder.build();
-        MaskedAmount pendingMaskedAmount = pendingTxo.getMaskedAmount();
+        MaskedAmountV1 pendingMaskedAmountV1 = pendingTxo.getMaskedAmount();
         Receipt receipt = new Receipt(pendingTxo.getPublicKey(),
                 confirmationNumberOut,
-                pendingMaskedAmount,
+                pendingMaskedAmountV1,
                 tombstoneBlockIndex
         );
         return new PendingTransaction(

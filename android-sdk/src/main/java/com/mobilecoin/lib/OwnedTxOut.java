@@ -80,15 +80,15 @@ public class OwnedTxOut implements Parcelable {
             txOutTargetKey = RistrettoPublic.fromProtoBufObject(txOutTargetKeyProto);
             RistrettoPublic txOutSharedSecret = Util.getSharedSecret(accountKey.getViewKey(), txOutPublicKey);
             long maskedValue = txOutRecord.getTxOutAmountMaskedValue();
-            byte maskedTokenId[] = txOutRecord.getTxOutAmountMaskedTokenId().toByteArray();
-            MaskedAmount maskedAmount = new MaskedAmount(txOutSharedSecret, maskedValue, maskedTokenId);
-            amount = maskedAmount.unmaskAmount(
+            byte maskedTokenId[] = txOutRecord.getTxOutAmountMaskedV1TokenId().toByteArray();
+            MaskedAmountV1 maskedAmountV1 = new MaskedAmountV1(txOutSharedSecret, maskedValue, maskedTokenId);
+            amount = maskedAmountV1.unmaskAmount(
                     accountKey.getViewKey(),
                     txOutPublicKey
             );
 
             // Verify reconstructed commitment
-            final byte reconstructedCommitment[] = maskedAmount.getCommitment();
+            final byte reconstructedCommitment[] = maskedAmountV1.getCommitment();
             final int reconstructedCrc32 = Util.computeCommittmentCrc32(reconstructedCommitment);
             if(txOutRecord.getTxOutAmountCommitmentData().size() > 0) {
                 final byte commitmentBytes[] = txOutRecord.getTxOutAmountCommitmentData().toByteArray();
@@ -103,7 +103,7 @@ public class OwnedTxOut implements Parcelable {
             }
 
             MobileCoinAPI.TxOut.Builder txOutProtoBuilder = MobileCoinAPI.TxOut.newBuilder()
-                    .setMaskedAmount(maskedAmount.toProtoBufObject())
+                    .setMaskedAmountV1(maskedAmountV1.toProtoBufObject())
                     .setPublicKey(txOutPublicKeyProto)
                     .setTargetKey(txOutTargetKeyProto);
             if (!txOutRecord.getTxOutEMemoData().isEmpty()) {

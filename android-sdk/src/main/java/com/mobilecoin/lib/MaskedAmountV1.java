@@ -13,8 +13,8 @@ import com.mobilecoin.lib.log.Logger;
  * Encapsulates the abstraction of a native MaskedAmount with a JNI link to control the native
  * counterpart.
  */
-final class MaskedAmount extends Native {
-    private final static String TAG = MaskedAmount.class.getName();
+final class MaskedAmountV1 extends Native {
+    private final static String TAG = MaskedAmountV1.class.getName();
     private final MobileCoinAPI.MaskedAmount protoBufMaskedAmount;
 
     /**
@@ -23,7 +23,7 @@ final class MaskedAmount extends Native {
      * @param commitment  A Pedersen commitment {@code v*G + s*H}
      * @param maskedValue {@code masked_value = value XOR_8 Blake2B(value_mask || shared_secret)}
      */
-    MaskedAmount(@NonNull byte[] commitment, long maskedValue, @NonNull byte maskedTokenId[]) throws AmountDecoderException {
+    MaskedAmountV1(@NonNull byte[] commitment, long maskedValue, @NonNull byte maskedTokenId[]) throws AmountDecoderException {
         protoBufMaskedAmount = MobileCoinAPI.MaskedAmount.newBuilder()
                 .setCommitment(MobileCoinAPI.CompressedRistretto.newBuilder()
                         .setData(ByteString.copyFrom(commitment)).build())
@@ -49,9 +49,9 @@ final class MaskedAmount extends Native {
      * @param txOutSharedSecret  A {@link RistrettoPublic} representing the shared secret.
      * @param maskedValue {@code masked_value = value XOR_8 Blake2B(value_mask || shared_secret)}
      */
-    MaskedAmount(@NonNull RistrettoPublic txOutSharedSecret,
-                 long maskedValue,
-                 @NonNull byte maskedTokenId[]
+    MaskedAmountV1(@NonNull RistrettoPublic txOutSharedSecret,
+                   long maskedValue,
+                   @NonNull byte maskedTokenId[]
     ) throws AmountDecoderException {
         try {
             init_jni_with_secret(
@@ -72,7 +72,7 @@ final class MaskedAmount extends Native {
     /**
      * Constructs native MaskedAmount object from the protocol buffer
      */
-    MaskedAmount(@NonNull MobileCoinAPI.MaskedAmount amount) throws AmountDecoderException {
+    MaskedAmountV1(@NonNull MobileCoinAPI.MaskedAmount amount) throws AmountDecoderException {
         this(
                 amount.getCommitment().getData().toByteArray(),
                 amount.getMaskedValue(),
@@ -83,10 +83,10 @@ final class MaskedAmount extends Native {
     /**
      * Constructs native MaskedAmount object from the protocol buffer
      */
-    static MaskedAmount fromProtoBufObject(@NonNull MobileCoinAPI.MaskedAmount protoBuf)
+    static MaskedAmountV1 fromProtoBufObject(@NonNull MobileCoinAPI.MaskedAmount protoBuf)
             throws AmountDecoderException {
         Logger.i(TAG, "Deserializing amount from protobuf object");
-        return new MaskedAmount(protoBuf);
+        return new MaskedAmountV1(protoBuf);
     }
 
     /**

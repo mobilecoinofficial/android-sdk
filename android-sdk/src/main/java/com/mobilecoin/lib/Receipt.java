@@ -45,12 +45,12 @@ public final class Receipt {
     Receipt(
             @NonNull RistrettoPublic txOutPublicKey,
             @NonNull byte[] confirmationHash,
-            @NonNull MaskedAmount maskedAmount,
+            @NonNull MaskedAmountV1 maskedAmountV1,
             @NonNull UnsignedLong tombstoneBlockIndex
     ) {
         MobileCoinAPI.Receipt.Builder receiptBuilder = MobileCoinAPI.Receipt.newBuilder();
         receiptBuilder.setTombstoneBlock(tombstoneBlockIndex.longValue());
-        receiptBuilder.setMaskedAmount(maskedAmount.toProtoBufObject());
+        receiptBuilder.setMaskedAmountV1(maskedAmountV1.toProtoBufObject());
         receiptBuilder.setConfirmation(MobileCoinAPI.TxOutConfirmationNumber.newBuilder()
                 .setHash(ByteString.copyFrom(confirmationHash))
                 .build());
@@ -131,19 +131,19 @@ public final class Receipt {
      */
     @NonNull
     public Amount getAmountData(@NonNull AccountKey accountKey) throws AmountDecoderException {
-        if (!receiptBuf.hasMaskedAmount()) {
+        if (!receiptBuf.hasMaskedAmountV1()) {
             throw new AmountDecoderException("Receipt does not contain an encoded Amount");
         }
-        MobileCoinAPI.MaskedAmount protoMaskedAmount = receiptBuf.getMaskedAmount();
+        MobileCoinAPI.MaskedAmount protoMaskedAmount = receiptBuf.getMaskedAmountV1();
         byte commitment[] = protoMaskedAmount.getCommitment().getData().toByteArray();
         long maskedValue = protoMaskedAmount.getMaskedValue();
         byte maskedTokenId[] = protoMaskedAmount.getMaskedTokenId().toByteArray();
-        MaskedAmount maskedAmount = new MaskedAmount(
+        MaskedAmountV1 maskedAmountV1 = new MaskedAmountV1(
                 commitment,
                 maskedValue,
                 maskedTokenId
         );
-        return maskedAmount.unmaskAmount(
+        return maskedAmountV1.unmaskAmount(
                 accountKey.getViewKey(),
                 getPublicKey()
         );
