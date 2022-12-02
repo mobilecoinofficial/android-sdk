@@ -45,12 +45,18 @@ public final class Receipt {
     Receipt(
             @NonNull RistrettoPublic txOutPublicKey,
             @NonNull byte[] confirmationHash,
-            @NonNull MaskedAmountV1 maskedAmountV1,
+            @NonNull MaskedAmount maskedAmount,
             @NonNull UnsignedLong tombstoneBlockIndex
     ) {
         MobileCoinAPI.Receipt.Builder receiptBuilder = MobileCoinAPI.Receipt.newBuilder();
         receiptBuilder.setTombstoneBlock(tombstoneBlockIndex.longValue());
-        receiptBuilder.setMaskedAmountV1(maskedAmountV1.toProtoBufObject());
+        if(maskedAmount instanceof MaskedAmountV2) {
+            receiptBuilder.setMaskedAmountV2(((MaskedAmountV2)maskedAmount).toProtoBufObject());
+        } else if(maskedAmount instanceof MaskedAmountV1) {
+            receiptBuilder.setMaskedAmountV1(((MaskedAmountV1)maskedAmount).toProtoBufObject());
+        } else {
+            throw new IllegalArgumentException("Unsupported MaskedAmount version");
+        }
         receiptBuilder.setConfirmation(MobileCoinAPI.TxOutConfirmationNumber.newBuilder()
                 .setHash(ByteString.copyFrom(confirmationHash))
                 .build());
@@ -131,19 +137,13 @@ public final class Receipt {
      */
     @NonNull
     public Amount getAmountData(@NonNull AccountKey accountKey) throws AmountDecoderException {
-        if (!receiptBuf.hasMaskedAmountV1()) {
+        if (!receiptBuf.hasMaskedAmountV1() && !receiptBuf.hasMaskedAmountV2()) {
             throw new AmountDecoderException("Receipt does not contain an encoded Amount");
         }
-        MobileCoinAPI.MaskedAmount protoMaskedAmount = receiptBuf.getMaskedAmountV1();
-        byte commitment[] = protoMaskedAmount.getCommitment().getData().toByteArray();
-        long maskedValue = protoMaskedAmount.getMaskedValue();
-        byte maskedTokenId[] = protoMaskedAmount.getMaskedTokenId().toByteArray();
-        MaskedAmountV1 maskedAmountV1 = new MaskedAmountV1(
-                commitment,
-                maskedValue,
-                maskedTokenId
-        );
-        return maskedAmountV1.unmaskAmount(
+        MaskedAmount maskedAmount = receiptBuf.hasMaskedAmountV2() ?
+                MaskedAmountV2.fromProtoBufObject(receiptBuf.getMaskedAmountV2()) :
+                MaskedAmountV1.fromProtoBufObject(receiptBuf.getMaskedAmountV1());
+        return maskedAmount.unmaskAmount(
                 accountKey.getViewKey(),
                 getPublicKey()
         );

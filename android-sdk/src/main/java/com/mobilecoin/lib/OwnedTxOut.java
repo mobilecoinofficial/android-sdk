@@ -80,15 +80,16 @@ public class OwnedTxOut implements Parcelable {
             txOutTargetKey = RistrettoPublic.fromProtoBufObject(txOutTargetKeyProto);
             RistrettoPublic txOutSharedSecret = Util.getSharedSecret(accountKey.getViewKey(), txOutPublicKey);
             long maskedValue = txOutRecord.getTxOutAmountMaskedValue();
-            byte maskedTokenId[] = txOutRecord.getTxOutAmountMaskedV1TokenId().toByteArray();
-            MaskedAmountV1 maskedAmountV1 = new MaskedAmountV1(txOutSharedSecret, maskedValue, maskedTokenId);
-            amount = maskedAmountV1.unmaskAmount(
+            final MaskedAmount maskedAmount = txOutRecord.hasTxOutAmountMaskedV2TokenId() ?
+                    new MaskedAmountV2(txOutSharedSecret, maskedValue, txOutRecord.getTxOutAmountMaskedV2TokenId().toByteArray()) :
+                    new MaskedAmountV1(txOutSharedSecret, maskedValue, txOutRecord.getTxOutAmountMaskedV1TokenId().toByteArray());
+            amount = maskedAmount.unmaskAmount(
                     accountKey.getViewKey(),
                     txOutPublicKey
             );
 
             // Verify reconstructed commitment
-            final byte reconstructedCommitment[] = maskedAmountV1.getCommitment();
+            final byte reconstructedCommitment[] = maskedAmount.getCommitment();
             final int reconstructedCrc32 = Util.computeCommittmentCrc32(reconstructedCommitment);
             if(txOutRecord.getTxOutAmountCommitmentData().size() > 0) {
                 final byte commitmentBytes[] = txOutRecord.getTxOutAmountCommitmentData().toByteArray();
@@ -103,7 +104,7 @@ public class OwnedTxOut implements Parcelable {
             }
 
             MobileCoinAPI.TxOut.Builder txOutProtoBuilder = MobileCoinAPI.TxOut.newBuilder()
-                    .setMaskedAmountV1(maskedAmountV1.toProtoBufObject())
+                    .setMaskedAmountV1(maskedAmount.toProtoBufObject())
                     .setPublicKey(txOutPublicKeyProto)
                     .setTargetKey(txOutTargetKeyProto);
             if (!txOutRecord.getTxOutEMemoData().isEmpty()) {

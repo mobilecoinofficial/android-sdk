@@ -13,8 +13,8 @@ import com.mobilecoin.lib.log.Logger;
  * Encapsulates the abstraction of a native MaskedAmount with a JNI link to control the native
  * counterpart.
  */
-final class MaskedAmountV1 extends MaskedAmount {
-    private final static String TAG = MaskedAmountV1.class.getName();
+final class MaskedAmountV2 extends MaskedAmount {
+    private final static String TAG = MaskedAmountV2.class.getName();
     private final MobileCoinAPI.MaskedAmount protoBufMaskedAmount;
 
     /**
@@ -23,7 +23,7 @@ final class MaskedAmountV1 extends MaskedAmount {
      * @param commitment  A Pedersen commitment {@code v*G + s*H}
      * @param maskedValue {@code masked_value = value XOR_8 Blake2B(value_mask || shared_secret)}
      */
-    MaskedAmountV1(@NonNull byte[] commitment, long maskedValue, @NonNull byte maskedTokenId[]) throws AmountDecoderException {
+    MaskedAmountV2(@NonNull byte[] commitment, long maskedValue, @NonNull byte maskedTokenId[]) throws AmountDecoderException {
         protoBufMaskedAmount = MobileCoinAPI.MaskedAmount.newBuilder()
                 .setCommitment(MobileCoinAPI.CompressedRistretto.newBuilder()
                         .setData(ByteString.copyFrom(commitment)).build())
@@ -49,21 +49,21 @@ final class MaskedAmountV1 extends MaskedAmount {
      * @param txOutSharedSecret  A {@link RistrettoPublic} representing the shared secret.
      * @param maskedValue {@code masked_value = value XOR_8 Blake2B(value_mask || shared_secret)}
      */
-    MaskedAmountV1(@NonNull RistrettoPublic txOutSharedSecret,
+    MaskedAmountV2(@NonNull RistrettoPublic txOutSharedSecret,
                    long maskedValue,
                    @NonNull byte maskedTokenId[]
     ) throws AmountDecoderException {
         try {
             init_jni_with_secret(
-                txOutSharedSecret,
-                maskedValue,
-                maskedTokenId
+                    txOutSharedSecret,
+                    maskedValue,
+                    maskedTokenId
             );
             byte[] amountBytes = get_bytes();
             protoBufMaskedAmount = MobileCoinAPI.MaskedAmount.parseFrom(amountBytes);
         } catch (Exception exception) {
             AmountDecoderException amountDecoderException = new AmountDecoderException("Unable to" +
-                " initialize MaskedAmount object", exception);
+                    " initialize MaskedAmount object", exception);
             Util.logException(TAG, amountDecoderException);
             throw amountDecoderException;
         }
@@ -72,7 +72,7 @@ final class MaskedAmountV1 extends MaskedAmount {
     /**
      * Constructs native MaskedAmount object from the protocol buffer
      */
-    MaskedAmountV1(@NonNull MobileCoinAPI.MaskedAmount amount) throws AmountDecoderException {
+    MaskedAmountV2(@NonNull MobileCoinAPI.MaskedAmount amount) throws AmountDecoderException {
         this(
                 amount.getCommitment().getData().toByteArray(),
                 amount.getMaskedValue(),
@@ -83,10 +83,10 @@ final class MaskedAmountV1 extends MaskedAmount {
     /**
      * Constructs native MaskedAmount object from the protocol buffer
      */
-    static MaskedAmountV1 fromProtoBufObject(@NonNull MobileCoinAPI.MaskedAmount protoBuf)
+    static MaskedAmountV2 fromProtoBufObject(@NonNull MobileCoinAPI.MaskedAmount protoBuf)
             throws AmountDecoderException {
         Logger.i(TAG, "Deserializing amount from protobuf object");
-        return new MaskedAmountV1(protoBuf);
+        return new MaskedAmountV2(protoBuf);
     }
 
     /**
@@ -124,8 +124,8 @@ final class MaskedAmountV1 extends MaskedAmount {
      */
     @NonNull
     Amount unmaskAmount(
-        @NonNull RistrettoPrivate viewKey,
-        @NonNull RistrettoPublic txPubKey
+            @NonNull RistrettoPrivate viewKey,
+            @NonNull RistrettoPublic txPubKey
     ) throws AmountDecoderException {
         Logger.i(TAG, "Unmasking amount");
         try {
@@ -165,9 +165,9 @@ final class MaskedAmountV1 extends MaskedAmount {
     );
 
     private native void init_jni_with_secret(
-        @NonNull RistrettoPublic txOutSharedSecret,
-        long maskedValue,
-        @NonNull byte maskedTokenId[]
+            @NonNull RistrettoPublic txOutSharedSecret,
+            long maskedValue,
+            @NonNull byte maskedTokenId[]
     );
 
     private native byte[] get_bytes();
