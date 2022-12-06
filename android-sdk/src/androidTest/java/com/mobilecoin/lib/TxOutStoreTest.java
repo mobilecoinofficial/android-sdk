@@ -223,7 +223,8 @@ public class TxOutStoreTest {
         //build FogSeed
         FogSeed fogSeed = mock(FogSeed.class);
         when(fogSeed.isObsolete()).thenReturn(false);
-        when(fogSeed.getNextN(anyLong())).thenReturn(new byte[1][32]);
+        when(fogSeed.getNextN(anyLong())).thenAnswer(invocation ->
+                new byte[((Number)invocation.getArgument(0)).intValue()][32]);
         when(fogSeed.getOutput()).thenReturn(new byte[32]);
 
         //build FogSeedProvider
