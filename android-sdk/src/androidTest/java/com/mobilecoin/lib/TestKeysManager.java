@@ -28,7 +28,7 @@ class TestKeysManager {
         ArrayList<String> strings = new ArrayList<>();
         while (scanner.hasNext()) {
             String string = scanner.next();
-            strings.add(string);
+            strings.add(string.trim());
         }
         return strings.toArray(new String[0]);
     }
