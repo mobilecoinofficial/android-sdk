@@ -6,7 +6,7 @@ import androidx.annotation.VisibleForTesting;
 
 @VisibleForTesting
 public class Environment {
-    public static final TestEnvironment CURRENT_TEST_ENV = TestEnvironment.ALPHA;
+    public static final TestEnvironment CURRENT_TEST_ENV = TestEnvironment.MOBILE_DEV;
 
     static public TestFogConfig getTestFogConfig() {
         return TestFogConfig.getFogConfig(CURRENT_TEST_ENV);

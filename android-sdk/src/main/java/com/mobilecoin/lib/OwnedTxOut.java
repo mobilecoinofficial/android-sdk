@@ -104,9 +104,13 @@ public class OwnedTxOut implements Parcelable {
             }
 
             MobileCoinAPI.TxOut.Builder txOutProtoBuilder = MobileCoinAPI.TxOut.newBuilder()
-                    .setMaskedAmountV1(maskedAmount.toProtoBufObject())
                     .setPublicKey(txOutPublicKeyProto)
                     .setTargetKey(txOutTargetKeyProto);
+            if(maskedAmount instanceof MaskedAmountV2) {
+                txOutProtoBuilder.setMaskedAmountV2(maskedAmount.toProtoBufObject());
+            } else {
+                txOutProtoBuilder.setMaskedAmountV1(maskedAmount.toProtoBufObject());
+            }
             if (!txOutRecord.getTxOutEMemoData().isEmpty()) {
                 EncryptedMemo encryptedMemo = EncryptedMemo.newBuilder()
                     .setData(txOutRecord.getTxOutEMemoData()).build();
