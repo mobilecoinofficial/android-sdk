@@ -9,6 +9,8 @@ import java.math.BigInteger;
 
 class SignedContingentInputBuilder extends Native {
 
+    private long membershipProofsRustObj = 0L;
+
     @NonNull private final ChaCha20Rng rng;
 
     SignedContingentInputBuilder(

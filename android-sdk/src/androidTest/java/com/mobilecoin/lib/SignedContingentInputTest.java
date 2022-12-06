@@ -8,6 +8,8 @@ import android.os.Parcel;
 
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 
+import com.mobilecoin.lib.log.Logger;
+
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -22,6 +24,8 @@ public class SignedContingentInputTest {
 
     @Test
     public void testSignedContingentInputBuilder() throws Exception {
+
+        if(Environment.CURRENT_TEST_ENV != Environment.TestEnvironment.MOBILE_DEV) return;
 
         final MobileCoinClient client = MobileCoinClientBuilder.newBuilder().build();
 
@@ -59,6 +63,8 @@ public class SignedContingentInputTest {
     @Test
     public void testCancelSignedContingentInput() throws Exception {
 
+        if(Environment.CURRENT_TEST_ENV != Environment.TestEnvironment.MOBILE_DEV) return;
+
         final MobileCoinClient client = MobileCoinClientBuilder.newBuilder().build();
         final MobileCoinClient otherClient = MobileCoinClientBuilder.newBuilder().build();
 
@@ -81,20 +87,42 @@ public class SignedContingentInputTest {
     @Test
     public void testBuildTransactionWithPresignedInput() throws Exception {
 
+        if(Environment.CURRENT_TEST_ENV != Environment.TestEnvironment.MOBILE_DEV) return;
+
         final MobileCoinClient builderClient = MobileCoinClientBuilder.newBuilder().build();
         final MobileCoinClient consumerClient = MobileCoinClientBuilder.newBuilder().build();
 
-        final Amount requiredAmount = new Amount(new BigInteger("10000000"), eUSD);
+        final Map<TokenId, Balance> builderBalancesBefore = builderClient.getBalances();
+        final Map<TokenId, Balance> consumerBalancesBefore = consumerClient.getBalances();
+
+        final Amount requiredAmount = new Amount(new BigInteger("100"), eUSD);
+        final Amount fee = consumerClient.getOrFetchMinimumTxFee(TokenId.MOB);
+        final Amount rewardAmount = fee.multiply(Amount.ofMOB(BigInteger.TEN));
+
         final SignedContingentInput sci = builderClient.createSignedContingentInput(
-                Amount.ofMOB(new BigInteger("10000000000000")),
+                rewardAmount,
                 requiredAmount
         );
 
         assertTrue(sci.isValid());
 
-        final Amount fee = consumerClient.getOrFetchMinimumTxFee(TokenId.MOB);
+        Transaction transaction = consumerClient.prepareTransaction(sci, fee);
+        consumerClient.submitTransaction(transaction);
 
-        consumerClient.prepareTransaction(sci, fee);
+        Thread.sleep(10000L);// TODO: Create working wait for transaction status for SCI transactions
+
+        // Check that builder client received required amount
+        assertEquals(builderBalancesBefore.get(eUSD).getValue().add(requiredAmount.getValue()), builderClient.getBalance(eUSD).getValue());
+        // Check that builder client spent the reward amount
+        assertEquals(builderBalancesBefore.get(TokenId.MOB).getValue().subtract(rewardAmount.getValue()), builderClient.getBalance(TokenId.MOB).getValue());
+
+        // Check the consumer client received reward amount minus fees
+        assertEquals(consumerBalancesBefore.get(TokenId.MOB).getValue().add(rewardAmount.getValue().subtract(fee.getValue())), consumerClient.getBalance(TokenId.MOB).getValue());
+        // Check that the consumer client spent the required amount
+        assertEquals(consumerBalancesBefore.get(eUSD).getValue().subtract(requiredAmount.getValue()), consumerClient.getBalance(eUSD).getValue());
+
+        builderClient.shutdown();
+        consumerClient.shutdown();
 
     }
 

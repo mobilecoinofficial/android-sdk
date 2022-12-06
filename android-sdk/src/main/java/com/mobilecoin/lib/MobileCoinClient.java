@@ -362,7 +362,7 @@ public final class MobileCoinClient implements MobileCoinAccountClient, MobileCo
         }
 
         UnsignedLong blockIndex = txOutStore.getCurrentBlockIndex();
-        UnsignedLong tombstoneBlockIndex = blockIndex.add(UnsignedLong.fromLongBits(100L));// TODO: what is sensible here?
+        UnsignedLong tombstoneBlockIndex = blockIndex.add(UnsignedLong.fromLongBits(50L));
         HashSet<FogUri> reportUris = new HashSet<>();
         try {
             reportUris.add(new FogUri(accountKey.getFogReportUri()));
@@ -399,7 +399,7 @@ public final class MobileCoinClient implements MobileCoinAccountClient, MobileCo
         final Ring ring = getRingsForUTXOs(
                 txos,
                 getTxOutStore().getLedgerTotalTxCount(),
-                DefaultRng.createInstance()// TODO: HERE! pass RNG?
+                DefaultRng.createInstance()
         ).get(0);
         FogReportResponses reportsResponse = fogReportsManager.fetchReports(reportUris,
                 tombstoneBlockIndex, clientConfig.report);
@@ -418,6 +418,8 @@ public final class MobileCoinClient implements MobileCoinAccountClient, MobileCo
                 onetimePrivateKey,
                 accountKey.getViewKey()
         );
+
+        sciBuilder.setTombstoneBlockIndex(tombstoneBlockIndex);
 
         final Amount changeAmount = txOutToSpend.getAmount().subtract(amountToSend);
         sciBuilder.addRequiredChangeOutput(
@@ -482,7 +484,7 @@ public final class MobileCoinClient implements MobileCoinAccountClient, MobileCo
             submitTransaction(spendInputTransaction);
         } catch(InvalidTransactionException e) {
             switch(e.getResult()) {
-                case ContainsSpentKeyImage:// TODO: can we figure out if we already successfully canceled?
+                case ContainsSpentKeyImage:
                     Logger.i(TAG, "Failed to cancel previously spent SignedContingentInput");
                     return SignedContingentInput.CancelationResult.FAILED_ALREADY_SPENT;
                 default:
@@ -562,7 +564,7 @@ public final class MobileCoinClient implements MobileCoinAccountClient, MobileCo
 
         final TransactionBuilder txBuilder = new TransactionBuilder(
                 new FogResolver(reportsResponse, clientConfig.report.getVerifier()),
-                TxOutMemoBuilder.createSenderAndDestinationRTHMemoBuilder(accountKey),
+                TxOutMemoBuilder.createDefaultRTHMemoBuilder(),
                 blockVersion,
                 fee.getTokenId(),
                 fee,
@@ -617,7 +619,7 @@ public final class MobileCoinClient implements MobileCoinAccountClient, MobileCo
 
         txBuilder.addPresignedInput(presignedInput);
         txBuilder.addOutput(
-                amountToReceive.subtract(fee),// TODO: fee has to be paid in same token being received?
+                amountToReceive.subtract(fee),
                 accountKey.getPublicAddress(),
                 null
         );

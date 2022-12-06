@@ -36,6 +36,7 @@ class TestKeysManager {
     static int getTotalTestKeysCount() {
         switch(Environment.CURRENT_TEST_ENV) {
             case ALPHA:
+            case MOBILE_DEV:
                 return devNetRootEntropies.length;
             case TEST_NET:
                 return testNetMnemonics.length;
