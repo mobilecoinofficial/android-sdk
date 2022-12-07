@@ -536,6 +536,8 @@ public final class MobileCoinClient implements MobileCoinAccountClient, MobileCo
             throw new UnsupportedOperationException("Unsupported until block version 3");
         }
 
+        final byte[] rngSeed = rng.nextBytes(ChaCha20Rng.SEED_SIZE_BYTES);
+
         final Amount amountToSend = presignedInput.getRequiredAmount();
         final Amount amountToReceive = presignedInput.getRewardAmount();
         if(!fee.getTokenId().equals(amountToReceive.getTokenId())) {
@@ -568,7 +570,7 @@ public final class MobileCoinClient implements MobileCoinAccountClient, MobileCo
                 blockVersion,
                 fee.getTokenId(),
                 fee,
-                rng
+                rngSeed
         );
 
         final TokenId tokenId = amountToSend.getTokenId();
