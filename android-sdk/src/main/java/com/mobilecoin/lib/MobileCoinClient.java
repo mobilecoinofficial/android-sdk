@@ -74,7 +74,7 @@ public final class MobileCoinClient implements MobileCoinAccountClient, MobileCo
     private static final long DEFAULT_NEW_TX_BLOCK_ATTEMPTS = 50;
     private final AccountKey accountKey;
     private final TxOutStore txOutStore;
-    final ClientConfig clientConfig;
+    private final ClientConfig clientConfig;
     private final StorageAdapter cacheStorage;
     final FogReportsManager fogReportsManager;
     final FogBlockClient fogBlockClient;
@@ -354,7 +354,7 @@ public final class MobileCoinClient implements MobileCoinAccountClient, MobileCo
     ) throws InsufficientFundsException, NetworkException, FogReportException, FragmentedAccountException,
             AttestationException, InvalidFogResponse, TransactionBuilderException, SignedContingentInputBuilderException, FogSyncException {
         final int blockVersion = blockchainClient.getOrFetchNetworkBlockVersion();
-        if(blockVersion < 3) throw new UnsupportedOperationException("Unsupported until block version 3");
+        if(blockVersion < 3) throw new SignedContingentInputBuilderException("Unsupported until block version 3");
         final TokenId tokenId = amountToSend.getTokenId();
         final Balance availableBalance = getBalance(tokenId);
         if(availableBalance.getValue().compareTo(amountToSend.getValue()) < 0) {
@@ -533,7 +533,7 @@ public final class MobileCoinClient implements MobileCoinAccountClient, MobileCo
         }
         int blockVersion = blockchainClient.getOrFetchNetworkBlockVersion();
         if(blockVersion < 3) {
-            throw new UnsupportedOperationException("Unsupported until block version 3");
+            throw new TransactionBuilderException("Unsupported until block version 3");
         }
 
         final byte[] rngSeed = rng.nextBytes(ChaCha20Rng.SEED_SIZE_BYTES);
