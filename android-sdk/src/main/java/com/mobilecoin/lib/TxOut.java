@@ -86,7 +86,9 @@ final class TxOut extends Native {
     @NonNull
     public MaskedAmount getMaskedAmount() {
         try {
-            return MaskedAmount.fromProtoBufObject(protoBufTxOut.getMaskedAmount());
+            return (protoBufTxOut.hasMaskedAmountV2()) ?
+                    MaskedAmountV2.fromProtoBufObject(protoBufTxOut.getMaskedAmountV2()) :
+                    MaskedAmountV1.fromProtoBufObject(protoBufTxOut.getMaskedAmountV1());
         } catch (AmountDecoderException exception) {
             // the amount is validated during the object construction
             IllegalStateException illegalStateException = new IllegalStateException(exception);
@@ -150,6 +152,10 @@ final class TxOut extends Native {
         super.finalize();
     }
 
+    UnsignedLong getSubaddressIndex(@NonNull AccountKey accountKey) {
+        return UnsignedLong.fromLongBits(get_subaddress_index(accountKey));
+    }
+
     @NonNull
     byte[] computeKeyImage(AccountKey accountKey) {
         return compute_key_image(accountKey);
@@ -163,6 +169,8 @@ final class TxOut extends Native {
     private native void init_from_protobuf_bytes(@NonNull byte[] data);
 
     private native void finalize_jni();
+
+    private native long get_subaddress_index(@NonNull AccountKey accountKey);
 
     @NonNull
     private native byte[] compute_key_image(@NonNull AccountKey account_key);

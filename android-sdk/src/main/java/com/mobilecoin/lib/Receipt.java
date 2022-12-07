@@ -50,7 +50,13 @@ public final class Receipt {
     ) {
         MobileCoinAPI.Receipt.Builder receiptBuilder = MobileCoinAPI.Receipt.newBuilder();
         receiptBuilder.setTombstoneBlock(tombstoneBlockIndex.longValue());
-        receiptBuilder.setMaskedAmount(maskedAmount.toProtoBufObject());
+        if(maskedAmount instanceof MaskedAmountV2) {
+            receiptBuilder.setMaskedAmountV2(((MaskedAmountV2)maskedAmount).toProtoBufObject());
+        } else if(maskedAmount instanceof MaskedAmountV1) {
+            receiptBuilder.setMaskedAmountV1(((MaskedAmountV1)maskedAmount).toProtoBufObject());
+        } else {
+            throw new IllegalArgumentException("Unsupported MaskedAmount version");
+        }
         receiptBuilder.setConfirmation(MobileCoinAPI.TxOutConfirmationNumber.newBuilder()
                 .setHash(ByteString.copyFrom(confirmationHash))
                 .build());
@@ -131,18 +137,12 @@ public final class Receipt {
      */
     @NonNull
     public Amount getAmountData(@NonNull AccountKey accountKey) throws AmountDecoderException {
-        if (!receiptBuf.hasMaskedAmount()) {
+        if (!receiptBuf.hasMaskedAmountV1() && !receiptBuf.hasMaskedAmountV2()) {
             throw new AmountDecoderException("Receipt does not contain an encoded Amount");
         }
-        MobileCoinAPI.MaskedAmount protoMaskedAmount = receiptBuf.getMaskedAmount();
-        byte commitment[] = protoMaskedAmount.getCommitment().getData().toByteArray();
-        long maskedValue = protoMaskedAmount.getMaskedValue();
-        byte maskedTokenId[] = protoMaskedAmount.getMaskedTokenId().toByteArray();
-        MaskedAmount maskedAmount = new MaskedAmount(
-                commitment,
-                maskedValue,
-                maskedTokenId
-        );
+        MaskedAmount maskedAmount = receiptBuf.hasMaskedAmountV2() ?
+                MaskedAmountV2.fromProtoBufObject(receiptBuf.getMaskedAmountV2()) :
+                MaskedAmountV1.fromProtoBufObject(receiptBuf.getMaskedAmountV1());
         return maskedAmount.unmaskAmount(
                 accountKey.getViewKey(),
                 getPublicKey()

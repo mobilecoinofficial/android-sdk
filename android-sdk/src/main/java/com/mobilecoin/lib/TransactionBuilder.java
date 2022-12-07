@@ -17,12 +17,16 @@ import java.util.Locale;
 final class TransactionBuilder extends Native {
     private static final String TAG = TransactionBuilder.class.getName();
 
+    @NonNull
+    private final ChaCha20Rng rng;
+
     TransactionBuilder(
         @NonNull FogResolver fogResolver,
         @NonNull TxOutMemoBuilder txOutMemoBuilder,
         int blockVersion,
         @NonNull TokenId tokenId,
-        @NonNull Amount fee
+        @NonNull Amount fee,
+        @NonNull final byte[] rngSeed
     ) throws FogReportException {
         try {
             init_jni(
@@ -32,9 +36,27 @@ final class TransactionBuilder extends Native {
                     tokenId.getId().longValue(),
                     fee.getValue().longValue()
             );
+            this.rng = ChaCha20Rng.fromSeed(rngSeed);
         } catch (Exception exception) {
             throw new FogReportException("Unable to create TxBuilder", exception);
         }
+    }
+
+    TransactionBuilder(
+            @NonNull FogResolver fogResolver,
+            @NonNull TxOutMemoBuilder txOutMemoBuilder,
+            int blockVersion,
+            @NonNull TokenId tokenId,
+            @NonNull Amount fee
+    ) throws FogReportException {
+        this(
+                fogResolver,
+                txOutMemoBuilder,
+                blockVersion,
+                tokenId,
+                fee,
+                DefaultRng.createInstance().nextBytes(ChaCha20Rng.SEED_SIZE_BYTES)
+        );
     }
 
     void addInput(
@@ -58,18 +80,30 @@ final class TransactionBuilder extends Native {
         }
     }
 
+    void addPresignedInput(@NonNull final SignedContingentInput sci) throws TransactionBuilderException {
+        try {
+            add_presigned_input(sci);
+        } catch(Exception e) {
+            Logger.e(TAG, "Unable to add SignedContingentInput", e);
+            throw new TransactionBuilderException("Unable to add SignedContingentInput", e);
+        }
+    }
+
     @NonNull
     TxOutContext addOutput(
-            @NonNull BigInteger value,
+            @NonNull Amount amount,
             @NonNull PublicAddress recipient,
             @Nullable byte[] confirmationNumberOut
     ) throws TransactionBuilderException {
         Logger.i(TAG, "Adding transaction output");
         byte[] confirmationOut = new byte[Receipt.CONFIRMATION_NUMBER_LENGTH];
         try {
-            long rustObj = add_output(value,
+            long rustObj = add_output(
+                    amount.getValue(),
+                    amount.getTokenId().getId().longValue(),
                     recipient,
-                    confirmationOut
+                    confirmationOut,
+                    this.rng
             );
             if (confirmationNumberOut != null) {
                 if (confirmationNumberOut.length < Receipt.CONFIRMATION_NUMBER_LENGTH) {
@@ -87,14 +121,20 @@ final class TransactionBuilder extends Native {
 
     @NonNull
     TxOutContext addChangeOutput(
-        @NonNull BigInteger value,
+        @NonNull Amount amount,
         @NonNull AccountKey accountKey,
         @Nullable byte[] confirmationNumberOut
     ) throws TransactionBuilderException {
         Logger.i(TAG, "Adding transaction output");
         byte[] confirmationOut = new byte[Receipt.CONFIRMATION_NUMBER_LENGTH];
         try {
-            long rustObj = add_change_output(value, accountKey, confirmationOut);
+            long rustObj = add_change_output(
+                    amount.getValue(),
+                    amount.getTokenId().getId().longValue(),
+                    accountKey,
+                    confirmationOut,
+                    this.rng
+            );
             if (confirmationNumberOut != null) {
                 if (confirmationNumberOut.length < Receipt.CONFIRMATION_NUMBER_LENGTH) {
                     throw new IllegalArgumentException("ConfirmationNumber buffer is too small");
@@ -107,6 +147,11 @@ final class TransactionBuilder extends Native {
             Logger.e(TAG, "Unable to add transaction change output", exception);
             throw new TransactionBuilderException(exception.getLocalizedMessage(), exception);
         }
+    }
+
+    @NonNull
+    ChaCha20Rng getRng() {
+        return this.rng;
     }
 
     void setTombstoneBlockIndex(@NonNull UnsignedLong value) throws TransactionBuilderException {
@@ -133,7 +178,7 @@ final class TransactionBuilder extends Native {
     public Transaction build() throws TransactionBuilderException {
         Logger.i(TAG, "Building the native transaction");
         try {
-            long rustTx = build_tx();
+            long rustTx = build_tx(this.rng);
             return Transaction.fromJNI(rustTx);
         } catch (Exception exception) {
             Logger.e(TAG, "Unable to set transaction fee", exception);
@@ -170,19 +215,25 @@ final class TransactionBuilder extends Native {
 
     private native long add_output(
             @NonNull BigInteger value,
+            long tokenId,
             @NonNull PublicAddress recipient,
-            @NonNull byte[] confirmationNumberOut
+            @NonNull byte[] confirmationNumberOut,
+            @NonNull ChaCha20Rng rng
     );
 
     private native long add_change_output(
         @NonNull BigInteger value,
+        long tokenId,
         @NonNull AccountKey accountKey,
-        @NonNull byte[] confirmationNumberOut
+        @NonNull byte[] confirmationNumberOut,
+        @NonNull ChaCha20Rng rng
     );
+
+    private native void add_presigned_input(@NonNull SignedContingentInput signedInput);
 
     private native void set_tombstone_block(long value);
 
     private native void set_fee(long value);
 
-    private native long build_tx();
+    private native long build_tx(@NonNull ChaCha20Rng rng);
 }

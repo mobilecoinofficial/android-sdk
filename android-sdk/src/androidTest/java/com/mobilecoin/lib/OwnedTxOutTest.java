@@ -24,7 +24,6 @@ import org.junit.runners.JUnit4;
 
 import java.math.BigInteger;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -203,10 +202,10 @@ public class OwnedTxOutTest {
     // Test valid with commitment
     RistrettoPublic txOutSharedSecret =
             Util.getSharedSecret(receiverAccountKey.getViewKey(), txOutFromCrc32.getPublicKey());
-    byte validCommitmentData[] = new MaskedAmount(
+    byte validCommitmentData[] = new MaskedAmountV1(
             txOutSharedSecret,
             recordWithCrc32.getTxOutAmountMaskedValue(),
-            recordWithCrc32.getTxOutAmountMaskedTokenId().toByteArray()
+            recordWithCrc32.getTxOutAmountMaskedV1TokenId().toByteArray()
     ).getCommitment();
     TxOutRecord recordWithCommitment = TxOutRecord.newBuilder(recordWithCrc32)
             .setTxOutAmountCommitmentDataCrc32(0)

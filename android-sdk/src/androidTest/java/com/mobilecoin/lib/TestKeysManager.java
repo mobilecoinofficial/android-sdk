@@ -28,7 +28,7 @@ class TestKeysManager {
         ArrayList<String> strings = new ArrayList<>();
         while (scanner.hasNext()) {
             String string = scanner.next();
-            strings.add(string);
+            strings.add(string.trim());
         }
         return strings.toArray(new String[0]);
     }
@@ -36,6 +36,7 @@ class TestKeysManager {
     static int getTotalTestKeysCount() {
         switch(Environment.CURRENT_TEST_ENV) {
             case ALPHA:
+            case MOBILE_DEV:
                 return devNetRootEntropies.length;
             case TEST_NET:
                 return testNetMnemonics.length;
@@ -63,6 +64,7 @@ class TestKeysManager {
                     throw new IllegalStateException("Bug: All test keys must be valid");
                 }
             case ALPHA:
+            case MOBILE_DEV:
                 if (currentAccountIndex >= devNetRootEntropies.length) {
                     currentAccountIndex = 0;
                 }
@@ -78,7 +80,6 @@ class TestKeysManager {
                             devNetRootEntropies[currentAccountIndex - 1] + "\", " +
                             getTotalTestKeysCount(), exception);
                 }
-            case MOBILE_DEV:
             default:
                 if (currentAccountIndex >= devNetMnemonics.length) {
                     currentAccountIndex = 0;

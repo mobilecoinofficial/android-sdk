@@ -17,7 +17,7 @@ public class Environment {
     }
 
     enum TestEnvironment {
-        MOBILE_DEV("mobiledev"),
+        MOBILE_DEV("mc-dev-testing.development"),
         ALPHA("alpha.development"),
         TEST_NET("test");
 

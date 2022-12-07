@@ -206,11 +206,9 @@ public class TokenIdTest {
     @Test
     public void testAccountHasBalance() throws Exception {
         if(Environment.CURRENT_TEST_ENV != Environment.TestEnvironment.MOBILE_DEV) return;// TODO: remove check when token IDs on other nets
-        MobileCoinClient client = MobileCoinClientBuilder.newBuilder()
-                .setAccountKey(createAccountKeyFromMnemonic(ACCOUNT_WITH_MOBUSD_1))
-                .build();
+        MobileCoinClient client = MobileCoinClientBuilder.newBuilder().build();
         Balance mobBalance = client.getBalance(TokenId.MOB);
-        Balance mobUsdBalance = client.getBalance(TokenId.from(UnsignedLong.ONE));//TODO: Update with KnownTokenId
+        Balance mobUsdBalance = client.getBalance(eUSD);
         assertTrue("0 MOB balance",
                 mobBalance.getValue().compareTo(BigInteger.ZERO) > 0);
         assertTrue("0 MOB USD balance",
@@ -221,12 +219,8 @@ public class TokenIdTest {
     @Test
     public void testGetBalances() throws Exception {
         if(Environment.CURRENT_TEST_ENV != Environment.TestEnvironment.MOBILE_DEV) return;// TODO: remove check when token IDs on other nets
-        MobileCoinClient client1 = MobileCoinClientBuilder.newBuilder()
-                .setAccountKey(createAccountKeyFromMnemonic(ACCOUNT_WITH_MOBUSD_1))
-                .build();
-        MobileCoinClient client2 = MobileCoinClientBuilder.newBuilder()
-                .setAccountKey(createAccountKeyFromMnemonic(ACCOUNT_WITH_MOBUSD_2))
-                .build();
+        MobileCoinClient client1 = MobileCoinClientBuilder.newBuilder().build();
+        MobileCoinClient client2 = MobileCoinClientBuilder.newBuilder().build();
         Map<TokenId, Balance> client1Balances = client1.getBalances();
         for(Map.Entry<TokenId, Balance> entry : client1Balances.entrySet()) {
             assertEquals(entry.getValue().getValue(), client1.getBalance(entry.getKey()).getValue());
@@ -242,20 +236,15 @@ public class TokenIdTest {
     @Test
     public void testMobUsdTransfer() throws Exception {
         if(Environment.CURRENT_TEST_ENV != Environment.TestEnvironment.MOBILE_DEV) return;// TODO: remove check when token IDs on other nets
-        MobileCoinClient senderClient = MobileCoinClientBuilder.newBuilder()
-                .setAccountKey(createAccountKeyFromMnemonic(ACCOUNT_WITH_MOBUSD_1))
-                .build();
-        MobileCoinClient recipientClient = MobileCoinClientBuilder.newBuilder()
-                .setAccountKey(createAccountKeyFromMnemonic(ACCOUNT_WITH_MOBUSD_2))
-                .build();
+        MobileCoinClient senderClient = MobileCoinClientBuilder.newBuilder().build();
+        MobileCoinClient recipientClient = MobileCoinClientBuilder.newBuilder().build();
 
-        //TODO: update with KnownTokenId
         Balance senderMobBalanceBefore = senderClient.getBalance(TokenId.MOB);
-        Balance senderMobUsdBalanceBefore = senderClient.getBalance(TokenId.from(UnsignedLong.ONE));
+        Balance senderMobUsdBalanceBefore = senderClient.getBalance(eUSD);
         Balance recipientMobBalanceBefore = recipientClient.getBalance(TokenId.MOB);
-        Balance recipientMobUsdBalanceBefore = recipientClient.getBalance(TokenId.from(UnsignedLong.ONE));
+        Balance recipientMobUsdBalanceBefore = recipientClient.getBalance(eUSD);
 
-        Amount amountToSend = new Amount(BigInteger.TEN, TokenId.from(UnsignedLong.ONE));//TODO: update with KnownTokenId
+        Amount amountToSend = new Amount(BigInteger.TEN, eUSD);
         Amount fee = senderClient.estimateTotalFee(amountToSend);
         PendingTransaction pendingTransaction =
             senderClient.prepareTransaction(
@@ -267,11 +256,10 @@ public class TokenIdTest {
         senderClient.submitTransaction(pendingTransaction.getTransaction());
         UtilTest.waitForTransactionStatus(senderClient, pendingTransaction.getTransaction());
 
-        //TODO: update with KnownTokenId
         Balance senderMobBalanceAfter = senderClient.getBalance(TokenId.MOB);
-        Balance senderMobUsdBalanceAfter = senderClient.getBalance(TokenId.from(UnsignedLong.ONE));
+        Balance senderMobUsdBalanceAfter = senderClient.getBalance(eUSD);
         Balance recipientMobBalanceAfter = recipientClient.getBalance(TokenId.MOB);
-        Balance recipientMobUsdBalanceAfter = recipientClient.getBalance(TokenId.from(UnsignedLong.ONE));
+        Balance recipientMobUsdBalanceAfter = recipientClient.getBalance(eUSD);
 
         //Check that MOB USD balances updated and MOB balances didn't
         assertEquals(senderMobBalanceBefore.getValue(), senderMobBalanceAfter.getValue());
@@ -296,16 +284,12 @@ public class TokenIdTest {
     @Test
     public void testMobUSDWithWrongFee() throws Exception {
         if(Environment.CURRENT_TEST_ENV != Environment.TestEnvironment.MOBILE_DEV) return;// TODO: remove check when token IDs on other nets
-        MobileCoinClient senderClient = MobileCoinClientBuilder.newBuilder()
-                .setAccountKey(createAccountKeyFromMnemonic(ACCOUNT_WITH_MOBUSD_1))
-                .build();
-        PublicAddress recipientAddress = createAccountKeyFromMnemonic(ACCOUNT_WITH_MOBUSD_2).getPublicAddress();
-        //TODO: update with KnownTokenId
-        Amount amountToSend = new Amount(new BigInteger("43252"), TokenId.from(UnsignedLong.ONE));
+        MobileCoinClient senderClient = MobileCoinClientBuilder.newBuilder().build();
+        PublicAddress recipientAddress = TestKeysManager.getNextAccountKey().getPublicAddress();
+        Amount amountToSend = new Amount(new BigInteger("43252"), eUSD);
         Amount fee = senderClient
                 .estimateTotalFee(amountToSend);
-        //TODO: update with KnownTokenId
-        fee = fee.divide(new Amount(BigInteger.TEN, TokenId.from(UnsignedLong.ONE)));
+        fee = fee.divide(new Amount(BigInteger.TEN, eUSD));
         PendingTransaction pendingTransaction = senderClient.prepareTransaction(
                 recipientAddress,
                 amountToSend,
@@ -324,23 +308,18 @@ public class TokenIdTest {
     @Test
     public void testMobUsdSnapshotTransfer() throws Exception {
         if(Environment.CURRENT_TEST_ENV != Environment.TestEnvironment.MOBILE_DEV) return;// TODO: remove check when token IDs on other nets
-        MobileCoinClient senderClient = MobileCoinClientBuilder.newBuilder()
-                .setAccountKey(createAccountKeyFromMnemonic(ACCOUNT_WITH_MOBUSD_1))
-                .build();
-        MobileCoinClient recipientClient = MobileCoinClientBuilder.newBuilder()
-                .setAccountKey(createAccountKeyFromMnemonic(ACCOUNT_WITH_MOBUSD_2))
-                .build();
+        MobileCoinClient senderClient = MobileCoinClientBuilder.newBuilder().build();
+        MobileCoinClient recipientClient = MobileCoinClientBuilder.newBuilder().build();
 
         AccountSnapshot snapshot = senderClient.getAccountSnapshot();
 
-        //TODO: update with KnownTokenId
         Balance senderMobBalanceBefore = snapshot.getBalance(TokenId.MOB);
-        Balance senderMobUsdBalanceBefore = snapshot.getBalance(TokenId.from(UnsignedLong.ONE));
+        Balance senderMobUsdBalanceBefore = snapshot.getBalance(eUSD);
         Balance recipientMobBalanceBefore = recipientClient.getBalance(TokenId.MOB);
-        Balance recipientMobUsdBalanceBefore = recipientClient.getBalance(TokenId.from(UnsignedLong.ONE));
+        Balance recipientMobUsdBalanceBefore = recipientClient.getBalance(eUSD);
 
-        Amount amountToSend = new Amount(BigInteger.TEN, TokenId.from(UnsignedLong.ONE));//TODO: update with KnownTokenId
-        Amount fee = snapshot.estimateTotalFee(amountToSend, senderClient.getOrFetchMinimumTxFee(TokenId.from(UnsignedLong.ONE)));
+        Amount amountToSend = new Amount(BigInteger.TEN, eUSD);
+        Amount fee = snapshot.estimateTotalFee(amountToSend, senderClient.getOrFetchMinimumTxFee(eUSD));
         PendingTransaction pendingTransaction =
                 snapshot.prepareTransaction(
                         recipientClient.getAccountKey().getPublicAddress(),
@@ -351,11 +330,10 @@ public class TokenIdTest {
         senderClient.submitTransaction(pendingTransaction.getTransaction());
         UtilTest.waitForTransactionStatus(senderClient, pendingTransaction.getTransaction());
 
-        //TODO: update with KnownTokenId
         Balance senderMobBalanceAfter = senderClient.getBalance(TokenId.MOB);
-        Balance senderMobUsdBalanceAfter = senderClient.getBalance(TokenId.from(UnsignedLong.ONE));
+        Balance senderMobUsdBalanceAfter = senderClient.getBalance(eUSD);
         Balance recipientMobBalanceAfter = recipientClient.getBalance(TokenId.MOB);
-        Balance recipientMobUsdBalanceAfter = recipientClient.getBalance(TokenId.from(UnsignedLong.ONE));
+        Balance recipientMobUsdBalanceAfter = recipientClient.getBalance(eUSD);
 
         //Check that MOB USD balances updated and MOB balances didn't
         assertEquals(senderMobBalanceBefore.getValue(), senderMobBalanceAfter.getValue());
@@ -377,43 +355,31 @@ public class TokenIdTest {
         recipientClient.shutdown();
     }
 
-    @Test// TODO: Update with KnownTokenId
+    @Test
     public void testClientGetFeeHasCorrectTokenId() throws Exception {
         if(Environment.CURRENT_TEST_ENV != Environment.TestEnvironment.MOBILE_DEV) return;// TODO: remove check when token IDs on other nets
-        AccountKey key = createAccountKeyFromMnemonic(ACCOUNT_WITH_MOBUSD_1);
-        MobileCoinClient client = MobileCoinClientBuilder.newBuilder().setAccountKey(key).build();
+        MobileCoinClient client = MobileCoinClientBuilder.newBuilder().build();
         Amount amountToSendMOB = new Amount(BigInteger.TEN, TokenId.MOB);
         Amount feeMOB = client.estimateTotalFee(amountToSendMOB);
         assertEquals(amountToSendMOB.getTokenId(), feeMOB.getTokenId());
-        Amount amountToSendMOBUSD = new Amount(BigInteger.TEN, TokenId.from(UnsignedLong.ONE));
+        Amount amountToSendMOBUSD = new Amount(BigInteger.TEN, eUSD);
         Amount feeMOBUSD = client.estimateTotalFee(amountToSendMOBUSD);
         assertEquals(amountToSendMOBUSD.getTokenId(), feeMOBUSD.getTokenId());
         client.shutdown();
     }
 
-    @Test// TODO: Update with KnownTokenId
+    @Test
     public void testSnapshotGetFeeHasCorrectTokenId() throws Exception {
         if(Environment.CURRENT_TEST_ENV != Environment.TestEnvironment.MOBILE_DEV) return;// TODO: remove check when token IDs on other nets
-        AccountKey key = createAccountKeyFromMnemonic(ACCOUNT_WITH_MOBUSD_1);
-        MobileCoinClient client = MobileCoinClientBuilder.newBuilder().setAccountKey(key).build();
+        MobileCoinClient client = MobileCoinClientBuilder.newBuilder().build();
         AccountSnapshot snapshot = client.getAccountSnapshot();
         Amount amountToSendMOB = new Amount(BigInteger.TEN, TokenId.MOB);
         Amount feeMOB = snapshot.estimateTotalFee(amountToSendMOB, client.getOrFetchMinimumTxFee(TokenId.MOB));
         assertEquals(amountToSendMOB.getTokenId(), feeMOB.getTokenId());
-        Amount amountToSendMOBUSD = new Amount(BigInteger.TEN, TokenId.from(UnsignedLong.ONE));
-        Amount feeMOBUSD = snapshot.estimateTotalFee(amountToSendMOBUSD, client.getOrFetchMinimumTxFee(TokenId.from(UnsignedLong.ONE)));
+        Amount amountToSendMOBUSD = new Amount(BigInteger.TEN, eUSD);
+        Amount feeMOBUSD = snapshot.estimateTotalFee(amountToSendMOBUSD, client.getOrFetchMinimumTxFee(eUSD));
         assertEquals(amountToSendMOBUSD.getTokenId(), feeMOBUSD.getTokenId());
         client.shutdown();
-    }
-
-    private static AccountKey createAccountKeyFromMnemonic(String mnemonic) throws Exception {
-        return AccountKey.fromMnemonicPhrase(
-                mnemonic,
-                0,
-                Environment.getTestFogConfig().getFogUri(),
-                Environment.getTestFogConfig().getFogReportId(),
-                Environment.getTestFogConfig().getFogAuthoritySpki()
-        );
     }
 
     private static OwnedTxOut createMockTxOut(@NonNull Amount amount) {
@@ -422,7 +388,6 @@ public class TokenIdTest {
         return mock;
     }
 
-    public static final String ACCOUNT_WITH_MOBUSD_1 = "action sphere soft mercy month frown learn renew bottom pattern attend level chat neglect miracle cause decorate convince hand bread live execute grass palace";
-    public static final String ACCOUNT_WITH_MOBUSD_2 = "typical shine grocery luggage lizard latin food warrior achieve leave season furnace seminar else verify toy result style captain cotton spare survey fame panther";
+    private static final TokenId eUSD = TokenId.from(UnsignedLong.fromLongBits(8192L));
 
 }

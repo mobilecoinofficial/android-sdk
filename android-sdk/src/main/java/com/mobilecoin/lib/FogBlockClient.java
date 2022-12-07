@@ -116,15 +116,22 @@ class FogBlockClient extends AnyClient {
             long globalIndexStart = block.getGlobalTxoCount() - block.getOutputsCount();
             List<MobileCoinAPI.TxOut> outputs = block.getOutputsList();
             for (MobileCoinAPI.TxOut txOut : outputs) {
-                View.TxOutRecord record = View.TxOutRecord.newBuilder()
+                View.TxOutRecord.Builder recordBuilder = View.TxOutRecord.newBuilder()
                         .setBlockIndex(block.getIndex())
                         .setTimestamp(block.getTimestamp())
                         .setTxOutGlobalIndex(globalIndexStart + block.getOutputsList().indexOf(txOut))
-                        .setTxOutAmountCommitmentData(txOut.getMaskedAmount().getCommitment().getData())
-                        .setTxOutAmountMaskedValue(txOut.getMaskedAmount().getMaskedValue())
                         .setTxOutPublicKeyData(txOut.getPublicKey().getData())
-                        .setTxOutTargetKeyData(txOut.getTargetKey().getData())
-                        .build();
+                        .setTxOutTargetKeyData(txOut.getTargetKey().getData());
+                if(txOut.hasMaskedAmountV2()) {
+                    recordBuilder.setTxOutAmountCommitmentData(txOut.getMaskedAmountV2().getCommitment().getData());
+                    recordBuilder.setTxOutAmountMaskedValue(txOut.getMaskedAmountV2().getMaskedValue());
+                    recordBuilder.setTxOutAmountMaskedV2TokenId(txOut.getMaskedAmountV2().getMaskedTokenId());
+                } else {
+                    recordBuilder.setTxOutAmountCommitmentData(txOut.getMaskedAmountV1().getCommitment().getData());
+                    recordBuilder.setTxOutAmountMaskedValue(txOut.getMaskedAmountV1().getMaskedValue());
+                    recordBuilder.setTxOutAmountMaskedV1TokenId(txOut.getMaskedAmountV1().getMaskedTokenId());
+                }
+                final View.TxOutRecord record = recordBuilder.build();
                 records.add(record);
                 Logger.d(TAG, "Found TxOut", null,
                         "block index:", record.getBlockIndex());
