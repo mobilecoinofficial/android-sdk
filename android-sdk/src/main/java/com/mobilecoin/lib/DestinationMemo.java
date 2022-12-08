@@ -58,7 +58,7 @@ public class DestinationMemo extends TxOutMemo {
   /** Retrieves the destination memo data. **/
   public DestinationMemoData getDestinationMemoData() throws InvalidTxOutMemoException {
     if(!validated) {
-      throw new InvalidTxOutMemoException("The Destination is invalid.");
+      throw new InvalidTxOutMemoException("The destination memo is invalid.");
     }
     return destinationMemoData;
   }
