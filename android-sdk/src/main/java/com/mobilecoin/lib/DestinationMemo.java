@@ -9,7 +9,7 @@ import com.mobilecoin.lib.exceptions.InvalidTxOutMemoException;
 import java.util.Objects;
 
 /** Represents a destination memo, which corresponds to the "DestinationMemo" specification. */
-public class DestinationMemo extends TxOutMemo {
+public final class DestinationMemo extends TxOutMemo {
 
   private static final String TAG = DestinationMemo.class.getSimpleName();
 

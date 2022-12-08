@@ -17,7 +17,7 @@ import java.util.Objects;
  * @see AddressHash
  * @since 2.0.0
  */
-public class DestinationWithPaymentIntentMemoData extends MemoData {
+public final class DestinationWithPaymentIntentMemoData extends MemoData {
 
     @NonNull
     private final UnsignedLong fee, totalOutlay, paymentIntentId;

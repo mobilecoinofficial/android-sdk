@@ -20,7 +20,7 @@ import java.util.Objects;
  * @see TxOutMemo
  * @since 2.0.0
  */
-public class DestinationWithPaymentIntentMemo extends TxOutMemo {
+public final class DestinationWithPaymentIntentMemo extends TxOutMemo {
 
     private static final String TAG = DestinationWithPaymentIntentMemo.class.getSimpleName();
 

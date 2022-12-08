@@ -20,7 +20,7 @@ import java.util.Objects;
  * @see TxOutMemo
  * @since 2.0.0
  */
-public class DestinationWithPaymentRequestMemo extends TxOutMemo {
+public final class DestinationWithPaymentRequestMemo extends TxOutMemo {
 
     private static final String TAG = DestinationWithPaymentRequestMemo.class.getSimpleName();
 
