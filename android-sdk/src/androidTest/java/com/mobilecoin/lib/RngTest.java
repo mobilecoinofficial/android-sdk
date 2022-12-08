@@ -30,7 +30,7 @@ public class RngTest {
     @Test
     public void testChaCha20Rng() {
         SecureRandom seedRng = new SecureRandom();
-        byte seedBytes[] = new byte[32];
+        byte seedBytes[] = new byte[ChaCha20Rng.SEED_SIZE_BYTES];
         seedRng.nextBytes(seedBytes);
         SeedableRng rng1 = ChaCha20Rng.fromSeed(seedBytes);
         SeedableRng rng2 = ChaCha20Rng.fromSeed(seedBytes);
@@ -67,7 +67,7 @@ public class RngTest {
 
     public void testNextInt(@NonNull final Rng rng) {
         HashMap<Integer, Integer> generated = new HashMap<Integer, Integer>();
-        for(int i = 0; i < 10000; i++) {
+        for(int i = 0; i < 5000; i++) {
             int next = rng.nextInt();
             assertNull(generated.put(next, next));
         }
@@ -75,7 +75,7 @@ public class RngTest {
 
     public void testNextLong(@NonNull final Rng rng) {
         HashMap<Long, Long> generated = new HashMap<Long, Long>();
-        for(int i = 0; i < 1000000; i++) {
+        for(int i = 0; i < 500000; i++) {
             long next = rng.nextLong();
             assertNull(generated.put(next, next));
         }
@@ -83,16 +83,16 @@ public class RngTest {
 
     public void testNextBytes(@NonNull final Rng rng) {
         HashMap<Byte, Byte> generated = new HashMap<Byte, Byte>();
-        for(int i = 0; i < 5; i++) {
+        for(int i = 0; i < 3; i++) {
             byte next = rng.nextBytes(1)[0];
             assertNull(generated.put(next, next));
         }
         generated.clear();
-        byte bytes[] = rng.nextBytes(5);
-        for(int i = 0; i < 5; i++) {
+        byte bytes[] = rng.nextBytes(3);
+        for(int i = 0; i < 3; i++) {
             assertNull(generated.put(bytes[i], bytes[i]));
         }
-        for(int i = 0; i < 6; i++) {
+        for(int i = 0; i < 5; i++) {
             assertFalse(Arrays.equals(rng.nextBytes((int)Math.pow(10, i)), rng.nextBytes((int)Math.pow(10, i))));
         }
     }
