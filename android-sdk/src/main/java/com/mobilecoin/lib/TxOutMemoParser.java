@@ -41,8 +41,17 @@ final class TxOutMemoParser {
             .create(nativeTxOut.getPublicKey(), memoData);
       case DESTINATION:
         return DestinationMemo.create(recipientAccountKey, nativeTxOut, memoData);
+      case DESTINATION_WITH_PAYMENT_REQUEST:
+        return DestinationWithPaymentRequestMemo
+            .create(recipientAccountKey, nativeTxOut, memoData);
+      case DESTINATION_WITH_PAYMENT_INTENT:
+        return DestinationWithPaymentIntentMemo
+            .create(recipientAccountKey, nativeTxOut, memoData);
       case SENDER_WITH_PAYMENT_REQUEST:
         return SenderWithPaymentRequestMemo
+            .create(nativeTxOut.getPublicKey(), memoData);
+      case SENDER_WITH_PAYMENT_INTENT:
+        return SenderWithPaymentIntentMemo
             .create(nativeTxOut.getPublicKey(), memoData);
       case UNKNOWN:
         return new EmptyMemo(TxOutMemoType.UNKNOWN);

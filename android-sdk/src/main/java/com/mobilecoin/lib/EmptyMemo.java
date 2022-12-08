@@ -4,7 +4,7 @@ import android.os.Parcel;
 
 import androidx.annotation.NonNull;
 
-public class EmptyMemo extends TxOutMemo {
+public final class EmptyMemo extends TxOutMemo {
 
     public EmptyMemo(TxOutMemoType memoType) {
         super(memoType);
