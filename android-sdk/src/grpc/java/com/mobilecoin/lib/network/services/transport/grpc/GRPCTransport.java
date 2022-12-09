@@ -43,15 +43,15 @@ public class GRPCTransport extends Transport {
                             uri.getUri().getPort()
                     );
             if (uri.isTlsEnabled()) {
+                Set<X509Certificate> trustRoots = serviceConfiguration.getTrustRoots();
+                if (trustRoots != null && trustRoots.size() > 0) {
+                    KeyStore caKeyStore = getTrustRootsKeyStore(trustRoots);
+                    SSLSocketFactory sslSocketFactory = getTrustedSSLSocketFactory(caKeyStore);
+                    managedChannelBuilder.sslSocketFactory(sslSocketFactory);
+                }
                 managedChannelBuilder.useTransportSecurity();
             } else {
                 managedChannelBuilder.usePlaintext();
-            }
-            Set<X509Certificate> trustRoots = serviceConfiguration.getTrustRoots();
-            if (trustRoots != null && trustRoots.size() > 0) {
-                KeyStore caKeyStore = getTrustRootsKeyStore(trustRoots);
-                SSLSocketFactory sslSocketFactory = getTrustedSSLSocketFactory(caKeyStore);
-                managedChannelBuilder.sslSocketFactory(sslSocketFactory);
             }
             this.managedChannel = managedChannelBuilder.build();
         } catch (Exception ex) {
