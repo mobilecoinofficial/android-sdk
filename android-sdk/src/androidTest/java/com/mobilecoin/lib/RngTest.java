@@ -6,6 +6,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotSame;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 import androidx.annotation.NonNull;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
@@ -21,6 +22,14 @@ import java.util.HashMap;
 @RunWith(AndroidJUnit4.class)
 public class RngTest {
 
+    private final int INTS_TO_GENERATE = 10000;
+    private final int INT_FAILURE_LIMIT = 5;
+    private final int LONGS_TO_GENERATE = 1000000;
+    private final int LONG_FAILURE_LIMIT = 5;
+    private final int BYTES_TO_GENERATE = 5;
+    private final int BYTE_FAILURE_LIMIT = 2;
+    private final int BYTE_SEQUENCE_MAGNITUDE_LIMIT = 5;
+
     @Test
     public void testDefaultRng() {
         Rng rng = DefaultRng.createInstance();
@@ -30,7 +39,7 @@ public class RngTest {
     @Test
     public void testChaCha20Rng() {
         SecureRandom seedRng = new SecureRandom();
-        byte seedBytes[] = new byte[ChaCha20Rng.SEED_SIZE_BYTES];
+        byte[] seedBytes = new byte[ChaCha20Rng.SEED_SIZE_BYTES];
         seedRng.nextBytes(seedBytes);
         SeedableRng rng1 = ChaCha20Rng.fromSeed(seedBytes);
         SeedableRng rng2 = ChaCha20Rng.fromSeed(seedBytes);
@@ -47,7 +56,7 @@ public class RngTest {
 
     }
 
-    public void performSeedableRngTests(@NonNull final SeedableRng rng1, @NonNull final SeedableRng rng2, @NonNull byte seedBytes[]) {
+    public void performSeedableRngTests(@NonNull final SeedableRng rng1, @NonNull final SeedableRng rng2, @NonNull byte[] seedBytes) {
         assertNotSame("Test requires that two different SeedableRng instances are used.",
                 rng1, rng2);
 
@@ -67,33 +76,43 @@ public class RngTest {
 
     public void testNextInt(@NonNull final Rng rng) {
         HashMap<Integer, Integer> generated = new HashMap<Integer, Integer>();
-        for(int i = 0; i < 5000; i++) {
+        for(int i = 0; i < INTS_TO_GENERATE; i++) {
             int next = rng.nextInt();
-            assertNull(generated.put(next, next));
+            generated.put(next, next);
         }
+        assertTrue(INTS_TO_GENERATE - generated.size() + " duplicate ints generated.",
+                generated.size() >= (INTS_TO_GENERATE - INT_FAILURE_LIMIT));
     }
 
     public void testNextLong(@NonNull final Rng rng) {
         HashMap<Long, Long> generated = new HashMap<Long, Long>();
-        for(int i = 0; i < 500000; i++) {
+        for(int i = 0; i < LONGS_TO_GENERATE; i++) {
             long next = rng.nextLong();
-            assertNull(generated.put(next, next));
+            generated.put(next, next);
         }
+        assertTrue(LONGS_TO_GENERATE - generated.size() + " duplicate longs generated.",
+                generated.size() >= (LONGS_TO_GENERATE - LONG_FAILURE_LIMIT));
     }
 
     public void testNextBytes(@NonNull final Rng rng) {
         HashMap<Byte, Byte> generated = new HashMap<Byte, Byte>();
-        for(int i = 0; i < 3; i++) {
+        for(int i = 0; i < BYTES_TO_GENERATE; i++) {
             byte next = rng.nextBytes(1)[0];
-            assertNull(generated.put(next, next));
+            generated.put(next, next);
         }
+        assertTrue(BYTES_TO_GENERATE - generated.size() + " duplicate bytes generated.",
+                generated.size() >= (BYTES_TO_GENERATE - BYTE_FAILURE_LIMIT));
         generated.clear();
-        byte bytes[] = rng.nextBytes(3);
-        for(int i = 0; i < 3; i++) {
-            assertNull(generated.put(bytes[i], bytes[i]));
+        byte bytes[] = rng.nextBytes(BYTES_TO_GENERATE);
+        for(int i = 0; i < BYTES_TO_GENERATE; i++) {
+            generated.put(bytes[i], bytes[i]);
         }
-        for(int i = 0; i < 5; i++) {
-            assertFalse(Arrays.equals(rng.nextBytes((int)Math.pow(10, i)), rng.nextBytes((int)Math.pow(10, i))));
+        assertTrue(BYTES_TO_GENERATE - generated.size() + " duplicate bytes generated.",
+                generated.size() >= (BYTES_TO_GENERATE - BYTE_FAILURE_LIMIT));
+        for(int i = 0; i < BYTE_SEQUENCE_MAGNITUDE_LIMIT; i++) {
+            final int byteArrayLength = (int)Math.pow(10, i);
+            assertFalse("Duplicate " + byteArrayLength + " bytes generated",
+                    Arrays.equals(rng.nextBytes(byteArrayLength), rng.nextBytes(byteArrayLength)));
         }
     }
 
