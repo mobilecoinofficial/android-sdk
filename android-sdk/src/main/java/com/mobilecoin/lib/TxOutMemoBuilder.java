@@ -59,7 +59,7 @@ public class TxOutMemoBuilder extends Native {
    * @see DestinationWithPaymentIntentMemo
    * @see DestinationWithPaymentIntentMemoData
    * @see DestinationWithPaymentIntentMemoData#getPaymentIntentId()
-   * @since 2.0.0
+   * @since 4.0.0
    **/
   public static TxOutMemoBuilder createSenderPaymentIntentAndDestinationRTHMemoBuilder(AccountKey accountKey, UnsignedLong paymentIntentId) throws TransactionBuilderException {
     return new TxOutMemoBuilder(accountKey, paymentIntentId, true);

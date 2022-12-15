@@ -15,7 +15,7 @@ import java.util.Objects;
  * @see DestinationWithPaymentIntentMemo
  * @see MemoData
  * @see AddressHash
- * @since 2.0.0
+ * @since 4.0.0
  */
 public final class DestinationWithPaymentIntentMemoData extends MemoData {
 
@@ -58,7 +58,7 @@ public final class DestinationWithPaymentIntentMemoData extends MemoData {
      * @return the number of recipients of the associated {@link Transaction}
      *
      * @see MobileCoinClient#prepareTransaction(PublicAddress, Amount, Amount, TxOutMemoBuilder)
-     * @since 2.0.0
+     * @since 4.0.0
      */
     public int getNumberOfRecipients() {
         return numberOfRecipients;
@@ -79,7 +79,7 @@ public final class DestinationWithPaymentIntentMemoData extends MemoData {
      * @see Amount
      * @see Amount#getTokenId()
      * @see OwnedTxOut#getTxOutMemo()
-     * @since 2.0.0
+     * @since 4.0.0
      */
     @NonNull
     public UnsignedLong getFee() {
@@ -102,7 +102,7 @@ public final class DestinationWithPaymentIntentMemoData extends MemoData {
      * @see Amount
      * @see Amount#getTokenId()
      * @see OwnedTxOut#getTxOutMemo()
-     * @since 2.0.0
+     * @since 4.0.0
      */
     @NonNull
     public UnsignedLong getTotalOutlay() {
@@ -120,7 +120,7 @@ public final class DestinationWithPaymentIntentMemoData extends MemoData {
      * @see TxOutMemoBuilder#createSenderPaymentIntentAndDestinationRTHMemoBuilder(AccountKey, UnsignedLong)
      * @see DestinationWithPaymentIntentMemo
      * @see SenderWithPaymentIntentMemoData#getPaymentIntentId()
-     * @since 2.0.0
+     * @since 4.0.0
      */
     @NonNull
     public UnsignedLong getPaymentIntentId() {
