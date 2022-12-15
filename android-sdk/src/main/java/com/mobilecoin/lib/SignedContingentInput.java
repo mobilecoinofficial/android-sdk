@@ -28,7 +28,7 @@ import java.util.Arrays;
  * @see MobileCoinTransactionClient#cancelSignedContingentInput(SignedContingentInput, Amount)
  * @see MobileCoinTransactionClient#prepareTransaction(SignedContingentInput, Amount)
  * @see MobileCoinTransactionClient#prepareTransaction(SignedContingentInput, Amount, Rng)
- * @since 1.3.0
+ * @since 4.0.0
  */
 public class SignedContingentInput extends Native implements Parcelable {
 
@@ -76,7 +76,7 @@ public class SignedContingentInput extends Native implements Parcelable {
      * @see MobileCoinTransactionClient#prepareTransaction(SignedContingentInput, Amount)
      * @see MobileCoinTransactionClient#estimateTotalFee(Amount)
      * @see Amount
-     * @since 1.3.0
+     * @since 4.0.0
      */
     @NonNull
     public Amount getRewardAmount() {
@@ -100,7 +100,7 @@ public class SignedContingentInput extends Native implements Parcelable {
      * @see MobileCoinTransactionClient#prepareTransaction(SignedContingentInput, Amount, Rng)
      * @see MobileCoinTransactionClient#prepareTransaction(SignedContingentInput, Amount)
      * @see Amount
-     * @since 1.3.0
+     * @since 4.0.0
      */
     @NonNull
     public Amount getRequiredAmount() {
@@ -120,7 +120,7 @@ public class SignedContingentInput extends Native implements Parcelable {
      * @throws SerializationException if an {@link Exception} is encountered during serialization
      * @see SignedContingentInput
      * @see SignedContingentInput#fromByteArray(byte[])
-     * @since 1.3.0
+     * @since 4.0.0
      */
     @NonNull
     public byte[] toByteArray() throws SerializationException {
@@ -142,7 +142,7 @@ public class SignedContingentInput extends Native implements Parcelable {
      * @throws SerializationException if the byte array does not represent a serialized {@link SignedContingentInput}
      * @see SignedContingentInput
      * @see SignedContingentInput#toByteArray()
-     * @since 1.3.0
+     * @since 4.0.0
      */
     @NonNull
     public static SignedContingentInput fromByteArray(@NonNull final byte[] serializedBytes) throws SerializationException {
@@ -158,7 +158,7 @@ public class SignedContingentInput extends Native implements Parcelable {
      * @return true if this {@link SignedContingentInput} is valid, false otherwise
      * @see MobileCoinTransactionClient#prepareTransaction(SignedContingentInput, Amount)
      * @see MobileCoinTransactionClient#prepareTransaction(SignedContingentInput, Amount, Rng rng)
-     * @since 1.3.0
+     * @since 4.0.0
      */
     public boolean isValid() {
         if(!is_valid()) return false;

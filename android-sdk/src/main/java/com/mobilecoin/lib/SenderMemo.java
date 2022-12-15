@@ -86,6 +86,25 @@ public final class SenderMemo extends TxOutMemo {
     return senderMemoData;
   }
 
+  /**
+   * Returns the {@link SenderMemoData} for this {@link SenderMemo} without validating.
+   *
+   * There is no guarantee that the {@link AddressHash} in this memo was actually calculated from the
+   * sender's {@link PublicAddress}. To validate the sender's {@link AddressHash}, use
+   * {@link SenderMemo#getSenderMemoData(PublicAddress, RistrettoPrivate)}
+   *
+   * @return the {@link SenderMemoData}
+   *
+   * @see SenderMemoData
+   * @see MemoData
+   * @see PublicAddress
+   * @see AddressHash
+   * @since 4.0.0
+   */
+  public SenderMemoData getUnvalidatedSenderMemoData() {
+    return senderMemoData;
+  }
+
   private SenderMemo(@NonNull Parcel parcel) {
     super(TxOutMemoType.SENDER);
     txOutPublicKey = parcel.readParcelable(RistrettoPublic.class.getClassLoader());

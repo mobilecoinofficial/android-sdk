@@ -106,6 +106,9 @@ public final class SenderWithPaymentRequestMemo extends TxOutMemo {
    *
    * @see SenderWithPaymentRequestMemoData
    * @see MemoData
+   * @see PublicAddress
+   * @see AddressHash
+   * @see SenderWithPaymentRequestMemo#getUnvalidatedAddressHash()
    * @see InvalidTxOutMemoException
    * @since 1.2.0
    */
@@ -121,6 +124,25 @@ public final class SenderWithPaymentRequestMemo extends TxOutMemo {
         throw new InvalidTxOutMemoException("The sender memo is invalid.");
       }
     }
+    return senderWithPaymentRequestMemoData;
+  }
+
+  /**
+   * Returns the {@link SenderWithPaymentRequestMemoData} for this {@link SenderWithPaymentRequestMemo} without validating.
+   *
+   * There is no guarantee that the {@link AddressHash} in this memo was actually calculated from the
+   * sender's {@link PublicAddress}. To validate the sender's {@link AddressHash}, use
+   * {@link SenderWithPaymentRequestMemo#getSenderWithPaymentRequestMemoData(PublicAddress, RistrettoPrivate)}
+   *
+   * @return the {@link SenderWithPaymentRequestMemoData}
+   *
+   * @see SenderWithPaymentRequestMemoData
+   * @see MemoData
+   * @see PublicAddress
+   * @see AddressHash
+   * @since 4.0.0
+   */
+  public SenderWithPaymentRequestMemoData getUnvalidatedSenderWithPaymentRequestMemoData() {
     return senderWithPaymentRequestMemoData;
   }
 

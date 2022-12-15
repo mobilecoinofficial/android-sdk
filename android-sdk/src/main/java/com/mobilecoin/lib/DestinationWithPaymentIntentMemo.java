@@ -18,7 +18,7 @@ import java.util.Objects;
  * @see SenderWithPaymentIntentMemo
  * @see DestinationWithPaymentIntentMemoData
  * @see TxOutMemo
- * @since 2.0.0
+ * @since 4.0.0
  */
 public final class DestinationWithPaymentIntentMemo extends TxOutMemo {
 
@@ -79,7 +79,7 @@ public final class DestinationWithPaymentIntentMemo extends TxOutMemo {
      * @see DestinationWithPaymentIntentMemoData
      * @see MemoData
      * @see InvalidTxOutMemoException
-     * @since 2.0.0
+     * @since 4.0.0
      */
     public DestinationWithPaymentIntentMemoData getDestinationWithPaymentIntentMemoData() throws InvalidTxOutMemoException {
         if (!validated) {

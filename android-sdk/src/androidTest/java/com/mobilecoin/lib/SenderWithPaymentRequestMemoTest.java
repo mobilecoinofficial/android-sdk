@@ -62,9 +62,16 @@ public class SenderWithPaymentRequestMemoTest {
 
   @Test
   public void getUnvalidatedAddressHash_returnsAddressHash() {
-    SenderMemo senderMemo = SenderMemo.create(null, new byte[TxOutMemo.TX_OUT_MEMO_DATA_SIZE_BYTES]);
+    SenderWithPaymentRequestMemo senderMemo = SenderWithPaymentRequestMemo.create(null, new byte[TxOutMemo.TX_OUT_MEMO_DATA_SIZE_BYTES]);
 
     senderMemo.getUnvalidatedAddressHash();
+  }
+
+  @Test
+  public void getUnvalidatedSenderWithPaymentRequestMemoData_returnsSenderWithPaymentRequestMemoData() {
+    SenderWithPaymentRequestMemo senderMemo = SenderWithPaymentRequestMemo.create(null, new byte[TxOutMemo.TX_OUT_MEMO_DATA_SIZE_BYTES]);
+
+    senderMemo.getUnvalidatedSenderWithPaymentRequestMemoData();
   }
 
   @Test

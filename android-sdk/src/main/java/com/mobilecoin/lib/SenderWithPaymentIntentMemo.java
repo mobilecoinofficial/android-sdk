@@ -19,7 +19,7 @@ import java.util.Objects;
  * @see SenderWithPaymentIntentMemoData
  * @see SenderWithPaymentIntentMemoData#getPaymentIntentId()
  * @see TxOutMemo
- * @since 2.0.0
+ * @since 4.0.0
  */
 public final class SenderWithPaymentIntentMemo extends TxOutMemo {
 
@@ -80,7 +80,7 @@ public final class SenderWithPaymentIntentMemo extends TxOutMemo {
      * @see SenderWithPaymentIntentMemo#getSenderWithPaymentIntentMemoData(PublicAddress, RistrettoPrivate)
      * @see SenderMemo
      * @see SenderMemo#getUnvalidatedAddressHash()
-     * @since 2.0.0
+     * @since 4.0.0
      */
     public AddressHash getUnvalidatedAddressHash() {
         return getAddressHash();
@@ -106,8 +106,11 @@ public final class SenderWithPaymentIntentMemo extends TxOutMemo {
      *
      * @see SenderWithPaymentIntentMemoData
      * @see MemoData
+     * @see PublicAddress
+     * @see AddressHash
      * @see InvalidTxOutMemoException
-     * @since 2.0.0
+     * @see SenderWithPaymentIntentMemo#getUnvalidatedAddressHash()
+     * @since 4.0.0
      */
     public SenderWithPaymentIntentMemoData getSenderWithPaymentIntentMemoData(
             @NonNull PublicAddress senderPublicAddress,
@@ -121,6 +124,25 @@ public final class SenderWithPaymentIntentMemo extends TxOutMemo {
                 throw new InvalidTxOutMemoException("The sender memo is invalid.");
             }
         }
+        return senderWithPaymentIntentMemoData;
+    }
+
+    /**
+     * Returns the {@link SenderWithPaymentIntentMemoData} for this {@link SenderWithPaymentIntentMemo} without validating.
+     *
+     * There is no guarantee that the {@link AddressHash} in this memo was actually calculated from the
+     * sender's {@link PublicAddress}. To validate the sender's {@link AddressHash}, use
+     * {@link SenderWithPaymentIntentMemo#getSenderWithPaymentIntentMemoData(PublicAddress, RistrettoPrivate)}
+     *
+     * @return the {@link SenderWithPaymentIntentMemoData}
+     *
+     * @see SenderWithPaymentIntentMemoData
+     * @see MemoData
+     * @see PublicAddress
+     * @see AddressHash
+     * @since 4.0.0
+     */
+    public SenderWithPaymentIntentMemoData getUnvalidatedSenderWithPaymentIntentMemoData() {
         return senderWithPaymentIntentMemoData;
     }
 
