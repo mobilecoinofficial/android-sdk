@@ -65,7 +65,7 @@ public class SenderMemoTest {
   }
 
   @Test
-  public void getUnvalidatedSenderWithPaymentRequestMemoData_returnsSenderWithPaymentRequestMemoData() {
+  public void getUnvalidatedSenderMemoData_returnsSenderMemoData() {
     SenderMemo senderMemo = SenderMemo.create(null, new byte[TxOutMemo.TX_OUT_MEMO_DATA_SIZE_BYTES]);
 
     senderMemo.getUnvalidatedSenderMemoData();
