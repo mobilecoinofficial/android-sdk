@@ -43,6 +43,12 @@ public interface MobileCoinTransactionClient {
 
   /**
    * Creates a {@link SignedContingentInput} to swap the two provided {@link Amount}s.
+   * Most of the time, the recipient of the contingent amountToReceive will be the user building the
+   * {@link SignedContingentInput}. In such cases, {@link MobileCoinTransactionClient#createSignedContingentInput(Amount, Amount)}
+   * can be used. This method is provided for cases where the user providing the reward would like the
+   * amountToReceive to be sent to a different wallet.
+   *
+   * This functionality is only supported on networks with block version 3 or higher
    *
    * @param amountToSend the {@link Amount} that is provided by the client calling this method contingent on the amountToReceive being provided
    * @param amountToReceive the {@link Amount} that will be sent from the fulfilling party to the provided {@link PublicAddress}
@@ -75,6 +81,8 @@ public interface MobileCoinTransactionClient {
 
   /**
    * Creates a {@link SignedContingentInput} to swap the two provided {@link Amount}s.
+   *
+   * This functionality is only supported on networks with block version 3 or higher
    *
    * @param amountToSend the {@link Amount} that is provided by the client calling this method contingent on the amountToReceive being provided
    * @param amountToReceive the {@link Amount} that will be sent from the fulfilling party to this {@link MobileCoinTransactionClient}
@@ -110,6 +118,8 @@ public interface MobileCoinTransactionClient {
    * attempting to cancel the {@link SignedContingentInput} is not the user who created it, or if
    * there is a network issue.
    *
+   * This functionality is only supported on networks with block version 3 or higher
+   *
    * @param presignedInput the {@link SignedContingentInput} to cancel
    * @param fee the {@link Transaction} fee that must be paid to process the cancelation {@link Transaction}
    * @return the result of the cancelation {@link Transaction}
@@ -140,6 +150,8 @@ public interface MobileCoinTransactionClient {
    * and the {@link TokenId} of the reward {@link Amount}.
    * Upon completing the {@link Transaction}, the {@link SignedContingentInput} required {@link Amount} will be paid
    * by this {@link MobileCoinTransactionClient} (see {@link SignedContingentInput#getRequiredAmount()}).
+   *
+   * This functionality is only supported on networks with block version 3 or higher
    *
    * @param presignedInput the {@link SignedContingentInput} to fulfill with the {@link Transaction}
    * @param fee the {@link Transaction} fee paid from the reward amount of this {@link SignedContingentInput}
@@ -179,6 +191,8 @@ public interface MobileCoinTransactionClient {
    * and the {@link TokenId} of the reward {@link Amount}.
    * Upon completing the {@link Transaction}, the {@link SignedContingentInput} required {@link Amount} will be paid
    * by this {@link MobileCoinTransactionClient} (see {@link SignedContingentInput#getRequiredAmount()}).
+   *
+   * This functionality is only supported on networks with block version 3 or higher
    *
    * @param presignedInput the {@link SignedContingentInput} to fulfill with the {@link Transaction}
    * @param fee the {@link Transaction} fee paid from the reward amount of this {@link SignedContingentInput}
