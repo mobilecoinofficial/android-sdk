@@ -22,6 +22,8 @@ import java.util.Arrays;
  * This is accomplished by spending the input that was previously signed by sending it back to the user that signed it.
  * In order for the transaction to be accepted, a transaction fee will be required.
  *
+ * This functionality is only supported on networks with block version 3 or higher
+ *
  * @see <a href="https://github.com/mobilecoinfoundation/mcips/blob/main/text/0031-transactions-with-contingent-inputs.md">Signed Contingent Inputs</a>
  * @see MobileCoinTransactionClient#createSignedContingentInput(Amount, Amount)
  * @see MobileCoinTransactionClient#createSignedContingentInput(Amount, Amount, PublicAddress)
@@ -69,6 +71,8 @@ public class SignedContingentInput extends Native implements Parcelable {
      * and fulfills this {@link SignedContingentInput}. This {@link Amount} (minus any {@link Transaction} fees)
      * can be kept by the fulfilling party and is provided by the builder of this {@link SignedContingentInput}.
      *
+     * This functionality is only supported on networks with block version 3 or higher
+     *
      * @return the {@link Amount} rewarded to the fulfilling party of this {@link SignedContingentInput}
      * @see SignedContingentInput#getRequiredAmount()
      * @see SignedContingentInput
@@ -94,6 +98,8 @@ public class SignedContingentInput extends Native implements Parcelable {
      * If not {@link PublicAddress} is specified, the {@link Amount} is sent back to the user who built
      * this {@link SignedContingentInput}.
      *
+     * This functionality is only supported on networks with block version 3 or higher
+     *
      * @return the {@link Amount} that must be provided in order to fulfill this {@link SignedContingentInput}
      * @see SignedContingentInput#getRewardAmount()
      * @see SignedContingentInput
@@ -116,6 +122,9 @@ public class SignedContingentInput extends Native implements Parcelable {
      * Serializes this {@link SignedContingentInput} to a byte array. The resultant byte array can be transmitted
      * or shared with another client. A client receiving a serialized {@link SignedContingentInput} can recover the
      * object using {@link SignedContingentInput#fromByteArray(byte[])}.
+     *
+     * This functionality is only supported on networks with block version 3 or higher
+     *
      * @return a byte array containing all of the data in this {@link SignedContingentInput}
      * @throws SerializationException if an {@link Exception} is encountered during serialization
      * @see SignedContingentInput
@@ -137,6 +146,8 @@ public class SignedContingentInput extends Native implements Parcelable {
      * array cannot be deserialized as a {@link SignedContingentInput}, a {@link SerializationException}
      * will be thrown.
      *
+     * This functionality is only supported on networks with block version 3 or higher
+     *
      * @param serializedBytes a byte array representing a serialized {@link SignedContingentInput}
      * @return a {@link SignedContingentInput} that is strictly equal to the one originally serialized
      * @throws SerializationException if the byte array does not represent a serialized {@link SignedContingentInput}
@@ -154,6 +165,8 @@ public class SignedContingentInput extends Native implements Parcelable {
      * is one that can be successfully spent using the MobileCoin mobile SDKs (so long as the contingent Amount is supplied).
      * Conversely, an invalid {@link SignedContingentInput} will not be able to be spent. This could be
      * due to the data becoming corrupted or being built using an incompatible client.
+     *
+     * This functionality is only supported on networks with block version 3 or higher
      *
      * @return true if this {@link SignedContingentInput} is valid, false otherwise
      * @see MobileCoinTransactionClient#prepareTransaction(SignedContingentInput, Amount)

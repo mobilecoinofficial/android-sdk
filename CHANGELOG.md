@@ -4,15 +4,39 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [4.0.0] - 2023-01-06
+
+### Added
+- Added `Rng` with two default implementations
+- Added ability to provide `Rng` for calls to `MobileCoinClient.prepareTransaction`
+- Added `SignedContingentInput`s which can be used on block version >= 3 networks to quantities of two different tokens
+- Added `DestinationWithPaymentRequestMemo` and `DestinationWithPaymentRequestMemoData`
+- Added `DestinationWithPaymentIntentMemo` and `DestinationWithPaymentIntentMemo`
+- Added `SenderWithPaymentIntentMemo` and `SenderWithPaymentIntentMemoData`
+- Added `OwnedTxOut.getSubaddressIndex`
+- Added methods to get unvalidated `MemoData` of `SenderMemo`, `SenderWithPaymentRequestMemo`, and `SenderWithPaymentIntentMemo`
+
+### Changed
+- Updated bindings to version 2.0.0
+- Updated okhttp to version 3.11.0
+
+### Fixes
+- Fixed insecure transport protocol using TLS
+- Fixed connection reset errors in HTTP clients
+
+### Upgrading
+
+No code changes are *required* to upgrade from 1.2.2.4 to 4.0.0
+
 ## [1.2.2.4] - 2022-08-24
 
 ### Changed
 
-- Balance checking algorithm performance improvements 
+- Balance checking algorithm performance improvements
 
 ### Fixes
 
-- Query size calculation in `DefaultFogQueryScalingStrategy` 
+- Query size calculation in `DefaultFogQueryScalingStrategy`
 
 ### Upgrading
 
@@ -152,7 +176,7 @@ can be used to satisfy this requirement and is reverse compatible with network v
 
 ## [1.0.1-pre4] - 2020-01-04
 ### Added
-- Estimate total fee in AccountSnapshot 
+- Estimate total fee in AccountSnapshot
 - SLIP-10 AccountKey derivation
 - New `AccountKey` constructors: `fromBip39Entropy` and `fromMnemonicPhrase`
 - Build on Apple Silicon
