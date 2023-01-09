@@ -1,6 +1,6 @@
 apply plugin: 'maven-publish'
 
-version '4.0.0'
+version '4.0.0.1'
 group 'com.mobilecoin'
 
 Properties properties = new Properties()
@@ -18,7 +18,7 @@ publishing {
 
             pom.withXml {
                 def dependenciesNode = asNode().appendNode('dependencies')
-                configurations.grpcImplementation.allDependencies.each {
+                configurations.grpcImplementation.dependencies.each {
                     // Ensure dependencies such as fileTree are not included in the pom.
                     if (it.name != 'unspecified') {
                         def dependencyNode = dependenciesNode.appendNode('dependency')
@@ -27,7 +27,7 @@ publishing {
                         dependencyNode.appendNode('version', it.version)
                     }
                 }
-                configurations.implementation.allDependencies.each {
+                configurations.implementation.dependencies.each {
                     if (it.name != 'unspecified') {
                         def dependencyNode = dependenciesNode.appendNode('dependency')
                         dependencyNode.appendNode('groupId', it.group)
