@@ -412,7 +412,7 @@ public class AccountKey extends Native implements Parcelable {
      * @return account's default subaddress private spend key as {@link RistrettoPrivate}
      */
     @NonNull
-    RistrettoPrivate getDefaultSubAddressSpendKey() {
+    public RistrettoPrivate getDefaultSubAddressSpendKey() {
         return defaultSubAddressSpendKey;
     }
 
@@ -420,7 +420,7 @@ public class AccountKey extends Native implements Parcelable {
      * @return account's default subaddress private view key as {@link RistrettoPrivate}
      */
     @NonNull
-    RistrettoPrivate getDefaultSubAddressViewKey() {
+    public RistrettoPrivate getDefaultSubAddressViewKey() {
         return defaultSubAddressViewKey;
     }
 
@@ -428,7 +428,7 @@ public class AccountKey extends Native implements Parcelable {
      * @return account's change subaddress private spend key as {@link RistrettoPrivate}
      */
     @NonNull
-    RistrettoPrivate getChangeSubAddressSpendKey() {
+    public RistrettoPrivate getChangeSubAddressSpendKey() {
         return changeSubAddressSpendKey;
     }
 
@@ -436,7 +436,7 @@ public class AccountKey extends Native implements Parcelable {
      * @return account's change subaddress private view key as {@link RistrettoPrivate}
      */
     @NonNull
-    RistrettoPrivate getChangeSubAddressViewKey() {
+    public RistrettoPrivate getChangeSubAddressViewKey() {
         return changeSubAddressViewKey;
     }
 
