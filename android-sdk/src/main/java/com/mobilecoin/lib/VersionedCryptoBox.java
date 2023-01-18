@@ -10,6 +10,9 @@ public interface VersionedCryptoBox {
     @NonNull
     public byte[] versionedCryptoBoxDecrypt(@NonNull RistrettoPrivate viewKey,
                                             @NonNull byte[] cipherText) throws InvalidFogResponse;
+@NonNull
+    public byte[] versionedCryptoBoxEncrypt(@NonNull RistrettoPublic key,
+                                            @NonNull byte[] plainText);
 
     @NonNull
     public OwnedTxOut ownedTxOutFor(@NonNull View.TxOutRecord record, @NonNull AccountKey accountKey);
