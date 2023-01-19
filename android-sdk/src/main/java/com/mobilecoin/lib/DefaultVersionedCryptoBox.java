@@ -2,6 +2,7 @@ package com.mobilecoin.lib;
 
 import androidx.annotation.NonNull;
 
+import com.mobilecoin.api.MobileCoinAPI;
 import com.mobilecoin.lib.exceptions.InvalidFogResponse;
 import com.mobilecoin.lib.log.Logger;
 
@@ -41,6 +42,12 @@ public class DefaultVersionedCryptoBox extends Native implements VersionedCrypto
     @Override
     public OwnedTxOut ownedTxOutFor(@NonNull View.TxOutRecord record, @NonNull AccountKey accountKey) {
         return new OwnedTxOut(record, accountKey);
+    }
+
+    @Override
+    @NonNull
+    public ViewableTxOut viewableTxOutFor(@NonNull final View.TxOutRecord record, @NonNull final ViewAccountKey viewAccountKey) {
+        return new ViewableTxOut(record, viewAccountKey);
     }
 
 }

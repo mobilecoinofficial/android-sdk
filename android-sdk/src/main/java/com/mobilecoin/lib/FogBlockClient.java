@@ -75,6 +75,32 @@ class FogBlockClient extends AnyClient {
         return txos;
     }
 
+    @NonNull
+    public List<ViewableTxOut> viewScanForTxOutsInBlockRange(
+            @NonNull BlockRange range, @NonNull ViewAccountKey accountKey
+    ) throws NetworkException {
+        Logger.i(TAG, "Scanning the ledger for TxOuts");
+        ArrayList<ViewableTxOut> txos = new ArrayList<>();
+        List<View.TxOutRecord> records = fetchTxRecordsInBlockRange(range);
+        Logger.d(TAG,
+                "Received TxRecords response", null,
+                "count:", records.size(),
+                "range:", range);
+        for (View.TxOutRecord record : records) {
+            try {
+                ViewableTxOut txo = new ViewableTxOut(record, accountKey);
+                txos.add(txo);
+                Logger.d(TAG, "Found TxOut", null,
+                        "block:", record.getBlockIndex());
+            } catch (Exception ignored) { /* */ }
+        }
+        Logger.d(TAG, String.format(Locale.US,
+                "Found total %d TxOuts",
+                txos.size())
+        );
+        return txos;
+    }
+
     /**
      * Fetch TxOutRecords from the block range
      */

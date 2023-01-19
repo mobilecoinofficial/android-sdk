@@ -303,5 +303,22 @@ public class OwnedTxOutTest {
     fail("No private API TxOuts marked spent");
   }
 
+  @Test
+  public void viewableTxOutTest() throws Exception {
+
+    TxOutRecord txOutRecord =
+            TxOutRecord.parseFrom(Hex.toByteArray(viewRecordWithNotSetMemoHexProtoBytes));
+    OwnedTxOut ownedTxOut = new OwnedTxOut(txOutRecord, receiverAccountKey);
+    ViewAccountKey viewAccountKey = new ViewAccountKey(receiverAccountKey);
+    ViewableTxOut viewableTxOut = new ViewableTxOut(txOutRecord, viewAccountKey);
+    assertEquals(ownedTxOut.getAmount(), viewableTxOut.getAmount());
+    assertEquals(ownedTxOut.getPublicKey(), viewableTxOut.getPublicKey());
+    assertEquals(ownedTxOut.getReceivedBlockIndex(), viewableTxOut.getReceivedBlockIndex());
+    assertEquals(ownedTxOut.getReceivedBlockTimestamp(), viewableTxOut.getReceivedBlockTimestamp());
+    assertEquals(ownedTxOut.getTxOutGlobalIndex(), viewableTxOut.getTxOutGlobalIndex());
+    assertEquals(ownedTxOut.getTargetKey(), viewableTxOut.getTxOutTargetKey());
+
+  }
+
 }
 

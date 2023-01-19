@@ -9,5 +9,8 @@ public interface FogSeedProvider {
     public FogSeed fogSeedFor(RistrettoPrivate privateViewKey, View.RngRecord rngRecord)
             throws KexRngException;
 
+    public ViewFogSeed viewFogSeedFor(RistrettoPrivate privateViewKey, View.RngRecord rngRecord)
+            throws KexRngException;
+
 
 }

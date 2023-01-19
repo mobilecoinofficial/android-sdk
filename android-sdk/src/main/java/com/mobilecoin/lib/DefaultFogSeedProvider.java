@@ -13,4 +13,10 @@ public class DefaultFogSeedProvider implements FogSeedProvider {
         return new FogSeed(privateViewKey, rngRecord);
     }
 
+    @Override
+    public ViewFogSeed viewFogSeedFor(RistrettoPrivate privateViewKey, View.RngRecord rngRecord)
+            throws KexRngException {
+        return new ViewFogSeed(privateViewKey, rngRecord);
+    }
+
 }

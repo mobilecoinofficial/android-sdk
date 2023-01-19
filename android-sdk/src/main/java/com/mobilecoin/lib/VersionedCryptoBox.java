@@ -14,4 +14,6 @@ public interface VersionedCryptoBox {
     @NonNull
     public OwnedTxOut ownedTxOutFor(@NonNull View.TxOutRecord record, @NonNull AccountKey accountKey);
 
+    @NonNull ViewableTxOut viewableTxOutFor(@NonNull View.TxOutRecord record, @NonNull ViewAccountKey viewAccountKey);
+
 }

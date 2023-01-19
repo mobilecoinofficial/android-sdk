@@ -300,6 +300,23 @@ public class AccountTest {
         }
     }
 
+    @Test
+    public void testViewOnlyAccount() throws Exception {
+        final TestFogConfig fogConfig = TestFogConfig.getFogConfig(Environment.CURRENT_TEST_ENV);
+        final AccountKey spendAccountKey = TestKeysManager.getNextAccountKey();
+        final ViewAccountKey viewAccountKey = new ViewAccountKey(
+                spendAccountKey.getViewKey(),
+                spendAccountKey.getDefaultSubAddressViewKey(),
+                spendAccountKey.getPublicAddress().getSpendKey(),
+                fogConfig.getFogUri(),
+                fogConfig.getFogAuthoritySpki(),
+                fogConfig.getFogReportId()
+        );
+        Assert.assertEquals(spendAccountKey.getViewKey(), viewAccountKey.getViewPrivateKey());
+        Assert.assertEquals(spendAccountKey.getPublicAddress().getSpendKey(), viewAccountKey.getSpendPublicKey());
+        Assert.assertEquals(spendAccountKey.getDefaultSubAddressViewKey(), viewAccountKey.getDefaultSubaddressViewKey());
+    }
+
     /**
      * Contains data needed for Account tests.
      */
