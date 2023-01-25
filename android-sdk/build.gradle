@@ -52,6 +52,10 @@ android {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
+        debug {
+            //enableAndroidTestCoverage = true
+            testCoverageEnabled true
+        }
     }
     compileOptions {
         // Flag to enable support for the new language APIs
