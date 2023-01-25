@@ -12,4 +12,5 @@ gcloud firebase test android run \
     --device model=Nexus5X,version=24 \
     --app testApp/build/outputs/apk/debug/testApp-debug.apk \
     --test android-sdk/build/outputs/apk/androidTest/grpc/debug/android-sdk-grpc-debug-androidTest.apk \
+    --environment-variables coverage=true,coverageFile="coverage.ec" \
     --timeout 45m
