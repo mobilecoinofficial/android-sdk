@@ -22,8 +22,8 @@ import com.mobilecoin.lib.exceptions.InvalidUriException;
 import com.mobilecoin.lib.exceptions.NetworkException;
 import com.mobilecoin.lib.log.Logger;
 import com.mobilecoin.lib.network.TransportProtocol;
+import com.mobilecoin.lib.network.services.http.Requester.HttpRequester;
 import com.mobilecoin.lib.network.uri.FogUri;
-import com.mobilecoin.lib.util.SimpleRequester;
 
 import org.junit.Assert;
 import org.junit.Rule;
@@ -633,7 +633,7 @@ public class MobileCoinClientTest {
     @Test
     public void getBalance_afterSetTransportProtocolWithHTTP_retrievesBalance() throws Exception {
         TestFogConfig config = Environment.getTestFogConfig();
-        TransportProtocol httpTransportProtocol = TransportProtocol.forHTTP(new SimpleRequester(config.getUsername(), config.getPassword()));
+        TransportProtocol httpTransportProtocol = TransportProtocol.forHTTP(new HttpRequester(config.getUsername(), config.getPassword()));
 
         MobileCoinClient mobileCoinClient = MobileCoinClientBuilder.newBuilder()
                 .setTransportProtocol(httpTransportProtocol)
@@ -647,7 +647,7 @@ public class MobileCoinClientTest {
     @Test
     public void getOrFetchMinimumTxFee_afterSetTransportProtocolWithHTTP_retrievesTransferableAmount() throws Exception {
         TestFogConfig config = Environment.getTestFogConfig();
-        TransportProtocol httpTransportProtocol = TransportProtocol.forHTTP(new SimpleRequester(config.getUsername(), config.getPassword()));
+        TransportProtocol httpTransportProtocol = TransportProtocol.forHTTP(new HttpRequester(config.getUsername(), config.getPassword()));
 
         MobileCoinClient mobileCoinClient = MobileCoinClientBuilder.newBuilder()
                 .setTransportProtocol(httpTransportProtocol)
@@ -663,7 +663,7 @@ public class MobileCoinClientTest {
     @Test
     public void submitTransaction_afterSetTransportProtocolWithHTTP_submitsTransaction() throws Exception {
         TestFogConfig config = Environment.getTestFogConfig();
-        TransportProtocol httpTransportProtocol = TransportProtocol.forHTTP(new SimpleRequester(config.getUsername(), config.getPassword()));
+        TransportProtocol httpTransportProtocol = TransportProtocol.forHTTP(new HttpRequester(config.getUsername(), config.getPassword()));
 
         MobileCoinClient mobileCoinClient = MobileCoinClientBuilder.newBuilder()
                 .setTransportProtocol(httpTransportProtocol)
