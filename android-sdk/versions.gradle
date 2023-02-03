@@ -14,15 +14,15 @@ ext.build_versions = build_versions
 
 // Android
 def android_versions = [:]
-android_versions.multidex = '1.0.3'
+android_versions.multidex = '2.0.1'
 android_versions.desugar = '1.1.5'
-android_versions.annotation = '1.3.0'
+android_versions.annotation = '1.5.0'
 android_versions.javax_annotation = '1.3.2'
 versions.android = android_versions
 
 // Network
 def network_versions = [:]
-network_versions.grpc = '1.49.1'
+network_versions.grpc = '1.52.1'
 network_versions.protobuf = '3.17.0'
 versions.network = network_versions
 
@@ -39,7 +39,7 @@ testing_versions.core = '1.4.0'
 testing_versions.ext_junit = '1.1.3'
 testing_versions.espresso_core = '3.4.0'
 testing_versions.support_rules = '1.0.2'
-testing_versions.okhttp3 = '3.11.0'
+testing_versions.okhttp3 = '4.10.0'
 testing_versions.robolectric = '4.8'
 versions.testing = testing_versions
 
