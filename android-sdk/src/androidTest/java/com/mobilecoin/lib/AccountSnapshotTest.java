@@ -4,127 +4,69 @@ package com.mobilecoin.lib;
 
 import static com.mobilecoin.lib.UtilTest.waitForTransactionStatus;
 
-import org.junit.Assert;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotSame;
+import static org.junit.Assert.assertNull;
+
 import org.junit.Test;
 
 import java.math.BigInteger;
 
 public class AccountSnapshotTest {
-    // check snapshot balance, spent some coins and check again, the balance for that snapshot
-    // should remain constant
-    @Test
-    public void test_balance() throws Exception {
-
-        MobileCoinClient mobileCoinClient = MobileCoinClientBuilder.newBuilder().build();
-        AccountSnapshot snapshot = mobileCoinClient.getAccountSnapshot();
-        Balance balanceBefore = snapshot.getBalance();
-        BigInteger amount = BigInteger.valueOf(100);
-        BigInteger fee = mobileCoinClient.estimateTotalFee(amount);
-        PendingTransaction pendingTransaction = mobileCoinClient.prepareTransaction(
-                TestKeysManager.getNextAccountKey().getPublicAddress(),
-                amount,
-                fee
-        );
-        mobileCoinClient.submitTransaction(pendingTransaction.getTransaction());
-        waitForTransactionStatus(mobileCoinClient, pendingTransaction.getTransaction());
-        Balance balanceAfter = snapshot.getBalance();
-        Assert.assertEquals(balanceBefore, balanceAfter);
-
-        // snapshot balance consistency
-        AccountSnapshot oldSnapshot =
-                mobileCoinClient.getAccountSnapshot(balanceBefore.getBlockIndex());
-        Assert.assertNotNull(oldSnapshot);
-        Assert.assertEquals(balanceBefore, oldSnapshot.getBalance());
-    }
 
     @Test
-    public void test_snapshot_prep() throws Exception {
+    public void account_snapshot_integration_test() throws Exception {
 
-        MobileCoinClient mobileCoinClient = MobileCoinClientBuilder.newBuilder().build();
-        AccountSnapshot snapshot = mobileCoinClient.getAccountSnapshot();
-        Balance balanceBefore = snapshot.getBalance();
-        BigInteger amount = BigInteger.valueOf(100);
-        BigInteger fee = snapshot.estimateTotalFee(amount, mobileCoinClient.getOrFetchMinimumTxFee());
-        PendingTransaction pendingTransaction = snapshot.prepareTransaction(
-                TestKeysManager.getNextAccountKey().getPublicAddress(),
-                amount,
-                fee
-        );
-        mobileCoinClient.submitTransaction(pendingTransaction.getTransaction());
-        waitForTransactionStatus(mobileCoinClient, pendingTransaction.getTransaction());
-        // make sure the snapshot didn't change
-        Balance balanceAfter = snapshot.getBalance();
-        Assert.assertEquals(balanceBefore, balanceAfter);
-    }
+        final MobileCoinClient senderClient = MobileCoinClientBuilder.newBuilder().build();
+        final MobileCoinClient recipientClient = MobileCoinClientBuilder.newBuilder().build();
 
-    @Test
-    public void test_tx_status() throws Exception {
+        // Test null return for too high block index
+        assertNull(senderClient.getAccountSnapshot(UnsignedLong.MAX_VALUE.sub(UnsignedLong.ONE)));
 
-        MobileCoinClient mobileCoinClient = MobileCoinClientBuilder.newBuilder().build();
-        AccountSnapshot snapshotBefore =
-                mobileCoinClient.getAccountSnapshot();
-        BigInteger amount = BigInteger.valueOf(100);
-        BigInteger fee = mobileCoinClient.estimateTotalFee(amount);
-        PendingTransaction pendingTransaction = mobileCoinClient.prepareTransaction(
-                TestKeysManager.getNextAccountKey().getPublicAddress(),
-                amount,
-                fee
-        );
-        mobileCoinClient.submitTransaction(pendingTransaction.getTransaction());
-        Transaction.Status status = waitForTransactionStatus(mobileCoinClient,
-                pendingTransaction.getTransaction());
+        // Create initial snapshots
+        final AccountSnapshot snapshotBefore = senderClient.getAccountSnapshot();
+        final Balance balanceBefore = snapshotBefore.getBalance(TokenId.MOB);
+        final AccountSnapshot recipientSnapshotBefore = recipientClient.getAccountSnapshot();
 
-        AccountSnapshot snapshotAfter;
-        do {
-            snapshotAfter = mobileCoinClient.getAccountSnapshot();
-        } while (snapshotAfter.getBlockIndex().compareTo(status.getBlockIndex()) < 0);
-
-        Transaction.Status statusBefore =
-                snapshotBefore.getTransactionStatus(pendingTransaction.getTransaction());
-        Assert.assertEquals(Transaction.Status.UNKNOWN, statusBefore);
-
-        Transaction.Status statusAfter =
-                snapshotAfter.getTransactionStatus(pendingTransaction.getTransaction());
-        Assert.assertEquals(Transaction.Status.ACCEPTED, statusAfter);
-    }
-
-    @Test
-    public void test_tx_receipts() throws Exception {
-
-        MobileCoinClient senderClient = MobileCoinClientBuilder.newBuilder().build();
-        MobileCoinClient recipientClient = MobileCoinClientBuilder.newBuilder().build();
-        AccountSnapshot snapshotBefore =
-                recipientClient.getAccountSnapshot();
-        BigInteger amount = BigInteger.valueOf(100);
-        BigInteger fee = senderClient.estimateTotalFee(amount);
-        PendingTransaction pendingTransaction = senderClient.prepareTransaction(
+        // Send a transaction which should change new balance on account
+        final Amount amount = Amount.ofMOB(BigInteger.valueOf(100L));
+        final Amount fee = snapshotBefore.estimateTotalFee(amount, senderClient.getOrFetchMinimumTxFee(TokenId.MOB));
+        final PendingTransaction pendingTransaction = snapshotBefore.prepareTransaction(
                 recipientClient.getAccountKey().getPublicAddress(),
                 amount,
-                fee
+                fee,
+                TxOutMemoBuilder.createSenderAndDestinationRTHMemoBuilder(senderClient.getAccountKey())
         );
+
+        // Submit the transaction and wait until it completes
         senderClient.submitTransaction(pendingTransaction.getTransaction());
-        Transaction.Status txStatus = waitForTransactionStatus(senderClient,
-                pendingTransaction.getTransaction());
+        waitForTransactionStatus(senderClient, pendingTransaction.getTransaction());
 
-        AccountSnapshot snapshotAfter;
-        do {
-            snapshotAfter = recipientClient.getAccountSnapshot();
-        } while (snapshotAfter.getBlockIndex().compareTo(txStatus.getBlockIndex()) < 0);
+        // Check to make sure balance of snapshotBefore didn't change
+        assertEquals(balanceBefore, snapshotBefore.getBalance(TokenId.MOB));
 
-        Receipt.Status statusBefore =
-                snapshotBefore.getReceiptStatus(pendingTransaction.getReceipt());
-        Assert.assertEquals(Receipt.Status.UNKNOWN, statusBefore);
+        // Create a new snapshot after transaction is accepted but at the block index before it is
+        final AccountSnapshot snapshotAfter = senderClient.getAccountSnapshot(balanceBefore.getBlockIndex());
+        assertNotSame(snapshotBefore, snapshotAfter);
+        final Balance balanceAfter = snapshotAfter.getBalance(TokenId.MOB);
 
-        Receipt.Status statusAfter =
-                snapshotAfter.getReceiptStatus(pendingTransaction.getReceipt());
-        Assert.assertEquals(Receipt.Status.RECEIVED, statusAfter);
+        // Make sure new and old snapshots at the same index have same balance
+        assertEquals(balanceBefore, balanceAfter);
+
+        // Test Tx and Receipt Status with before and after snapshots
+        assertEquals(Transaction.Status.UNKNOWN, snapshotBefore.getTransactionStatus(pendingTransaction.getTransaction()));
+        assertEquals(Transaction.Status.UNKNOWN, snapshotAfter.getTransactionStatus(pendingTransaction.getTransaction()));
+        assertEquals(Receipt.Status.UNKNOWN, recipientSnapshotBefore.getReceiptStatus(pendingTransaction.getReceipt()));
+
+        // Test Tx Status with new snapshot
+        final AccountSnapshot newSnapshot = senderClient.getAccountSnapshot();
+        final AccountSnapshot newRecipientSnapshot = recipientClient.getAccountSnapshot();
+        assertEquals(Transaction.Status.ACCEPTED, newSnapshot.getTransactionStatus(pendingTransaction.getTransaction()));
+        assertEquals(Receipt.Status.RECEIVED, newRecipientSnapshot.getReceiptStatus(pendingTransaction.getReceipt()));
+
+        senderClient.shutdown();
+        recipientClient.shutdown();
+
     }
 
-    @Test
-    public void test_null_return() throws Exception {
-        MobileCoinClient mobileCoinClient = MobileCoinClientBuilder.newBuilder().build();
-        AccountSnapshot snapshot =
-                mobileCoinClient.getAccountSnapshot(UnsignedLong.MAX_VALUE.sub(UnsignedLong.ONE));
-        Assert.assertNull(snapshot);
-    }
 }

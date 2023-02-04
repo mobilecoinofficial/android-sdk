@@ -7,6 +7,10 @@ import static com.mobilecoin.lib.Environment.getTestFogConfig;
 import static com.mobilecoin.lib.UtilTest.waitForReceiptStatus;
 import static com.mobilecoin.lib.UtilTest.waitForTransactionStatus;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotSame;
+import static org.junit.Assert.assertTrue;
+
 import android.Manifest;
 import android.util.Base64;
 
@@ -21,8 +25,6 @@ import com.mobilecoin.lib.exceptions.InvalidTransactionException;
 import com.mobilecoin.lib.exceptions.InvalidUriException;
 import com.mobilecoin.lib.exceptions.NetworkException;
 import com.mobilecoin.lib.log.Logger;
-import com.mobilecoin.lib.network.TransportProtocol;
-import com.mobilecoin.lib.network.services.http.Requester.HttpRequester;
 import com.mobilecoin.lib.network.uri.FogUri;
 
 import org.junit.Assert;
@@ -56,77 +58,74 @@ public class MobileCoinClientTest {
             GrantPermissionRule.grant(Manifest.permission.READ_EXTERNAL_STORAGE);
 
     @Test
-    public void test_balance_consistency() throws Exception {
-        MobileCoinClient mobileCoinClient = MobileCoinClientBuilder.newBuilder().build();
+    public void mobile_coin_client_integration_test() throws Exception {
+        final Amount amount = Amount.ofMOB(BigInteger.TEN);
+
+        final MobileCoinClient senderClient = MobileCoinClientBuilder.newBuilder().build();
+        final MobileCoinClient recipientClient = MobileCoinClientBuilder.newBuilder().build();
+        final PublicAddress recipient = recipientClient.getAccountKey().getPublicAddress();
         try {
-            Balance balance1 = mobileCoinClient.getBalance();
-            Logger.d(
-                    TAG,
-                    "Balance 1: " + balance1
-            );
-            Balance balance2 = mobileCoinClient.getBalance();
-            Logger.d(
-                    TAG,
-                    "Balance 2: " + balance2
-            );
-            Assert.assertEquals(
-                    balance1,
-                    balance2
-            );
-        } finally {
-            mobileCoinClient.shutdown();
-        }
-    }
 
-    @Test
-    public void test_balance_retrieval() throws Exception {
-        MobileCoinClient mobileCoinClient = MobileCoinClientBuilder.newBuilder().build();
-        Balance balance = mobileCoinClient.getBalance();
-        Logger.d(
-                TAG,
-                "Balance: " + balance
-        );
-        Logger.d(TAG,"Balance: " + balance.getAmountPicoMob());
-        Assert.assertTrue(
-                "Expect non-zero balance",
-                balance.getAmountPicoMob().compareTo(BigInteger.ZERO) > 0
-        );
-        mobileCoinClient.shutdown();
-    }
-
-    @Test
-    public void test_balance_updates_correctly() throws Exception {
-
-        BigInteger amount = BigInteger.TEN;
-
-        MobileCoinClient mobileCoinClient = MobileCoinClientBuilder.newBuilder().build();
-        PublicAddress recipient = TestKeysManager.getNextAccountKey().getPublicAddress();
-        try {
-            BigInteger minimumFee = mobileCoinClient.estimateTotalFee(
-                    amount
-            );
-            PendingTransaction pending = mobileCoinClient.prepareTransaction(
+            // Create and submit the transaction
+            final Amount fee = senderClient.estimateTotalFee(amount);
+            final PendingTransaction pending = senderClient.prepareTransaction(
                     recipient,
                     amount,
-                    minimumFee
+                    fee,
+                    TxOutMemoBuilder.createSenderAndDestinationRTHMemoBuilder(senderClient.getAccountKey())
             );
+            final Balance senderBalanceBefore = senderClient.getBalance(TokenId.MOB);
+            final Balance senderBalanceBefore2 = senderClient.getBalance(TokenId.MOB);
 
-            Balance balanceBefore = mobileCoinClient.getBalance();
-            mobileCoinClient.submitTransaction(pending.getTransaction());
-            Transaction.Status txStatus = waitForTransactionStatus(mobileCoinClient,
+            // Test balance consistency
+            assertNotSame(senderBalanceBefore, senderBalanceBefore2);
+            assertEquals(senderBalanceBefore, senderBalanceBefore2);
+
+            final Balance recipientBalanceBefore = recipientClient.getBalance(TokenId.MOB);
+            senderClient.submitTransaction(pending.getTransaction());
+
+            // Test Tx status
+            final Transaction.Status txStatus = waitForTransactionStatus(senderClient,
                     pending.getTransaction());
+            assertEquals(Transaction.Status.ACCEPTED, txStatus);
 
-            Balance balanceAfter;
+            Balance senderBalanceAfter;
             do {
-                balanceAfter = mobileCoinClient.getBalance();
-            } while (balanceAfter.getBlockIndex().compareTo(txStatus.getBlockIndex()) < 0);
-            Assert.assertEquals(balanceBefore.getAmountPicoMob()
+                senderBalanceAfter = senderClient.getBalance(TokenId.MOB);
+            } while (senderBalanceAfter.getBlockIndex().compareTo(txStatus.getBlockIndex()) < 0);
+            final Balance recipientBalanceAfter = recipientClient.getBalance(TokenId.MOB);
+
+            // Test Receipt status
+            final Receipt receipt = pending.getReceipt();
+            waitForReceiptStatus(recipientClient, receipt);
+            assertTrue(
+                    "A valid receipt is expected",
+                    receipt.isValid(recipientClient.getAccountKey())
+            );
+            assertEquals(
+                    receipt.getAmountData(recipientClient.getAccountKey()),
+                    amount
+            );
+            assertEquals(Receipt.Status.RECEIVED, recipientClient.getReceiptStatus(receipt));
+
+            try {
+                // Decoding Amount with wrong key must fail
+                receipt.getAmountData(TestKeysManager.getNextAccountKey());
+                Assert.fail("Must throw an exception when the amount cannot be decoded");
+            } catch (AmountDecoderException ignore) {}
+
+            // Test balances update correctly after transaction
+            assertEquals(Amount.ofMOB(senderBalanceBefore.getValue())
                             .subtract(amount)
-                            .subtract(minimumFee),
-                    balanceAfter.getAmountPicoMob()
+                            .subtract(fee),
+                    Amount.ofMOB(senderBalanceAfter.getValue()));
+            assertEquals(Amount.ofMOB(recipientBalanceBefore.getValue())
+                            .add(amount),
+                    Amount.ofMOB(recipientBalanceAfter.getValue())
             );
         } finally {
-            mobileCoinClient.shutdown();
+            senderClient.shutdown();
+            recipientClient.shutdown();
         }
     }
 
@@ -170,6 +169,9 @@ public class MobileCoinClientTest {
         } catch (AttestationException ex) {
             // success
         }
+
+        mobileCoinClient.shutdown();
+
     }
 
     @Test
@@ -191,78 +193,9 @@ public class MobileCoinClientTest {
         } catch (NetworkException ex) {
             // success
         }
-    }
 
+        mobileCoinClient.shutdown();
 
-    @Test
-    public void test_outgoing_tx_status() throws Exception {
-        MobileCoinClient mobileCoinClient = MobileCoinClientBuilder.newBuilder().build();
-        AccountKey recipient = TestKeysManager.getNextAccountKey();
-        try {
-            BigInteger amount = BigInteger.TEN;
-            BigInteger minimumFee = mobileCoinClient.estimateTotalFee(
-                    amount
-            );
-            PendingTransaction pending = mobileCoinClient.prepareTransaction(
-                    recipient.getPublicAddress(),
-                    amount,
-                    minimumFee
-            );
-            mobileCoinClient.submitTransaction(pending.getTransaction());
-            Transaction.Status status = waitForTransactionStatus(
-                    mobileCoinClient,
-                    pending.getTransaction()
-            );
-            Assert.assertSame(
-                    "Valid transaction must be accepted",
-                    status,
-                    Transaction.Status.ACCEPTED
-            );
-        } finally {
-            mobileCoinClient.shutdown();
-        }
-    }
-
-    @Test
-    public void test_incoming_tx_status() throws Exception {
-        MobileCoinClient senderClient = MobileCoinClientBuilder.newBuilder().build();
-        MobileCoinClient recipientClient = MobileCoinClientBuilder.newBuilder().build();
-        try {
-            BigInteger amount = BigInteger.TEN;
-            BigInteger minimumFee = senderClient.estimateTotalFee(
-                    amount
-            );
-            PendingTransaction pending = senderClient.prepareTransaction(
-                    recipientClient.getAccountKey().getPublicAddress(),
-                    amount,
-                    minimumFee
-            );
-            senderClient.submitTransaction(pending.getTransaction());
-            Receipt receipt = pending.getReceipt();
-            Assert.assertTrue(
-                    "A valid receipt is expected",
-                    receipt.isValid(recipientClient.getAccountKey())
-            );
-            Assert.assertEquals(
-                    receipt.getAmount(recipientClient.getAccountKey()),
-                    amount
-            );
-            try {
-                // must fail
-                receipt.getAmount(TestKeysManager.getNextAccountKey());
-                Assert.fail("Must throw an exception when the amount cannot be decoded");
-            } catch (AmountDecoderException ignore) {
-            }
-            Receipt.Status status = waitForReceiptStatus(recipientClient, pending.getReceipt());
-            Assert.assertSame(
-                    "Valid transaction must be accepted",
-                    status,
-                    Receipt.Status.RECEIVED
-            );
-        } finally {
-            senderClient.shutdown();
-            recipientClient.shutdown();
-        }
     }
 
     @Test
@@ -284,9 +217,9 @@ public class MobileCoinClientTest {
             senderClient.submitTransaction(pending.getTransaction());
 
             Receipt.Status status = waitForReceiptStatus(recipientClient, pending.getReceipt());
-            Assert.assertEquals(status, Receipt.Status.RECEIVED);
+            assertEquals(status, Receipt.Status.RECEIVED);
             Balance finalBalance = recipientClient.getBalance();
-            Assert.assertEquals(
+            assertEquals(
                     initialBalance.getAmountPicoMob(),
                     finalBalance.getAmountPicoMob()
             );
@@ -377,7 +310,7 @@ public class MobileCoinClientTest {
         BigInteger transferableAmount = fragmentedClient.getTransferableAmount();
         BigInteger calculatedTransferableAmount =
                 BigInteger.valueOf(FRAGMENTS_TO_TEST).multiply(FRAGMENT_AMOUNT).subtract(futureFees);
-        Assert.assertEquals(calculatedTransferableAmount, transferableAmount);
+        assertEquals(calculatedTransferableAmount, transferableAmount);
 
         BigInteger txFee = coinSourceClient.estimateTotalFee(futureFees);
         PendingTransaction pendingTransaction = coinSourceClient.prepareTransaction(
@@ -398,7 +331,7 @@ public class MobileCoinClientTest {
         transferableAmount = fragmentedClient.getTransferableAmount();
         calculatedTransferableAmount =
                 BigInteger.valueOf(FRAGMENTS_TO_TEST).multiply(FRAGMENT_AMOUNT);
-        Assert.assertEquals(calculatedTransferableAmount, transferableAmount);
+        assertEquals(calculatedTransferableAmount, transferableAmount);
 
         // 3. Verify the account needs defragmentation
         BigInteger txAmount = FRAGMENT_AMOUNT.multiply(BigInteger.valueOf(FRAGMENTS_TO_TEST));
@@ -476,7 +409,7 @@ public class MobileCoinClientTest {
             }
         });
 
-        Assert.assertEquals("Internal and external APIs are inconsistent",
+        assertEquals("Internal and external APIs are inconsistent",
                 activityBlockCount, storeBlockCount);
 
     }
@@ -503,7 +436,7 @@ public class MobileCoinClientTest {
                     .map(OwnedTxOut::getKeyImage)
                     .filter(keyImages::contains)
                     .collect(Collectors.toSet());
-            Assert.assertEquals("account has to contain all key images used in the " +
+            assertEquals("account has to contain all key images used in the " +
                     "transaction", keyImages.size(), matches.size());
 
             senderClient.submitTransaction(pending.getTransaction());
@@ -512,9 +445,9 @@ public class MobileCoinClientTest {
 
             // verify the output of the receipt is valid
             OwnedTxOut receivedTxOut = pending.getReceipt().fetchOwnedTxOut(recipientClient);
-            Assert.assertEquals("Receipt amount must be valid", receivedTxOut.getValue(), amount);
+            assertEquals("Receipt amount must be valid", receivedTxOut.getValue(), amount);
             AccountActivity recipientActivity = recipientClient.getAccountActivity();
-            Assert.assertTrue("Recipient activity must contain received TxOut",
+            assertTrue("Recipient activity must contain received TxOut",
                     recipientActivity.getAllTokenTxOuts().contains(receivedTxOut));
         } finally {
             senderClient.shutdown();
@@ -567,7 +500,10 @@ public class MobileCoinClientTest {
                 break;
             }
         }
-        Assert.assertTrue(foundSentTxOut);
+        assertTrue(foundSentTxOut);
+
+        mobileCoinClient.shutdown();
+
     }
 
     @Test
@@ -591,7 +527,9 @@ public class MobileCoinClientTest {
         TxOutStore deserializedTxOutStore = TxOutStore.fromBytes(serializedTxOutStore);
         deserializedTxOutStore.setAccountKey(mobileCoinClient.getAccountKey());
 
-        Assert.assertEquals(txOutStore, deserializedTxOutStore);
+        assertEquals(txOutStore, deserializedTxOutStore);
+        mobileCoinClient.shutdown();
+
     }
 
     private static final class TestStorageAdapter implements StorageAdapter {
@@ -626,72 +564,6 @@ public class MobileCoinClientTest {
         @Override
         public void clear(String key) {
           storage.clear();
-        }
-    }
-
-    // Tests RestFogBlockService, RestFogKeyImageService, and RestFogViewService
-    @Test
-    public void getBalance_afterSetTransportProtocolWithHTTP_retrievesBalance() throws Exception {
-        TestFogConfig config = Environment.getTestFogConfig();
-        TransportProtocol httpTransportProtocol = TransportProtocol.forHTTP(new HttpRequester(config.getUsername(), config.getPassword()));
-
-        MobileCoinClient mobileCoinClient = MobileCoinClientBuilder.newBuilder()
-                .setTransportProtocol(httpTransportProtocol)
-                .build();
-
-        Balance balance = mobileCoinClient.getBalance();
-        Assert.assertNotNull(balance);
-    }
-
-    // Tests RestBlockchainService.
-    @Test
-    public void getOrFetchMinimumTxFee_afterSetTransportProtocolWithHTTP_retrievesTransferableAmount() throws Exception {
-        TestFogConfig config = Environment.getTestFogConfig();
-        TransportProtocol httpTransportProtocol = TransportProtocol.forHTTP(new HttpRequester(config.getUsername(), config.getPassword()));
-
-        MobileCoinClient mobileCoinClient = MobileCoinClientBuilder.newBuilder()
-                .setTransportProtocol(httpTransportProtocol)
-                .build();
-
-        BigInteger minimumTxFee = mobileCoinClient.getOrFetchMinimumTxFee();
-
-        Assert.assertNotNull(minimumTxFee);
-    }
-
-    // Tests RestConsensusClientService, RestFogMerkleProofService, RestFogReportService,
-    // and RestFogUntrustedService.
-    @Test
-    public void submitTransaction_afterSetTransportProtocolWithHTTP_submitsTransaction() throws Exception {
-        TestFogConfig config = Environment.getTestFogConfig();
-        TransportProtocol httpTransportProtocol = TransportProtocol.forHTTP(new HttpRequester(config.getUsername(), config.getPassword()));
-
-        MobileCoinClient mobileCoinClient = MobileCoinClientBuilder.newBuilder()
-                .setTransportProtocol(httpTransportProtocol)
-                .build();
-
-        AccountKey recipient = TestKeysManager.getNextAccountKey();
-        try {
-            BigInteger amount = BigInteger.TEN;
-            BigInteger minimumFee = mobileCoinClient.estimateTotalFee(
-                amount
-            );
-            PendingTransaction pending = mobileCoinClient.prepareTransaction(
-                recipient.getPublicAddress(),
-                amount,
-                minimumFee
-            );
-            mobileCoinClient.submitTransaction(pending.getTransaction());
-            Transaction.Status status = waitForTransactionStatus(
-                mobileCoinClient,
-                pending.getTransaction()
-            );
-            Assert.assertSame(
-                "Valid transaction must be accepted",
-                status,
-                Transaction.Status.ACCEPTED
-            );
-        } finally {
-            mobileCoinClient.shutdown();
         }
     }
 
