@@ -300,6 +300,23 @@ public class AccountTest {
         }
     }
 
+    @Test
+    public void testCreateAccountFromRandomMnemonic() throws Exception {
+        for(int i = 0; i < 100000; i++) {
+            Mnemonics.createRandomMnemonic();
+        }
+        for(int i = 0; i < 1000; i++) {
+            final String mnemonic = Mnemonics.createRandomMnemonic();
+            AccountKey.fromMnemonicPhrase(
+                    mnemonic,
+                    0,
+                    fogConfig.getFogUri(),
+                    "",
+                    fogConfig.getFogAuthoritySpki()
+            );
+        }
+    }
+
     /**
      * Contains data needed for Account tests.
      */

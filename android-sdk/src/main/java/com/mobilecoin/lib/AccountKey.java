@@ -8,6 +8,7 @@ import android.os.Parcelable;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.annotation.VisibleForTesting;
 
 import com.google.protobuf.ByteString;
 import com.google.protobuf.InvalidProtocolBufferException;
@@ -245,7 +246,13 @@ public class AccountKey extends Native implements Parcelable {
      *                         disambiguates which one to use when sending to this
      *                         account
      * @throws IllegalArgumentException if method parameters are invalid
+     *
+     * @deprecated Deprecated as of 4.0.0.1. Please use {@link AccountKey#fromMnemonicPhrase(String, int, Uri, String, byte[])}.
+     * @see AccountKey#fromMnemonicPhrase(String, int, Uri, String, byte[])
+     * @see Mnemonics#createRandomMnemonic()
      */
+    @VisibleForTesting
+    @Deprecated
     @NonNull
     public static AccountKey createNew(
             @NonNull Uri fogReportUri,
@@ -312,7 +319,13 @@ public class AccountKey extends Native implements Parcelable {
      *                         disambiguates which one to use when sending to this account.
      * @param bip39Entropy     mnemonic entropy, see {@link Mnemonics#bip39EntropyFromMnemonic}.
      * @param accountIndex     account index to derive.
+     *
+     * @deprecated Deprecated as of 4.0.0.1. Please use {@link AccountKey#fromMnemonicPhrase(String, int, Uri, String, byte[])}.
+     * @see AccountKey#fromMnemonicPhrase(String, int, Uri, String, byte[])
+     * @see Mnemonics#createRandomMnemonic()
      */
+    @VisibleForTesting
+    @Deprecated
     @NonNull
     public static AccountKey fromBip39Entropy(
             @NonNull byte[] bip39Entropy,
