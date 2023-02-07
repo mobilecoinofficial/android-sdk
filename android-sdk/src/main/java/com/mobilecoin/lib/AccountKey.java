@@ -320,12 +320,9 @@ public class AccountKey extends Native implements Parcelable {
      * @param bip39Entropy     mnemonic entropy, see {@link Mnemonics#bip39EntropyFromMnemonic}.
      * @param accountIndex     account index to derive.
      *
-     * @deprecated Deprecated as of 4.0.0.1. Please use {@link AccountKey#fromMnemonicPhrase(String, int, Uri, String, byte[])}.
      * @see AccountKey#fromMnemonicPhrase(String, int, Uri, String, byte[])
      * @see Mnemonics#createRandomMnemonic()
      */
-    @VisibleForTesting
-    @Deprecated
     @NonNull
     public static AccountKey fromBip39Entropy(
             @NonNull byte[] bip39Entropy,

@@ -59,13 +59,9 @@ public final class Mnemonics extends Native {
     /**
      * Gives entropy from the supplied mnemonic.
      *
-     * @deprecated Deprecated as of 4.0.0.1. Please use mnemonic phrases to initialize {@link AccountKey}s
-     *
      * @see AccountKey#fromMnemonicPhrase(String, int, Uri, String, byte[])
      * @see Mnemonics#createRandomMnemonic()
      */
-    @VisibleForTesting
-    @Deprecated
     public static byte[] bip39EntropyFromMnemonic(String mnemonic) throws BadMnemonicException {
         Logger.i(TAG, "Getting entropy from mnemonic");
         try {
