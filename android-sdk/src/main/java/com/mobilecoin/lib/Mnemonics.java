@@ -2,14 +2,43 @@
 
 package com.mobilecoin.lib;
 
+import android.net.Uri;
+
+import androidx.annotation.VisibleForTesting;
+
 import com.mobilecoin.lib.exceptions.BadEntropyException;
 import com.mobilecoin.lib.exceptions.BadMnemonicException;
 import com.mobilecoin.lib.log.Logger;
+import com.mobilecoin.lib.network.TransportProtocol;
+
+import java.util.List;
 
 public final class Mnemonics extends Native {
     private final static String TAG = Mnemonics.class.getName();
 
     private Mnemonics() {
+    }
+
+    /**
+     * Uses a cryptographically secure RNG implementation to generate a new random mnemonic.
+     *
+     * This method should only be used the first time an account is created. After generating the mnemonic,
+     * it must be stored securely by the end-user and should never be shared with anybody. If the
+     * mnemonic is lost, there is no way to generate the same one again.
+     *
+     * Mnemonics returned by this method can be passed to {@link AccountKey#fromMnemonicPhrase(String, int, Uri, String, byte[])}
+     * to create an {@link AccountKey}.
+     *
+     * @return a unique, securely generated, random mnemonic phrase
+     *
+     * @see AccountKey#fromMnemonicPhrase(String, int, Uri, String, byte[])
+     * @see MobileCoinClient#MobileCoinClient(AccountKey, Uri, Uri, TransportProtocol)
+     * @see MobileCoinClient#MobileCoinClient(AccountKey, Uri, Uri, ClientConfig, TransportProtocol)
+     * @see MobileCoinClient#MobileCoinClient(AccountKey, Uri, List, ClientConfig, TransportProtocol)
+     * @since 4.0.0.1
+     */
+    public static String createRandomMnemonic() {
+        return entropy_to_mnemonic(DefaultRng.createInstance().nextBytes(32));
     }
 
     /**
@@ -29,6 +58,9 @@ public final class Mnemonics extends Native {
 
     /**
      * Gives entropy from the supplied mnemonic.
+     *
+     * @see AccountKey#fromMnemonicPhrase(String, int, Uri, String, byte[])
+     * @see Mnemonics#createRandomMnemonic()
      */
     public static byte[] bip39EntropyFromMnemonic(String mnemonic) throws BadMnemonicException {
         Logger.i(TAG, "Getting entropy from mnemonic");
@@ -60,9 +92,9 @@ public final class Mnemonics extends Native {
     }
 
     // native methods
-    private static native String entropy_to_mnemonic(byte[] entropy) throws Exception;
+    private static native String entropy_to_mnemonic(byte[] entropy);
 
-    private static native byte[] entropy_from_mnemonic(String mnemonic) throws Exception;
+    private static native byte[] entropy_from_mnemonic(String mnemonic);
 
     private static native String words_by_prefix(String prefix);
 }
