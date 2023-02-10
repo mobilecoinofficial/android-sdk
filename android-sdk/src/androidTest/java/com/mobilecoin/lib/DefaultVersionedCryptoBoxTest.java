@@ -35,7 +35,12 @@ public class DefaultVersionedCryptoBoxTest {
         assertArrayEquals("Decrypted bytes do not match plain text bytes", plainTextBytes, decryptedBytes);
         assertEquals("Decrypted String does not match plain text String", plainText, decryptedString);
 
-        final RistrettoPrivate wrongPrivateKey = TestKeysManager.getNextAccountKey().getDefaultSubAddressViewKey();
+        final TestFogConfig fogConfig = TestFogConfig.getFogConfig(Environment.CURRENT_TEST_ENV);
+        final RistrettoPrivate wrongPrivateKey = AccountKey.createNew(
+                fogConfig.getFogUri(),
+                fogConfig.getFogReportId(),
+                fogConfig.getFogAuthoritySpki()
+        ).getDefaultSubAddressViewKey();
         boolean exceptionThrown = false;
         try {
             final byte[] wrongDecryptedBytes = uut.versionedCryptoBoxDecrypt(wrongPrivateKey, encrypted);
