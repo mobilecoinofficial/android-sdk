@@ -2,6 +2,9 @@ package com.mobilecoin.lib;
 
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertTrue;
 
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 
@@ -9,6 +12,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
 
 @RunWith(AndroidJUnit4.class)
 public class DefaultVersionedCryptoBoxTest {
@@ -28,8 +32,17 @@ public class DefaultVersionedCryptoBoxTest {
         final byte[] decryptedBytes = uut.versionedCryptoBoxDecrypt(privateKey, encrypted);
         final String decryptedString = new String(decryptedBytes, StandardCharsets.US_ASCII);
 
-        assertArrayEquals(plainTextBytes, decryptedBytes);
-        assertEquals(plainText, decryptedString);
+        assertArrayEquals("Decrypted bytes do not match plain text bytes", plainTextBytes, decryptedBytes);
+        assertEquals("Decrypted String does not match plain text String", plainText, decryptedString);
+
+        final RistrettoPrivate wrongPrivateKey = TestKeysManager.getNextAccountKey().getDefaultSubAddressViewKey();
+        boolean exceptionThrown = false;
+        try {
+            final byte[] wrongDecryptedBytes = uut.versionedCryptoBoxDecrypt(wrongPrivateKey, encrypted);
+        } catch(Exception e) {
+            exceptionThrown = true;
+        }
+        assertTrue("Decryption with wrong key must fail", exceptionThrown);
 
     }
 
