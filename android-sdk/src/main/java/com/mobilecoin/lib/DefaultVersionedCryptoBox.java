@@ -31,10 +31,26 @@ public class DefaultVersionedCryptoBox extends Native implements VersionedCrypto
         }
     }
 
+    @Override
+    @NonNull
+    public byte[] versionedCryptoBoxEncrypt(@NonNull RistrettoPublic key,
+                                            @NonNull byte[] plainText) {
+        return versioned_crypto_box_encrypt(
+                key,
+                plainText
+        );
+    }
+
     @NonNull
     private native byte[] versioned_crypto_box_decrypt(
             @NonNull RistrettoPrivate viewKey,
             @NonNull byte[] cipherText
+    );
+
+    @NonNull
+    private native byte[] versioned_crypto_box_encrypt(
+            @NonNull RistrettoPublic key,
+            @NonNull byte[] plain_text
     );
 
     @NonNull
