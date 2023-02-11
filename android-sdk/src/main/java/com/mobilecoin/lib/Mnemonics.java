@@ -4,8 +4,6 @@ package com.mobilecoin.lib;
 
 import android.net.Uri;
 
-import androidx.annotation.VisibleForTesting;
-
 import com.mobilecoin.lib.exceptions.BadEntropyException;
 import com.mobilecoin.lib.exceptions.BadMnemonicException;
 import com.mobilecoin.lib.log.Logger;
