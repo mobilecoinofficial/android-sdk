@@ -6,7 +6,6 @@ import static com.mobilecoin.lib.Environment.CURRENT_TEST_ENV;
 import static com.mobilecoin.lib.Environment.getTestFogConfig;
 import static com.mobilecoin.lib.UtilTest.waitForReceiptStatus;
 import static com.mobilecoin.lib.UtilTest.waitForTransactionStatus;
-
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotSame;
 import static org.junit.Assert.assertTrue;

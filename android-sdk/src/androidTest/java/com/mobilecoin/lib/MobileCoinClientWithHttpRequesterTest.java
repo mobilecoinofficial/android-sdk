@@ -1,7 +1,6 @@
 package com.mobilecoin.lib;
 
 import static com.mobilecoin.lib.UtilTest.waitForTransactionStatus;
-
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 

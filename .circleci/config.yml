@@ -33,7 +33,7 @@ jobs:
       - run:
           name: make tests
           command: make tests
-          no_output_timeout: 45m
+          no_output_timeout: 30m
 
       - store_artifacts:
           path: android-sdk/build/reports
