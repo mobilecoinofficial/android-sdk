@@ -19,7 +19,7 @@ public class DefaultVersionedCryptoBox extends Native implements VersionedCrypto
     @Override
     public byte[] versionedCryptoBoxDecrypt(@NonNull RistrettoPrivate viewKey,
                                             @NonNull byte[] cipherText) throws InvalidFogResponse {
-        Logger.i(TAG, "Decrypting with view key", null,
+        Logger.d(TAG, "Decrypting with view key", null,
                 "viewKey public:", viewKey.getPublicKey());
         try {
             return versioned_crypto_box_decrypt(

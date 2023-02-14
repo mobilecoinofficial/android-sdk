@@ -85,7 +85,6 @@ final class MaskedAmountV2 extends MaskedAmount {
      */
     static MaskedAmountV2 fromProtoBufObject(@NonNull MobileCoinAPI.MaskedAmount protoBuf)
             throws AmountDecoderException {
-        Logger.i(TAG, "Deserializing amount from protobuf object");
         return new MaskedAmountV2(protoBuf);
     }
 
@@ -143,7 +142,6 @@ final class MaskedAmountV2 extends MaskedAmount {
 
     @Override
     protected void finalize() throws Throwable {
-        Logger.i(TAG, "Finalizing object");
         if (rustObj != 0) {
             finalize_jni();
         }

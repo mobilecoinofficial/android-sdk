@@ -45,19 +45,16 @@ final class ReportResponse extends Native {
     }
     @NonNull
     public List<Report> getReports() {
-        Logger.i(TAG, "Getting reports", null, reports);
         return reports;
     }
 
     @NonNull
     public byte[][] getChain() {
-        Logger.i(TAG, "Getting chain");
         return chain;
     }
 
     @NonNull
     public byte[] getSignature() {
-        Logger.i(TAG, "Getting signature", null, signature);
         return signature;
     }
 

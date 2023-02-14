@@ -32,7 +32,7 @@ public class TokenId implements Parcelable {
             return MobileCoinAPI.KnownTokenId.forNumber((int)longValue).name();
         }
         else {
-            return "Unknown Token: " + id.toString();
+            return "Unknown Token: " + id;
         }
     }
 

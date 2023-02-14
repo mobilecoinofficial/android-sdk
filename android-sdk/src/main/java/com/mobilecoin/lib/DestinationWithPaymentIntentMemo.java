@@ -50,7 +50,7 @@ public final class DestinationWithPaymentIntentMemo extends TxOutMemo {
             init_jni_from_memo_data(memoData);
         } catch (Exception e) {
             IllegalArgumentException illegalArgumentException =
-                    new IllegalArgumentException("Failed to create an AccountKey", e);
+                    new IllegalArgumentException("Failed to create DestinationWithPaymentIntentMemo", e);
             Util.logException(TAG, illegalArgumentException);
             throw illegalArgumentException;
         }

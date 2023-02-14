@@ -59,7 +59,7 @@ abstract class AttestedClient extends AnyClient {
      * @return whether or no the client is attested
      */
     protected synchronized boolean isAttested() {
-        Logger.i(TAG, "Is channel attested?", null, (rustObj != 0) ? "Yes" : "No");
+        Logger.d(TAG, "Is channel attested?", null, (rustObj != 0) ? "Yes" : "No");
         return (rustObj != 0);
     }
 

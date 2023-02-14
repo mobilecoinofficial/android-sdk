@@ -79,8 +79,8 @@ public final class AccountSnapshot {
      * Computes the account's balance as it was at the snapshot's block index
      */
     @NonNull
-    public Balance getBalance(TokenId tokenId) {
-        Logger.i(TAG, "Getting balance");
+    public Balance getBalance(@NonNull TokenId tokenId) {
+        Logger.d(TAG, "Getting balance for " + tokenId.toString());
         BigInteger value = BigInteger.ZERO;
         for (OwnedTxOut txOut : txOuts) {
             if (!txOut.isSpent(blockIndex)) {
@@ -99,6 +99,7 @@ public final class AccountSnapshot {
      * Computes the account's balances
      */
     public Map<TokenId, Balance> getBalances() {
+        Logger.d(TAG, "Getting balances");
         HashMap<TokenId, Balance> balances = new HashMap<TokenId, Balance>();
         for(OwnedTxOut otxo : txOuts) {
             //TODO: on API level 24, we can use getOrDefault to simplify the logic here
@@ -127,7 +128,7 @@ public final class AccountSnapshot {
      */
     @NonNull
     public Receipt.Status getReceiptStatus(@NonNull Receipt receipt) throws InvalidReceiptException {
-        Logger.i(TAG, "Checking receipt status");
+        Logger.d(TAG, "Checking receipt status");
         RistrettoPublic txOutPubKey = receipt.getPublicKey();
         for (OwnedTxOut txOut : txOuts) {
             if (txOut.getPublicKey().equals(txOutPubKey)) {
@@ -238,7 +239,7 @@ public final class AccountSnapshot {
      */
     @NonNull
     public Amount getTransferableAmount(@NonNull Amount minimumTxFee) {
-        Logger.i(TAG, "Calculating transferable amount");
+        Logger.d(TAG, "Calculating transferable amount");
         HashSet<OwnedTxOut> unspent = txOuts.stream().filter(p -> !p.isSpent(blockIndex))
                 .filter(utxo -> utxo.getAmount().getTokenId().equals(minimumTxFee.getTokenId()))
                 .collect(Collectors.toCollection(HashSet::new));
@@ -292,7 +293,7 @@ public final class AccountSnapshot {
     public Amount estimateTotalFee(@NonNull Amount amount,
                                    @NonNull Amount minimumTxFee
     ) throws InsufficientFundsException {
-        Logger.i(TAG, "EstimateTotalFee call");
+        Logger.d(TAG, "EstimateTotalFee call");
         if(!amount.getTokenId().equals(minimumTxFee.getTokenId())) {
             throw(new IllegalArgumentException("Mixed token type transactions not supported"));
         }

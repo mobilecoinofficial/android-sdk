@@ -46,6 +46,7 @@ class BlockchainClient extends AnyClient {
      */
     @NonNull
     Amount getOrFetchMinimumFee(@NonNull TokenId tokenId) throws NetworkException {
+        Logger.i(TAG, "Checking minimum network fee for " + tokenId);
         ConsensusCommon.LastBlockInfoResponse response = getOrFetchLastBlockInfo();
         if((!tokenId.equals(TokenId.MOB)) && (response.getNetworkBlockVersion() < TOKEN_ID_BLOCK_VERSION)) {
             throw(new IllegalArgumentException("Network block version does not support different tokens"));
@@ -77,6 +78,7 @@ class BlockchainClient extends AnyClient {
      * Reset cache
      */
     synchronized void resetCache() {
+        Logger.i(TAG, "Clearing block info cache");
         lastBlockInfo = null;
         lastBlockInfoTimestamp_ms = 0L;
     }
@@ -88,6 +90,7 @@ class BlockchainClient extends AnyClient {
     synchronized ConsensusCommon.LastBlockInfoResponse getOrFetchLastBlockInfo() throws NetworkException {
         if (lastBlockInfo == null ||
                 lastBlockInfoTimestamp_ms + minimumFeeCacheTTL_ms <= System.currentTimeMillis()) {
+            Logger.i(TAG, "Out-of-date block info cache, refreshing...");
             lastBlockInfo = fetchLastBlockInfo();
             lastBlockInfoTimestamp_ms = System.currentTimeMillis();
         }
@@ -109,7 +112,7 @@ class BlockchainClient extends AnyClient {
                 try {
                     return blockchainService.getLastBlockInfo(Empty.newBuilder().build());
                 } catch (NetworkException exception) {
-                    Logger.w(TAG, "Unable to post transaction with consensus", exception);
+                    Logger.w(TAG, "Unable to fetch block info from consensus", exception);
                     throw exception;
                 }
             });

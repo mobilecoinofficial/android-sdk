@@ -30,7 +30,7 @@ public final class AccountActivity {
     AccountActivity(@NonNull Set<OwnedTxOut> txOuts, @NonNull UnsignedLong blockCount) {
         this.txOuts = txOuts;
         this.blockCount = blockCount;
-        Logger.i(TAG, "Created AccountActivity", null,
+        Logger.d(TAG, "Created AccountActivity", null,
                 "txOuts size:", txOuts.size(),
                 "blockCount:", blockCount);
     }
@@ -40,7 +40,7 @@ public final class AccountActivity {
      */
     @NonNull
     public UnsignedLong getBlockCount() {
-        Logger.i(TAG, "Get block count", null,
+        Logger.d(TAG, "Get block count", null,
                 "blocks:", blockCount.toString());
         return blockCount;
     }
@@ -56,7 +56,7 @@ public final class AccountActivity {
     @Deprecated
     @NonNull
     public Set<OwnedTxOut> getAllTxOuts() {
-        Logger.i(TAG, "GetAllTxOuts", null,
+        Logger.d(TAG, "GetAllTxOuts", null,
                 "txOuts count:", txOuts.size());
         return txOuts.stream()
                 .filter(otxo -> TokenId.MOB.equals(otxo.getAmount().getTokenId()))
@@ -70,8 +70,8 @@ public final class AccountActivity {
      * @since 1.2.2.1
      */
     @NonNull
-    public Set<OwnedTxOut> getAllTokenTxOuts(TokenId tokenId) {
-        Logger.i(TAG, "GetAllTxOuts", null,
+    public Set<OwnedTxOut> getAllTokenTxOuts(@NonNull TokenId tokenId) {
+        Logger.d(TAG, "GetAllTxOuts", null,
                 "txOuts count:", txOuts.size());
         return txOuts.stream()
                 .filter(otxo -> tokenId.equals(otxo.getAmount().getTokenId()))
@@ -86,7 +86,7 @@ public final class AccountActivity {
      */
     @NonNull
     public Set<OwnedTxOut> getAllTokenTxOuts() {
-        Logger.i(TAG, "GetAllTxOuts", null,
+        Logger.d(TAG, "GetAllTxOuts", null,
                 "txOuts count:", txOuts.size());
         return txOuts;
     }
