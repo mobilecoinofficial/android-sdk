@@ -1246,7 +1246,7 @@ public final class MobileCoinClient implements MobileCoinAccountClient, MobileCo
         for (OwnedTxOut utxo : utxos) {
             if (!indices.add(utxo.getTxOutGlobalIndex())) {
                 final IllegalStateException ise = new IllegalStateException("utxos contains non-unique indices");
-                Logger.e(TAG, "Encountered Exception while getting rings", ise);
+                Logger.e(TAG, "Illegal state while getting rings. Throwing exception", ise);
                 throw ise;
             }
         }
@@ -1256,7 +1256,7 @@ public final class MobileCoinClient implements MobileCoinAccountClient, MobileCo
         if (count > numTxOutsInLedger.intValue()) {
             final InvalidFogResponse ifr = new InvalidFogResponse("Ledger does not contain enough outputs. Required: "
                     + count + ", present: " + numTxOutsInLedger);
-            Logger.e(TAG, "Encountered Exception while getting rings", ifr);
+            Logger.e(TAG, "Received invalid response while getting rings. Throwing exception", ifr);
             throw ifr;
         }
 
@@ -1277,7 +1277,7 @@ public final class MobileCoinClient implements MobileCoinAccountClient, MobileCo
 
         if (outs.size() != count) {
             final InvalidFogResponse ifr = new InvalidFogResponse("getOutputs returned incorrect number of outputs");
-            Logger.e(TAG, "Encountered Exception while getting rings", ifr);
+            Logger.e(TAG, "Received invalid response while getting rings. Throwing exception", ifr);
             throw ifr;
         }
 
