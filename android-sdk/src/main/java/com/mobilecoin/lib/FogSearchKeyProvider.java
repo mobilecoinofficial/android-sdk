@@ -11,7 +11,7 @@ import java.util.TreeMap;
 class FogSearchKeyProvider {
 
     //Map FogSeed to the number of times its search keys have been scaled
-    Map<FogSeed, FogSeedState> fogSeeds;
+    private Map<FogSeed, FogSeedState> fogSeeds;
 
     FogSearchKeyProvider(Collection<FogSeed> fogSeeds) {
         this.fogSeeds = new TreeMap<FogSeed, FogSeedState>();

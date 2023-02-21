@@ -54,7 +54,7 @@ public final class SenderWithPaymentRequestMemo extends TxOutMemo {
       init_jni_from_memo_data(memoData);
     } catch(Exception e) {
       IllegalArgumentException illegalArgumentException =
-          new IllegalArgumentException("Failed to create a SenderWithPaymentRequestMemo", e);
+          new IllegalArgumentException("Failed to create SenderWithPaymentRequestMemo", e);
       Util.logException(TAG, illegalArgumentException);
       throw illegalArgumentException;
     }

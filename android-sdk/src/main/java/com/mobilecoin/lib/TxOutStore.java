@@ -81,7 +81,7 @@ class TxOutStore implements Parcelable {
 
     @NonNull
     static TxOutStore fromBytes(@NonNull byte[] serialized) throws SerializationException {
-        Logger.i(TAG, "Deserializing the txo store from bytes");
+        Logger.d(TAG, "Deserializing the txo store from bytes");
         Parcel parcel = Parcel.obtain();
         parcel.unmarshall(serialized, 0, serialized.length);
         parcel.setDataPosition(0);
@@ -92,7 +92,7 @@ class TxOutStore implements Parcelable {
 
     @NonNull
     byte[] toByteArray() throws SerializationException {
-        Logger.i(TAG, "Serializing txo store");
+        Logger.d(TAG, "Serializing txo store");
         Parcel parcel = Parcel.obtain();
         writeToParcel(parcel, 0);
         byte serialized[] = parcel.marshall();
@@ -151,6 +151,7 @@ class TxOutStore implements Parcelable {
             @NonNull AttestedLedgerClient ledgerClient,
             @NonNull FogBlockClient blockClient
     ) throws InvalidFogResponse, NetworkException, AttestationException, FogSyncException {
+        Logger.i(TAG, "Refreshing TxOutStore");
         // update RNGs, TxOuts, and fog misses
         Set<BlockRange> fogMisses;
         try {

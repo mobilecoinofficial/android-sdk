@@ -35,13 +35,11 @@ public final class PendingTransaction {
 
     @NonNull
     public Receipt getReceipt() {
-        Logger.i(TAG, "Getting receipt", null, receipt);
         return receipt;
     }
 
     @NonNull
     public Transaction getTransaction() {
-        Logger.i(TAG, "Getting transaction", null, transaction);
         return transaction;
     }
 

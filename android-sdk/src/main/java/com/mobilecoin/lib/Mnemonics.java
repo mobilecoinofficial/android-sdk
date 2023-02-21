@@ -43,7 +43,6 @@ public final class Mnemonics extends Native {
      * Gives mnemonic for the supplied entropy.
      */
     public static String bip39EntropyToMnemonic(byte[] entropy) throws BadEntropyException {
-        Logger.i(TAG, "Converting entropy to mnemonic");
         try {
             return entropy_to_mnemonic(entropy);
         } catch (Exception exception) {
@@ -61,7 +60,6 @@ public final class Mnemonics extends Native {
      * @see Mnemonics#createRandomMnemonic()
      */
     public static byte[] bip39EntropyFromMnemonic(String mnemonic) throws BadMnemonicException {
-        Logger.i(TAG, "Getting entropy from mnemonic");
         try {
             return entropy_from_mnemonic(mnemonic);
         } catch (Exception exception) {
@@ -77,7 +75,6 @@ public final class Mnemonics extends Native {
      * Empty prefix gives all 2048 words.
      */
     public static String[] wordsByPrefix(String prefix) throws BadMnemonicException {
-        Logger.i(TAG, "Listing words by prefix");
         try {
             String delimitedString = words_by_prefix(prefix);
             return delimitedString.split(",");

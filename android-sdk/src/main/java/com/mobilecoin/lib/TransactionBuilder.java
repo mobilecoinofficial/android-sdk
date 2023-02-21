@@ -28,6 +28,11 @@ final class TransactionBuilder extends Native {
         @NonNull Amount fee,
         @NonNull final byte[] rngSeed
     ) throws FogReportException {
+        Logger.i(TAG, "TransactionBuilder init", null,
+                "block version: ", blockVersion,
+                "token ID: ", tokenId,
+                "fee:", fee
+        );
         try {
             init_jni(
                     fogResolver,
@@ -38,6 +43,7 @@ final class TransactionBuilder extends Native {
             );
             this.rng = ChaCha20Rng.fromSeed(rngSeed);
         } catch (Exception exception) {
+            Logger.e(TAG, "Encountered Exception while initializing TransactionBuilder", exception);
             throw new FogReportException("Unable to create TxBuilder", exception);
         }
     }
@@ -81,6 +87,7 @@ final class TransactionBuilder extends Native {
     }
 
     void addPresignedInput(@NonNull final SignedContingentInput sci) throws TransactionBuilderException {
+        Logger.i(TAG, "Adding presigned transaction input");
         try {
             add_presigned_input(sci);
         } catch(Exception e) {
@@ -125,7 +132,7 @@ final class TransactionBuilder extends Native {
         @NonNull AccountKey accountKey,
         @Nullable byte[] confirmationNumberOut
     ) throws TransactionBuilderException {
-        Logger.i(TAG, "Adding transaction output");
+        Logger.i(TAG, "Adding transaction change output");
         byte[] confirmationOut = new byte[Receipt.CONFIRMATION_NUMBER_LENGTH];
         try {
             long rustObj = add_change_output(
@@ -155,7 +162,7 @@ final class TransactionBuilder extends Native {
     }
 
     void setTombstoneBlockIndex(@NonNull UnsignedLong value) throws TransactionBuilderException {
-        Logger.i(TAG, String.format(Locale.US, "Set transaction tombstone %s", value.toString()));
+        Logger.i(TAG, String.format(Locale.US, "Set transaction tombstone %s", value));
         try {
             set_tombstone_block(value.longValue());
         } catch (Exception exception) {
@@ -164,7 +171,7 @@ final class TransactionBuilder extends Native {
         }
     }
 
-    void setFee(Amount value) throws TransactionBuilderException {
+    void setFee(@NonNull Amount value) throws TransactionBuilderException {
         Logger.i(TAG, String.format(Locale.US, "Set transaction fee %d", value.getValue().longValue()));
         try {
             set_fee(value.getValue().longValue());

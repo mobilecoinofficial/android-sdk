@@ -87,32 +87,27 @@ class FogSeed implements Parcelable, Comparable<FogSeed> {
     }
 
     long getTxoCount() {
-        Logger.i(TAG, "Getting TxoCount");
         return utxos.size();
     }
 
     // Get the next N search keys
     @NonNull
     byte[][] getNextN(long n) throws KexRngException {
-        Logger.i(TAG, "Getting the next N search keys", null, n);
         return kexRng.getNextN(n);
     }
 
     // Get current search key for this seed
     @NonNull
     byte[] getOutput() throws KexRngException {
-        Logger.i(TAG, "Getting output");
         return kexRng.getOutput();
     }
 
     // Advance this seed by 1.
     void advance() throws KexRngException {
-        Logger.i(TAG, "Advancing seed");
         kexRng.advance();
     }
 
     void addTXO(@NonNull OwnedTxOut utxo) throws KexRngException {
-        Logger.i(TAG, "Adding TXO");
         utxos.add(utxo);
         advance();
     }

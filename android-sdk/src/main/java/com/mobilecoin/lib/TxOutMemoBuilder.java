@@ -3,6 +3,7 @@ package com.mobilecoin.lib;
 import androidx.annotation.NonNull;
 
 import com.mobilecoin.lib.exceptions.TransactionBuilderException;
+import com.mobilecoin.lib.log.Logger;
 
 /**
  * Builds memos for TxOuts.
@@ -20,6 +21,7 @@ public class TxOutMemoBuilder extends Native {
    */
   public static TxOutMemoBuilder createSenderAndDestinationRTHMemoBuilder(AccountKey accountKey)
       throws TransactionBuilderException {
+    Logger.i(TAG, "Creating sender and destination memo builder");
     return new TxOutMemoBuilder(accountKey);
   }
 
@@ -41,6 +43,7 @@ public class TxOutMemoBuilder extends Native {
    * @since 1.2.0
    **/
   public static TxOutMemoBuilder createSenderPaymentRequestAndDestinationRTHMemoBuilder(AccountKey accountKey, UnsignedLong paymentRequestId) throws TransactionBuilderException {
+    Logger.i(TAG, "Creating sender and destination with payment request memo builder");
     return new TxOutMemoBuilder(accountKey, paymentRequestId, false);
   }
 
@@ -62,6 +65,7 @@ public class TxOutMemoBuilder extends Native {
    * @since 4.0.0
    **/
   public static TxOutMemoBuilder createSenderPaymentIntentAndDestinationRTHMemoBuilder(AccountKey accountKey, UnsignedLong paymentIntentId) throws TransactionBuilderException {
+    Logger.i(TAG, "Creating sender and destination with payment intent memo builder");
     return new TxOutMemoBuilder(accountKey, paymentIntentId, true);
   }
 
@@ -70,6 +74,7 @@ public class TxOutMemoBuilder extends Native {
    * sender memo or destination memo and is empty.
    **/
   public static TxOutMemoBuilder createDefaultRTHMemoBuilder() throws TransactionBuilderException {
+    Logger.i(TAG, "Creating default memo builder");
     return new TxOutMemoBuilder();
   }
 
@@ -88,6 +93,7 @@ public class TxOutMemoBuilder extends Native {
         );
       }
     } catch (Exception exception) {
+      Util.logException(TAG, exception);
       throw new TransactionBuilderException("Unable to create TxOutMemoBuilder", exception);
     }
   }
@@ -96,6 +102,7 @@ public class TxOutMemoBuilder extends Native {
     try {
       init_jni_with_sender_and_destination_rth_memo(accountKey);
     } catch (Exception exception) {
+      Util.logException(TAG, exception);
       throw new TransactionBuilderException("Unable to create TxOutMemoBuilder", exception);
     }
   }
@@ -104,6 +111,7 @@ public class TxOutMemoBuilder extends Native {
     try {
       init_jni_with_default_rth_memo();
     } catch (Exception exception) {
+      Util.logException(TAG, exception);
       throw new TransactionBuilderException("Unable to create TxOutMemoBuilder", exception);
     }
   }
