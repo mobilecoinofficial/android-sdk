@@ -8,10 +8,10 @@ import com.mobilecoin.lib.network.NetworkResult;
 import com.mobilecoin.lib.network.services.FogUntrustedService;
 import com.mobilecoin.lib.network.services.http.clients.RestClient;
 
+import fog_ledger.FogUntrustedTxOutApiHttp;
 import fog_ledger.Ledger;
 
 public class RestFogUntrustedService extends RestService implements FogUntrustedService {
-    public static final String SERVICE_NAME = "fog_ledger.FogUntrustedTxOutApi";
 
     public RestFogUntrustedService(@NonNull RestClient restClient) {
         super(restClient);
@@ -20,11 +20,7 @@ public class RestFogUntrustedService extends RestService implements FogUntrusted
     @Override
     public Ledger.TxOutResponse getTxOuts(Ledger.TxOutRequest request) throws NetworkException {
         try {
-            byte[] responseData = getRestClient().makeRequest(
-                    PREFIX + SERVICE_NAME + "/" + "GetTxOuts",
-                    request.toByteArray()
-            );
-            return Ledger.TxOutResponse.parseFrom(responseData);
+            return FogUntrustedTxOutApiHttp.getTxOuts(request, getRestClient());
         } catch (InvalidProtocolBufferException exception) {
             throw new NetworkException(NetworkResult.INVALID_ARGUMENT, exception);
         }

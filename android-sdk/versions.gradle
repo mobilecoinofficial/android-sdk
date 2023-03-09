@@ -23,7 +23,7 @@ versions.android = android_versions
 // Network
 def network_versions = [:]
 network_versions.grpc = '1.52.1'
-network_versions.protobuf = '3.17.0'
+network_versions.protobuf = '3.22.0'
 versions.network = network_versions
 
 // JNI

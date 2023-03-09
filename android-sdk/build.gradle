@@ -18,6 +18,9 @@ protobuf {
                 artifact = deps.network.grpc_protoc
             }
         }
+        httpclientgenlauncher {
+            path = 'tools/httpclientgen/bin/httpclientgen'
+        }
     }
     generateProtoTasks {
         all().each { task ->
@@ -27,6 +30,11 @@ protobuf {
             if(task.getName().contains('Grpc')) {
                 task.plugins {
                     grpc { option 'lite' }
+                }
+            }
+            task.plugins {
+                httpclientgenlauncher {
+                    //
                 }
             }
         }
