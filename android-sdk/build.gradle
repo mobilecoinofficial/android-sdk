@@ -2,7 +2,7 @@ apply plugin: 'com.android.library'
 apply plugin: 'com.google.protobuf'
 apply from: 'publish.gradle'
 
-System.setProperty("user.dir", project.projectDir.toString())
+println "HERE! " + System.getProperty("user.dir")
 
 protobuf {
     protoc {
@@ -21,7 +21,7 @@ protobuf {
             }
         }
         httpclientgenlauncher {
-            path = 'tools/httpclientgen/bin/httpclientgen'
+            path = System.getProperty("user.dir") + '/tools/httpclientgen/bin/httpclientgen'
         }
     }
     generateProtoTasks {
