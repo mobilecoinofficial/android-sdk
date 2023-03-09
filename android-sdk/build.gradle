@@ -3,6 +3,7 @@ apply plugin: 'com.google.protobuf'
 apply from: 'publish.gradle'
 
 println "HERE! " + System.getProperty("user.dir")
+println "HERE! " + "$System.env.ANDROID_HOME"
 
 protobuf {
     protoc {
@@ -21,7 +22,7 @@ protobuf {
             }
         }
         httpclientgenlauncher {
-            path = System.getProperty("user.dir") + '/tools/httpclientgen/bin/httpclientgen'
+            path = "$System.env.ANDROID_HOME" + '/tools/httpclientgen/bin/httpclientgen'
         }
     }
     generateProtoTasks {
