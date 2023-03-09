@@ -19,7 +19,7 @@ protobuf {
             }
         }
         httpclientgenlauncher {
-            path = 'tools/httpclientgen/bin/httpclientgen'
+            path = './tools/httpclientgen/bin/httpclientgen'
         }
     }
     generateProtoTasks {
