@@ -2,8 +2,6 @@ apply plugin: 'com.android.library'
 apply plugin: 'com.google.protobuf'
 apply from: 'publish.gradle'
 
-println "HERE! " + System.getProperty("user.dir")
-
 protobuf {
     protoc {
         if (osdetector.os == "osx") {
@@ -21,7 +19,7 @@ protobuf {
             }
         }
         httpclientgenlauncher {
-            path = System.getProperty("user.dir") + '/tools/httpclientgen/bin/httpclientgen'
+            path = rootProject.files('tools/httpclientgen/bin/httpclientgen').getSingleFile()
         }
     }
     generateProtoTasks {
