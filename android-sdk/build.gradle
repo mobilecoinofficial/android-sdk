@@ -2,6 +2,8 @@ apply plugin: 'com.android.library'
 apply plugin: 'com.google.protobuf'
 apply from: 'publish.gradle'
 
+println("HERE!" + System.getProperty("user.home"))
+
 protobuf {
     protoc {
         if (osdetector.os == "osx") {
@@ -19,7 +21,13 @@ protobuf {
             }
         }
         httpclientgenlauncher {
-            path = rootProject.files('tools/httpclientgen/bin/httpclientgen').getSingleFile()
+            // check if we are running in the docker container
+            if ("/home/gradle" == System.getProperty("user.home")) {
+                path = "tools/httpclientgen/bin/httpclientgen"
+            }
+            else {
+                path = rootProject.files('tools/httpclientgen/bin/httpclientgen').getSingleFile()
+            }
         }
     }
     generateProtoTasks {
