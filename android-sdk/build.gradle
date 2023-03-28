@@ -20,7 +20,7 @@ protobuf {
         }
         httpclientgenlauncher {
             // check if we are running in the docker container
-            if ("/home/gradle" == System.getProperty("user.home")) {
+            if ("/root" == System.getProperty("user.home")) {
                 path = rootProject.files("tools/httpclientgen/bin/httpclientgen").getSingleFile()
             }
             else {
