@@ -35,4 +35,4 @@ RUN curl -o gcloud.tar.gz "$GCLOUD_URL" \
 
 # Copy scripts
 COPY scripts/* /usr/local/bin/
-COPY tools .
+COPY ../tools .
