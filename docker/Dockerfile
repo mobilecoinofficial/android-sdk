@@ -35,4 +35,7 @@ RUN curl -o gcloud.tar.gz "$GCLOUD_URL" \
 
 # Copy scripts
 COPY scripts/* /usr/local/bin/
-COPY tools .
+COPY tools/httpclientgen/bin/httpclientgen /usr/local/bin
+RUN mkdir -p /usr/local/lib
+COPY tools/httpclientgen/lib/httpclientgen-0.0.7.jar /usr/local/lib
+COPY tools/httpclientgen/lib/protobuf-java-3.22.0.jar /usr/local/lib
