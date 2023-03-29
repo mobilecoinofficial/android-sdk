@@ -39,3 +39,6 @@ RUN mkdir -p /usr/local/lib
 # Copy scripts
 COPY scripts/* /usr/local/bin/
 COPY tools/ .
+RUN pwd
+RUN ls -la
+RUN ls -la httpclientgen/bin
