@@ -38,10 +38,4 @@ RUN mkdir -p /usr/local/lib
 
 # Copy scripts
 COPY scripts/* /usr/local/bin/
-COPY tools/ .
-RUN echo "HERE!"
-RUN pwd
-RUN ls -la httpclientgen/
-RUN ls -la httpclientgen/lib
-RUN ls -la httpclientgen/bin
-RUN ls -la /home/gradle
+COPY tools/httpclientgen /usr/local
