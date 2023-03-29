@@ -11,6 +11,7 @@ protobuf {
         }
     }
     plugins {
+        def files =  fileTree("dirName").filter { it.isFile() }.files.name
         grpc {
             if (osdetector.os == "osx") {
                 artifact = deps.network.grpc_protoc_osx
@@ -21,7 +22,7 @@ protobuf {
         httpclientgenlauncher {
             // check if we are running in the docker container
             if ("/root" == System.getProperty("user.home")) {
-                path = "/home/gradle/httpclientgen/bin/httpclientgen"
+                path = "tools/httpclientgen/bin/httpclientgen"
             }
             else {
                 path = rootProject.files('docker/tools/httpclientgen/bin/httpclientgen').getSingleFile()
