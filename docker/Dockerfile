@@ -40,6 +40,7 @@ RUN mkdir -p /usr/local/lib
 COPY scripts/* /usr/local/bin/
 COPY tools/ .
 RUN echo "HERE!"
+RUN pwd
 RUN ls -la httpclientgen/
 RUN ls -la httpclientgen/lib
 RUN ls -la httpclientgen/bin
