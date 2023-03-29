@@ -44,3 +44,4 @@ RUN pwd
 RUN ls -la httpclientgen/
 RUN ls -la httpclientgen/lib
 RUN ls -la httpclientgen/bin
+RUN ls -la /home/gradle
