@@ -18,7 +18,7 @@ protobuf {
                 artifact = deps.network.grpc_protoc
             }
         }
-        httpclientgenlauncher {
+        httpclientgen {
             // check if we are running locally
             if ("/root" != System.getProperty("user.home")) {
                 path = rootProject.files('docker/tools/httpclientgen/bin/httpclientgen').getSingleFile()
