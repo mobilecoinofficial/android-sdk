@@ -39,3 +39,7 @@ RUN mkdir -p /usr/local/lib
 # Copy scripts
 COPY scripts/* /usr/local/bin/
 COPY tools/ .
+RUN echo "HERE!"
+RUN ls -la httpclientgen/
+RUN ls -la httpclientgen/lib
+RUN ls -la httpclientgen/bin
