@@ -21,7 +21,7 @@ protobuf {
         httpclientgenlauncher {
             // check if we are running in the docker container
             if ("/root" == System.getProperty("user.home")) {
-                path = "/usr/local/bin/httpclientgen"
+                path = "tools/httpclientgen/bin/httpclientgen"
             }
             else {
                 path = rootProject.files('docker/tools/httpclientgen/bin/httpclientgen').getSingleFile()
