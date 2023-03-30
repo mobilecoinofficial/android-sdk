@@ -23,6 +23,9 @@ protobuf {
             if ("/root" != System.getProperty("user.home")) {
                 path = rootProject.files('docker/tools/protoc-gen-httpclientgen/bin/protoc-gen-httpclientgen').getSingleFile()
             }
+            else {
+                path = "/usr/local/bin/protoc-gen-httpclientgen"
+            }
         }
     }
     generateProtoTasks {
