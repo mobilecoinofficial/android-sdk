@@ -18,12 +18,9 @@ protobuf {
                 artifact = deps.network.grpc_protoc
             }
         }
-        httpclientgenlauncher {
-            // check if we are running in the docker container
+        httpclientgen {
+            // check if we are not running in the docker container
             if ("/root" != System.getProperty("user.home")) {
-                path = "/usr/local/bin/httpclientgen"
-            }
-            else {
                 path = rootProject.files('docker/tools/httpclientgen/bin/httpclientgen').getSingleFile()
             }
         }
@@ -39,7 +36,7 @@ protobuf {
                 }
             }
             task.plugins {
-                httpclientgenlauncher {
+                httpclientgen {
                     //
                 }
             }
