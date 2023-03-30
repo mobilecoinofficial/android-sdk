@@ -9,10 +9,10 @@ import com.mobilecoin.lib.network.services.ConsensusClientService;
 import com.mobilecoin.lib.network.services.http.clients.RestClient;
 
 import attest.Attest;
+import consensus_client.ConsensusClientAPIHttp;
 import consensus_common.ConsensusCommon;
 
 public class RestConsensusClientService extends RestService implements ConsensusClientService {
-    public static final String SERVICE_NAME = "consensus_client.ConsensusClientAPI";
 
     public RestConsensusClientService(@NonNull RestClient restClient) {
         super(restClient);
@@ -21,11 +21,7 @@ public class RestConsensusClientService extends RestService implements Consensus
     @Override
     public ConsensusCommon.ProposeTxResponse clientTxPropose(Attest.Message request) throws NetworkException {
         try {
-            byte[] responseData = getRestClient().makeRequest(
-                    PREFIX + SERVICE_NAME + "/" + "ClientTxPropose",
-                    request.toByteArray()
-            );
-            return ConsensusCommon.ProposeTxResponse.parseFrom(responseData);
+            return ConsensusClientAPIHttp.clientTxPropose(request, getRestClient());
         } catch (InvalidProtocolBufferException exception) {
             throw new NetworkException(NetworkResult.INVALID_ARGUMENT, exception);
         }

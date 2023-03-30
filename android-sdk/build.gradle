@@ -18,6 +18,15 @@ protobuf {
                 artifact = deps.network.grpc_protoc
             }
         }
+        httpclientgen {
+            // check if we are not running in the docker container
+            if ("/root" != System.getProperty("user.home")) {
+                path = rootProject.files('docker/tools/protoc-gen-httpclientgen/bin/protoc-gen-httpclientgen').getSingleFile()
+            }
+            else {
+                path = "/usr/local/bin/protoc-gen-httpclientgen"
+            }
+        }
     }
     generateProtoTasks {
         all().each { task ->
@@ -27,6 +36,11 @@ protobuf {
             if(task.getName().contains('Grpc')) {
                 task.plugins {
                     grpc { option 'lite' }
+                }
+            }
+            task.plugins {
+                httpclientgen {
+                    //
                 }
             }
         }

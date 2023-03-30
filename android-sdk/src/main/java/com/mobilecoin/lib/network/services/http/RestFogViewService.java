@@ -9,9 +9,9 @@ import com.mobilecoin.lib.network.services.FogViewService;
 import com.mobilecoin.lib.network.services.http.clients.RestClient;
 
 import attest.Attest;
+import fog_view.FogViewAPIHttp;
 
 public class RestFogViewService extends RestService implements FogViewService {
-    public static final String SERVICE_NAME = "fog_view.FogViewAPI";
 
     public RestFogViewService(@NonNull RestClient restClient) {
         super(restClient);
@@ -19,11 +19,7 @@ public class RestFogViewService extends RestService implements FogViewService {
 
     public Attest.AuthMessage auth(Attest.AuthMessage authMessage) throws NetworkException {
         try {
-            byte[] responseData = getRestClient().makeRequest(
-                    PREFIX + SERVICE_NAME + "/" + "Auth",
-                    authMessage.toByteArray()
-            );
-            return Attest.AuthMessage.parseFrom(responseData);
+            return FogViewAPIHttp.auth(authMessage, getRestClient());
         } catch (InvalidProtocolBufferException exception) {
             throw new NetworkException(NetworkResult.INVALID_ARGUMENT, exception);
         }
@@ -31,11 +27,7 @@ public class RestFogViewService extends RestService implements FogViewService {
 
     public Attest.Message query(Attest.Message queryMessage) throws NetworkException {
         try {
-            byte[] responseData = getRestClient().makeRequest(
-                    PREFIX + SERVICE_NAME + "/" + "Query",
-                    queryMessage.toByteArray()
-            );
-            return Attest.Message.parseFrom(responseData);
+            return FogViewAPIHttp.query(queryMessage, getRestClient());
         } catch (InvalidProtocolBufferException exception) {
             throw new NetworkException(NetworkResult.INVALID_ARGUMENT, exception);
         }

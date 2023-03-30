@@ -8,10 +8,10 @@ import com.mobilecoin.lib.network.NetworkResult;
 import com.mobilecoin.lib.network.services.FogReportService;
 import com.mobilecoin.lib.network.services.http.clients.RestClient;
 
+import report.ReportAPIHttp;
 import report.ReportOuterClass;
 
 public class RestFogReportService extends RestService implements FogReportService {
-    public static final String SERVICE_NAME = "report.ReportAPI";
 
     public RestFogReportService(@NonNull RestClient restClient) {
         super(restClient);
@@ -20,11 +20,7 @@ public class RestFogReportService extends RestService implements FogReportServic
     @Override
     public ReportOuterClass.ReportResponse getReports(ReportOuterClass.ReportRequest request) throws NetworkException {
         try {
-            byte[] responseData = getRestClient().makeRequest(
-                    PREFIX + SERVICE_NAME + "/" + "GetReports",
-                    request.toByteArray()
-            );
-            return ReportOuterClass.ReportResponse.parseFrom(responseData);
+            return ReportAPIHttp.getReports(request, getRestClient());
         } catch (InvalidProtocolBufferException exception) {
             throw new NetworkException(NetworkResult.INVALID_ARGUMENT, exception);
         }

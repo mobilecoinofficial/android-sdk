@@ -9,9 +9,9 @@ import com.mobilecoin.lib.network.services.FogKeyImageService;
 import com.mobilecoin.lib.network.services.http.clients.RestClient;
 
 import attest.Attest;
+import fog_ledger.FogKeyImageAPIHttp;
 
 public class RestFogKeyImageService extends RestService implements FogKeyImageService {
-    public static final String SERVICE_NAME = "fog_ledger.FogKeyImageAPI";
 
     public RestFogKeyImageService(@NonNull RestClient restClient) {
         super(restClient);
@@ -20,11 +20,7 @@ public class RestFogKeyImageService extends RestService implements FogKeyImageSe
     @Override
     public Attest.AuthMessage auth(Attest.AuthMessage authMessage) throws NetworkException {
         try {
-            byte[] responseData = getRestClient().makeRequest(
-                    PREFIX + SERVICE_NAME + "/" + "Auth",
-                    authMessage.toByteArray()
-            );
-            return Attest.AuthMessage.parseFrom(responseData);
+            return FogKeyImageAPIHttp.auth(authMessage, getRestClient());
         } catch (InvalidProtocolBufferException exception) {
             throw new NetworkException(NetworkResult.INVALID_ARGUMENT, exception);
         }
@@ -33,11 +29,7 @@ public class RestFogKeyImageService extends RestService implements FogKeyImageSe
     @Override
     public Attest.Message checkKeyImages(Attest.Message request) throws NetworkException {
         try {
-            byte[] responseData = getRestClient().makeRequest(
-                    PREFIX + SERVICE_NAME + "/" + "CheckKeyImages",
-                    request.toByteArray()
-            );
-            return Attest.Message.parseFrom(responseData);
+            return FogKeyImageAPIHttp.checkKeyImages(request, getRestClient());
         } catch (InvalidProtocolBufferException exception) {
             throw new NetworkException(NetworkResult.INVALID_ARGUMENT, exception);
         }

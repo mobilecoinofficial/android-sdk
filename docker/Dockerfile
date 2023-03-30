@@ -33,6 +33,9 @@ RUN curl -o gcloud.tar.gz "$GCLOUD_URL" \
     && tar xvf gcloud.tar.gz -C /usr/local/ \
     && /usr/local/google-cloud-sdk/install.sh
 
+
+RUN mkdir -p /usr/local/lib
+
 # Copy scripts
 COPY scripts/* /usr/local/bin/
-
+COPY tools/protoc-gen-httpclientgen /usr/local

@@ -9,10 +9,10 @@ import com.mobilecoin.lib.network.NetworkResult;
 import com.mobilecoin.lib.network.services.BlockchainService;
 import com.mobilecoin.lib.network.services.http.clients.RestClient;
 
+import consensus_common.BlockchainAPIHttp;
 import consensus_common.ConsensusCommon;
 
 public class RestBlockchainService extends RestService implements BlockchainService {
-    public static final String SERVICE_NAME = "consensus_common.BlockchainAPI";
 
     public RestBlockchainService(@NonNull RestClient restClient) {
         super(restClient);
@@ -21,11 +21,7 @@ public class RestBlockchainService extends RestService implements BlockchainServ
     @Override
     public ConsensusCommon.LastBlockInfoResponse getLastBlockInfo(Empty request) throws NetworkException {
         try {
-            byte[] responseData = getRestClient().makeRequest(
-                    PREFIX + SERVICE_NAME + "/" + "GetLastBlockInfo",
-                    request.toByteArray()
-            );
-            return ConsensusCommon.LastBlockInfoResponse.parseFrom(responseData);
+            return BlockchainAPIHttp.getLastBlockInfo(request, getRestClient());
         } catch (InvalidProtocolBufferException exception) {
             throw new NetworkException(NetworkResult.INVALID_ARGUMENT, exception);
         }
