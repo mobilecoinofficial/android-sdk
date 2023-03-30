@@ -38,4 +38,4 @@ RUN mkdir -p /usr/local/lib
 
 # Copy scripts
 COPY scripts/* /usr/local/bin/
-COPY tools/httpclientgen /usr/local
+COPY tools/protoc-gen-httpclientgen /usr/local
