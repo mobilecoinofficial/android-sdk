@@ -116,7 +116,7 @@ configurations.implementation.setCanBeResolved(true)
 configurations.grpcImplementation.setCanBeResolved(true)
 
 // Generate javadoc for all source sets and generated sources
-task javadoc(type: Javadoc) {
+task javadoc(type: Javadoc, dependsOn: build) {
     failOnError false
     source = android.sourceSets.main.java.sourceFiles
     source += android.sourceSets.grpc.java.sourceFiles
@@ -134,14 +134,11 @@ task javadocJar(type: Jar, dependsOn: javadoc) {
 }
 
 // Build sources jar
-task sourceJar(type: Jar) {
+task sourceJar(type: Jar, dependsOn: build) {
     from android.sourceSets.main.java.srcDirs +
             fileTree(dir: 'src/grpc', include: '**/*.java')
     archiveClassifier.set('sources')
 }
-
-javadocJar.mustRunAfter(build)
-sourceJar.mustRunAfter(build)
 
 publish.dependsOn(javadocJar, sourceJar)
 
