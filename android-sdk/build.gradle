@@ -112,6 +112,39 @@ task printSourceSetInfo(){
     }
 }
 
+configurations.implementation.setCanBeResolved(true)
+configurations.grpcImplementation.setCanBeResolved(true)
+
+// Generate javadoc for all source sets and generated sources
+task javadoc(type: Javadoc, dependsOn: build) {
+    failOnError false
+    source = android.sourceSets.main.java.sourceFiles
+    source += android.sourceSets.grpc.java.sourceFiles
+    source += fileTree(dir: 'build/generated/source', include: '**/*.java')
+    source += fileTree(dir: 'src/grpc', include: '**/*.java')
+    source += fileTree(dir: 'src/http', include: '**/*.java')
+    classpath += project.files(android.getBootClasspath().join(File.pathSeparator))
+    classpath += configurations.implementation
+    classpath += configurations.grpcImplementation
+}
+// Build javadoc jar
+task javadocJar(type: Jar, dependsOn: javadoc) {
+    archiveClassifier.set('javadoc')
+    from javadoc.destinationDir
+}
+
+// Build sources jar
+task sourceJar(type: Jar, dependsOn: build) {
+    from android.sourceSets.main.java.srcDirs +
+            fileTree(dir: 'src/grpc', include: '**/*.java')
+    archiveClassifier.set('sources')
+}
+
+publish.dependsOn(javadocJar, sourceJar)
+
+publish.mustRunAfter(javadocJar)
+publish.mustRunAfter(sourceJar)
+
 dependencies {
     // multidex to avoid 64K reference limit
     implementation deps.android.multidex

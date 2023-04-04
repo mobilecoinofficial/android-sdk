@@ -1,6 +1,6 @@
 apply plugin: 'maven-publish'
 
-version '4.0.0.1'
+version '4.1.0'
 group 'com.mobilecoin'
 
 Properties properties = new Properties()
@@ -36,6 +36,12 @@ publishing {
                     }
                 }
             }
+            artifact("$buildDir/libs/android-sdk-" + this.version + "-javadoc.jar") {
+                classifier "javadoc"
+            }
+            artifact("$buildDir/libs/android-sdk-" + this.version + "-sources.jar") {
+                classifier "sources"
+            }
         }
     }
     repositories {
@@ -57,4 +63,3 @@ publishing {
         }
     }
 }
-
