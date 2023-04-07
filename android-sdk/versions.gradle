@@ -22,22 +22,22 @@ versions.android = android_versions
 
 // Network
 def network_versions = [:]
-network_versions.grpc = '1.52.1'
+network_versions.grpc = '1.54.0'
 network_versions.protobuf = '3.22.0'
 versions.network = network_versions
 
 // JNI
 def jni_versions = [:]
-jni_versions.mobilecoin = '4.0.0.1'
+jni_versions.mobilecoin = '4.1.0'
 versions.jni = jni_versions
 
 // Testing
 def testing_versions = [:]
 testing_versions.junit = '4.13.2'
-testing_versions.mockito = '3.9.0'
-testing_versions.core = '1.4.0'
-testing_versions.ext_junit = '1.1.3'
-testing_versions.espresso_core = '3.4.0'
+testing_versions.mockito = '5.2.0'
+testing_versions.core = '1.5.0'
+testing_versions.ext_junit = '1.1.5'
+testing_versions.espresso_core = '3.5.1'
 testing_versions.support_rules = '1.0.2'
 testing_versions.okhttp3 = '4.10.0'
 testing_versions.robolectric = '4.8'
