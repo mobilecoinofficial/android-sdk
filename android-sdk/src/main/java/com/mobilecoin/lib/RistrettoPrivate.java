@@ -47,6 +47,11 @@ public final class RistrettoPrivate extends Native implements Parcelable {
         }
     }
 
+    private RistrettoPrivate(@NonNull final ChaCha20Rng rng) {
+        init_jni_from_random(rng);
+        keyBytes = getKeyBytes();
+    }
+
     /**
      * Create a RistrettoPrivate key instance from the key bytes
      *
@@ -59,6 +64,11 @@ public final class RistrettoPrivate extends Native implements Parcelable {
                 bytes,
                 PayloadType.KEY_BYTES
         );
+    }
+
+    @NonNull
+    public static RistrettoPrivate fromRandom(@NonNull final ChaCha20Rng rng) {
+        return new RistrettoPrivate(rng);
     }
 
     /**
@@ -177,6 +187,8 @@ public final class RistrettoPrivate extends Native implements Parcelable {
     private native void init_jni(@NonNull byte[] rawKeyBytes);
 
     private native void init_jni_seed(@NonNull byte[] seedBytes);
+
+    private native void init_jni_from_random(@NonNull final ChaCha20Rng rng);
 
     private native void finalize_jni();
 

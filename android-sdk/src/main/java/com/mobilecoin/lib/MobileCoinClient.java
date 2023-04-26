@@ -403,7 +403,7 @@ public final class MobileCoinClient implements MobileCoinAccountClient, MobileCo
         ).get(0);
         FogReportResponses reportsResponse = fogReportsManager.fetchReports(reportUris,
                 tombstoneBlockIndex, clientConfig.report);
-        RistrettoPrivate onetimePrivateKey = Util.recoverOnetimePrivateKey(
+        RistrettoPrivate onetimePrivateKey = OnetimeKeys.recoverOnetimePrivateKey(
                 txOutToSpend.getPublicKey(),
                 txOutToSpend.getTargetKey(),
                 accountKey
@@ -601,7 +601,7 @@ public final class MobileCoinClient implements MobileCoinAccountClient, MobileCo
                 DefaultRng.createInstance()
         ).get(0);
 
-        RistrettoPrivate onetimePrivateKey = Util.recoverOnetimePrivateKey(
+        RistrettoPrivate onetimePrivateKey = OnetimeKeys.recoverOnetimePrivateKey(
                 selected.getPublicKey(),
                 selected.getTargetKey(),
                 getAccountKey()
@@ -845,7 +845,7 @@ public final class MobileCoinClient implements MobileCoinAccountClient, MobileCo
             OwnedTxOut utxo = ring.utxo;
             totalAmount = totalAmount.add(utxo.getAmount());
 
-            RistrettoPrivate onetimePrivateKey = Util.recoverOnetimePrivateKey(
+            RistrettoPrivate onetimePrivateKey = OnetimeKeys.recoverOnetimePrivateKey(
                     utxo.getPublicKey(),
                     utxo.getTargetKey(),
                     accountKey
