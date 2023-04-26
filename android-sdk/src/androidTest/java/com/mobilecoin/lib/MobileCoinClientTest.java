@@ -57,6 +57,32 @@ public class MobileCoinClientTest {
             GrantPermissionRule.grant(Manifest.permission.READ_EXTERNAL_STORAGE);
 
     @Test
+    public void benchmarkPrepareTransaction() throws Exception {
+        final MobileCoinClient client = MobileCoinClientBuilder.newBuilder().build();
+        final Amount amount = Amount.ofMOB(BigInteger.TEN);
+        final Amount fee = Amount.ofMOB(BigInteger.ONE);
+        final PublicAddress recipient = TestKeysManager.getNextAccountKey().getPublicAddress();
+        long times[] = new long[100];
+        final Rng rng = ChaCha20Rng.fromSeed(new byte[ChaCha20Rng.SEED_SIZE_BYTES]);
+        final long startTime = System.nanoTime();
+        for(int i = 0; i < 100; i++) {
+            client.prepareTransaction(
+                    recipient,
+                    amount,
+                    fee,
+                    TxOutMemoBuilder.createDefaultRTHMemoBuilder(),
+                    rng
+            );
+            times[i] = System.nanoTime();
+        }
+        Logger.e("HERE!", "" + (times[0] - startTime) / 1000000);
+        for(int i = 1; i < 100; i++) {
+            Logger.e("HERE!", "" + (times[i] - times[i - 1]) / 1000000);
+        }
+        client.shutdown();
+    }
+
+    @Test
     public void mobile_coin_client_integration_test() throws Exception {
         final Amount amount = Amount.ofMOB(BigInteger.TEN);
 

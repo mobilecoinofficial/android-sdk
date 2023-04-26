@@ -86,7 +86,7 @@ public class TxOutMemoIntegrationTest {
             fee
     );
 
-    RistrettoPrivate onetimePrivateKey = Util.recoverOnetimePrivateKey(
+    RistrettoPrivate onetimePrivateKey = OnetimeKeys.recoverOnetimePrivateKey(
         realTxOut.getPublicKey(),
         realTxOut.getTargetKey(),
         senderAccountKey
@@ -145,7 +145,7 @@ public class TxOutMemoIntegrationTest {
 
     TxOut realTxOut = txOuts.get(realIndex);
 
-    RistrettoPrivate onetimePrivateKey = Util.recoverOnetimePrivateKey(
+    RistrettoPrivate onetimePrivateKey = OnetimeKeys.recoverOnetimePrivateKey(
         realTxOut.getPublicKey(),
         realTxOut.getTargetKey(),
         senderAccountKey
@@ -207,7 +207,7 @@ public class TxOutMemoIntegrationTest {
             fee
           );
 
-    RistrettoPrivate onetimePrivateKey = Util.recoverOnetimePrivateKey(
+    RistrettoPrivate onetimePrivateKey = OnetimeKeys.recoverOnetimePrivateKey(
         realTxOut.getPublicKey(),
         realTxOut.getTargetKey(),
         senderAccountKey
@@ -287,7 +287,7 @@ public class TxOutMemoIntegrationTest {
             fee
     );
 
-    RistrettoPrivate onetimePrivateKey = Util.recoverOnetimePrivateKey(
+    RistrettoPrivate onetimePrivateKey = OnetimeKeys.recoverOnetimePrivateKey(
             realTxOut.getPublicKey(),
             realTxOut.getTargetKey(),
             senderAccountKey
@@ -366,7 +366,7 @@ public class TxOutMemoIntegrationTest {
             fee
     );
 
-    RistrettoPrivate onetimePrivateKey = Util.recoverOnetimePrivateKey(
+    RistrettoPrivate onetimePrivateKey = OnetimeKeys.recoverOnetimePrivateKey(
             realTxOut.getPublicKey(),
             realTxOut.getTargetKey(),
             senderAccountKey

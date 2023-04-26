@@ -200,7 +200,7 @@ public class OwnedTxOutTest {
 
     // Test valid with commitment
     RistrettoPublic txOutSharedSecret =
-            Util.getSharedSecret(receiverAccountKey.getViewKey(), txOutFromCrc32.getPublicKey());
+            OnetimeKeys.getSharedSecret(receiverAccountKey.getViewKey(), txOutFromCrc32.getPublicKey());
     byte validCommitmentData[] = new MaskedAmountV1(
             txOutSharedSecret,
             recordWithCrc32.getTxOutAmountMaskedValue(),
