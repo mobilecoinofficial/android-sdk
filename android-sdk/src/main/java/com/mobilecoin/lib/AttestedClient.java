@@ -23,7 +23,7 @@ import attest.Attest;
  * Base class for attested communication with View/Ledger/Consensus servers
  */
 
-abstract class AttestedClient extends AnyClient {
+public abstract class AttestedClient extends AnyClient {
     private final static String TAG = AttestedClient.class.getName();
     // How long to wait for the managed connection to gracefully shutdown in milliseconds
 
