@@ -11,7 +11,7 @@ import java.util.List;
 import java.util.Random;
 
 /** Chooses a random service {@link Uri} for each client. */
-final class RandomLoadBalancer implements LoadBalancer {
+public final class RandomLoadBalancer implements LoadBalancer {
 
   private static final Random random = new Random();
 
@@ -19,14 +19,14 @@ final class RandomLoadBalancer implements LoadBalancer {
 
   private int lastUsedUriIndex;
 
-  static RandomLoadBalancer create(@NonNull MobileCoinUri serviceUri) {
+  public static RandomLoadBalancer create(@NonNull MobileCoinUri serviceUri) {
     List<MobileCoinUri> mobileCoinUris = Collections
         .unmodifiableList(Collections.singletonList(serviceUri));
 
     return new RandomLoadBalancer(mobileCoinUris);
   }
 
-  static RandomLoadBalancer create(@NonNull List<MobileCoinUri> serviceUris) {
+  public static RandomLoadBalancer create(@NonNull List<MobileCoinUri> serviceUris) {
     if (serviceUris.isEmpty()) {
       throw new IllegalArgumentException("Service uris is empty.");
     }
