@@ -28,7 +28,7 @@ public class GRPCFogReportService
 
     @NonNull
     @Override
-    ReportAPIGrpc.ReportAPIBlockingStub newBlockingStub(@NonNull ManagedChannel managedChannel) {
+    protected ReportAPIGrpc.ReportAPIBlockingStub newBlockingStub(@NonNull ManagedChannel managedChannel) {
         return ReportAPIGrpc.newBlockingStub(managedChannel);
     }
 

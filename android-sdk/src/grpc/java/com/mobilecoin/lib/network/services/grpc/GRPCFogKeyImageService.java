@@ -28,7 +28,7 @@ public class GRPCFogKeyImageService
 
     @NonNull
     @Override
-    FogKeyImageAPIGrpc.FogKeyImageAPIBlockingStub newBlockingStub(
+    protected FogKeyImageAPIGrpc.FogKeyImageAPIBlockingStub newBlockingStub(
             @NonNull ManagedChannel managedChannel
     ) {
         return FogKeyImageAPIGrpc.newBlockingStub(managedChannel);

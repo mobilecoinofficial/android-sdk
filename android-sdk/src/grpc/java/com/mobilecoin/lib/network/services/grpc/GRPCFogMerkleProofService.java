@@ -28,7 +28,7 @@ public class GRPCFogMerkleProofService
 
     @NonNull
     @Override
-    FogMerkleProofAPIGrpc.FogMerkleProofAPIBlockingStub newBlockingStub(
+    protected FogMerkleProofAPIGrpc.FogMerkleProofAPIBlockingStub newBlockingStub(
             @NonNull ManagedChannel managedChannel
     ) {
         return FogMerkleProofAPIGrpc.newBlockingStub(managedChannel);

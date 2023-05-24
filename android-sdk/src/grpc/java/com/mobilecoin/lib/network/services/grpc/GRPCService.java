@@ -11,13 +11,13 @@ import java.util.concurrent.ExecutorService;
 import io.grpc.ManagedChannel;
 import io.grpc.stub.AbstractStub;
 
-abstract class GRPCService <T extends AbstractStub<T>> implements ApiService {
+public abstract class GRPCService <T extends AbstractStub<T>> implements ApiService {
     private static final int MEGABYTE = 1024 * 1024;
     private static final int MAX_INBOUND_MESSAGE_SIZE = 50 * MEGABYTE;
     private final T apiBlockingStub;
     private final ManagedChannel managedChannel;
 
-    GRPCService(@NonNull ManagedChannel managedChannel,
+    protected GRPCService(@NonNull ManagedChannel managedChannel,
                 @NonNull CookieInterceptor cookieInterceptor,
                 @NonNull AuthInterceptor authInterceptor,
                 @NonNull ExecutorService executorService) {
@@ -31,10 +31,10 @@ abstract class GRPCService <T extends AbstractStub<T>> implements ApiService {
     }
 
     @NonNull
-    abstract T newBlockingStub(@NonNull ManagedChannel managedChannel);
+    protected abstract T newBlockingStub(@NonNull ManagedChannel managedChannel);
 
     @NonNull
-    T getApiBlockingStub() {
+    protected T getApiBlockingStub() {
         return apiBlockingStub;
     }
 
