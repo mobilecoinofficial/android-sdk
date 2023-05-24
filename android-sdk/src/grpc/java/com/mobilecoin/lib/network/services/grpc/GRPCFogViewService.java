@@ -27,7 +27,7 @@ public class GRPCFogViewService extends GRPCService<FogViewAPIGrpc.FogViewAPIBlo
 
     @NonNull
     @Override
-    FogViewAPIGrpc.FogViewAPIBlockingStub newBlockingStub(@NonNull ManagedChannel managedChannel) {
+    protected FogViewAPIGrpc.FogViewAPIBlockingStub newBlockingStub(@NonNull ManagedChannel managedChannel) {
         return FogViewAPIGrpc.newBlockingStub(getManagedChannel());
     }
 

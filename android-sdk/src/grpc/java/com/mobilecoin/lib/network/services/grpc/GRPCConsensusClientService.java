@@ -29,7 +29,7 @@ public class GRPCConsensusClientService
 
     @NonNull
     @Override
-    ConsensusClientAPIGrpc.ConsensusClientAPIBlockingStub newBlockingStub(@NonNull ManagedChannel managedChannel) {
+    protected ConsensusClientAPIGrpc.ConsensusClientAPIBlockingStub newBlockingStub(@NonNull ManagedChannel managedChannel) {
         return ConsensusClientAPIGrpc.newBlockingStub(managedChannel);
     }
 

@@ -28,7 +28,7 @@ public class GRPCFogBlockService
 
     @NonNull
     @Override
-    FogBlockAPIGrpc.FogBlockAPIBlockingStub newBlockingStub(@NonNull ManagedChannel managedChannel) {
+    protected FogBlockAPIGrpc.FogBlockAPIBlockingStub newBlockingStub(@NonNull ManagedChannel managedChannel) {
         return FogBlockAPIGrpc.newBlockingStub(managedChannel);
     }
 

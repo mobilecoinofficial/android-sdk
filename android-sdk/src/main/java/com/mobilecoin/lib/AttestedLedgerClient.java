@@ -68,7 +68,7 @@ class AttestedLedgerClient extends AttestedClient {
      * @param transport a channel that requires attestation
      */
     @Override
-    protected synchronized void attest(@NonNull Transport transport)
+    public synchronized void attest(@NonNull Transport transport)
             throws AttestationException, NetworkException {
         try {
             Logger.i(TAG, "Attest ledger connection");
