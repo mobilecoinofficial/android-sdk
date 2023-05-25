@@ -22,13 +22,13 @@ versions.android = android_versions
 
 // Network
 def network_versions = [:]
-network_versions.grpc = '1.54.0'
+network_versions.grpc = '1.55.1'
 network_versions.protobuf = '3.22.0'
 versions.network = network_versions
 
 // JNI
 def jni_versions = [:]
-jni_versions.mobilecoin = '5.0.0-pre4'
+jni_versions.mobilecoin = '5.0.0'
 versions.jni = jni_versions
 
 // Testing

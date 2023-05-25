@@ -4,6 +4,16 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [5.0.0] - 2023-05-25
+
+### Changed
+- Exposed `AttestedClient` and related APIs
+- Updated dependencies
+- Updated MobileCoin to version 5.0.0
+
+### Upgrading
+No code changes are *required* to upgrade from 4.1.1 to 5.0.0
+
 ## [4.1.1] - 2023-04-26
 
 ### Added
@@ -16,7 +26,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Moved Util.getSharedSecret to OnetimeKeys and made public
 
 ### Upgrading
-
 No code changes are *required* to upgrade from 4.1.0 to 4.1.1
 
 ## [4.1.0] - 2023-04-06
@@ -36,7 +45,6 @@ No code changes are *required* to upgrade from 4.1.0 to 4.1.1
 - Dependency updates
 
 ### Upgrading
-
 No code changes are *required* to upgrade from 4.0.0.1 to 4.1.0
 
 ## [4.0.0.1] - 2023-02-10
@@ -75,7 +83,6 @@ No code changes are *required* to upgrade from 4.0.0.1 to 4.1.0
 - Fixed connection reset errors in HTTP clients
 
 ### Upgrading
-
 No code changes are *required* to upgrade from 1.2.2.4 to 4.0.0
 
 ## [1.2.2.4] - 2022-08-24
@@ -89,7 +96,6 @@ No code changes are *required* to upgrade from 1.2.2.4 to 4.0.0
 - Query size calculation in `DefaultFogQueryScalingStrategy`
 
 ### Upgrading
-
 No code changes are *required* to upgrade from 1.2.2.3 to 1.2.2.4
 
 ## [1.2.2.3] - 2022-08-22
@@ -99,7 +105,6 @@ No code changes are *required* to upgrade from 1.2.2.3 to 1.2.2.4
 - Added `getTransactionStatusQuick` to `MobileCoinClient`
 
 ### Upgrading
-
 No code changes are *required* to upgrade from 1.2.2.2 to 1.2.2.3
 
 ## [1.2.2.2] - 2022-08-11
@@ -108,7 +113,6 @@ No code changes are *required* to upgrade from 1.2.2.2 to 1.2.2.3
 - `GRPCFogKeyImageService` properly converts `StatusRuntimeException` to `NetworkException`
 
 ### Upgrading
-
 No code changes are *required* to upgrade from 1.2.2.1 to 1.2.2.2
 
 ## [1.2.2.1] - 2022-07-21
@@ -119,7 +123,6 @@ No code changes are *required* to upgrade from 1.2.2.1 to 1.2.2.2
 - Changed visibility of `OwnedTxOut.getAmount()` to public
 
 ### Upgrading
-
 No code changes are *required* to upgrade from 1.2.2 to 1.2.2.1
 
 ## [1.2.2] - 2022-07-21
@@ -138,7 +141,6 @@ some issues caused by `OwnedTxOut`s being updated after being fetched from the p
 - Fixed a dependency issue introduced by some project structure changes
 
 ### Upgrading
-
 No code changes are *required* to upgrade from 1.2.1 to 1.2.2
 
 - To easily handle various types of transaction failure differently, code such as the following
@@ -154,7 +156,6 @@ value of `MobileCoinTransactionClient.submitTransaction`
 - Updated bindings to version 1.2.1
 
 ### Upgrading
-
 No code changes are *required* to upgrade from 1.2.0 to 1.2.1
 
 - Calls to `new Amount(value, TokenId.MOB)` may be replaced with `Amount.ofMOB(value)`.
