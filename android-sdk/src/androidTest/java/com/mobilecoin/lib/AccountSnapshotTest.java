@@ -7,6 +7,8 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotSame;
 import static org.junit.Assert.assertNull;
 
+import com.mobilecoin.lib.log.Logger;
+
 import org.junit.Test;
 
 import java.math.BigInteger;

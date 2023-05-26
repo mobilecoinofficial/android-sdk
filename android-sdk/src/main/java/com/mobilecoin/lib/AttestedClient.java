@@ -23,7 +23,7 @@ import attest.Attest;
  * Base class for attested communication with View/Ledger/Consensus servers
  */
 
-abstract class AttestedClient extends AnyClient {
+public abstract class AttestedClient extends AnyClient {
     private final static String TAG = AttestedClient.class.getName();
     // How long to wait for the managed connection to gracefully shutdown in milliseconds
 
@@ -41,13 +41,13 @@ abstract class AttestedClient extends AnyClient {
     /**
      * Attest service connection or throw an exception if error occurs.
      */
-    protected abstract void attest(@NonNull Transport transport)
+    public abstract void attest(@NonNull Transport transport)
             throws AttestationException, NetworkException;
 
     /**
      * Reset service connection
      */
-    protected synchronized void deattest() {
+    public synchronized void deattest() {
         Logger.i(TAG, "De-attesting the managed channel");
         attestReset();
     }
@@ -58,7 +58,7 @@ abstract class AttestedClient extends AnyClient {
      *
      * @return whether or no the client is attested
      */
-    protected synchronized boolean isAttested() {
+    public synchronized boolean isAttested() {
         Logger.d(TAG, "Is channel attested?", null, (rustObj != 0) ? "Yes" : "No");
         return (rustObj != 0);
     }
@@ -69,7 +69,7 @@ abstract class AttestedClient extends AnyClient {
      * @return encrypted {@link Attest.Message}
      */
     @NonNull
-    protected synchronized Attest.Message encryptMessage(
+    public synchronized Attest.Message encryptMessage(
             @Nullable AbstractMessageLite<?, ?> message,
             @Nullable AbstractMessageLite<?, ?> aadMessage
     ) throws AttestationException {
@@ -93,7 +93,7 @@ abstract class AttestedClient extends AnyClient {
 
     @Override
     @NonNull
-    synchronized Transport getNetworkTransport() throws NetworkException, AttestationException {
+    public synchronized Transport getNetworkTransport() throws NetworkException, AttestationException {
         Transport transport = super.getNetworkTransport();
         if(!isAttested()) {
             attest(transport);
@@ -102,7 +102,7 @@ abstract class AttestedClient extends AnyClient {
     }
 
     @NonNull
-    protected synchronized Attest.Message encryptMessage(@NonNull AbstractMessageLite<?, ?> message)
+    public synchronized Attest.Message encryptMessage(@NonNull AbstractMessageLite<?, ?> message)
             throws AttestationException {
         return encryptMessage(message, null);
     }
@@ -113,7 +113,7 @@ abstract class AttestedClient extends AnyClient {
      * @return decrypted {@link Attest.Message}
      */
     @NonNull
-    protected synchronized Attest.Message decryptMessage(@NonNull Attest.Message message)
+    public synchronized Attest.Message decryptMessage(@NonNull Attest.Message message)
             throws AttestationException {
         Logger.i(TAG, "Decrypt response message");
         try {
@@ -138,7 +138,7 @@ abstract class AttestedClient extends AnyClient {
      * @param serviceUri must include the port as well
      */
     @NonNull
-    protected byte[] attestStart(@NonNull MobileCoinUri serviceUri) throws AttestationException {
+    public byte[] attestStart(@NonNull MobileCoinUri serviceUri) throws AttestationException {
         Logger.i(TAG, "FFI: attest_start call");
         try {
             ResponderId responderId;
@@ -163,7 +163,7 @@ abstract class AttestedClient extends AnyClient {
      *
      * @param authResponse an auth response obtained from the attested service
      */
-    protected void attestFinish(@NonNull byte[] authResponse,
+    public void attestFinish(@NonNull byte[] authResponse,
                                 @NonNull Verifier attestVerifier
     ) throws AttestationException {
         Logger.i(TAG, "FFI: attest_finish call");
@@ -187,7 +187,7 @@ abstract class AttestedClient extends AnyClient {
      * It is needed to dispose of the invalid pending state, if the attestation was unsuccessful
      * (i.e. attestation server is unreachable)
      */
-    protected synchronized void attestReset() {
+    public synchronized void attestReset() {
         Logger.i(TAG, "Reset attested state");
         resetNetworkTransport();
         if (rustObj != 0) {

@@ -41,7 +41,7 @@ class AnyClient extends Native {
     }
 
     @NonNull
-    final ServiceAPIManager getAPIManager() {
+    protected final ServiceAPIManager getAPIManager() {
         return this.serviceAPIManager;
     }
 
@@ -74,7 +74,7 @@ class AnyClient extends Native {
     }
 
     @NonNull
-    final ClientConfig.Service getServiceConfig() {
+    public final ClientConfig.Service getServiceConfig() {
         return serviceConfig;
     }
 

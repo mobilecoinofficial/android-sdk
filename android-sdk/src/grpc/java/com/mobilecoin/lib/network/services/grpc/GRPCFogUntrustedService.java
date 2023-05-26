@@ -29,7 +29,7 @@ public class GRPCFogUntrustedService
 
     @NonNull
     @Override
-    FogUntrustedTxOutApiGrpc.FogUntrustedTxOutApiBlockingStub newBlockingStub(
+    protected FogUntrustedTxOutApiGrpc.FogUntrustedTxOutApiBlockingStub newBlockingStub(
             @NonNull ManagedChannel managedChannel
     ) {
         return FogUntrustedTxOutApiGrpc.newBlockingStub(getManagedChannel());

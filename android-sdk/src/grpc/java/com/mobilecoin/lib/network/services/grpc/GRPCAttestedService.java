@@ -28,7 +28,7 @@ public class GRPCAttestedService
 
     @NonNull
     @Override
-    AttestedApiGrpc.AttestedApiBlockingStub newBlockingStub(@NonNull ManagedChannel managedChannel) {
+    protected AttestedApiGrpc.AttestedApiBlockingStub newBlockingStub(@NonNull ManagedChannel managedChannel) {
         return AttestedApiGrpc.newBlockingStub(managedChannel);
     }
 

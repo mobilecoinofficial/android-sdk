@@ -29,7 +29,7 @@ public class GRPCBlockchainService
 
     @NonNull
     @Override
-    BlockchainAPIGrpc.BlockchainAPIBlockingStub newBlockingStub(@NonNull ManagedChannel managedChannel) {
+    protected BlockchainAPIGrpc.BlockchainAPIBlockingStub newBlockingStub(@NonNull ManagedChannel managedChannel) {
         return BlockchainAPIGrpc.newBlockingStub(managedChannel);
     }
 
