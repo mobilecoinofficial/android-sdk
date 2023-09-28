@@ -262,6 +262,6 @@ class FogSeed implements Parcelable, Comparable<FogSeed> {
 
     @Override
     public int compareTo(FogSeed fogSeed) {
-        return this.startBlock.compareTo(fogSeed.startBlock);
+        return (int)(this.ingestInvocationId - fogSeed.ingestInvocationId);
     }
 }
