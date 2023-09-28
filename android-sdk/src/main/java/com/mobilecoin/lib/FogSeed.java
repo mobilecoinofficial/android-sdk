@@ -134,43 +134,6 @@ class FogSeed implements Parcelable, Comparable<FogSeed> {
         isObsolete = true;
     }
 
-
-    private void writeObject(ObjectOutputStream out) throws IOException, KexRngException {
-        out.write(nonce.length);
-        out.write(nonce);
-
-        byte[] storedRngProtobufBytes = kexRng.getProtobufBytes();
-        out.write(storedRngProtobufBytes.length);
-        out.write(storedRngProtobufBytes);
-
-        out.writeInt(rngVersion);
-        out.writeObject(startBlock);
-        out.writeObject(utxos);
-        out.writeObject(ingestInvocationId);
-    }
-
-    @SuppressWarnings("unchecked")
-    private void readObject(ObjectInputStream in)
-        throws IOException, ClassNotFoundException, KexRngException {
-        int nonceLength = in.read();
-        nonce = new byte[nonceLength];
-        int bytesRead = in.read(nonce);
-        if (bytesRead != nonceLength) {
-            throw new IOException();
-        }
-        int storedRngProtobufBytesLength = in.read();
-        byte[] storedRngProtobufBytes = new byte[storedRngProtobufBytesLength];
-        int kexRngProtobufBytesRead = in.read(storedRngProtobufBytes);
-        if (kexRngProtobufBytesRead != storedRngProtobufBytesLength) {
-            throw new IOException();
-        }
-        kexRng = new ClientKexRng(storedRngProtobufBytes);
-        rngVersion = in.readInt();
-        startBlock = (UnsignedLong) in.readObject();
-        utxos = (ArrayList<OwnedTxOut>) in.readObject();
-        ingestInvocationId = (UnsignedLong) in.readObject();
-    }
-
     @Override
     public boolean equals(Object o) {
         if (this == o) {
