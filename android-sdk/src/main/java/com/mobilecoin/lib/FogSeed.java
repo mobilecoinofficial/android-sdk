@@ -221,7 +221,7 @@ class FogSeed implements Parcelable, Comparable<FogSeed> {
         parcel.writeByteArray(nonce);
         parcel.writeInt(rngVersion);
         parcel.writeByte((byte) (isObsolete ? 1 : 0));
-        parcel.writeParcelable(ingestInvocationId, flags);
+        parcel.writeLong(ingestInvocationId.longValue());
         parcel.writeParcelable(startBlock, flags);
         parcel.writeTypedList(utxos);
     }
@@ -235,7 +235,7 @@ class FogSeed implements Parcelable, Comparable<FogSeed> {
         nonce = parcel.createByteArray();
         rngVersion = parcel.readInt();
         isObsolete = parcel.readByte() != 0;
-        ingestInvocationId = parcel.readParcelable(UnsignedLong.class.getClassLoader());
+        ingestInvocationId = UnsignedLong.fromLongBits(parcel.readLong());
         startBlock = parcel.readParcelable(UnsignedLong.class.getClassLoader());
         utxos = parcel.createTypedArrayList(OwnedTxOut.CREATOR);
     }
