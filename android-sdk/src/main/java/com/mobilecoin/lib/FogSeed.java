@@ -33,7 +33,7 @@ class FogSeed implements Parcelable, Comparable<FogSeed> {
     private int rngVersion;
     // True if the seed is (a) decommissioned and (b) all utxos have been retrieved.
     private boolean isObsolete;
-    private long ingestInvocationId;
+    private UnsignedLong ingestInvocationId;
     private UnsignedLong startBlock;
     private ArrayList<OwnedTxOut> utxos;
 
@@ -42,7 +42,7 @@ class FogSeed implements Parcelable, Comparable<FogSeed> {
             @NonNull View.RngRecord rngRecord
     ) throws KexRngException {
         Logger.i(TAG, "Initializing Fog Seed");
-        ingestInvocationId = rngRecord.getIngestInvocationId();
+        ingestInvocationId = UnsignedLong.fromLongBits(rngRecord.getIngestInvocationId());
         nonce = rngRecord.getPubkey().getPubkey().toByteArray();
         rngVersion = rngRecord.getPubkey().getVersion();
         startBlock = UnsignedLong.fromLongBits(rngRecord.getStartBlock());
@@ -122,7 +122,7 @@ class FogSeed implements Parcelable, Comparable<FogSeed> {
         return utxos;
     }
 
-    long getIngestInvocationId() {
+    UnsignedLong getIngestInvocationId() {
         return ingestInvocationId;
     }
 
@@ -132,43 +132,6 @@ class FogSeed implements Parcelable, Comparable<FogSeed> {
 
     void markObsolete() {
         isObsolete = true;
-    }
-
-
-    private void writeObject(ObjectOutputStream out) throws IOException, KexRngException {
-        out.write(nonce.length);
-        out.write(nonce);
-
-        byte[] storedRngProtobufBytes = kexRng.getProtobufBytes();
-        out.write(storedRngProtobufBytes.length);
-        out.write(storedRngProtobufBytes);
-
-        out.writeInt(rngVersion);
-        out.writeObject(startBlock);
-        out.writeObject(utxos);
-        out.writeLong(ingestInvocationId);
-    }
-
-    @SuppressWarnings("unchecked")
-    private void readObject(ObjectInputStream in)
-        throws IOException, ClassNotFoundException, KexRngException {
-        int nonceLength = in.read();
-        nonce = new byte[nonceLength];
-        int bytesRead = in.read(nonce);
-        if (bytesRead != nonceLength) {
-            throw new IOException();
-        }
-        int storedRngProtobufBytesLength = in.read();
-        byte[] storedRngProtobufBytes = new byte[storedRngProtobufBytesLength];
-        int kexRngProtobufBytesRead = in.read(storedRngProtobufBytes);
-        if (kexRngProtobufBytesRead != storedRngProtobufBytesLength) {
-            throw new IOException();
-        }
-        kexRng = new ClientKexRng(storedRngProtobufBytes);
-        rngVersion = in.readInt();
-        startBlock = (UnsignedLong) in.readObject();
-        utxos = (ArrayList<OwnedTxOut>) in.readObject();
-        ingestInvocationId = in.readLong();
     }
 
     @Override
@@ -182,7 +145,7 @@ class FogSeed implements Parcelable, Comparable<FogSeed> {
         FogSeed fogSeed = (FogSeed) o;
         return rngVersion == fogSeed.rngVersion &&
             isObsolete == fogSeed.isObsolete &&
-            ingestInvocationId == fogSeed.ingestInvocationId &&
+            ingestInvocationId.equals(fogSeed.ingestInvocationId) &&
             Objects.equals(kexRng, fogSeed.kexRng) &&
             Arrays.equals(nonce, fogSeed.nonce) &&
             Objects.equals(startBlock, fogSeed.startBlock) &&
@@ -221,7 +184,7 @@ class FogSeed implements Parcelable, Comparable<FogSeed> {
         parcel.writeByteArray(nonce);
         parcel.writeInt(rngVersion);
         parcel.writeByte((byte) (isObsolete ? 1 : 0));
-        parcel.writeLong(ingestInvocationId);
+        parcel.writeLong(ingestInvocationId.longValue());
         parcel.writeParcelable(startBlock, flags);
         parcel.writeTypedList(utxos);
     }
@@ -235,7 +198,7 @@ class FogSeed implements Parcelable, Comparable<FogSeed> {
         nonce = parcel.createByteArray();
         rngVersion = parcel.readInt();
         isObsolete = parcel.readByte() != 0;
-        ingestInvocationId = parcel.readLong();
+        ingestInvocationId = UnsignedLong.fromLongBits(parcel.readLong());
         startBlock = parcel.readParcelable(UnsignedLong.class.getClassLoader());
         utxos = parcel.createTypedArrayList(OwnedTxOut.CREATOR);
     }
@@ -262,6 +225,6 @@ class FogSeed implements Parcelable, Comparable<FogSeed> {
 
     @Override
     public int compareTo(FogSeed fogSeed) {
-        return this.startBlock.compareTo(fogSeed.startBlock);
+        return this.ingestInvocationId.compareTo(fogSeed.ingestInvocationId);
     }
 }
