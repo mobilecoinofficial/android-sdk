@@ -12,13 +12,13 @@ import java.util.List;
 
 import report.ReportOuterClass;
 
-final class Report extends Native {
-    private final static String TAG = Report.class.getName();
+final class FogReport extends Native {
+    private final static String TAG = FogReport.class.getName();
     private final long publicKeyExpiry;
 
-    Report(@NonNull String fogReportId,
-           @NonNull VerificationReport verificationReport,
-           long publicKeyExpiry
+    FogReport(@NonNull String fogReportId,
+              @NonNull VerificationReport verificationReport,
+              long publicKeyExpiry
     ) throws FogReportException {
         this.publicKeyExpiry = publicKeyExpiry;
         try {
@@ -30,7 +30,7 @@ final class Report extends Native {
     }
 
     @NonNull
-    static Report fromProtoBuf(@NonNull ReportOuterClass.Report proto) throws FogReportException {
+    static FogReport fromProtoBuf(@NonNull ReportOuterClass.Report proto) throws FogReportException {
         Logger.i(TAG, "Deserializing report from protobuf");
         // Signature
         VerificationSignature verificationSignature =
@@ -50,7 +50,7 @@ final class Report extends Native {
                 proto.getReport().getHttpBody());
 
         // Report
-        return new Report(
+        return new FogReport(
                 proto.getFogReportId(),
                 verificationReport,
                 proto.getPubkeyExpiry()

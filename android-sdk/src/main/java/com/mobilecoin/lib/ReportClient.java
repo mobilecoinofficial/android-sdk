@@ -51,9 +51,9 @@ final class ReportClient extends AnyClient {
         try {
             ReportOuterClass.ReportResponse response = service.getReports(reportRequest);
             List<ReportOuterClass.Report> protoReports = response.getReportsList();
-            ArrayList<Report> reports = new ArrayList<>();
+            ArrayList<FogReport> reports = new ArrayList<>();
             for (ReportOuterClass.Report report : protoReports) {
-                reports.add(Report.fromProtoBuf(report));
+                reports.add(FogReport.fromProtoBuf(report));
             }
             if (reports.isEmpty()) {
                 InvalidFogResponse invalidFogResponse =
