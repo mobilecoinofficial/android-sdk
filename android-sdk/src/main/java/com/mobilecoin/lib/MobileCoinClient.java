@@ -409,7 +409,7 @@ public final class MobileCoinClient implements MobileCoinAccountClient, MobileCo
                 accountKey
         );
         SignedContingentInputBuilder sciBuilder = new SignedContingentInputBuilder(
-                new FogResolver(reportsResponse, clientConfig.report.getVerifier()),
+                new FogResolver(reportsResponse, clientConfig.report.getTrustedIdentities()),
                 TxOutMemoBuilder.createDefaultRTHMemoBuilder(),
                 blockVersion,
                 ring.getNativeTxOuts().toArray(new TxOut[0]),
@@ -565,7 +565,7 @@ public final class MobileCoinClient implements MobileCoinAccountClient, MobileCo
                 tombstoneBlockIndex, clientConfig.report);
 
         final TransactionBuilder txBuilder = new TransactionBuilder(
-                new FogResolver(reportsResponse, clientConfig.report.getVerifier()),
+                new FogResolver(reportsResponse, clientConfig.report.getTrustedIdentities()),
                 TxOutMemoBuilder.createDefaultRTHMemoBuilder(),
                 blockVersion,
                 fee.getTokenId(),
@@ -824,7 +824,7 @@ public final class MobileCoinClient implements MobileCoinAccountClient, MobileCo
         long endTime = System.currentTimeMillis();
         Logger.d(TAG, "Report + Rings fetch time: " + (endTime - startTime) + "ms");
         FogResolver fogResolver = new FogResolver(fogReportResponses,
-                clientConfig.report.getVerifier());
+                clientConfig.report.getTrustedIdentities());
 
         TransactionBuilder txBuilder = new TransactionBuilder(
                 fogResolver,

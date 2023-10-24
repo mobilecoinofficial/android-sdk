@@ -28,7 +28,7 @@ versions.network = network_versions
 
 // JNI
 def jni_versions = [:]
-jni_versions.mobilecoin = '5.0.0'
+jni_versions.mobilecoin = '6.0.0-pre11'
 versions.jni = jni_versions
 
 // Testing

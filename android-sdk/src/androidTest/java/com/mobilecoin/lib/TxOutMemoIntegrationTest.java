@@ -412,9 +412,9 @@ public class TxOutMemoIntegrationTest {
     Uri fogUri = Uri.parse(fogAlphaUri);
     ReportResponse reportResponse = new ReportResponse(Hex.toByteArray(serializedAlphaNetReportResponse));
     fogReportResponses.addResponse(fogUri, reportResponse);
-    Verifier verifier = new Verifier();
+    TrustedIdentities trustedIdentities = new TrustedIdentities();
 
-    return new FogResolver(fogReportResponses,  verifier);
+    return new FogResolver(fogReportResponses,  trustedIdentities);
   }
 
   private static List<TxOut> createTxOutList() throws Exception {

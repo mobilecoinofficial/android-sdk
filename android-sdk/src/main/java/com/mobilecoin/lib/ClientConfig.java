@@ -29,15 +29,30 @@ public final class ClientConfig {
      * Service Configuration
      */
     public static final class Service {
-        private Verifier verifier;
+        private TrustedIdentities trustedIdentities;
         private Set<X509Certificate> trustRoots;
 
-        /**
-         * Set attestation Verifier
+        /***
+         * Sets TrustedIdentities for this {@link Service}
+         * @param trustedIdentities the TrustedIdentities to set
+         * @return this {@link Service} with TrustedIdentities set
          */
         @NonNull
+        public Service withTrustedIdentities(@NonNull TrustedIdentities trustedIdentities) {
+            this.trustedIdentities = trustedIdentities;
+            return this;
+        }
+
+        /***
+         * Sets the TrustedIdentities from a deprecated {@link Verifier}
+         * @param verifier
+         * @return this Service with TrustedIdentities set
+         * @deprecated Deprecated as of 6.0.0. Use {@link Service#withTrustedIdentities(TrustedIdentities)} instead
+         */
+        @Deprecated
+        @NonNull
         public Service withVerifier(@NonNull Verifier verifier) {
-            this.verifier = verifier;
+            this.trustedIdentities = verifier.getTrustedIdentities();
             return this;
         }
 
@@ -54,8 +69,8 @@ public final class ClientConfig {
          * Get current attestation verifier
          */
         @NonNull
-        public Verifier getVerifier() {
-            return Objects.requireNonNull(verifier);
+        public TrustedIdentities getTrustedIdentities() {
+            return Objects.requireNonNull(trustedIdentities);
         }
 
         /**
@@ -72,13 +87,13 @@ public final class ClientConfig {
         try {
             ClientConfig clientConfig = new ClientConfig();
             clientConfig.fogView = new Service()
-                    .withVerifier((new Verifier()));
+                    .withTrustedIdentities((new TrustedIdentities()));
             clientConfig.fogLedger = new Service()
-                    .withVerifier((new Verifier()));
+                    .withTrustedIdentities((new TrustedIdentities()));
             clientConfig.consensus = new Service()
-                    .withVerifier((new Verifier()));
+                    .withTrustedIdentities((new TrustedIdentities()));
             clientConfig.report = new Service()
-                    .withVerifier((new Verifier()));
+                    .withTrustedIdentities((new TrustedIdentities()));
             return clientConfig;
         } catch (AttestationException attestationException) {
             throw new IllegalStateException("BUG: Unreachable code");
