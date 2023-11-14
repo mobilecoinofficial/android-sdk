@@ -3,8 +3,8 @@ package com.mobilecoin.lib;
 import com.mobilecoin.lib.exceptions.AttestationException;
 import com.mobilecoin.lib.log.Logger;
 
-import org.checkerframework.checker.nullness.qual.NonNull;
-import org.checkerframework.checker.nullness.qual.Nullable;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 public class TrustedIdentities extends Native {
 
