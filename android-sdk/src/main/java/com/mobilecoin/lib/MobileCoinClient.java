@@ -74,8 +74,8 @@ public final class MobileCoinClient implements MobileCoinAccountClient, MobileCo
     private static final long DEFAULT_NEW_TX_BLOCK_ATTEMPTS = 50;
     private final AccountKey accountKey;
     private final TxOutStore txOutStore;
-    private final ClientConfig clientConfig;
-    private final StorageAdapter cacheStorage;
+    final ClientConfig clientConfig;
+    final StorageAdapter cacheStorage;
     final FogReportsManager fogReportsManager;
     final FogBlockClient fogBlockClient;
     final FogUntrustedClient untrustedClient;

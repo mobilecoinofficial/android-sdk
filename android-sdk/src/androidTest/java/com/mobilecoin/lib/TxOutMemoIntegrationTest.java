@@ -1,6 +1,7 @@
 package com.mobilecoin.lib;
 
 import static org.junit.Assert.assertEquals;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import android.net.Uri;
@@ -21,6 +22,8 @@ import java.util.List;
 
 @RunWith(AndroidJUnit4.class)
 public class TxOutMemoIntegrationTest {
+
+    private static final int MEMO_BLOCK_VERSION = 1;
 
     @Test
     public void txOutMemoIntegrationTest() throws Exception {
@@ -162,5 +165,60 @@ public class TxOutMemoIntegrationTest {
         assertEquals(totalOutlay, destinationWithPaymentIntentMemoData.getTotalOutlay());
         assertEquals(recipientAddressHash, destinationWithPaymentIntentMemoData.getAddressHash());
         assertEquals(paymentIntentId, destinationWithPaymentIntentMemoData.getPaymentIntentId());
+
+        /* Test payment request memo */
+
+        // Create a client with mock services to incorrectly report block version too low
+        final MobileCoinClient mockClient = cloneClientWithMockServices(senderClient);
+        // Build a transaction with sender and destination memos
+        tx = mockClient.prepareTransaction(
+                recipientAccountKey.getPublicAddress(),
+                amountToSend,
+                fee,
+                TxOutMemoBuilder.createSenderAndDestinationRTHMemoBuilder(senderAccountKey)
+        ).getTransaction().toProtoBufObject();
+        outputsList = tx.getPrefix().getOutputsList();
+        txOut1 = TxOut.fromProtoBufObject(outputsList.get(0));
+        txOut2 = TxOut.fromProtoBufObject(outputsList.get(1));
+
+        // Distinguish payload and change TxOut
+        try {
+            txOut1.getMaskedAmount().unmaskAmount(recipientAccountKey.getViewKey(), txOut1.getPublicKey());
+            payloadTxOut = txOut1;
+            changeTxOut = txOut2;
+        } catch(Exception e) {
+            payloadTxOut = txOut2;
+            changeTxOut = txOut1;
+        }
+
+        // Verify sender memo unused memo field
+        sentMemoPayload = payloadTxOut.decryptMemoPayload(recipientAccountKey);
+        final TxOutMemo unsetSenderMemo = TxOutMemoParser
+                .parseTxOutMemo(sentMemoPayload, recipientAccountKey, payloadTxOut);
+        assertEquals(TxOutMemoType.NOT_SET, unsetSenderMemo.getTxOutMemoType());
+
+        // Verify destination memo unused memo field
+        changeMemoPayload = changeTxOut.decryptMemoPayload(senderAccountKey);
+        final TxOutMemo unsetDestinationMemo = TxOutMemoParser
+                .parseTxOutMemo(changeMemoPayload, senderAccountKey, changeTxOut);
+        assertEquals(TxOutMemoType.NOT_SET, unsetDestinationMemo.getTxOutMemoType());
+    }
+
+    private static MobileCoinClient cloneClientWithMockServices(final MobileCoinClient client) throws Exception {
+        final BlockchainClient mockBlockchainClient = mock(BlockchainClient.class);
+        when(mockBlockchainClient.getOrFetchNetworkBlockVersion()).thenReturn(MEMO_BLOCK_VERSION - 1);
+        return new MobileCoinClient(
+                client.getAccountKey(),
+                client.getTxOutStore(),
+                client.clientConfig,
+                client.cacheStorage,
+                client.fogReportsManager,
+                client.fogBlockClient,
+                client.untrustedClient,
+                client.viewClient,
+                client.ledgerClient,
+                client.consensusClient,
+                mockBlockchainClient
+        );
     }
 }
