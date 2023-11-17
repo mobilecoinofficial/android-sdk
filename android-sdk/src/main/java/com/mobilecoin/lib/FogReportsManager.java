@@ -45,7 +45,7 @@ final class FogReportsManager {
         Logger.i(TAG, "Checking for cached report response");
         ReportResponse response = cachedResponses.get(fogUri);
         if (response != null) {
-            Optional<Report> report = response.getReports().stream()
+            Optional<FogReport> report = response.getReports().stream()
                     .min((o1, o2) -> Long.compare(
                             o1.getPublicKeyExpiry(),
                             o2.getPublicKeyExpiry()));

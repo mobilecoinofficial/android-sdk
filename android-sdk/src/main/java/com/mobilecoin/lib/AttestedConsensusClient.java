@@ -67,7 +67,7 @@ class AttestedConsensusClient extends AttestedClient {
             ByteString bytes = ByteString.copyFrom(requestBytes);
             Attest.AuthMessage authMessage = Attest.AuthMessage.newBuilder().setData(bytes).build();
             Attest.AuthMessage response = attestedService.auth(authMessage);
-            attestFinish(response.getData().toByteArray(), getServiceConfig().getVerifier());
+            attestFinish(response.getData().toByteArray(), getServiceConfig().getTrustedIdentities());
         } catch (NetworkException exception) {
             attestReset();
             if (exception.getResult().getResultCode() == NetworkResult.ResultCode.INTERNAL) {

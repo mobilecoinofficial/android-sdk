@@ -164,13 +164,13 @@ public abstract class AttestedClient extends AnyClient {
      * @param authResponse an auth response obtained from the attested service
      */
     public void attestFinish(@NonNull byte[] authResponse,
-                                @NonNull Verifier attestVerifier
+                                @NonNull TrustedIdentities trustedIdentities
     ) throws AttestationException {
         Logger.i(TAG, "FFI: attest_finish call");
         try {
             attest_finish(
                     authResponse,
-                    attestVerifier
+                    trustedIdentities
             );
         } catch (Exception exception) {
             AttestationException attestationException =
@@ -286,7 +286,7 @@ public abstract class AttestedClient extends AnyClient {
 
     private native void attest_finish(
             @NonNull byte[] auth,
-            @NonNull Verifier verifier
+            @NonNull TrustedIdentities trusted_identities
     );
 
     @NonNull

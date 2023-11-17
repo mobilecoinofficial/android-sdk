@@ -11,17 +11,17 @@ import java.util.List;
 
 final class ReportResponse extends Native {
     private final static String TAG = ReportResponse.class.getName();
-    private final List<Report> reports;
+    private final List<FogReport> reports;
     private final byte[][] chain;
     private final byte[] signature;
 
-    ReportResponse(@NonNull List<Report> reports, @NonNull byte[][] chain,
+    ReportResponse(@NonNull List<FogReport> reports, @NonNull byte[][] chain,
                    @NonNull byte[] signature) throws FogReportException {
         this.reports = reports;
         this.chain = chain;
         this.signature = signature;
         try {
-            init_jni((reports.toArray(new Report[0])), chain, signature);
+            init_jni((reports.toArray(new FogReport[0])), chain, signature);
         } catch (Exception exception) {
             FogReportException fogReportException =
                     new FogReportException("Unable to create report response", exception);
@@ -44,7 +44,7 @@ final class ReportResponse extends Native {
        }
     }
     @NonNull
-    public List<Report> getReports() {
+    public List<FogReport> getReports() {
         return reports;
     }
 
@@ -69,7 +69,7 @@ final class ReportResponse extends Native {
     }
 
     // native calls
-    private native void init_jni(@NonNull Report[] reports, @NonNull byte[][] chain,
+    private native void init_jni(@NonNull FogReport[] reports, @NonNull byte[][] chain,
                                  @NonNull byte[] signature);
 
     private native void init_jni_from_protobuf_bytes(byte[] protobufBytes);
