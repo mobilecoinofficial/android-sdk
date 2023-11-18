@@ -281,7 +281,7 @@ public final class MobileCoinClient implements MobileCoinAccountClient, MobileCo
                 : storeIndex;
         Set<OwnedTxOut> txOuts = txOutStore.getSyncedTxOuts().stream()
                 .filter(txOut -> txOut.getReceivedBlockIndex().compareTo(finalBlockIndex) <= 0)
-                .map(OwnedTxOut::new)
+                .map(OwnedTxOut::copy)
                 .collect(Collectors.toSet());
 
         return new AccountSnapshot(this, txOuts, finalBlockIndex);

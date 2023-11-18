@@ -358,4 +358,13 @@ public class OwnedTxOut implements Parcelable {
         }
     };
 
+    /**
+     * Wraps the copy constructor for mocking purposes during testing
+     *
+     * @return a copy of this {@link OwnedTxOut}
+     */
+    OwnedTxOut copy() {
+        return new OwnedTxOut(this);
+    }
+
 }

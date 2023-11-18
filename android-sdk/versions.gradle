@@ -34,7 +34,7 @@ versions.jni = jni_versions
 // Testing
 def testing_versions = [:]
 testing_versions.junit = '4.13.2'
-testing_versions.mockito = '5.2.0'
+testing_versions.mockito = '5.7.0'
 testing_versions.core = '1.5.0'
 testing_versions.ext_junit = '1.1.5'
 testing_versions.espresso_core = '3.5.1'
