@@ -35,7 +35,8 @@ public class BalanceTest {
     }
 
     static final BigInteger U64_MAX = UnsignedLong.MAX_VALUE.toBigInteger();
-    static final BigInteger LARGE_AMOUNT = U64_MAX.add(BigInteger.TEN).add(BigInteger.ONE).multiply(BigInteger.valueOf(2L));
+    static final BigInteger LARGE_AMOUNT = U64_MAX.add(BigInteger.TEN).add(BigInteger.ONE);
+    static final BigInteger LARGE_BALANCE = LARGE_AMOUNT.multiply(BigInteger.valueOf(2L));
 
     @Test
     public void testLargeBalance() throws Exception {
@@ -53,7 +54,9 @@ public class BalanceTest {
                 client.consensusClient,
                 client.blockchainClient
         );
-        assertEquals(LARGE_AMOUNT, client.getBalance(TokenId.MOB).getValue());
+        assertEquals(LARGE_BALANCE, client.getBalance(TokenId.MOB).getValue());
+        final BigInteger fee = client.estimateTotalFee(Amount.ofMOB(LARGE_AMOUNT)).getValue();
+        assertEquals(LARGE_BALANCE.subtract(fee), client.getTransferableAmount(TokenId.MOB).getValue());
     }
 
     private static TxOutStore createMockTxOutStore() throws Exception {
