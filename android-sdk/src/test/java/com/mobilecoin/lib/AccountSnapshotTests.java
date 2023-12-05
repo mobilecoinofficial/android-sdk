@@ -39,14 +39,12 @@ public class AccountSnapshotTests {
 
     private final KeyImage keyImage1 = mock(KeyImage.class);
     private final KeyImage keyImage2 = mock(KeyImage.class);
-    private final BigInteger amountTen = BigInteger.TEN;
-    private final BigInteger amountZero = BigInteger.ZERO;
-    private final BigInteger amountOne = BigInteger.ONE;
+    private final Amount TEN_MOB = Amount.ofMOB(BigInteger.TEN);
+    private final Amount ZERO_MOB = Amount.ofMOB(BigInteger.ZERO);
+    private final Amount ONE_MOB = Amount.ofMOB(BigInteger.ONE);
     private final UnsignedLong blockIndexOne = UnsignedLong.ONE;
     private final UnsignedLong blockIndexZero = UnsignedLong.ZERO;
     private final UnsignedLong blockIndexTen = UnsignedLong.TEN;
-    private static final Amount TEN_MOB = createAmountMOB(BigInteger.TEN);
-    private static final Amount ONE_MOB = createAmountMOB(BigInteger.ONE);
 
     @Test
     public void test_balance() {
@@ -54,7 +52,7 @@ public class AccountSnapshotTests {
 
         AccountSnapshot accountSnapshot = new AccountSnapshot(mock(MobileCoinClient.class), txOuts, blockIndexOne);
 
-        assertEquals(new Balance(amountTen, blockIndexOne), accountSnapshot.getBalance(MOB));
+        assertEquals(new Balance(TEN_MOB.getValue(), blockIndexOne), accountSnapshot.getBalance(MOB));
     }
 
     @Test
@@ -91,14 +89,14 @@ public class AccountSnapshotTests {
     public void transaction_receipts_received_status() throws InvalidReceiptException, AmountDecoderException {
         Set<OwnedTxOut> txOuts = new HashSet<>();
         OwnedTxOut txOut = mock(OwnedTxOut.class);
-        when(txOut.getAmount()).thenReturn(new Amount(amountTen, MOB));
+        when(txOut.getAmount()).thenReturn(TEN_MOB);
         RistrettoPublic ristrettoPublic = mock(RistrettoPublic.class);
         when(txOut.getPublicKey()).thenReturn(ristrettoPublic);
         when(txOut.getReceivedBlockIndex()).thenReturn(blockIndexOne);
         txOuts.add(txOut);
         Receipt receipt = mock(Receipt.class);
         when(receipt.getPublicKey()).thenReturn(ristrettoPublic);
-        when(receipt.getAmountData(any())).thenReturn(new Amount(amountTen, MOB));
+        when(receipt.getAmountData(any())).thenReturn(TEN_MOB);
         when(receipt.getTombstoneBlockIndex()).thenReturn(blockIndexOne);
 
         AccountSnapshot accountSnapshot = new AccountSnapshot(mock(MobileCoinClient.class), txOuts, blockIndexOne);
@@ -123,7 +121,7 @@ public class AccountSnapshotTests {
 
         AccountSnapshot accountSnapshot = new AccountSnapshot(mock(MobileCoinClient.class), txOuts, blockIndexOne);
 
-        assertEquals(amountTen, accountSnapshot.getTransferableAmount(amountOne));
+        assertEquals(TEN_MOB, accountSnapshot.getTransferableAmount(ONE_MOB));
     }
 
     @Test
@@ -132,7 +130,7 @@ public class AccountSnapshotTests {
 
         AccountSnapshot accountSnapshot = new AccountSnapshot(mock(MobileCoinClient.class), txOuts, blockIndexOne);
 
-        assertEquals(amountZero, accountSnapshot.getTransferableAmount(amountOne));
+        assertEquals(ZERO_MOB, accountSnapshot.getTransferableAmount(ONE_MOB));
     }
 
     @Test
@@ -141,18 +139,18 @@ public class AccountSnapshotTests {
 
         AccountSnapshot accountSnapshot = new AccountSnapshot(mock(MobileCoinClient.class), txOuts, blockIndexOne);
 
-        assertEquals(amountOne, accountSnapshot.estimateTotalFee(amountTen, amountOne));
+        assertEquals(ONE_MOB, accountSnapshot.estimateTotalFee(TEN_MOB, ONE_MOB));
     }
 
     @Test
     public void estimate_total_fees() throws InsufficientFundsException {
         Set<OwnedTxOut> txOuts = createMockTxOuts(false);
         try (MockedStatic<UTXOSelector> selector = mockStatic(UTXOSelector.class)) {
-            selector.when(() -> UTXOSelector.calculateFee(any(), any(), any(), any(), any(), anyInt())).thenReturn(amountOne);
+            selector.when(() -> UTXOSelector.calculateFee(any(), any(), any(), any(), any(), anyInt())).thenReturn(ONE_MOB.getValue());
 
             AccountSnapshot accountSnapshot = new AccountSnapshot(mock(MobileCoinClient.class), txOuts, blockIndexOne);
 
-            assertEquals(createAmountMOB(amountOne), accountSnapshot.estimateTotalFee(TEN_MOB, ONE_MOB));
+            assertEquals(ONE_MOB, accountSnapshot.estimateTotalFee(TEN_MOB, ONE_MOB));
         }
 
     }
@@ -217,17 +215,13 @@ public class AccountSnapshotTests {
         assertEquals(Transaction.Status.ACCEPTED, accountSnapshot.getTransactionStatus(transaction));
     }
 
-    public static Amount createAmountMOB(BigInteger amount) {
-        return new Amount(amount, MOB);
-    }
-
     public Set<OwnedTxOut> createMockTxOuts(boolean isSpent) {
         Set<OwnedTxOut> txOuts = new HashSet<>();
         OwnedTxOut txOut_1 = mock(OwnedTxOut.class);
-        when(txOut_1.getAmount()).thenReturn(createAmountMOB(amountTen));
+        when(txOut_1.getAmount()).thenReturn(TEN_MOB);
         when(txOut_1.isSpent(blockIndexOne)).thenReturn(isSpent);
         OwnedTxOut txOut_2 = mock(OwnedTxOut.class);
-        when(txOut_2.getAmount()).thenReturn(createAmountMOB(amountOne));
+        when(txOut_2.getAmount()).thenReturn(ONE_MOB);
         when(txOut_2.isSpent(blockIndexOne)).thenReturn(isSpent);
         txOuts.add(txOut_1);
         txOuts.add(txOut_2);
