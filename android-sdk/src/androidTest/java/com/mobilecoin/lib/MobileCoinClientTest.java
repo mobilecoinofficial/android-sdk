@@ -133,17 +133,18 @@ public class MobileCoinClientTest {
         MobileCoinClient mobileCoinClient = MobileCoinClientBuilder.newBuilder().build();
         AccountKey recipient = TestKeysManager.getNextAccountKey();
         try {
-            byte[] serializedAddress = recipient.getPublicAddress().toByteArray();
-            PublicAddress recipientAddress = PublicAddress.fromBytes(serializedAddress);
+            final byte[] serializedAddress = recipient.getPublicAddress().toByteArray();
+            final PublicAddress recipientAddress = PublicAddress.fromBytes(serializedAddress);
 
-            BigInteger amount = BigInteger.TEN;
-            BigInteger minimumFee = mobileCoinClient.estimateTotalFee(
+            final Amount amount = Amount.ofMOB(BigInteger.TEN);
+            final Amount minimumFee = mobileCoinClient.estimateTotalFee(
                     amount
             );
             PendingTransaction pending = mobileCoinClient.prepareTransaction(
                     recipientAddress,
                     amount,
-                    minimumFee
+                    minimumFee,
+                    TxOutMemoBuilder.createSenderAndDestinationRTHMemoBuilder(mobileCoinClient.getAccountKey())
             );
             mobileCoinClient.submitTransaction(pending.getTransaction());
         } finally {
@@ -152,8 +153,7 @@ public class MobileCoinClientTest {
     }
 
     @Test
-    public void test_attestation_must_fail() throws NetworkException, InvalidFogResponse,
-            InvalidUriException {
+    public void test_attestation_must_fail() throws Exception {
         TestFogConfig fogConfig = getTestFogConfig();
         ClientConfig clientConfig = fogConfig.getClientConfig();
         // change fog verifier to make balance call fail
@@ -163,7 +163,7 @@ public class MobileCoinClientTest {
                 .setTestFogConfig(fogConfig)
                 .build();
         try {
-            mobileCoinClient.getBalance();
+            mobileCoinClient.getBalance(TokenId.MOB);
             Assert.fail("Invalid verifier must fail the test");
         } catch (AttestationException ex) {
             // success
@@ -174,8 +174,7 @@ public class MobileCoinClientTest {
     }
 
     @Test
-    public void test_bad_trust_root_must_fail() throws InvalidFogResponse,
-            InvalidUriException, AttestationException {
+    public void test_bad_trust_root_must_fail() throws Exception {
         TestFogConfig fogConfig = getTestFogConfig();
         ClientConfig clientConfig = fogConfig.getClientConfig();
         // change fog verifier to make balance call fail
@@ -187,7 +186,7 @@ public class MobileCoinClientTest {
                 .setTestFogConfig(fogConfig)
                 .build();
         try {
-            mobileCoinClient.getBalance();
+            mobileCoinClient.getBalance(TokenId.MOB);
             Assert.fail("Invalid trust root must fail the test");
         } catch (NetworkException ex) {
             // success
@@ -199,40 +198,41 @@ public class MobileCoinClientTest {
 
     @Test
     public void test_zero_coin_value() throws Exception {
-        MobileCoinClient senderClient = MobileCoinClientBuilder.newBuilder().build();
-        MobileCoinClient recipientClient = MobileCoinClientBuilder.newBuilder().build();
+        final MobileCoinClient senderClient = MobileCoinClientBuilder.newBuilder().build();
+        final MobileCoinClient recipientClient = MobileCoinClientBuilder.newBuilder().build();
 
-        Balance initialBalance = recipientClient.getBalance();
+        final Balance initialBalance = recipientClient.getBalance(TokenId.MOB);
         try {
-            BigInteger amount = BigInteger.ZERO;
-            BigInteger minimumFee = senderClient.estimateTotalFee(
+            final Amount amount = Amount.ofMOB(BigInteger.ZERO);
+            final Amount minimumFee = senderClient.estimateTotalFee(
                     amount
             );
-            PendingTransaction pending = senderClient.prepareTransaction(
+            final PendingTransaction pending = senderClient.prepareTransaction(
                     recipientClient.getAccountKey().getPublicAddress(),
                     amount,
-                    minimumFee
+                    minimumFee,
+                    TxOutMemoBuilder.createSenderAndDestinationRTHMemoBuilder(senderClient.getAccountKey())
             );
             senderClient.submitTransaction(pending.getTransaction());
 
-            Receipt.Status status = waitForReceiptStatus(recipientClient, pending.getReceipt());
+            final Receipt.Status status = waitForReceiptStatus(recipientClient, pending.getReceipt());
             assertEquals(status, Receipt.Status.RECEIVED);
-            Balance finalBalance = recipientClient.getBalance();
+            final Balance finalBalance = recipientClient.getBalance(TokenId.MOB);
             assertEquals(
-                    initialBalance.getAmountPicoMob(),
-                    finalBalance.getAmountPicoMob()
+                    initialBalance,
+                    finalBalance
             );
 
             // make sure a zero value unspent TxOut exists
-            UnsignedLong startBlock = initialBalance.getBlockIndex();
-            UnsignedLong endBlock = finalBalance.getBlockIndex();
-            List<OwnedTxOut> txOuts = recipientClient.fogBlockClient.scanForTxOutsInBlockRange(
+            final UnsignedLong startBlock = initialBalance.getBlockIndex();
+            final UnsignedLong endBlock = finalBalance.getBlockIndex();
+            final List<OwnedTxOut> txOuts = recipientClient.fogBlockClient.scanForTxOutsInBlockRange(
                     new BlockRange(startBlock, endBlock.add(UnsignedLong.ONE)),
                     recipientClient.getAccountKey()
             );
             OwnedTxOut zeroCoinTxOut = null;
             for (OwnedTxOut txOut : txOuts) {
-                if (txOut.getValue().equals(BigInteger.ZERO)) {
+                if (txOut.getAmount().equals(Amount.ofMOB(BigInteger.ZERO))) {
                     zeroCoinTxOut = txOut;
                     break;
                 }
@@ -259,17 +259,17 @@ public class MobileCoinClientTest {
     @Test
     public void test_fragmented_account() throws Exception {
 
-        AccountKey coinSourceKey = TestKeysManager.getNextAccountKey();
-        MobileCoinClient coinSourceClient = MobileCoinClientBuilder.newBuilder()
+        final AccountKey coinSourceKey = TestKeysManager.getNextAccountKey();
+        final MobileCoinClient coinSourceClient = MobileCoinClientBuilder.newBuilder()
             .setAccountKey(coinSourceKey).build();
 
         final int FRAGMENTS_TO_TEST = 20;
-        final BigInteger MINIMUM_TX_FEE = coinSourceClient.getOrFetchMinimumTxFee();
-        final BigInteger FRAGMENT_AMOUNT = MINIMUM_TX_FEE.multiply(BigInteger.TEN);
+        final Amount MINIMUM_TX_FEE = coinSourceClient.getOrFetchMinimumTxFee(TokenId.MOB);
+        final Amount FRAGMENT_AMOUNT = MINIMUM_TX_FEE.multiply(Amount.ofMOB(BigInteger.TEN));
 
-        TestFogConfig fogConfig = getTestFogConfig();
+        final TestFogConfig fogConfig = getTestFogConfig();
         // 1. Create a new fragmented account
-        AccountKey fragmentedAccount = AccountKey.createNew(
+        final AccountKey fragmentedAccount = AccountKey.createNew(
                 fogConfig.getFogUri(),
                 fogConfig.getFogReportId(),
                 fogConfig.getFogAuthoritySpki()
@@ -280,11 +280,12 @@ public class MobileCoinClientTest {
 
         // 2a. Send small denomination TxOuts to the test account
         for (int i = 0; i < FRAGMENTS_TO_TEST; ++i) {
-            BigInteger fee = coinSourceClient.estimateTotalFee(FRAGMENT_AMOUNT);
-            PendingTransaction pendingTransaction = coinSourceClient.prepareTransaction(
+            final Amount fee = coinSourceClient.estimateTotalFee(FRAGMENT_AMOUNT);
+            final PendingTransaction pendingTransaction = coinSourceClient.prepareTransaction(
                     fragmentedAccount.getPublicAddress(),
                     FRAGMENT_AMOUNT,
-                    fee
+                    fee,
+                    TxOutMemoBuilder.createSenderAndDestinationRTHMemoBuilder(coinSourceKey)
             );
             coinSourceClient.submitTransaction(pendingTransaction.getTransaction());
             waitForTransactionStatus(coinSourceClient,
@@ -300,26 +301,27 @@ public class MobileCoinClientTest {
 
         // 2c. Add necessary amount to cover the fees (number of optimizations + actual Tx)
         // and verify the transferable amount before and after fees
-        int iterations = FRAGMENTS_TO_TEST / UTXOSelector.MAX_INPUTS + 1;
-        BigInteger futureFees = MINIMUM_TX_FEE.multiply(BigInteger.valueOf(iterations))
-                .add(MobileCoinClient.INPUT_FEE.multiply(BigInteger.valueOf(FRAGMENTS_TO_TEST)))
-                .add(MobileCoinClient.OUTPUT_FEE.multiply(BigInteger.valueOf(iterations)));
+        final int iterations = FRAGMENTS_TO_TEST / UTXOSelector.MAX_INPUTS + 1;
+        final Amount futureFees = MINIMUM_TX_FEE.multiply(Amount.ofMOB(BigInteger.valueOf(iterations)))
+                .add(Amount.ofMOB(MobileCoinClient.INPUT_FEE.multiply(BigInteger.valueOf(FRAGMENTS_TO_TEST))))
+                .add(Amount.ofMOB(MobileCoinClient.OUTPUT_FEE.multiply(BigInteger.valueOf(iterations))));
 
         // Verify the transferable amount is calculated correctly
-        BigInteger transferableAmount = fragmentedClient.getTransferableAmount();
-        BigInteger calculatedTransferableAmount =
-                BigInteger.valueOf(FRAGMENTS_TO_TEST).multiply(FRAGMENT_AMOUNT).subtract(futureFees);
+        Amount transferableAmount = fragmentedClient.getTransferableAmount(TokenId.MOB);
+        Amount calculatedTransferableAmount =
+                Amount.ofMOB(BigInteger.valueOf(FRAGMENTS_TO_TEST)).multiply(FRAGMENT_AMOUNT).subtract(futureFees);
         assertEquals(calculatedTransferableAmount, transferableAmount);
 
-        BigInteger txFee = coinSourceClient.estimateTotalFee(futureFees);
+        final Amount txFee = coinSourceClient.estimateTotalFee(futureFees);
         PendingTransaction pendingTransaction = coinSourceClient.prepareTransaction(
                 fragmentedAccount.getPublicAddress(),
                 futureFees,
-                txFee
+                txFee,
+                TxOutMemoBuilder.createSenderAndDestinationRTHMemoBuilder(coinSourceKey)
         );
         coinSourceClient.submitTransaction(pendingTransaction.getTransaction());
         coinSourceClient.shutdown();
-        Receipt.Status status = waitForReceiptStatus(fragmentedClient,
+        final Receipt.Status status = waitForReceiptStatus(fragmentedClient,
                 pendingTransaction.getReceipt());
 
         if (status != Receipt.Status.RECEIVED) {
@@ -327,13 +329,13 @@ public class MobileCoinClientTest {
         }
 
         // Verify the transferable amount is calculated correctly with future fees
-        transferableAmount = fragmentedClient.getTransferableAmount();
+        transferableAmount = fragmentedClient.getTransferableAmount(TokenId.MOB);
         calculatedTransferableAmount =
-                BigInteger.valueOf(FRAGMENTS_TO_TEST).multiply(FRAGMENT_AMOUNT);
+                Amount.ofMOB(BigInteger.valueOf(FRAGMENTS_TO_TEST)).multiply(FRAGMENT_AMOUNT);
         assertEquals(calculatedTransferableAmount, transferableAmount);
 
         // 3. Verify the account needs defragmentation
-        BigInteger txAmount = FRAGMENT_AMOUNT.multiply(BigInteger.valueOf(FRAGMENTS_TO_TEST));
+        final Amount txAmount = FRAGMENT_AMOUNT.multiply(Amount.ofMOB(BigInteger.valueOf(FRAGMENTS_TO_TEST)));
         if (!fragmentedClient.requiresDefragmentation(txAmount)) {
             Assert.fail("Test account is not fragmented enough for the test");
         }
@@ -363,13 +365,14 @@ public class MobileCoinClientTest {
                 Logger.wtf(TAG, "Defragmentation process was cancelled");
                 Assert.fail("Defragmentation process should not be cancelled in this test");
             }
-        });
+        }, true);
         // 5. Send the funds back to the original wallet
-        BigInteger fee = fragmentedClient.estimateTotalFee(txAmount);
+        final Amount fee = fragmentedClient.estimateTotalFee(txAmount);
         pendingTransaction = fragmentedClient.prepareTransaction(
                 coinSourceKey.getPublicAddress(),
                 txAmount,
-                fee
+                fee,
+                TxOutMemoBuilder.createSenderAndDestinationRTHMemoBuilder(fragmentedAccount)
         );
         fragmentedClient.submitTransaction(pendingTransaction.getTransaction());
         fragmentedClient.shutdown();
@@ -415,23 +418,24 @@ public class MobileCoinClientTest {
 
     @Test
     public void test_tx_and_receipt_accessors() throws Exception {
-        MobileCoinClient senderClient = MobileCoinClientBuilder.newBuilder().build();
-        MobileCoinClient recipientClient = MobileCoinClientBuilder.newBuilder().build();
-        BigInteger amount = BigInteger.TEN;
+        final MobileCoinClient senderClient = MobileCoinClientBuilder.newBuilder().build();
+        final MobileCoinClient recipientClient = MobileCoinClientBuilder.newBuilder().build();
+        final Amount amount = Amount.ofMOB(BigInteger.TEN);
         try {
-            BigInteger minimumFee = senderClient.estimateTotalFee(
+            final Amount minimumFee = senderClient.estimateTotalFee(
                     amount
             );
-            PendingTransaction pending = senderClient.prepareTransaction(
+            final PendingTransaction pending = senderClient.prepareTransaction(
                     recipientClient.getAccountKey().getPublicAddress(),
                     amount,
-                    minimumFee
+                    minimumFee,
+                    TxOutMemoBuilder.createSenderAndDestinationRTHMemoBuilder(senderClient.getAccountKey())
             );
 
             // verify input key images corresponding to owned txOuts
-            AccountActivity activity = senderClient.getAccountActivity();
-            Set<KeyImage> keyImages = pending.getTransaction().getKeyImages();
-            Set<KeyImage> matches = activity.getAllTokenTxOuts().stream()
+            final AccountActivity activity = senderClient.getAccountActivity();
+            final Set<KeyImage> keyImages = pending.getTransaction().getKeyImages();
+            final Set<KeyImage> matches = activity.getAllTokenTxOuts().stream()
                     .map(OwnedTxOut::getKeyImage)
                     .filter(keyImages::contains)
                     .collect(Collectors.toSet());
@@ -443,9 +447,9 @@ public class MobileCoinClientTest {
             waitForReceiptStatus(recipientClient, pending.getReceipt());
 
             // verify the output of the receipt is valid
-            OwnedTxOut receivedTxOut = pending.getReceipt().fetchOwnedTxOut(recipientClient);
-            assertEquals("Receipt amount must be valid", receivedTxOut.getValue(), amount);
-            AccountActivity recipientActivity = recipientClient.getAccountActivity();
+            final OwnedTxOut receivedTxOut = pending.getReceipt().fetchOwnedTxOut(recipientClient);
+            assertEquals("Receipt amount must be valid", receivedTxOut.getAmount(), amount);
+            final AccountActivity recipientActivity = recipientClient.getAccountActivity();
             assertTrue("Recipient activity must contain received TxOut",
                     recipientActivity.getAllTokenTxOuts().contains(receivedTxOut));
         } finally {
@@ -458,34 +462,34 @@ public class MobileCoinClientTest {
     // verify the validity of the sent TxOut by view key scanning
     @Test
     public void test_send_to_address_without_fog() throws Exception {
-        TestFogConfig fogConfig = getTestFogConfig();
-        AccountKey recipientAccount = TestKeysManager.getNextAccountKey();
+        final TestFogConfig fogConfig = getTestFogConfig();
+        final AccountKey recipientAccount = TestKeysManager.getNextAccountKey();
         // remove fog info from the public address
-        PublicAddress addressWithFog = recipientAccount.getPublicAddress();
-        PublicAddress recipient = new PublicAddress(
+        final PublicAddress addressWithFog = recipientAccount.getPublicAddress();
+        final PublicAddress recipient = new PublicAddress(
                 addressWithFog.getViewKey(),
                 addressWithFog.getSpendKey()
         );
         // send a transaction
-        BigInteger amount = BigInteger.valueOf(1234);
-        MobileCoinClient mobileCoinClient = MobileCoinClientBuilder.newBuilder().build();
-        BigInteger fee = mobileCoinClient.estimateTotalFee(amount);
-        PendingTransaction pendingTransaction = mobileCoinClient.prepareTransaction(recipient,
-                amount, fee);
+        final Amount amount = Amount.ofMOB(BigInteger.valueOf(1234));
+        final MobileCoinClient mobileCoinClient = MobileCoinClientBuilder.newBuilder().build();
+        final Amount fee = mobileCoinClient.estimateTotalFee(amount);
+        final PendingTransaction pendingTransaction = mobileCoinClient.prepareTransaction(recipient,
+                amount, fee, TxOutMemoBuilder.createSenderAndDestinationRTHMemoBuilder(mobileCoinClient.getAccountKey()));
 
         mobileCoinClient.submitTransaction(pendingTransaction.getTransaction());
-        Transaction.Status txStatus = waitForTransactionStatus(mobileCoinClient,
+        final Transaction.Status txStatus = waitForTransactionStatus(mobileCoinClient,
                 pendingTransaction.getTransaction());
-        Receipt txReceipt = pendingTransaction.getReceipt();
+        final Receipt txReceipt = pendingTransaction.getReceipt();
 
-        UnsignedLong txBlockIndex = txStatus.getBlockIndex();
-        FogUri fogUri = new FogUri(fogConfig.getFogUri());
-        FogBlockClient blockClient = new FogBlockClient(
+        final UnsignedLong txBlockIndex = txStatus.getBlockIndex();
+        final FogUri fogUri = new FogUri(fogConfig.getFogUri());
+        final FogBlockClient blockClient = new FogBlockClient(
                 RandomLoadBalancer.create(fogUri),
                 ClientConfig.defaultConfig().fogLedger,
                 fogConfig.getTransportProtocol());
         blockClient.setAuthorization(fogConfig.getUsername(), fogConfig.getPassword());
-        List<OwnedTxOut> txOuts = blockClient.scanForTxOutsInBlockRange(
+        final List<OwnedTxOut> txOuts = blockClient.scanForTxOutsInBlockRange(
                 new BlockRange(
                         txBlockIndex,
                         txBlockIndex.add(UnsignedLong.ONE)),
