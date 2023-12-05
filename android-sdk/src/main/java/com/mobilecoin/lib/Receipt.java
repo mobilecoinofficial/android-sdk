@@ -91,7 +91,7 @@ public final class Receipt {
         try {
             // validate the amount
             // if the amount is invalid the AmountDecoderException is thrown
-            getAmount(accountKey);
+            getAmountData(accountKey);
 
             // validate the confirmation hash
             RistrettoPublic pubkey = RistrettoPublic.fromBytes(txPubKeyBytes);
