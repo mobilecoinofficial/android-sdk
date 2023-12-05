@@ -153,32 +153,32 @@ public class TestFogConfig {
                 clientConfig.storageAdapter = storageAdapter.get();
             }
             clientConfig.fogView = new ClientConfig.Service()
-                    .withVerifier((new Verifier())
-                            .withMrSigner(Hex.toByteArray(
+                    .withTrustedIdentities((new TrustedIdentities())
+                            .addMrSignerIdentity(Hex.toByteArray(
                                     "7ee5e29d74623fdbc6fbf1454be6f3bb0b86c12366b7b478ad13353e44de8411"),
                                     FOG_VIEW_PRODUCT_ID, SECURITY_VERSION,
                                     CONFIG_ADVISORIES,
                                     HARDENING_ADVISORIES))
                     .withTrustRoots(getDevTrustRoots());
             clientConfig.fogLedger = new ClientConfig.Service()
-                    .withVerifier((new Verifier())
-                            .withMrSigner(Hex.toByteArray(
+                    .withTrustedIdentities((new TrustedIdentities())
+                            .addMrSignerIdentity(Hex.toByteArray(
                                     "7ee5e29d74623fdbc6fbf1454be6f3bb0b86c12366b7b478ad13353e44de8411"),
                                     FOG_LEDGER_PRODUCT_ID, SECURITY_VERSION,
                                     CONFIG_ADVISORIES,
                                     HARDENING_ADVISORIES))
                     .withTrustRoots(getDevTrustRoots());
             clientConfig.consensus = new ClientConfig.Service()
-                    .withVerifier((new Verifier())
-                            .withMrSigner(Hex.toByteArray(
+                    .withTrustedIdentities((new TrustedIdentities())
+                            .addMrSignerIdentity(Hex.toByteArray(
                                     "7ee5e29d74623fdbc6fbf1454be6f3bb0b86c12366b7b478ad13353e44de8411"),
                                     CONSENSUS_PRODUCT_ID, SECURITY_VERSION,
                                     CONFIG_ADVISORIES,
                                     HARDENING_ADVISORIES))
                     .withTrustRoots(getDevTrustRoots());
             clientConfig.report = new ClientConfig.Service()
-                    .withVerifier((new Verifier())
-                            .withMrSigner(Hex.toByteArray(
+                    .withTrustedIdentities((new TrustedIdentities())
+                            .addMrSignerIdentity(Hex.toByteArray(
                                     "7ee5e29d74623fdbc6fbf1454be6f3bb0b86c12366b7b478ad13353e44de8411"),
                                     FOG_REPORT_PRODUCT_ID, SECURITY_VERSION,
                                     CONFIG_ADVISORIES,
@@ -198,32 +198,32 @@ public class TestFogConfig {
                 clientConfig.storageAdapter = storageAdapter.get();
             }
             clientConfig.fogView = new ClientConfig.Service()
-                    .withVerifier((new Verifier())
-                            .withMrSigner(Hex.toByteArray(
+                    .withTrustedIdentities((new TrustedIdentities())
+                            .addMrSignerIdentity(Hex.toByteArray(
                                     "bf7fa957a6a94acb588851bc8767e0ca57706c79f4fc2aa6bcb993012c3c386c"),
                                     FOG_VIEW_PRODUCT_ID, SECURITY_VERSION,
                                     CONFIG_ADVISORIES,
                                     HARDENING_ADVISORIES))
                     .withTrustRoots(getTestTrustRoots());
             clientConfig.fogLedger = new ClientConfig.Service()
-                    .withVerifier((new Verifier())
-                            .withMrSigner(Hex.toByteArray(
+                    .withTrustedIdentities((new TrustedIdentities())
+                            .addMrSignerIdentity(Hex.toByteArray(
                                     "bf7fa957a6a94acb588851bc8767e0ca57706c79f4fc2aa6bcb993012c3c386c"),
                                     FOG_LEDGER_PRODUCT_ID, SECURITY_VERSION,
                                     CONFIG_ADVISORIES,
                                     HARDENING_ADVISORIES))
                     .withTrustRoots(getTestTrustRoots());
             clientConfig.consensus = new ClientConfig.Service()
-                    .withVerifier((new Verifier())
-                            .withMrSigner(Hex.toByteArray(
+                    .withTrustedIdentities((new TrustedIdentities())
+                            .addMrSignerIdentity(Hex.toByteArray(
                                     "bf7fa957a6a94acb588851bc8767e0ca57706c79f4fc2aa6bcb993012c3c386c"),
                                     CONSENSUS_PRODUCT_ID, SECURITY_VERSION,
                                     CONFIG_ADVISORIES,
                                     HARDENING_ADVISORIES))
                     .withTrustRoots(getTestTrustRoots());
             clientConfig.report = new ClientConfig.Service()
-                    .withVerifier((new Verifier())
-                            .withMrSigner(Hex.toByteArray(
+                    .withTrustedIdentities((new TrustedIdentities())
+                            .addMrSignerIdentity(Hex.toByteArray(
                                     "bf7fa957a6a94acb588851bc8767e0ca57706c79f4fc2aa6bcb993012c3c386c"),
                                     FOG_REPORT_PRODUCT_ID, SECURITY_VERSION,
                                     CONFIG_ADVISORIES,

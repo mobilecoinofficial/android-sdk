@@ -22,17 +22,17 @@ public class VerifierTest {
     private static final String[] CONFIG_ADVISORIES = {"INTEL-SA-00391"};
     private static final String[] HARDENING_ADVISORIES = {"INTEL-SA-00334"};
 
-    private Verifier verifier;
+    private TrustedIdentities trustedIdentities;
 
     @Before
     public void setUp() throws Exception {
-        verifier = new Verifier();
+        trustedIdentities = new TrustedIdentities();
     }
 
     @Test
     public void withMrSigner_mrSignerIsNull_throwsAttestationException() throws Exception {
         exceptionChecker.expect(AttestationException.class);
-        verifier.withMrSigner(/* mrSigner= */ null, PRODUCT_ID, SECURITY_VERSION,
+        trustedIdentities.addMrSignerIdentity(/* mrSigner= */ null, PRODUCT_ID, SECURITY_VERSION,
                 CONFIG_ADVISORIES, HARDENING_ADVISORIES);
     }
 
@@ -41,7 +41,7 @@ public class VerifierTest {
         byte[] emptyMrSigner = {};
 
         exceptionChecker.expect(AttestationException.class);
-        verifier.withMrSigner(emptyMrSigner, PRODUCT_ID, SECURITY_VERSION,
+        trustedIdentities.addMrSignerIdentity(emptyMrSigner, PRODUCT_ID, SECURITY_VERSION,
                 CONFIG_ADVISORIES, HARDENING_ADVISORIES);
     }
 
@@ -51,7 +51,7 @@ public class VerifierTest {
         String lessThan32DigitsMrSignerHex = "7ee5e29d74623fdb1f";
         exceptionChecker.expect(AttestationException.class);
 
-        verifier.withMrSigner(Hex.toByteArray(lessThan32DigitsMrSignerHex), PRODUCT_ID,
+        trustedIdentities.addMrSignerIdentity(Hex.toByteArray(lessThan32DigitsMrSignerHex), PRODUCT_ID,
                 SECURITY_VERSION,
                 CONFIG_ADVISORIES, HARDENING_ADVISORIES);
     }
@@ -63,7 +63,7 @@ public class VerifierTest {
                 "7ee5e29d74623fdbc6fbf1454be6f3bb0b86c12366b7b478ad13353e44de8411ff";
         exceptionChecker.expect(AttestationException.class);
 
-        verifier.withMrSigner(Hex.toByteArray(moreThan32DigitsMrSignerHex), PRODUCT_ID,
+        trustedIdentities.addMrSignerIdentity(Hex.toByteArray(moreThan32DigitsMrSignerHex), PRODUCT_ID,
                 SECURITY_VERSION,
                 CONFIG_ADVISORIES, HARDENING_ADVISORIES);
     }
@@ -73,14 +73,14 @@ public class VerifierTest {
         // Corresponds to 32 unsigned 8 bit integers.
         String validMrSigner =
                 "7ee5e29d74623fdbc6fbf1454be6f3bb0b86c12366b7b478ad13353e44de8411";
-        verifier.withMrSigner(Hex.toByteArray(validMrSigner), PRODUCT_ID, SECURITY_VERSION,
+        trustedIdentities.addMrSignerIdentity(Hex.toByteArray(validMrSigner), PRODUCT_ID, SECURITY_VERSION,
                 CONFIG_ADVISORIES, HARDENING_ADVISORIES);
     }
 
     @Test
     public void withMrEnclave_mrEnclaveIsNull_throwsAttestationException() throws Exception {
         exceptionChecker.expect(AttestationException.class);
-        verifier.withMrEnclave(/* mrEnclave= */ null,
+        trustedIdentities.addMrEnclaveIdentity(/* mrEnclave= */ null,
                 CONFIG_ADVISORIES, HARDENING_ADVISORIES);
     }
 
@@ -89,7 +89,7 @@ public class VerifierTest {
         byte[] emptyMrEnclave = {};
 
         exceptionChecker.expect(AttestationException.class);
-        verifier.withMrEnclave(emptyMrEnclave,
+        trustedIdentities.addMrEnclaveIdentity(emptyMrEnclave,
                 CONFIG_ADVISORIES, HARDENING_ADVISORIES);
     }
 
@@ -99,7 +99,7 @@ public class VerifierTest {
         String lessThan32DigitsMrEnclaveHex = "7ee5e29d74623fdb1f";
 
         exceptionChecker.expect(AttestationException.class);
-        verifier.withMrEnclave(Hex.toByteArray(lessThan32DigitsMrEnclaveHex),
+        trustedIdentities.addMrEnclaveIdentity(Hex.toByteArray(lessThan32DigitsMrEnclaveHex),
                 CONFIG_ADVISORIES, HARDENING_ADVISORIES);
     }
 
@@ -110,7 +110,7 @@ public class VerifierTest {
                 "7ee5e29d74623fdbc6fbf1454be6f3bb0b86c12366b7b478ad13353e44de8411ff";
 
         exceptionChecker.expect(AttestationException.class);
-        verifier.withMrEnclave(Hex.toByteArray(moreThan32DigitsMrEnclaveHex),
+        trustedIdentities.addMrEnclaveIdentity(Hex.toByteArray(moreThan32DigitsMrEnclaveHex),
                 CONFIG_ADVISORIES, HARDENING_ADVISORIES);
     }
 
@@ -120,7 +120,7 @@ public class VerifierTest {
         String validMrEnclaveHex =
                 "7ee5e29d74623fdbc6fbf1454be6f3bb0b86c12366b7b478ad13353e44de8411";
 
-        verifier.withMrEnclave(Hex.toByteArray(validMrEnclaveHex),
+        trustedIdentities.addMrEnclaveIdentity(Hex.toByteArray(validMrEnclaveHex),
                 CONFIG_ADVISORIES, HARDENING_ADVISORIES);
     }
 }
