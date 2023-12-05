@@ -107,18 +107,19 @@ public class TxOutStoreTest {
     @Test
     public void fetch_fog_misses_test() throws Exception {
 
-        MobileCoinClient senderClient = MobileCoinClientBuilder.newBuilder().build();
-        MobileCoinClient recipientClient = MobileCoinClientBuilder.newBuilder().build();
+        final MobileCoinClient senderClient = MobileCoinClientBuilder.newBuilder().build();
+        final MobileCoinClient recipientClient = MobileCoinClientBuilder.newBuilder().build();
 
         // send a random amount
-        BigInteger amount = BigInteger.valueOf(Math.abs(new SecureRandom().nextInt() % 100) + 1);
-        BigInteger minimumFee = senderClient.estimateTotalFee(
+        final Amount amount = Amount.ofMOB(BigInteger.valueOf(Math.abs(new SecureRandom().nextInt() % 100) + 1));
+        final Amount minimumFee = senderClient.estimateTotalFee(
                 amount
         );
-        PendingTransaction pending = senderClient.prepareTransaction(
+        final PendingTransaction pending = senderClient.prepareTransaction(
                 recipientClient.getAccountKey().getPublicAddress(),
                 amount,
-                minimumFee
+                minimumFee,
+                TxOutMemoBuilder.createSenderAndDestinationRTHMemoBuilder(senderClient.getAccountKey())
         );
         senderClient.submitTransaction(pending.getTransaction());
 
@@ -140,8 +141,8 @@ public class TxOutStoreTest {
             Thread.sleep(1000);
         } while (receiptStatus == Receipt.Status.UNKNOWN);
 
-        FogUri fogUri = new FogUri(fogConfig.getFogUri());
-        FogBlockClient blockClient = new FogBlockClient(
+        final FogUri fogUri = new FogUri(fogConfig.getFogUri());
+        final FogBlockClient blockClient = new FogBlockClient(
                 RandomLoadBalancer.create(fogUri),
                 fogConfig.getClientConfig().fogLedger,
                 fogConfig.getTransportProtocol()
@@ -152,14 +153,14 @@ public class TxOutStoreTest {
                 fogConfig.getPassword()
         );
 
-        TxOutStore store = new TxOutStore(recipientClient.getAccountKey());
+        final TxOutStore store = new TxOutStore(recipientClient.getAccountKey());
 
         // add two small ranges to check
-        Set<BlockRange> fakeFogMisses = new HashSet<>(Arrays.asList(new BlockRange(txoBlock,
+        final Set<BlockRange> fakeFogMisses = new HashSet<>(Arrays.asList(new BlockRange(txoBlock,
                         txoBlock.add(UnsignedLong.ONE)),
                 new BlockRange(status.getBlockIndex(),
                         status.getBlockIndex().add(UnsignedLong.TEN))));
-        Set<OwnedTxOut> records = store.fetchFogMisses(
+        final Set<OwnedTxOut> records = store.fetchFogMisses(
                 fakeFogMisses,
                 blockClient
 
@@ -169,7 +170,7 @@ public class TxOutStoreTest {
         // search for the specific amount sent earlier
         boolean found = false;
         for (OwnedTxOut txOut : records) {
-            found = txOut.getValue().equals(amount);
+            found = txOut.getAmount().equals(amount);
             if (found) break;
         }
         if (!found) {
