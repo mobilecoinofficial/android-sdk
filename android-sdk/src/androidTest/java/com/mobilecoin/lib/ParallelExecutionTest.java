@@ -8,9 +8,7 @@ import com.mobilecoin.lib.exceptions.InvalidUriException;
 import com.mobilecoin.lib.log.Logger;
 
 import org.junit.Assert;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 
 import java.math.BigInteger;
@@ -30,9 +28,6 @@ public class ParallelExecutionTest {
     private static final String TAG = MobileCoinClient.class.toString();
     private static final int TASKS_TO_TEST = 10;
     private static final Amount AMOUNT_TO_SEND = Amount.ofMOB(BigInteger.TEN);
-
-    @Rule
-    public ExpectedException thrown = ExpectedException.none();
 
     @Test
     public void test_balance_parallelism() throws InterruptedException, InvalidUriException {
