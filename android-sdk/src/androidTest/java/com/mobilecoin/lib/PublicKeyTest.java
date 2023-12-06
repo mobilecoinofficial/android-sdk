@@ -7,9 +7,7 @@ import static junit.framework.Assert.fail;
 import com.mobilecoin.lib.exceptions.SerializationException;
 
 import org.junit.Assert;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 
 public class PublicKeyTest {
     private final RistrettoPrivate privateKey = RistrettoPrivate.generateNewKey();

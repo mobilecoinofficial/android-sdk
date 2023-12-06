@@ -10,9 +10,7 @@ import com.mobilecoin.lib.exceptions.NetworkException;
 import com.mobilecoin.lib.network.uri.FogUri;
 
 import org.junit.Assert;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 
 import java.math.BigInteger;
@@ -25,9 +23,6 @@ import fog_view.View;
 public class LedgerTest {
     private static final String TAG = MobileCoinClient.class.toString();
     private final TestFogConfig fogConfig = Environment.getTestFogConfig();
-
-    @Rule
-    public ExpectedException thrown = ExpectedException.none();
 
     @Test
     public void fetch_block_records_test() throws NetworkException, AttestationException,
