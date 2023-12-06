@@ -2,6 +2,7 @@
 
 package com.mobilecoin.lib;
 
+import static junit.framework.Assert.fail;
 import static org.junit.Assert.assertEquals;
 
 import android.net.Uri;
@@ -12,9 +13,7 @@ import androidx.test.ext.junit.runners.AndroidJUnit4;
 import com.mobilecoin.lib.exceptions.SerializationException;
 
 import org.junit.Assert;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 
 @RunWith(AndroidJUnit4.class)
@@ -27,58 +26,71 @@ public class PublicAddressTest {
 
     private final TestFogConfig fogConfig = Environment.getTestFogConfig();
 
-    @Rule
-    public ExpectedException thrown = ExpectedException.none();
-
     public PublicAddressTest() throws SerializationException {
     }
 
     @Test
     public void test_all_null_arguments() {
-        thrown.expect(NullPointerException.class);
-        new PublicAddress(
-                null,
-                null,
-                null,
-                null,
-                null
-        );
+        try {
+            new PublicAddress(
+                    null,
+                    null,
+                    null,
+                    null,
+                    null
+            );
+        } catch(NullPointerException e) {
+            return;// [ass
+        }
+        fail("Expected NullPointerException");
     }
 
     @Test
     public void test_spend_and_fog_null_arguments() {
-        thrown.expect(NullPointerException.class);
-        new PublicAddress(
-                key1,
-                null,
-                null,
-                null,
-                null
-        );
+        try {
+            new PublicAddress(
+                    key1,
+                    null,
+                    null,
+                    null,
+                    null
+            );
+        } catch(NullPointerException e) {
+            return;// pass
+        }
+        fail("Expected NullPointerException");
     }
 
     @Test
     public void test_view_and_fog_null_arguments() {
-        thrown.expect(NullPointerException.class);
-        new PublicAddress(
-                null,
-                key2,
-                null,
-                null,
-                null
-        );
+        try {
+            new PublicAddress(
+                    null,
+                    key2,
+                    null,
+                    null,
+                    null
+            );
+        } catch(NullPointerException e) {
+            return;// pass
+        }
+        fail("Expected NullPointerException");
     }
 
     @Test
     public void test_fog_null_argument() {
-        thrown.expect(NullPointerException.class);
-        new PublicAddress(
-                key1,
-                key2,
-                null,
-                fogConfig.getFogAuthoritySpki(),
-                fogConfig.getFogReportId()
-        );
+        try {
+            new PublicAddress(
+                    key1,
+                    key2,
+                    null,
+                    fogConfig.getFogAuthoritySpki(),
+                    fogConfig.getFogReportId()
+            );
+        } catch(NullPointerException e) {
+            return;// pass
+        }
+        fail("Expected NullPointerException");
     }
 
     @Test
