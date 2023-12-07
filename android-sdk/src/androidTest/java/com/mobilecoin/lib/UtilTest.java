@@ -13,9 +13,7 @@ import com.mobilecoin.lib.exceptions.NetworkException;
 import com.mobilecoin.lib.log.Logger;
 
 import org.junit.Assert;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 
 import java.math.BigInteger;
@@ -27,9 +25,6 @@ public class UtilTest {
     private static final int STATUS_CHECK_DELAY_MS = 1000;
     // 5 minutes if the check delay is 1000
     private static final int STATUS_MAX_RETRIES = 300;
-
-    @Rule
-    public ExpectedException thrown = ExpectedException.none();
 
     @Test
     public void biging2string() {

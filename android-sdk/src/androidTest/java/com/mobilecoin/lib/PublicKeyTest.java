@@ -2,43 +2,53 @@
 
 package com.mobilecoin.lib;
 
+import static junit.framework.Assert.fail;
+
 import com.mobilecoin.lib.exceptions.SerializationException;
 
 import org.junit.Assert;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 
 public class PublicKeyTest {
     private final RistrettoPrivate privateKey = RistrettoPrivate.generateNewKey();
     private final byte[] pubKeyBytes = privateKey.getPublicKey().getKeyBytes();
-    @Rule
-    public ExpectedException thrown = ExpectedException.none();
     @Test
     public void test_create_new() throws SerializationException {
         RistrettoPublic.fromBytes(pubKeyBytes);
     }
 
     @Test
-    public void test_create_from_garbage_bytes() throws SerializationException {
-        thrown.expect(SerializationException.class);
-        byte[] garbage = new byte[RistrettoPublic.PUBLIC_KEY_SIZE];
-        for (int i = 0; i < RistrettoPublic.PUBLIC_KEY_SIZE; ++i) {
-            garbage[i] = (byte) i;
+    public void test_create_from_garbage_bytes() {
+       try {
+           byte[] garbage = new byte[RistrettoPublic.PUBLIC_KEY_SIZE];
+           for (int i = 0; i < RistrettoPublic.PUBLIC_KEY_SIZE; ++i) {
+               garbage[i] = (byte) i;
+           }
+           RistrettoPublic.fromBytes(garbage);
+       } catch(SerializationException e) {
+           return;// pass
+       }
+       fail("Expected SerializationException");
+    }
+
+    @Test
+    public void test_create_from_null() throws Exception {
+        try {
+            RistrettoPublic.fromBytes(null);
+        } catch(NullPointerException e) {
+            return;// pass
         }
-        RistrettoPublic.fromBytes(garbage);
+        fail("Expected NullPointerException");
     }
 
     @Test
-    public void test_create_from_null() throws IllegalArgumentException, SerializationException {
-        thrown.expect(NullPointerException.class);
-        RistrettoPublic.fromBytes(null);
-    }
-
-    @Test
-    public void test_create_from_illegal_size() throws SerializationException {
-        thrown.expect(SerializationException.class);
-        RistrettoPublic.fromBytes(new byte[1]);
+    public void test_create_from_illegal_size() {
+        try {
+            RistrettoPublic.fromBytes(new byte[1]);
+        } catch(SerializationException e) {
+            return;// pass
+        }
+        fail("Expected SerializationException");
     }
 
     @Test

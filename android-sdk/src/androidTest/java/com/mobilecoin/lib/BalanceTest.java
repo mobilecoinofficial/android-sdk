@@ -22,7 +22,7 @@ public class BalanceTest {
                 TEST_BLOCK_INDEX
         );
         Assert.assertEquals(
-                balance.getAmountPicoMob(),
+                balance.getValue(),
                 TEST_AMOUNT
         );
     }
