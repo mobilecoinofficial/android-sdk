@@ -40,7 +40,7 @@ public class PublicAddressTest {
                     null
             );
         } catch(NullPointerException e) {
-            return;// [ass
+            return;// pass
         }
         fail("Expected NullPointerException");
     }
