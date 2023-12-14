@@ -146,8 +146,6 @@ publish.mustRunAfter(javadocJar)
 publish.mustRunAfter(sourceJar)
 
 dependencies {
-    // multidex to avoid 64K reference limit
-    implementation deps.android.multidex
     // @Nullable, @NonNull annotations
     implementation deps.android.annotation
     implementation deps.android.java_annotation
@@ -174,7 +172,6 @@ dependencies {
     androidTestImplementation deps.testing.runner
     androidTestImplementation deps.testing.rules
     androidTestImplementation deps.testing.espresso_core
-    androidTestImplementation deps.testing.support_rules
     androidTestImplementation deps.testing.okhttp3
 
 }
