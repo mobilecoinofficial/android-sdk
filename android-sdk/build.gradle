@@ -174,7 +174,6 @@ dependencies {
     androidTestImplementation deps.testing.runner
     androidTestImplementation deps.testing.rules
     androidTestImplementation deps.testing.espresso_core
-    androidTestImplementation deps.testing.support_rules
     androidTestImplementation deps.testing.okhttp3
 
 }
