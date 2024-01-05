@@ -9,6 +9,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - Replaced `android.support` dependencies with new `androidx` versions
 
+### Fixes
+- Fixed error in `FogReport` `finalize`
+
 ### Removed
 - Removed Jetifier
 
