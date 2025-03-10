@@ -1,5 +1,4 @@
 // Copyright (c) 2020-2021 MobileCoin. All rights reserved.
-
 package com.mobilecoin.lib;
 
 import android.net.Uri;
@@ -42,6 +41,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.concurrent.ExecutionException;
@@ -63,7 +63,7 @@ import fog_ledger.Ledger;
  * </pre>
  */
 public final class MobileCoinClient implements MobileCoinAccountClient, MobileCoinTransactionClient,
-    MobileCoinNetworkManager {
+        MobileCoinNetworkManager {
 
     static final BigInteger INPUT_FEE = BigInteger.valueOf(0L);
     static final BigInteger OUTPUT_FEE = BigInteger.valueOf(0L);
@@ -87,8 +87,8 @@ public final class MobileCoinClient implements MobileCoinAccountClient, MobileCo
     /**
      * Construct new {@link MobileCoinClient} instance
      *
-     * @param accountKey   user's accountKey
-     * @param fogUri       a complete URI for the fog service
+     * @param accountKey user's accountKey
+     * @param fogUri a complete URI for the fog service
      * @param consensusUri a complete URI for the consensus service
      */
     public MobileCoinClient(
@@ -101,13 +101,14 @@ public final class MobileCoinClient implements MobileCoinAccountClient, MobileCo
     }
 
     /**
-     * Construct new {@link MobileCoinClient} instance
-     * If the service URIs don't specify the ports explicitly, port 443 will be used by default.
+     * Construct new {@link MobileCoinClient} instance If the service URIs don't
+     * specify the ports explicitly, port 443 will be used by default.
      *
-     * @param accountKey   user's accountKey
-     * @param fogUri       a complete URI for the fog service
+     * @param accountKey user's accountKey
+     * @param fogUri a complete URI for the fog service
      * @param consensusUri a complete URI for the consensus service
-     * @param clientConfig fog and blockchain services networking and attestation configuration
+     * @param clientConfig fog and blockchain services networking and
+     * attestation configuration
      */
     public MobileCoinClient(
             @NonNull AccountKey accountKey,
@@ -120,20 +121,21 @@ public final class MobileCoinClient implements MobileCoinAccountClient, MobileCo
     }
 
     /**
-     * Construct new {@link MobileCoinClient} instance
-     * If the service URIs don't specify the ports explicitly, port 443 will be used by default.
+     * Construct new {@link MobileCoinClient} instance If the service URIs don't
+     * specify the ports explicitly, port 443 will be used by default.
      *
-     * @param accountKey   user's accountKey
-     * @param fogUri       a complete URI for the fog service
+     * @param accountKey user's accountKey
+     * @param fogUri a complete URI for the fog service
      * @param consensusUris a list of complete URIs for the consensus service
-     * @param clientConfig fog and blockchain services networking and attestation configuration
+     * @param clientConfig fog and blockchain services networking and
+     * attestation configuration
      */
     public MobileCoinClient(
-        @NonNull AccountKey accountKey,
-        @NonNull Uri fogUri,
-        @NonNull List<Uri> consensusUris,
-        @NonNull ClientConfig clientConfig,
-        @Nullable TransportProtocol transportProtocol
+            @NonNull AccountKey accountKey,
+            @NonNull Uri fogUri,
+            @NonNull List<Uri> consensusUris,
+            @NonNull ClientConfig clientConfig,
+            @Nullable TransportProtocol transportProtocol
     ) throws InvalidUriException {
         Logger.i(TAG, "Creating MobileCoinClient");
         this.accountKey = accountKey;
@@ -142,22 +144,22 @@ public final class MobileCoinClient implements MobileCoinAccountClient, MobileCo
         FogUri normalizedFogUri = new FogUri(fogUri);
         List<MobileCoinUri> normalizedConsensusUris = createNormalizedConsensusUris(consensusUris);
         this.blockchainClient = new BlockchainClient(
-            RandomLoadBalancer.create(normalizedConsensusUris),
-            clientConfig.consensus,
-            clientConfig.minimumFeeCacheTTLms,
-            transportProtocol
+                RandomLoadBalancer.create(normalizedConsensusUris),
+                clientConfig.consensus,
+                clientConfig.minimumFeeCacheTTLms,
+                transportProtocol
         );
         this.viewClient = new AttestedViewClient(RandomLoadBalancer.create(normalizedFogUri),
-            clientConfig.fogView, transportProtocol);
+                clientConfig.fogView, transportProtocol);
         this.ledgerClient = new AttestedLedgerClient(RandomLoadBalancer.create(normalizedFogUri),
-            clientConfig.fogLedger, transportProtocol);
+                clientConfig.fogLedger, transportProtocol);
         this.consensusClient = new AttestedConsensusClient(
-            RandomLoadBalancer.create(normalizedConsensusUris),
-            clientConfig.consensus, transportProtocol);
+                RandomLoadBalancer.create(normalizedConsensusUris),
+                clientConfig.consensus, transportProtocol);
         this.fogBlockClient = new FogBlockClient(RandomLoadBalancer.create(normalizedFogUri),
-            clientConfig.fogLedger, transportProtocol);
+                clientConfig.fogLedger, transportProtocol);
         this.untrustedClient = new FogUntrustedClient(RandomLoadBalancer.create(normalizedFogUri),
-            clientConfig.fogLedger, transportProtocol);
+                clientConfig.fogLedger, transportProtocol);
         this.txOutStore = createTxOutStore(accountKey);
         this.fogReportsManager = new FogReportsManager(transportProtocol);
         // add client provided log adapter
@@ -176,7 +178,7 @@ public final class MobileCoinClient implements MobileCoinAccountClient, MobileCo
             FogReportsManager fogReportsManager,
             FogBlockClient fogBlockClient,
             FogUntrustedClient untrustedClient,
-            AttestedViewClient viewClient,AttestedLedgerClient ledgerClient,
+            AttestedViewClient viewClient, AttestedLedgerClient ledgerClient,
             AttestedConsensusClient consensusClient,
             BlockchainClient blockchainClient
     ) {
@@ -199,10 +201,10 @@ public final class MobileCoinClient implements MobileCoinAccountClient, MobileCo
     }
 
     private List<MobileCoinUri> createNormalizedConsensusUris(List<Uri> consensusUris)
-        throws InvalidUriException {
+            throws InvalidUriException {
         List<MobileCoinUri> normalizedConsensusUris = new ArrayList<>();
         for (Uri consensusUri : consensusUris) {
-          normalizedConsensusUris.add(new ConsensusUri(consensusUri));
+            normalizedConsensusUris.add(new ConsensusUri(consensusUri));
         }
 
         return normalizedConsensusUris;
@@ -210,7 +212,7 @@ public final class MobileCoinClient implements MobileCoinAccountClient, MobileCo
 
     private TxOutStore createTxOutStore(AccountKey accountKey) {
         String txOutStoreStorageKey = TxOutStore.createStorageKey(accountKey);
-        if(cacheStorage != null && cacheStorage.has(txOutStoreStorageKey)) {
+        if (cacheStorage != null && cacheStorage.has(txOutStoreStorageKey)) {
             byte[] serializedTxOutStore = cacheStorage.get(txOutStoreStorageKey);
             return deserializeTxOutStore(serializedTxOutStore);
         }
@@ -229,10 +231,10 @@ public final class MobileCoinClient implements MobileCoinAccountClient, MobileCo
 
     @Override
     public void cacheUserData()
-        throws StorageNotFoundException, SerializationException {
+            throws StorageNotFoundException, SerializationException {
         if (cacheStorage == null) {
             throw new StorageNotFoundException(
-                "Data cannot be persisted because no cache storage is available.");
+                    "Data cannot be persisted because no cache storage is available.");
         }
 
         String txOutStoreStorageKey = TxOutStore.createStorageKey(accountKey);
@@ -262,8 +264,8 @@ public final class MobileCoinClient implements MobileCoinAccountClient, MobileCo
                         ledgerClient,
                         fogBlockClient
                 );
-            } catch(FogSyncException e) {
-                if(blockIndex.compareTo(storeIndex) >= 0) {
+            } catch (FogSyncException e) {
+                if (blockIndex.compareTo(storeIndex) >= 0) {
                     throw e;
                 }
             }
@@ -354,10 +356,12 @@ public final class MobileCoinClient implements MobileCoinAccountClient, MobileCo
     ) throws InsufficientFundsException, NetworkException, FogReportException, FragmentedAccountException,
             AttestationException, InvalidFogResponse, TransactionBuilderException, SignedContingentInputBuilderException, FogSyncException {
         final int blockVersion = blockchainClient.getOrFetchNetworkBlockVersion();
-        if(blockVersion < 3) throw new SignedContingentInputBuilderException("Unsupported until block version 3");
+        if (blockVersion < 3) {
+            throw new SignedContingentInputBuilderException("Unsupported until block version 3");
+        }
         final TokenId tokenId = amountToSend.getTokenId();
         final Balance availableBalance = getBalance(tokenId);
-        if(availableBalance.getValue().compareTo(amountToSend.getValue()) < 0) {
+        if (availableBalance.getValue().compareTo(amountToSend.getValue()) < 0) {
             throw new InsufficientFundsException();
         }
 
@@ -366,9 +370,9 @@ public final class MobileCoinClient implements MobileCoinAccountClient, MobileCo
         HashSet<FogUri> reportUris = new HashSet<>();
         try {
             reportUris.add(new FogUri(accountKey.getFogReportUri()));
-        } catch(InvalidUriException e) {
-            FogReportException reportException = new FogReportException("Invalid Fog Report " +
-                    "Uri in the public address");
+        } catch (InvalidUriException e) {
+            FogReportException reportException = new FogReportException("Invalid Fog Report "
+                    + "Uri in the public address");
             throw (reportException);
         }
 
@@ -384,14 +388,14 @@ public final class MobileCoinClient implements MobileCoinAccountClient, MobileCo
                 .map(OwnedTxOutAmountTreeNode::new)
                 .collect(Collectors.toCollection(TreeSet::new));
         OwnedTxOut txOutToSpend = null;
-        for(OwnedTxOutAmountTreeNode otxoNode : unspent) {
-            if(amountToSend.compareTo(otxoNode.otxo.getAmount()) <= 0) {
+        for (OwnedTxOutAmountTreeNode otxoNode : unspent) {
+            if (amountToSend.compareTo(otxoNode.otxo.getAmount()) <= 0) {
                 // Find first TxOut at least as big as we want to spend, so we tie up as little money as possible
                 txOutToSpend = otxoNode.otxo;
                 break;
             }
         }
-        if(null == txOutToSpend) {
+        if (null == txOutToSpend) {
             throw new FragmentedAccountException("No single TxOut big enough to satisfy input conditions. Defragmentation required");
         }
         final List<OwnedTxOut> txos = new ArrayList<>();
@@ -430,7 +434,7 @@ public final class MobileCoinClient implements MobileCoinAccountClient, MobileCo
         sciBuilder.addRequiredOutput(amountToReceive, recipientPublicAddress);
 
         final SignedContingentInput sci = sciBuilder.build();
-        if(!sci.isValid()) {
+        if (!sci.isValid(true)) {
             throw new SignedContingentInputBuilderException("Built invalid SignedContingentInput");
         }
 
@@ -445,30 +449,32 @@ public final class MobileCoinClient implements MobileCoinAccountClient, MobileCo
             @NonNull final Amount fee
     ) throws SerializationException, NetworkException, TransactionBuilderException, AttestationException, FogReportException,
             InvalidFogResponse, FogSyncException {
-        if(!presignedInput.isValid()) {
+        if (!presignedInput.isValid(true)) {
             Logger.w(TAG, "Attempted to cancel invalid SignedContingentInput");
             return SignedContingentInput.CancelationResult.FAILED_INVALID;
         }
         final List<OwnedTxOut> txOutToSpend = new ArrayList<>(1);
         final Set<RistrettoPublic> publicKeySet = new HashSet<>();
-        for(TxOut txOut : presignedInput.getRing()) {
+        for (TxOut txOut : presignedInput.getRing()) {
             publicKeySet.add(txOut.getPublicKey());
         }
-        for(OwnedTxOut otxo : getTxOutStore().getSyncedTxOuts()) {
-            if(!otxo.getAmount().getTokenId().equals(presignedInput.getPseudoOutputAmount().getTokenId())) continue;
-            if(!publicKeySet.add(otxo.getPublicKey())) {
-                if(!fee.getTokenId().equals(otxo.getAmount().getTokenId())) {
+        for (OwnedTxOut otxo : getTxOutStore().getSyncedTxOuts()) {
+            if (!otxo.getAmount().getTokenId().equals(presignedInput.getPseudoOutputAmount().getTokenId())) {
+                continue;
+            }
+            if (!publicKeySet.add(otxo.getPublicKey())) {
+                if (!fee.getTokenId().equals(otxo.getAmount().getTokenId())) {
                     throw new IllegalArgumentException("Mixed token type transactions not supported");
                 }
                 txOutToSpend.add(otxo);
                 break;
             }
         }
-        if(txOutToSpend.isEmpty()) {
+        if (txOutToSpend.isEmpty()) {
             Logger.w(TAG, "Attempted to cancel a SignedContingent client does not own");
             return SignedContingentInput.CancelationResult.FAILED_UNOWNED_TX_OUT;
         }
-        if(txOutToSpend.get(0).isSpent(getTxOutStore().getCurrentBlockIndex())) {
+        if (txOutToSpend.get(0).isSpent(getTxOutStore().getCurrentBlockIndex())) {
             Logger.i(TAG, "Failed to cancel previously spent SignedContingentInput");
             return SignedContingentInput.CancelationResult.FAILED_ALREADY_SPENT;
         }
@@ -482,8 +488,8 @@ public final class MobileCoinClient implements MobileCoinAccountClient, MobileCo
         ).getTransaction();
         try {
             submitTransaction(spendInputTransaction);
-        } catch(InvalidTransactionException e) {
-            switch(e.getResult()) {
+        } catch (InvalidTransactionException e) {
+            switch (e.getResult()) {
                 case ContainsSpentKeyImage:
                     Logger.i(TAG, "Failed to cancel previously spent SignedContingentInput");
                     return SignedContingentInput.CancelationResult.FAILED_ALREADY_SPENT;
@@ -492,18 +498,105 @@ public final class MobileCoinClient implements MobileCoinAccountClient, MobileCo
                     return SignedContingentInput.CancelationResult.FAILED_UNKNOWN;
             }
         }
-        while(getTransactionStatus(spendInputTransaction).equals(Transaction.Status.UNKNOWN)) {
+        while (getTransactionStatus(spendInputTransaction).equals(Transaction.Status.UNKNOWN)) {
             try {
                 Thread.sleep(STATUS_CHECK_DELAY_MS);
             } catch (InterruptedException e) {
                 Logger.e(TAG, e);
             }
         }
-        if(getTransactionStatus(spendInputTransaction).equals(Transaction.Status.ACCEPTED)) {
+        if (getTransactionStatus(spendInputTransaction).equals(Transaction.Status.ACCEPTED)) {
             return SignedContingentInput.CancelationResult.SUCCESS;
         }
         Logger.e(TAG, "Failed to cancel a SignedContingent for unknown reason");
         return SignedContingentInput.CancelationResult.FAILED_UNKNOWN;
+    }
+
+    Ring getRingForTxOut(OwnedTxOut txOut) throws InvalidFogResponse, NetworkException, AttestationException, FogReportException, SerializationException {
+        List<UnsignedLong> indices = Collections.singletonList(txOut.getTxOutGlobalIndex());
+        Ledger.GetOutputsResponse outputsResponse = ledgerClient.getOutputs(
+                new ArrayList<>(indices),
+                0
+        );
+        List<Ledger.OutputResult> outs = outputsResponse.getResultsList();
+
+        if (outs.size() != 1) {
+            final InvalidFogResponse ifr = new InvalidFogResponse("getOutputs returned incorrect number of outputs");
+            Logger.e(TAG, "Received invalid response while getting rings. Throwing exception", ifr);
+            throw ifr;
+        }
+
+        List<MobileCoinAPI.TxOut> txOuts = Collections.singletonList(outs.get(0).getOutput());
+        List<MobileCoinAPI.TxOutMembershipProof> proofs = Collections.singletonList(outs.get(0).getProof());
+
+        return new Ring(txOuts, proofs, (short)0, txOut);
+    }
+
+    @Override
+    @NonNull
+    public SignedContingentInput createProofOfReserveSignedContingentInput(
+            @NonNull byte[] txOutPublicKeyBytes
+    ) throws SerializationException, SignedContingentInputBuilderException, NetworkException, FogReportException, InvalidFogResponse, TransactionBuilderException, AttestationException {
+        RistrettoPublic txOutPublicKey = RistrettoPublic.fromBytes(txOutPublicKeyBytes);
+
+        Optional<OwnedTxOut> maybeTxOut = txOutStore.getUnspentTxOuts().stream().filter(otxo -> otxo.getPublicKey().equals(txOutPublicKey)).findAny();
+        if (!maybeTxOut.isPresent()) {
+            throw new SignedContingentInputBuilderException("TxOut not found");
+        }
+        OwnedTxOut txOut = maybeTxOut.get();
+
+        final int blockVersion = blockchainClient.getOrFetchNetworkBlockVersion();
+        if (blockVersion < 3) {
+            throw new SignedContingentInputBuilderException("Unsupported until block version 3");
+        }
+
+        HashSet<FogUri> reportUris = new HashSet<>();
+        try {
+            reportUris.add(new FogUri(accountKey.getFogReportUri()));
+        } catch (InvalidUriException e) {
+            FogReportException reportException = new FogReportException("Invalid Fog Report "
+                    + "Uri in the public address");
+            throw (reportException);
+        }
+
+        PublicAddress recipientPublicAddress = accountKey.getPublicAddress();
+
+        UnsignedLong blockIndex = txOutStore.getCurrentBlockIndex();
+        UnsignedLong tombstoneBlockIndex = blockIndex.add(UnsignedLong.fromLongBits(50L));
+
+        Ring ring = getRingForTxOut(txOut);
+
+        FogReportResponses reportsResponse = fogReportsManager.fetchReports(reportUris,
+                tombstoneBlockIndex, clientConfig.report);
+        RistrettoPrivate onetimePrivateKey = OnetimeKeys.recoverOnetimePrivateKey(
+                txOut.getPublicKey(),
+                txOut.getTargetKey(),
+                accountKey
+        );
+        SignedContingentInputBuilder sciBuilder = new SignedContingentInputBuilder(
+                new FogResolver(reportsResponse, clientConfig.report.getTrustedIdentities()),
+                TxOutMemoBuilder.createDefaultRTHMemoBuilder(),
+                blockVersion,
+                ring.getNativeTxOuts().toArray(new TxOut[0]),
+                ring.getNativeTxOutMembershipProofs().toArray(new TxOutMembershipProof[0]),
+                ring.realIndex,
+                onetimePrivateKey,
+                accountKey.getViewKey()
+        );
+
+        // This is critical - we want the tombstone block to be in the past so that the SCI is not spendable.
+        sciBuilder.setTombstoneBlockIndex(UnsignedLong.ONE);
+
+        // u64 max value. This also makes the SCI not spendable.
+        Amount amountToReceive = new Amount(new BigInteger("18446744073709551615"), txOut.getAmount().getTokenId());
+        sciBuilder.addRequiredOutput(amountToReceive, recipientPublicAddress);
+
+        final SignedContingentInput sci = sciBuilder.build();
+        if (!sci.isValid(false)) {
+            throw new SignedContingentInputBuilderException("Built invalid SignedContingentInput (TODO)");
+        }
+
+        return sci;
     }
 
     @Override
@@ -517,7 +610,7 @@ public final class MobileCoinClient implements MobileCoinAccountClient, MobileCo
                 presignedInput,
                 fee,
                 DefaultRng.createInstance()
-            );
+        );
     }
 
     @Override
@@ -528,11 +621,11 @@ public final class MobileCoinClient implements MobileCoinAccountClient, MobileCo
             @NonNull final Rng rng
     ) throws TransactionBuilderException, AttestationException, FogSyncException, InvalidFogResponse,
             NetworkException, InsufficientFundsException, FragmentedAccountException, FogReportException {
-        if(!presignedInput.isValid()) {
+        if (!presignedInput.isValid(true)) {
             throw new TransactionBuilderException("Cannot build transaction with invalid SignedContingentInput");
         }
         int blockVersion = blockchainClient.getOrFetchNetworkBlockVersion();
-        if(blockVersion < 3) {
+        if (blockVersion < 3) {
             throw new TransactionBuilderException("Unsupported until block version 3");
         }
 
@@ -540,10 +633,10 @@ public final class MobileCoinClient implements MobileCoinAccountClient, MobileCo
 
         final Amount amountToSend = presignedInput.getRequiredAmount();
         final Amount amountToReceive = presignedInput.getRewardAmount();
-        if(!fee.getTokenId().equals(amountToReceive.getTokenId())) {
+        if (!fee.getTokenId().equals(amountToReceive.getTokenId())) {
             throw new TransactionBuilderException("Fee must be paid in token being received");
         }
-        if(fee.compareTo(amountToReceive) >= 0) {
+        if (fee.compareTo(amountToReceive) >= 0) {
             throw new TransactionBuilderException("Received Amount must be more than Amount received");
         }
 
@@ -555,9 +648,9 @@ public final class MobileCoinClient implements MobileCoinAccountClient, MobileCo
         HashSet<FogUri> reportUris = new HashSet<>();
         try {
             reportUris.add(new FogUri(getAccountKey().getFogReportUri()));
-        } catch(InvalidUriException e) {
-            FogReportException reportException = new FogReportException("Invalid Fog Report " +
-                    "Uri in the public address");
+        } catch (InvalidUriException e) {
+            FogReportException reportException = new FogReportException("Invalid Fog Report "
+                    + "Uri in the public address");
             throw (reportException);
         }
 
@@ -574,7 +667,7 @@ public final class MobileCoinClient implements MobileCoinAccountClient, MobileCo
         );
 
         final TokenId tokenId = amountToSend.getTokenId();
-        if(snapshot.getBalance(tokenId).getValue().compareTo(amountToSend.getValue()) < 0) {
+        if (snapshot.getBalance(tokenId).getValue().compareTo(amountToSend.getValue()) < 0) {
             throw new InsufficientFundsException();
         }
         Set<OwnedTxOutAmountTreeNode> txOutNodesByToken = allUnspentTxOuts.stream()
@@ -583,12 +676,12 @@ public final class MobileCoinClient implements MobileCoinAccountClient, MobileCo
                 .collect(Collectors.toCollection(TreeSet::new));
 
         OwnedTxOut selected = null;
-        for(OwnedTxOutAmountTreeNode node : txOutNodesByToken) {
-            if(amountToSend.compareTo(node.otxo.getAmount()) <= 0) {
+        for (OwnedTxOutAmountTreeNode node : txOutNodesByToken) {
+            if (amountToSend.compareTo(node.otxo.getAmount()) <= 0) {
                 selected = node.otxo;
             }
         }
-        if(null == selected) {
+        if (null == selected) {
             throw new FragmentedAccountException("No single TxOut large enough to satisfy required output");
         }
 
@@ -647,7 +740,7 @@ public final class MobileCoinClient implements MobileCoinAccountClient, MobileCo
                     new Amount(feePicoMOB, TokenId.MOB),
                     TxOutMemoBuilder.createDefaultRTHMemoBuilder()
             );
-        } catch(FogSyncException e) {
+        } catch (FogSyncException e) {
             throw new NetworkException(NetworkResult.INTERNAL, e);
         }
     }
@@ -674,11 +767,11 @@ public final class MobileCoinClient implements MobileCoinAccountClient, MobileCo
     @Override
     @NonNull
     public PendingTransaction prepareTransaction(
-        @NonNull final PublicAddress recipient,
-        @NonNull final Amount amount,
-        @NonNull final Amount fee,
-        @NonNull final TxOutMemoBuilder txOutMemoBuilder,
-        @NonNull final Rng rng
+            @NonNull final PublicAddress recipient,
+            @NonNull final Amount amount,
+            @NonNull final Amount fee,
+            @NonNull final TxOutMemoBuilder txOutMemoBuilder,
+            @NonNull final Rng rng
     ) throws InsufficientFundsException, FragmentedAccountException, FeeRejectedException,
             InvalidFogResponse, AttestationException, NetworkException,
             TransactionBuilderException, FogReportException, FogSyncException {
@@ -686,7 +779,7 @@ public final class MobileCoinClient implements MobileCoinAccountClient, MobileCo
                 "recipient:", recipient,
                 "amount:", amount,
                 "fee:", fee);
-        if(!amount.getTokenId().equals(fee.getTokenId())) {
+        if (!amount.getTokenId().equals(fee.getTokenId())) {
             throw new IllegalArgumentException("Mixed token type transactions not supported");
         }
         Set<OwnedTxOut> unspent = getUnspentTxOuts(amount.getTokenId());
@@ -717,19 +810,19 @@ public final class MobileCoinClient implements MobileCoinAccountClient, MobileCo
 
     @NonNull
     PendingTransaction prepareTransaction(
-        @NonNull final PublicAddress recipient,
-        @NonNull final Amount amount,
-        @NonNull final List<OwnedTxOut> txOuts,
-        @NonNull final Amount fee,
-        @NonNull final TxOutMemoBuilder txOutMemoBuilder,
-        @NonNull final Rng rng
+            @NonNull final PublicAddress recipient,
+            @NonNull final Amount amount,
+            @NonNull final List<OwnedTxOut> txOuts,
+            @NonNull final Amount fee,
+            @NonNull final TxOutMemoBuilder txOutMemoBuilder,
+            @NonNull final Rng rng
     ) throws InvalidFogResponse, AttestationException, NetworkException,
             TransactionBuilderException, FogReportException {
         Logger.i(TAG, "PrepareTransaction with TxOuts call", null,
                 "recipient:", recipient,
                 "amount:", amount,
                 "fee:", fee);
-        if(!amount.getTokenId().equals(fee.getTokenId())) {
+        if (!amount.getTokenId().equals(fee.getTokenId())) {
             throw new IllegalArgumentException("Mixed token type transactions not supported");
         }
         final byte[] rngSeed = rng.nextBytes(ChaCha20Rng.SEED_SIZE_BYTES);
@@ -743,21 +836,21 @@ public final class MobileCoinClient implements MobileCoinAccountClient, MobileCo
             }
             reportUris.add(new FogUri(getAccountKey().getFogReportUri()));
         } catch (InvalidUriException exception) {
-            FogReportException reportException = new FogReportException("Invalid Fog Report " +
-                    "Uri in the public address");
+            FogReportException reportException = new FogReportException("Invalid Fog Report "
+                    + "Uri in the public address");
             Util.logException(TAG, reportException);
             throw reportException;
         }
         // fetch reports and rings in parallel
         long startTime = System.currentTimeMillis();
-        Task<FogReportResponses, Exception> fetchReportsTask =
-                new Task<FogReportResponses, Exception>() {
-                    @Override
-                    public FogReportResponses execute() throws Exception {
-                        return fogReportsManager.fetchReports(reportUris,
-                                tombstoneBlockIndex, clientConfig.report);
-                    }
-                };
+        Task<FogReportResponses, Exception> fetchReportsTask
+                = new Task<FogReportResponses, Exception>() {
+            @Override
+            public FogReportResponses execute() throws Exception {
+                return fogReportsManager.fetchReports(reportUris,
+                        tombstoneBlockIndex, clientConfig.report);
+            }
+        };
 
         Task<List<Ring>, Exception> fetchRingsTask = new Task<List<Ring>, Exception>() {
             @Override
@@ -771,14 +864,14 @@ public final class MobileCoinClient implements MobileCoinAccountClient, MobileCo
         };
 
         // allocate two worker threads for the two tasks
-        ExecutorService fixedExecutorService =
-                Executors.newFixedThreadPool(2);
+        ExecutorService fixedExecutorService
+                = Executors.newFixedThreadPool(2);
 
-        Future<Result<FogReportResponses, Exception>> fogReportResponsesFuture =
-                fixedExecutorService.submit(fetchReportsTask);
+        Future<Result<FogReportResponses, Exception>> fogReportResponsesFuture
+                = fixedExecutorService.submit(fetchReportsTask);
 
-        Future<Result<List<Ring>, Exception>> ringsListFuture =
-                fixedExecutorService.submit(fetchRingsTask);
+        Future<Result<List<Ring>, Exception>> ringsListFuture
+                = fixedExecutorService.submit(fetchRingsTask);
 
         // signal the executor to shutdown when the tasks are complete
         // this is not a blocking call
@@ -811,8 +904,8 @@ public final class MobileCoinClient implements MobileCoinAccountClient, MobileCo
             Util.logException(TAG, exception);
             throw exception;
         } catch (InterruptedException | ExecutionException exception) {
-            NetworkException networkException =
-                    new NetworkException(NetworkResult.DEADLINE_EXCEEDED
+            NetworkException networkException
+                    = new NetworkException(NetworkResult.DEADLINE_EXCEEDED
                             .withDescription("Timeout fetching fog reports")
                             .withCause(exception));
             Util.logException(TAG, networkException);
@@ -870,10 +963,9 @@ public final class MobileCoinClient implements MobileCoinAccountClient, MobileCo
 
         Amount change = totalAmount.subtract(finalAmount);
         TxOutContext changeTxOutContext;
-        if(blockchainClient.getOrFetchNetworkBlockVersion() < 1) {
+        if (blockchainClient.getOrFetchNetworkBlockVersion() < 1) {
             changeTxOutContext = txBuilder.addOutput(change, accountKey.getPublicAddress(), null);
-        }
-        else {
+        } else {
             changeTxOutContext = txBuilder.addChangeOutput(change, accountKey, null);
         }
 
@@ -896,8 +988,8 @@ public final class MobileCoinClient implements MobileCoinAccountClient, MobileCo
     public long submitTransaction(@NonNull Transaction transaction)
             throws InvalidTransactionException, NetworkException, AttestationException {
         Logger.i(TAG, "SubmitTransaction call");
-        ConsensusCommon.ProposeTxResponse txResponse =
-                consensusClient.proposeTx(transaction.toProtoBufObject());
+        ConsensusCommon.ProposeTxResponse txResponse
+                = consensusClient.proposeTx(transaction.toProtoBufObject());
         final long blockIndex = txResponse.getBlockCount() > 0 ? txResponse.getBlockCount() - 1L : 0;
         this.txOutStore.setConsensusBlockIndex(UnsignedLong.fromLongBits(blockIndex));
         ConsensusCommon.ProposeTxResult txResult = txResponse.getResult();
@@ -905,8 +997,8 @@ public final class MobileCoinClient implements MobileCoinAccountClient, MobileCo
         if (0 != code) {
             Logger.e(TAG, "Received code " + code + " from consensus");
             blockchainClient.resetCache();
-            InvalidTransactionException invalidTransactionException =
-                    new InvalidTransactionException(txResult, UnsignedLong.fromLongBits(blockIndex));
+            InvalidTransactionException invalidTransactionException
+                    = new InvalidTransactionException(txResult, UnsignedLong.fromLongBits(blockIndex));
             Util.logException(TAG, invalidTransactionException);
             throw invalidTransactionException;
         }
@@ -931,10 +1023,11 @@ public final class MobileCoinClient implements MobileCoinAccountClient, MobileCo
     }
 
     /**
-     * Returns transaction status without waiting for all of the Fog services to sync up.
-     * Caution: since this transaction check does not wait for all services to sync up the balance
-     * may need a bit of time to catch up to a block where the transaction was posted.
-     * To wait for all services to be in sync use regular {@link #getTransactionStatus}
+     * Returns transaction status without waiting for all of the Fog services to
+     * sync up. Caution: since this transaction check does not wait for all
+     * services to sync up the balance may need a bit of time to catch up to a
+     * block where the transaction was posted. To wait for all services to be in
+     * sync use regular {@link #getTransactionStatus}
      *
      * <pre>
      * Transaction.Status status = mobileCoinClient.getTransactionStatusQuick(transaction);
@@ -950,8 +1043,7 @@ public final class MobileCoinClient implements MobileCoinAccountClient, MobileCo
      * if (postedBlockIndex.compare(balanceBlockIndex) < 0) {
      *     // balance hasn't caught up yet
      * }
-     * </pre>
-     * @since 1.2.2.3
+     * </pre> @since 1.2.2.3
      */
     @NonNull
     public Transaction.Status getTransactionStatusQuick(@NonNull Transaction transaction)
@@ -973,8 +1065,8 @@ public final class MobileCoinClient implements MobileCoinAccountClient, MobileCo
                 allTxOutsFound = false;
                 break;
             } else {
-                UnsignedLong txOutBlockIndex =
-                        UnsignedLong.fromLongBits(txOutResult.getBlockIndex());
+                UnsignedLong txOutBlockIndex
+                        = UnsignedLong.fromLongBits(txOutResult.getBlockIndex());
                 if (outputBlockIndex.compareTo(txOutBlockIndex) < 0) {
                     outputBlockIndex = txOutBlockIndex;
                 }
@@ -1001,7 +1093,7 @@ public final class MobileCoinClient implements MobileCoinAccountClient, MobileCo
                     amountPicoMOB,
                     TokenId.MOB
             )).getValue();
-        } catch(FogSyncException e) {
+        } catch (FogSyncException e) {
             throw new NetworkException(NetworkResult.INTERNAL, e);
         }
     }
@@ -1014,12 +1106,12 @@ public final class MobileCoinClient implements MobileCoinAccountClient, MobileCo
         Logger.i(TAG, "EstimateTotalFee call");
         return new Amount(
                 UTXOSelector.calculateFee(
-                    getUnspentTxOuts(amount.getTokenId()),
-                    amount.getValue(),
-                    getOrFetchMinimumTxFee(amount.getTokenId()).getValue(),
-                    INPUT_FEE,
-                    OUTPUT_FEE,
-                    2
+                        getUnspentTxOuts(amount.getTokenId()),
+                        amount.getValue(),
+                        getOrFetchMinimumTxFee(amount.getTokenId()).getValue(),
+                        INPUT_FEE,
+                        OUTPUT_FEE,
+                        2
                 ),
                 amount.getTokenId()
         );
@@ -1039,7 +1131,7 @@ public final class MobileCoinClient implements MobileCoinAccountClient, MobileCo
                     delegate,
                     false
             );
-        } catch(FogSyncException e) {
+        } catch (FogSyncException e) {
             Util.logException(TAG, e);
             throw new NetworkException(NetworkResult.INTERNAL, e);
         }
@@ -1063,10 +1155,10 @@ public final class MobileCoinClient implements MobileCoinAccountClient, MobileCo
 
     @Override
     public void defragmentAccount(
-        @NonNull final Amount amountToSend,
-        @NonNull final DefragmentationDelegate delegate,
-        final boolean shouldWriteRTHMemos,
-        @NonNull final Rng rng
+            @NonNull final Amount amountToSend,
+            @NonNull final DefragmentationDelegate delegate,
+            final boolean shouldWriteRTHMemos,
+            @NonNull final Rng rng
     ) throws InvalidFogResponse, AttestationException, NetworkException, InsufficientFundsException,
             TransactionBuilderException, InvalidTransactionException,
             FogReportException, TimeoutException, FogSyncException {
@@ -1078,8 +1170,8 @@ public final class MobileCoinClient implements MobileCoinAccountClient, MobileCo
         delegate.onStart();
         UTXOSelector.Selection<OwnedTxOut> inputSelectionForAmount = null;
         TxOutMemoBuilder txOutMemoBuilder = shouldWriteRTHMemos ? TxOutMemoBuilder
-            .createSenderAndDestinationRTHMemoBuilder(accountKey)
-            : TxOutMemoBuilder.createDefaultRTHMemoBuilder();
+                .createSenderAndDestinationRTHMemoBuilder(accountKey)
+                : TxOutMemoBuilder.createDefaultRTHMemoBuilder();
         int defragmentationRoundNumber = 0;
         do {
             Set<OwnedTxOut> unspent = getUnspentTxOuts(amountToSend.getTokenId());
@@ -1307,7 +1399,7 @@ public final class MobileCoinClient implements MobileCoinAccountClient, MobileCo
         // Construct the list of rings.
         List<Ring> rings = new ArrayList<>();
         for (OwnedTxOut utxo : utxos) {
-            short realIndex = (short)(Math.abs(rng.nextInt()) % DEFAULT_RING_SIZE);
+            short realIndex = (short) (Math.abs(rng.nextInt()) % DEFAULT_RING_SIZE);
             List<MobileCoinAPI.TxOut> txOuts = new ArrayList<>();
             List<MobileCoinAPI.TxOutMembershipProof> proofs = new ArrayList<>();
 
@@ -1330,7 +1422,7 @@ public final class MobileCoinClient implements MobileCoinAccountClient, MobileCo
                         utxo
                 ));
             } catch (Exception ex) {
-                final InvalidFogResponse ifr =  new InvalidFogResponse("Unable to decode rings");
+                final InvalidFogResponse ifr = new InvalidFogResponse("Unable to decode rings");
                 Util.logException(TAG, ifr);
                 throw ifr;
             }
@@ -1338,7 +1430,7 @@ public final class MobileCoinClient implements MobileCoinAccountClient, MobileCo
 
         // Sanity
         if (!ringPool.isEmpty()) {
-            final IllegalStateException ise =  new IllegalStateException("BUG: Not all rings consumed");
+            final IllegalStateException ise = new IllegalStateException("BUG: Not all rings consumed");
             Logger.wtf(TAG, "Ring pool not empty after constructing rings", ise);
             throw ise;
         }
