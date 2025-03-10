@@ -141,6 +141,18 @@ public interface MobileCoinTransactionClient {
   ) throws SerializationException, NetworkException, TransactionBuilderException, AttestationException, FogReportException, InvalidFogResponse, FogSyncException;
 
   /**
+   * Creates an unspendable {@link SignedContingentInput} that can be used to prove that the client is in possession of
+   * an unspent TxOut that is identified by a given TxOut public key.
+   *
+   * This works because the {@link SignedContingentInput} contains both the transaction amount and its keyimage, as well as
+   * an MLSAG signature that proves their validity.
+   */
+  @NonNull
+  SignedContingentInput createProofOfReserveSignedContingentInput(
+        @NonNull byte[] txOutPublicKeyBytes
+  ) throws SerializationException, SignedContingentInputBuilderException, NetworkException, FogReportException, InvalidFogResponse, TransactionBuilderException, AttestationException;
+
+  /**
    * Creates a {@link Transaction} to fulfill the provided {@link SignedContingentInput}. The resultant
    * {@link Transaction} can be submitted using {@link MobileCoinTransactionClient#submitTransaction(Transaction)}.
    * To process the {@link Transaction}, a small fee must be paid. The fee is subtracted from the reward
@@ -370,4 +382,3 @@ public interface MobileCoinTransactionClient {
   Amount getOrFetchMinimumTxFee(@NonNull TokenId tokenId) throws NetworkException;
 
 }
-

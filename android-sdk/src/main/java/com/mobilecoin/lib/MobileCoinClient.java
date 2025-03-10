@@ -42,6 +42,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.concurrent.ExecutionException;
@@ -430,7 +431,7 @@ public final class MobileCoinClient implements MobileCoinAccountClient, MobileCo
         sciBuilder.addRequiredOutput(amountToReceive, recipientPublicAddress);
 
         final SignedContingentInput sci = sciBuilder.build();
-        if(!sci.isValid()) {
+        if(!sci.isValid(true)) {
             throw new SignedContingentInputBuilderException("Built invalid SignedContingentInput");
         }
 
@@ -445,7 +446,7 @@ public final class MobileCoinClient implements MobileCoinAccountClient, MobileCo
             @NonNull final Amount fee
     ) throws SerializationException, NetworkException, TransactionBuilderException, AttestationException, FogReportException,
             InvalidFogResponse, FogSyncException {
-        if(!presignedInput.isValid()) {
+        if(!presignedInput.isValid(true)) {
             Logger.w(TAG, "Attempted to cancel invalid SignedContingentInput");
             return SignedContingentInput.CancelationResult.FAILED_INVALID;
         }
@@ -506,6 +507,94 @@ public final class MobileCoinClient implements MobileCoinAccountClient, MobileCo
         return SignedContingentInput.CancelationResult.FAILED_UNKNOWN;
     }
 
+    // Helper for creating a "ring" with only a single TxOut in it.
+    Ring getRingForTxOut(OwnedTxOut txOut) throws InvalidFogResponse, NetworkException, AttestationException, FogReportException, SerializationException {
+        List<UnsignedLong> indices = Collections.singletonList(txOut.getTxOutGlobalIndex());
+        Ledger.GetOutputsResponse outputsResponse = ledgerClient.getOutputs(
+                new ArrayList<>(indices),
+                0
+        );
+        List<Ledger.OutputResult> outs = outputsResponse.getResultsList();
+
+        if (outs.size() != 1) {
+            final InvalidFogResponse ifr = new InvalidFogResponse("getOutputs returned incorrect number of outputs");
+            Logger.e(TAG, "Received invalid response while getting rings. Throwing exception", ifr);
+            throw ifr;
+        }
+
+        List<MobileCoinAPI.TxOut> txOuts = Collections.singletonList(outs.get(0).getOutput());
+        List<MobileCoinAPI.TxOutMembershipProof> proofs = Collections.singletonList(outs.get(0).getProof());
+
+        return new Ring(txOuts, proofs, (short)0, txOut);
+    }
+
+    @Override
+    @NonNull
+    public SignedContingentInput createProofOfReserveSignedContingentInput(
+            @NonNull byte[] txOutPublicKeyBytes
+    ) throws SerializationException, SignedContingentInputBuilderException, NetworkException, FogReportException, InvalidFogResponse, TransactionBuilderException, AttestationException {
+        RistrettoPublic txOutPublicKey = RistrettoPublic.fromBytes(txOutPublicKeyBytes);
+
+        Optional<OwnedTxOut> maybeTxOut = txOutStore.getUnspentTxOuts().stream().filter(otxo -> otxo.getPublicKey().equals(txOutPublicKey)).findAny();
+        if (!maybeTxOut.isPresent()) {
+            throw new SignedContingentInputBuilderException("TxOut not found");
+        }
+        OwnedTxOut txOut = maybeTxOut.get();
+
+        final int blockVersion = blockchainClient.getOrFetchNetworkBlockVersion();
+        if (blockVersion < 3) {
+            throw new SignedContingentInputBuilderException("Unsupported until block version 3");
+        }
+
+        HashSet<FogUri> reportUris = new HashSet<>();
+        try {
+            reportUris.add(new FogUri(accountKey.getFogReportUri()));
+        } catch (InvalidUriException e) {
+            FogReportException reportException = new FogReportException("Invalid Fog Report "
+                    + "Uri in the public address");
+            throw (reportException);
+        }
+
+        PublicAddress recipientPublicAddress = accountKey.getPublicAddress();
+
+        UnsignedLong blockIndex = txOutStore.getCurrentBlockIndex();
+        UnsignedLong tombstoneBlockIndex = blockIndex.add(UnsignedLong.fromLongBits(50L));
+
+        Ring ring = getRingForTxOut(txOut);
+
+        FogReportResponses reportsResponse = fogReportsManager.fetchReports(reportUris,
+                tombstoneBlockIndex, clientConfig.report);
+        RistrettoPrivate onetimePrivateKey = OnetimeKeys.recoverOnetimePrivateKey(
+                txOut.getPublicKey(),
+                txOut.getTargetKey(),
+                accountKey
+        );
+        SignedContingentInputBuilder sciBuilder = new SignedContingentInputBuilder(
+                new FogResolver(reportsResponse, clientConfig.report.getTrustedIdentities()),
+                TxOutMemoBuilder.createDefaultRTHMemoBuilder(),
+                blockVersion,
+                ring.getNativeTxOuts().toArray(new TxOut[0]),
+                ring.getNativeTxOutMembershipProofs().toArray(new TxOutMembershipProof[0]),
+                ring.realIndex,
+                onetimePrivateKey,
+                accountKey.getViewKey()
+        );
+
+        // This is critical - we want the tombstone block to be in the past so that the SCI is not spendable.
+        sciBuilder.setTombstoneBlockIndex(UnsignedLong.ONE);
+
+        // u64 max value. This also makes the SCI not spendable.
+        Amount amountToReceive = new Amount(new BigInteger("18446744073709551615"), txOut.getAmount().getTokenId());
+        sciBuilder.addRequiredOutput(amountToReceive, recipientPublicAddress);
+
+        final SignedContingentInput sci = sciBuilder.build();
+        if (!sci.isValid(false)) {
+            throw new SignedContingentInputBuilderException("Built invalid SignedContingentInput");
+        }
+
+        return sci;
+    }
+
     @Override
     @NonNull
     public Transaction prepareTransaction(
@@ -528,7 +617,7 @@ public final class MobileCoinClient implements MobileCoinAccountClient, MobileCo
             @NonNull final Rng rng
     ) throws TransactionBuilderException, AttestationException, FogSyncException, InvalidFogResponse,
             NetworkException, InsufficientFundsException, FragmentedAccountException, FogReportException {
-        if(!presignedInput.isValid()) {
+        if(!presignedInput.isValid(true)) {
             throw new TransactionBuilderException("Cannot build transaction with invalid SignedContingentInput");
         }
         int blockVersion = blockchainClient.getOrFetchNetworkBlockVersion();
