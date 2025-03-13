@@ -15,6 +15,7 @@ android {
         missingDimensionStrategy "transport", "grpc"
     }
 
+
     buildTypes {
         release {
             minifyEnabled false

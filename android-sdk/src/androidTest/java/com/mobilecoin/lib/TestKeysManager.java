@@ -14,6 +14,7 @@ class TestKeysManager {
     private static final int DEFAULT_ACCOUNT_INDEX = 0;
     private static int currentAccountIndex = 0;
 
+
     private static final String testNetMnemonics[] =
             loadTestStrings(com.mobilecoin.lib.test.R.raw.test_net_mnemonics);
     private static final String devNetRootEntropies[] =
@@ -22,6 +23,7 @@ class TestKeysManager {
             loadTestStrings(com.mobilecoin.lib.test.R.raw.dev_net_mnemonics);
 
     private static String[] loadTestStrings(int resource) {
+
         InputStream inputStream = InstrumentationRegistry.getInstrumentation().getTargetContext()
                 .getResources().openRawResource(resource);
         Scanner scanner = new Scanner(inputStream).useDelimiter(",");
@@ -30,6 +32,7 @@ class TestKeysManager {
             String string = scanner.next();
             strings.add(string.trim());
         }
+
         return strings.toArray(new String[0]);
     }
 

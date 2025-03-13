@@ -59,6 +59,17 @@ android {
         multiDexEnabled true
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         consumerProguardFiles 'consumer-rules.pro'
+        testApplicationId "com.mobilecoin.lib.test"
+
+    }
+
+
+
+    testBuildType 'debug'
+    testOptions {
+        unitTests.all {
+            includeAndroidResources true
+        }
     }
 
     buildTypes {
@@ -85,7 +96,7 @@ android {
         }
     }
     namespace 'com.mobilecoin.lib'
-    testNamespace 'com.mobilecoin.android_sdk'
+    testNamespace 'com.mobilecoin.lib.test'
 }
 
 sourceSets {
