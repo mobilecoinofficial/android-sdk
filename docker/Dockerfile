@@ -1,11 +1,11 @@
-FROM gradle:7.2-jdk11
+FROM gradle:7.6.1-jdk17
 USER root
 ENV SDK_URL="https://dl.google.com/android/repository/commandlinetools-linux-6200805_latest.zip" \
     ANDROID_HOME="/usr/local/android-sdk" \
-    ANDROID_VERSION=30 \
-    ANDROID_BUILD_TOOLS_VERSION=30.0.3 \
+    ANDROID_VERSION=31 \
+    ANDROID_BUILD_TOOLS_VERSION=31.0.0 \
     PATH="$PATH":/usr/local/bin:/usr/local/google-cloud-sdk/bin \
-    GCLOUD_URL="https://dl.google.com/dl/cloudsdk/channels/rapid/downloads/google-cloud-sdk-294.0.0-linux-x86_64.tar.gz"
+    GCLOUD_URL="https://dl.google.com/dl/cloudsdk/channels/rapid/downloads/google-cloud-sdk-514.0.0-linux-x86_64.tar.gz"
 
 # Download Android SDK
 RUN mkdir "$ANDROID_HOME" .android \
