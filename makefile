@@ -7,52 +7,60 @@ maven_repo=$(HOME)/.m2
 .PHONY : build tests dockerImage clean deployLocal bash setup all
 
 build: setup
-	docker run \
+	docker run --platform=linux/amd64 \
 		-v $(pwd):/home/gradle/ \
 		-w /home/gradle/ \
 		android-build:android-gradle \
 		gradle build
 	
 tests: setup
-	docker run \
+	docker run --platform=linux/amd64 \
 		-v $(pwd):/home/gradle/ \
 		-w /home/gradle/ \
 		android-build:android-gradle \
 		run_connected_tests.sh
 
 dockerImage:
-	docker build \
+	docker build --platform=linux/amd64\
 		-t android-build:android-gradle \
 		docker
 
 clean:
-	docker run \
+	docker run --platform=linux/amd64 \
 		-v $(pwd):/home/gradle/ \
 		-w /home/gradle/ \
 		android-build:android-gradle \
 		gradle clean
 
 deployLocal: setup
-	docker run \
+	docker run --platform=linux/amd64 \
 		-v $(pwd):/home/gradle/ \
 		-v $(maven_repo):/root/.m2/ \
 		-w /home/gradle/ \
 		android-build:android-gradle \
 		gradle publishToMavenLocal
 
+
+assemble: setup
+	docker run --platform=linux/amd64 \
+		-it \
+		-v $(pwd):/home/gradle/ \
+		-w /home/gradle/ android-build:android-gradle \
+			bash -c 'env; gradle :testApp:assembleDebug && gradle :android-sdk:assembleGrpcDebugAndroidTest'
+
 publish: setup
 # Check if we are in the CircleCI environment
 # If not in CI env then use local.properties values to publish
 # May not need this but it allows publishing from local if needed
 	@if [ -z "${MAVEN_USER}" ]; then \
-		docker run \
+		docker run --platform=linux/amd64 \
 			-it \
 			-v $(pwd):/home/gradle/ \
 			-w /home/gradle/ android-build:android-gradle \
 			bash -c 'gradle clean && gradle assemble && gradle publish'; \
 	else \
 		echo "Running CI Publish"; \
-		docker run \
+		docker run --platform=linux/amd64 \
 			-it \
 			-v $(pwd):/home/gradle/ \
 			-e MAVEN_USER \
@@ -62,7 +70,7 @@ publish: setup
 	fi
 
 bash: setup
-	docker run \
+	docker run --platform=linux/amd64 \
 		-it \
 		-v $(pwd):/home/gradle/ \
 		-v $(maven_repo):/root/.m2/ \

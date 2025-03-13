@@ -71,20 +71,21 @@ android {
         // Flag to enable support for the new language APIs
         coreLibraryDesugaringEnabled true
         // Sets Java compatibility to Java 8
-        sourceCompatibility JavaVersion.VERSION_1_8
-        targetCompatibility JavaVersion.VERSION_1_8
+        sourceCompatibility JavaVersion.VERSION_23
+        targetCompatibility JavaVersion.VERSION_23
     }
 
     flavorDimensions 'transport'
     productFlavors {
         http {
             dimension 'transport'
-            versionNameSuffix '-http'
         }
         grpc {
             dimension 'transport'
         }
     }
+    namespace 'com.mobilecoin.lib'
+    testNamespace 'com.mobilecoin.android_sdk'
 }
 
 sourceSets {

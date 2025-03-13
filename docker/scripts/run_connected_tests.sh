@@ -2,10 +2,10 @@
 gradle :testApp:assembleDebug
 gradle :android-sdk:assembleGrpcDebugAndroidTest
 
-gcloud config set project mobilecoin-60c
+gcloud config set project android-sdk-exper
 gcloud auth activate-service-account \
-    ci-service-account@mobilecoin-60c.iam.gserviceaccount.com \
-    --key-file=/home/gradle/service-key.json --project=mobilecoin-60c
+    circleci@android-sdk-exper.iam.gserviceaccount.com \
+    --key-file=/home/gradle/service-key.json --project=android-sdk-exper
 
 gcloud firebase test android run \
     --type instrumentation \

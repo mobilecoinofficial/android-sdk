@@ -1,13 +1,13 @@
 apply plugin: 'com.android.application'
 
 android {
-    compileSdkVersion 30
+    compileSdkVersion 35
     buildToolsVersion "30.0.3"
 
     defaultConfig {
         applicationId "com.mobilecoin.lib.app"
         minSdkVersion 21
-        targetSdkVersion 30
+        targetSdkVersion 35
         versionCode 1
         versionName "1.0"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
@@ -25,18 +25,21 @@ android {
         // Flag to enable support for the new language APIs
         coreLibraryDesugaringEnabled true
         // Sets Java compatibility to Java 8
-        sourceCompatibility JavaVersion.VERSION_1_8
-        targetCompatibility JavaVersion.VERSION_1_8
+        sourceCompatibility JavaVersion.VERSION_23
+        targetCompatibility JavaVersion.VERSION_23
     }
+    namespace 'com.mobilecoin.lib.app'
 }
 
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
     implementation project(":android-sdk")
-    coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:1.1.5'
-    implementation 'androidx.appcompat:appcompat:1.3.0'
+    coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:2.1.5'
+    implementation 'androidx.appcompat:appcompat:1.7.0'
     implementation 'androidx.multidex:multidex:2.0.1'
     testImplementation 'junit:junit:4.13.1'
-    androidTestImplementation 'androidx.test.ext:junit:1.1.2'
+    androidTestImplementation 'androidx.test.ext:junit:1.2.1'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.3.0'
+    implementation platform("org.jetbrains.kotlin:kotlin-bom:1.8.0")
+ 
 }
