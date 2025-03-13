@@ -3,7 +3,7 @@ version: 2.1
 jobs:
   test:
     machine:
-      image: ubuntu-2004:202010-01
+      image: ubuntu-2204:2024.11.1
     steps:
       - checkout
       - run:
@@ -41,7 +41,7 @@ jobs:
 
   android-release:
     machine:
-      image: ubuntu-2004:202010-01
+      image: ubuntu-2204:2024.11.1
     steps:
       - checkout
       - run: make publish
