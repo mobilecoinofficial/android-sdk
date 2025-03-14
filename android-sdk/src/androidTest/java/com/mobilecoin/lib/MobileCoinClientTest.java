@@ -128,6 +128,27 @@ public class MobileCoinClientTest {
         }
     }
 
+    /*
+    @Test
+    public void test_eran() throws Exception {
+        HashMap<String, String> xxx = new HashMap<>();
+        for (int i = 0; i < 10; ++i) {
+            MobileCoinClient mobileCoinClient = MobileCoinClientBuilder.newBuilder().build();
+            PublicAddress addr = mobileCoinClient.getAccountKey().getPublicAddress();
+            PrintableWrapper printableWrapper = PrintableWrapper.fromPublicAddress(addr);
+            String b58 = printableWrapper.toB58String();
+       //     if (!b58.equals("jCDqZsEboYy8qhpJ9QKVp6ioVfm3quc6LFcgk9A4n3inawAuu4YoXE8TJDG3KBkwahPLFuj5SS3z1YTNspY8xVeHSSd9o24tPrCh8tCa8LQZwoWSLWBqER43fK5ST44qE8yscjUAdT5wThe225KfHHyDxji22Az8bAjEDybKpfTnWT1gKa47EzDRzjuwVHRymYVq3vsa2fhX4AmvV2hZ6Rmg4y6qJpBup7zrCxM4GJgC8S5q"))
+       //         continue;
+
+            Balance b = mobileCoinClient.getBalance(TokenId.MOB);
+            xxx.put(b58, b.getValue().toString());
+            System.out.println(b);
+        }
+
+        System.out.println("done: " + xxx.size());
+    }
+     */
+
     @Test
     public void test_post_to_serialized_public_address() throws Exception {
         MobileCoinClient mobileCoinClient = MobileCoinClientBuilder.newBuilder().build();
