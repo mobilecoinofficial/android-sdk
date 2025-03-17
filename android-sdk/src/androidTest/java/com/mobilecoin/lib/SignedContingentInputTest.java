@@ -35,7 +35,7 @@ public class SignedContingentInputTest {
         final Amount[] requiredAmounts = sci.getRequiredOutputAmounts();
         final Amount pseudoOutputAmount = sci.getPseudoOutputAmount();
 
-        assertTrue(sci.isValid());
+        assertTrue(sci.isValid(true));
         assertTrue((requiredAmounts.length > 0) && (requiredAmounts.length <= 2));
 
         // Test Serialization
@@ -102,7 +102,7 @@ public class SignedContingentInputTest {
                 requiredAmount
         );
 
-        assertTrue(sci.isValid());
+        assertTrue(sci.isValid(true));
 
         Transaction transaction = consumerClient.prepareTransaction(sci, fee);
         consumerClient.submitTransaction(transaction);

@@ -168,13 +168,19 @@ public class SignedContingentInput extends Native implements Parcelable {
      *
      * This functionality is only supported on networks with block version 3 or higher
      *
+     * Output checking is optional - we want that for SCIs we are planning on consuming, but need to skip it
+     * for proof of reserve SCIs.
+     *
      * @return true if this {@link SignedContingentInput} is valid, false otherwise
      * @see MobileCoinTransactionClient#prepareTransaction(SignedContingentInput, Amount)
      * @see MobileCoinTransactionClient#prepareTransaction(SignedContingentInput, Amount, Rng rng)
      * @since 4.0.0
      */
-    public boolean isValid() {
+    public boolean isValid(boolean checkOutputs) {
         if(!is_valid()) return false;
+
+        if (!checkOutputs) return true;
+
         final Amount[] requiredOutputAmounts = getRequiredOutputAmounts();
         final int numAmounts = requiredOutputAmounts.length;
         if((numAmounts > 0) && (numAmounts < 3)) {
