@@ -4,7 +4,15 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [6.0.1] - 2023-1-5
+## [6.1.0] - 2025-3-24
+
+### Added
+- Add API for creating a Proof of Reserve SCI
+
+### Upgrading
+No code changes are *required* to upgrade from 6.0.0 to 6.1.0
+
+## [6.0.1] - 2024-1-5
 
 ### Changed
 - Replaced `android.support` dependencies with new `androidx` versions
