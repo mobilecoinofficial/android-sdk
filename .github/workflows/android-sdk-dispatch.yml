@@ -5,7 +5,7 @@ on:
 
 jobs:
   build_publish:
-    runs-on: [self-hosted, Linux, small]
+    runs-on: mco-dev-small-x64
 
     steps:
       - name: Checkout
