@@ -1,4 +1,4 @@
-name: Publish Android SDK 
+name: Publish Android SDK
 
 on:
   workflow_dispatch:
@@ -6,6 +6,8 @@ on:
 jobs:
   build_publish:
     runs-on: mco-dev-small-x64
+    container:
+      image: ubuntu:22.04
 
     steps:
       - name: Checkout
@@ -17,4 +19,3 @@ jobs:
         working-directory: ./
         run: |
           make publish
-
