@@ -12,7 +12,7 @@ build: setup
 		-w /home/gradle/ \
 		android-build:android-gradle \
 		gradle build
-	
+
 tests: setup
 	docker run \
 		-v $(pwd):/home/gradle/ \
@@ -46,14 +46,12 @@ publish: setup
 # May not need this but it allows publishing from local if needed
 	@if [ -z "${MAVEN_USER}" ]; then \
 		docker run \
-			-it \
 			-v $(pwd):/home/gradle/ \
 			-w /home/gradle/ android-build:android-gradle \
 			bash -c 'gradle clean && gradle assemble && gradle publish'; \
 	else \
 		echo "Running CI Publish"; \
 		docker run \
-			-it \
 			-v $(pwd):/home/gradle/ \
 			-e MAVEN_USER \
 			-e MAVEN_PASSWORD \
@@ -63,12 +61,11 @@ publish: setup
 
 bash: setup
 	docker run \
-		-it \
 		-v $(pwd):/home/gradle/ \
 		-v $(maven_repo):/root/.m2/ \
 		-w /home/gradle/ android-build:android-gradle \
 		bash
-	
+
 setup: dockerImage
 
 all: setup clean build deployLocal
