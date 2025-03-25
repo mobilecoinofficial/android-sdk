@@ -8,9 +8,7 @@ on:
 
 jobs:
   build_publish:
-    runs-on: mco-dev-small-x64
-    container:
-      image: ubuntu:22.04
+    runs-on: ubuntu-latest
 
     steps:
       - name: Checkout
