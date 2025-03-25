@@ -1,6 +1,9 @@
 name: Publish Android SDK
 
 on:
+  push:
+    branches:
+      - "eran/try-fix-github-release"
   workflow_dispatch:
 
 jobs:
