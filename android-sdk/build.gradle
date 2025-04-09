@@ -50,6 +50,7 @@ protobuf {
 android {
     namespace 'com.mobilecoin.lib'
     testNamespace 'com.mobilecoin.lib.test'
+    ndkVersion "28.0.13004108"
     buildToolsVersion "31.0.0"
     compileSdkVersion build_versions.compile_sdk
     useLibrary 'android.test.runner'
