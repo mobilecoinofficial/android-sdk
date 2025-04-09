@@ -8,6 +8,7 @@ maven_repo=$(HOME)/.m2
 
 build: setup
 	docker run \
+        --platform linux/x86_64 \
 		-v $(pwd):/home/gradle/ \
 		-w /home/gradle/ \
 		android-build:android-gradle \
@@ -15,6 +16,7 @@ build: setup
 	
 tests: setup
 	docker run \
+        --platform linux/x86_64 \
 		-v $(pwd):/home/gradle/ \
 		-w /home/gradle/ \
 		android-build:android-gradle \
@@ -22,11 +24,13 @@ tests: setup
 
 dockerImage:
 	docker build \
+        --platform linux/x86_64 \
 		-t android-build:android-gradle \
 		docker
 
 clean:
 	docker run \
+        --platform linux/x86_64 \
 		-v $(pwd):/home/gradle/ \
 		-w /home/gradle/ \
 		android-build:android-gradle \
@@ -34,6 +38,7 @@ clean:
 
 deployLocal: setup
 	docker run \
+        --platform linux/x86_64 \
 		-v $(pwd):/home/gradle/ \
 		-v $(maven_repo):/root/.m2/ \
 		-w /home/gradle/ \
