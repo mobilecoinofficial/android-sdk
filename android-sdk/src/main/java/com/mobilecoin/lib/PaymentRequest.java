@@ -41,13 +41,15 @@ public final class PaymentRequest {
         TokenId tokenId = TokenId.from(
                 UnsignedLong.fromLongBits(protoBuf.getTokenId())
         );
-        UnsignedLong paymentId = protoBuf.getPaymentId();
+        long rawPaymentId = protoBuf.getPaymentId();
+        UnsignedLong paymentId = (rawPaymentId != 0) ?
+                UnsignedLong.fromLongBits(rawPaymentId) : null;
         return new PaymentRequest(
                 publicAddress,
                 UnsignedLong.fromLongBits(protoBuf.getValue()),
                 protoBuf.getMemo(),
                 tokenId,
-                paymentId == null ? null : UnsignedLong.fromLongBits(paymentId)
+                paymentId
         );
     }
 
