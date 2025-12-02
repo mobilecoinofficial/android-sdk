@@ -3,6 +3,7 @@
 package com.mobilecoin.lib;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 import com.mobilecoin.api.Printable;
 import com.mobilecoin.lib.exceptions.SerializationException;
@@ -16,17 +17,20 @@ public final class PaymentRequest {
     private final UnsignedLong value;
     private final String memo;
     private final TokenId tokenId;
+    private final UnsignedLong paymentId;
 
     public PaymentRequest(
             @NonNull PublicAddress publicAddress,
             @NonNull UnsignedLong value,
             @NonNull String memo,
-            @NonNull TokenId tokenId
+            @NonNull TokenId tokenId,
+            @Nullable UnsignedLong paymentId
     ) {
         this.publicAddress = publicAddress;
         this.value = value;
         this.memo = memo;
         this.tokenId = tokenId;
+        this.paymentId = paymentId;
     }
 
     @NonNull
@@ -37,11 +41,13 @@ public final class PaymentRequest {
         TokenId tokenId = TokenId.from(
                 UnsignedLong.fromLongBits(protoBuf.getTokenId())
         );
+        UnsignedLong paymentId = protoBuf.getPaymentId();
         return new PaymentRequest(
                 publicAddress,
                 UnsignedLong.fromLongBits(protoBuf.getValue()),
                 protoBuf.getMemo(),
-                tokenId
+                tokenId,
+                paymentId == null ? null : UnsignedLong.fromLongBits(paymentId)
         );
     }
 
@@ -68,20 +74,33 @@ public final class PaymentRequest {
         return tokenId;
     }
 
+    @Nullable
+    public UnsignedLong getPaymentId() {
+        Logger.i(TAG, "Getting payment id", null, paymentId);
+        return paymentId;
+    }
+
     @NonNull
     Printable.PaymentRequest toProtoBufObject() {
         Logger.i(TAG, "Serializing to protobuf");
-        return Printable.PaymentRequest.newBuilder()
+        Printable.PaymentRequest.Builder paymentRequestBuilder = Printable.PaymentRequest.newBuilder();
+
+        paymentRequestBuilder
                 .setMemo(getMemo())
                 .setPublicAddress(getPublicAddress().toProtoBufObject())
                 .setValue(getValue().longValue())
-                .setTokenId(tokenId.getId().longValue())
-                .build();
+                .setTokenId(tokenId.getId().longValue());
+
+        if (paymentId != null) {
+            paymentRequestBuilder.setPaymentId(paymentId.longValue());
+        }
+
+        return paymentRequestBuilder.build();
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(publicAddress, value, memo, tokenId);
+        return Objects.hash(publicAddress, value, memo, tokenId, paymentId);
     }
 
     @Override
@@ -92,6 +111,7 @@ public final class PaymentRequest {
         return publicAddress.equals(that.publicAddress) &&
                 value.equals(that.value) &&
                 tokenId.equals(that.tokenId) &&
-                memo.equals(that.memo);
+                memo.equals(that.memo) &&
+                Objects.equals(paymentId, that.paymentId);
     }
 }
