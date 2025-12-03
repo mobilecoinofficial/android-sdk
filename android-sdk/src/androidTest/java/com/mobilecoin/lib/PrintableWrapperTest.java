@@ -62,10 +62,12 @@ public class PrintableWrapperTest {
     public void test_payment_request_payload() throws SerializationException {
         PublicAddress publicAddress = TestKeysManager.getNextAccountKey().getPublicAddress();
         TokenId tokenId = TokenId.MOB;
+        UnsignedLong paymentId = UnsignedLong.valueOf(32);
         PaymentRequest paymentRequest = new PaymentRequest(publicAddress,
                 PAYLOAD_AMOUNT,
                 MEMO,
-                tokenId
+                tokenId,
+                paymentId
         );
         PrintableWrapper printableWrapper = PrintableWrapper.fromPaymentRequest(paymentRequest);
         Assert.assertFalse(
@@ -101,6 +103,25 @@ public class PrintableWrapperTest {
         Assert.assertEquals("Payment request must include token id",
                 printableWrapper.getPaymentRequest().getTokenId(),
                 tokenId);
+        Assert.assertEquals("Payment request must include payment id",
+                printableWrapper.getPaymentRequest().getPaymentId(),
+                paymentId);
+    }
+
+    @Test
+    public void test_payment_request_with_null_payment_id() throws SerializationException {
+        PublicAddress publicAddress = TestKeysManager.getNextAccountKey().getPublicAddress();
+        TokenId tokenId = TokenId.MOB;
+        PaymentRequest paymentRequest = new PaymentRequest(publicAddress,
+                PAYLOAD_AMOUNT,
+                MEMO,
+                tokenId,
+                null
+        );
+        String b58String = PrintableWrapper.fromPaymentRequest(paymentRequest).toB58String();
+        PrintableWrapper printableWrapper = PrintableWrapper.fromB58String(b58String);
+        Assert.assertNull("Payment request payment id must be null",
+                printableWrapper.getPaymentRequest().getPaymentId());
     }
 
     @Test

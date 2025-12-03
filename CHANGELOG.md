@@ -4,6 +4,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [6.1.3] - 2025-12-2
+
+### Added
+- Added `paymentId` to the `PaymentRequest` API
+
+### Upgrading
+No code changes are *required* to upgrade from 6.1.2 to 6.1.3
+
 ## [6.1.2] - 2025-4-18
 
 ### Added
