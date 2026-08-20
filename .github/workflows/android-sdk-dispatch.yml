@@ -1,6 +1,9 @@
-name: Publish Android SDK 
+name: Publish Android SDK
 
 on:
+  push:
+    tags:
+      - 'v*'
   workflow_dispatch:
 
 jobs:
@@ -17,4 +20,3 @@ jobs:
         working-directory: ./
         run: |
           make publish
-

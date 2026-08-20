@@ -1,6 +1,9 @@
 name: sdk-tests
 
 on:
+  push:
+    branches:
+      - '**'
   workflow_dispatch:
     inputs:
       network:
@@ -13,13 +16,17 @@ on:
           - 'ALPHA'
           - 'TEST_NET'
 
+concurrency:
+  group: sdk-tests-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   test:
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
 
       - name: GCP Service Account
         run: |
@@ -33,7 +40,10 @@ jobs:
           sed -i "s/REPLACE_TEST_DEV_USER_STRING/${TEST_DEV_USER}/g" android-sdk/src/androidTest/java/com/mobilecoin/lib/TestFogConfig.java && \
           sed -i "s/REPLACE_TEST_DEV_PASSWORD_STRING/${TEST_DEV_PASSWORD}/g" android-sdk/src/androidTest/java/com/mobilecoin/lib/TestFogConfig.java
 
+      # Only a manual dispatch overrides the network. A push keeps the
+      # committed default in Environment.java.
       - name: Set the Network
+        if: github.event_name == 'workflow_dispatch'
         env:
           NETWORK_UNDER_TEST: ${{ github.event.inputs.network }}
         run: sed -i "s/TestEnvironment\.[a-zA-Z_]*/TestEnvironment.${NETWORK_UNDER_TEST}/g" android-sdk/src/androidTest/java/com/mobilecoin/lib/Environment.java
@@ -51,5 +61,13 @@ jobs:
         run: make build
 
       - name: Test
-        timeout-minutes: 35
+        timeout-minutes: 50
         run: make tests
+
+      - name: Upload test reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: reports
+          path: android-sdk/build/reports
+          if-no-files-found: ignore
