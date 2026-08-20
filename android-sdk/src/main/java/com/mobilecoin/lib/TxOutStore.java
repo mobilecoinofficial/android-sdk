@@ -312,7 +312,11 @@ class TxOutStore implements Parcelable {
       return decommissionedIngestInvocationIds.contains(seed.getIngestInvocationId());
     }
 
-    void updateTxOutsSpentState(Ledger.CheckKeyImagesResponse keyImagesResponse) throws InvalidFogResponse {
+    void updateTxOutsSpentState(
+            @NonNull Set<OwnedTxOut> queriedTxOuts,
+            Ledger.CheckKeyImagesResponse keyImagesResponse
+    ) throws InvalidFogResponse {
+        Set<KeyImage> spentKeyImages = new HashSet<>();
         for (Ledger.KeyImageResult result : keyImagesResponse.getResultsList()) {
             if (result.getKeyImageResultCode() == Ledger.KeyImageResultCode.NotSpent_VALUE) {
                 continue;
@@ -335,11 +339,22 @@ class TxOutStore implements Parcelable {
                     UnsignedLong.fromLongBits(result.getSpentAt()),
                     spentBlockTimestamp
             );
+            spentKeyImages.add(utxo.getKeyImage());
             Logger.d(TAG, String.format(Locale.US,
                     "TxOut has been marked spent in block %s",
                     Objects.requireNonNull(utxo.getSpentBlockIndex()).toString())
             );
         }
+
+        // Every queried txo not found spent above is confirmed unspent through this block
+        // count, whether the server said NotSpent or omitted it, matching iOS's fallback.
+        UnsignedLong unspentThroughBlockCount = UnsignedLong.fromLongBits(keyImagesResponse.getNumBlocks());
+        for (OwnedTxOut txOut : queriedTxOuts) {
+            if (!spentKeyImages.contains(txOut.getKeyImage())) {
+                txOut.setKnownToBeUnspentBlockCount(unspentThroughBlockCount);
+            }
+        }
+
         synchronized (this) {
             ledgerTotalTxCount = UnsignedLong.fromLongBits(keyImagesResponse.getGlobalTxoCount());
             ledgerBlockIndex = UnsignedLong.fromLongBits(keyImagesResponse.getNumBlocks())
@@ -352,7 +367,7 @@ class TxOutStore implements Parcelable {
         Logger.i(TAG, "Checking unspent TXOs key images");
         Set<OwnedTxOut> txOuts = getUnspentTxOuts();
         Ledger.CheckKeyImagesResponse response = ledgerClient.checkUtxoKeyImages(txOuts);
-        updateTxOutsSpentState(response);
+        updateTxOutsSpentState(txOuts, response);
     }
 
     /**
