@@ -22,7 +22,7 @@ import com.mobilecoin.lib.util.NetworkingCall;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -160,6 +160,37 @@ class AttestedLedgerClient extends AttestedClient {
                             .setData(ByteString.copyFrom(keyImage.getData())).build()).build();
             keyImageQueries.add(query);
         }
+        return sendKeyImageQueries(keyImageQueries);
+    }
+
+    /**
+     * Query key images status
+     *
+     * @param txos a list of OwnedTxOuts whose key images to check
+     */
+    @NonNull
+    public synchronized Ledger.CheckKeyImagesResponse checkUtxoKeyImages(@NonNull Set<OwnedTxOut> txos)
+            throws InvalidFogResponse, AttestationException, NetworkException {
+        Logger.i(TAG, "Checking unspent OwnedTxOut key images");
+        ArrayList<Ledger.KeyImageQuery> keyImageQueries = new ArrayList<>();
+        for (OwnedTxOut txo : txos) {
+            // A txo confirmed unspent through block N only needs scanning forward from N.
+            // A txo never checked has no watermark, so it sends 0, a full history scan.
+            UnsignedLong knownUnspentThrough = txo.getKnownToBeUnspentBlockCount();
+            Ledger.KeyImageQuery query = Ledger.KeyImageQuery.newBuilder()
+                    .setKeyImage(MobileCoinAPI.KeyImage.newBuilder()
+                            .setData(ByteString.copyFrom(txo.getKeyImage().getData())).build())
+                    .setStartBlock(knownUnspentThrough == null ? 0L : knownUnspentThrough.longValue())
+                    .build();
+            keyImageQueries.add(query);
+        }
+        return sendKeyImageQueries(keyImageQueries);
+    }
+
+    @NonNull
+    private Ledger.CheckKeyImagesResponse sendKeyImageQueries(
+            @NonNull List<Ledger.KeyImageQuery> keyImageQueries
+    ) throws InvalidFogResponse, AttestationException, NetworkException {
         Ledger.CheckKeyImagesRequest imagesRequest =
                 Ledger.CheckKeyImagesRequest.newBuilder().addAllQueries(keyImageQueries)
                         .build();
@@ -190,22 +221,5 @@ class AttestedLedgerClient extends AttestedClient {
         } catch (Exception exception) {
             throw new IllegalStateException("BUG: unreachable code");
         }
-    }
-
-    /**
-     * Query key images status
-     *
-     * @param txos a list of OwnedTxOuts whose key images to check
-     */
-    @NonNull
-    public synchronized Ledger.CheckKeyImagesResponse checkUtxoKeyImages(@NonNull Set<OwnedTxOut> txos)
-            throws InvalidFogResponse, AttestationException, NetworkException {
-        Logger.i(TAG, "Checking unspent OwnedTxOut key images");
-        HashSet<KeyImage> keyImages = new HashSet<>();
-        for (OwnedTxOut txo : txos) {
-            KeyImage keyImage = txo.getKeyImage();
-            keyImages.add(keyImage);
-        }
-        return checkKeyImages(keyImages);
     }
 }
