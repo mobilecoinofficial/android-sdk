@@ -24,7 +24,7 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import fog_ledger.Ledger;
 
 /**
- * Covers the per-txo start_block watermark, the fix for SENTZ-5454.
+ * Covers the per-txo start_block watermark set from key-image results.
  */
 @RunWith(RobolectricTestRunner.class)
 public class TxOutStoreWatermarkTest {
