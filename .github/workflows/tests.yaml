@@ -17,8 +17,8 @@ on:
           - 'TEST_NET'
 
 concurrency:
-  group: sdk-tests-${{ github.ref }}
-  cancel-in-progress: true
+  group: sdk-tests-${{ github.ref }}-${{ github.event_name }}-${{ inputs.network }}
+  cancel-in-progress: ${{ github.event_name == 'push' }}
 
 jobs:
   test:
