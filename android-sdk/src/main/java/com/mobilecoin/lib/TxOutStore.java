@@ -316,9 +316,10 @@ class TxOutStore implements Parcelable {
             @NonNull Set<OwnedTxOut> queriedTxOuts,
             Ledger.CheckKeyImagesResponse keyImagesResponse
     ) throws InvalidFogResponse {
-        Set<KeyImage> spentKeyImages = new HashSet<>();
+        Set<KeyImage> notSpentKeyImages = new HashSet<>();
         for (Ledger.KeyImageResult result : keyImagesResponse.getResultsList()) {
             if (result.getKeyImageResultCode() == Ledger.KeyImageResultCode.NotSpent_VALUE) {
+                notSpentKeyImages.add(KeyImage.fromBytes(result.getKeyImage().getData().toByteArray()));
                 continue;
             }
 
@@ -339,18 +340,17 @@ class TxOutStore implements Parcelable {
                     UnsignedLong.fromLongBits(result.getSpentAt()),
                     spentBlockTimestamp
             );
-            spentKeyImages.add(utxo.getKeyImage());
             Logger.d(TAG, String.format(Locale.US,
                     "TxOut has been marked spent in block %s",
                     Objects.requireNonNull(utxo.getSpentBlockIndex()).toString())
             );
         }
 
-        // Every queried txo not found spent above is confirmed unspent through this block
-        // count, whether the server said NotSpent or omitted it, matching iOS's fallback.
+        // Only a returned NotSpent result licenses skipping blocks. The unspent-through
+        // guarantee is attached to the result, so an omitted one keeps the full scan.
         UnsignedLong unspentThroughBlockCount = UnsignedLong.fromLongBits(keyImagesResponse.getNumBlocks());
         for (OwnedTxOut txOut : queriedTxOuts) {
-            if (!spentKeyImages.contains(txOut.getKeyImage())) {
+            if (notSpentKeyImages.contains(txOut.getKeyImage())) {
                 txOut.setKnownToBeUnspentBlockCount(unspentThroughBlockCount);
             }
         }

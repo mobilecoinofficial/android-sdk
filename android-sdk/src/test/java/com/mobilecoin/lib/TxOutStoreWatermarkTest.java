@@ -30,7 +30,7 @@ import fog_ledger.Ledger;
 public class TxOutStoreWatermarkTest {
 
     @Test
-    public void updateTxOutsSpentState_watermarksOnlyTxOutsConfirmedUnspent() throws Exception {
+    public void updateTxOutsSpentState_watermarksOnlyAnExplicitNotSpentResult() throws Exception {
         TxOutStore store = new TxOutStore(null);
 
         byte[] spentKeyImageBytes = {1};
@@ -39,9 +39,13 @@ public class TxOutStoreWatermarkTest {
         when(spentTxOut.getKeyImage()).thenReturn(KeyImage.fromBytes(spentKeyImageBytes));
         when(spentTxOut.getSpentBlockIndex()).thenReturn(UnsignedLong.ONE);
 
-        byte[] unspentKeyImageBytes = {2};
-        OwnedTxOut unspentTxOut = mock(OwnedTxOut.class);
-        when(unspentTxOut.getKeyImage()).thenReturn(KeyImage.fromBytes(unspentKeyImageBytes));
+        byte[] notSpentKeyImageBytes = {2};
+        OwnedTxOut notSpentTxOut = mock(OwnedTxOut.class);
+        when(notSpentTxOut.getKeyImage()).thenReturn(KeyImage.fromBytes(notSpentKeyImageBytes));
+
+        byte[] omittedKeyImageBytes = {3};
+        OwnedTxOut omittedTxOut = mock(OwnedTxOut.class);
+        when(omittedTxOut.getKeyImage()).thenReturn(KeyImage.fromBytes(omittedKeyImageBytes));
 
         // getUtxoByKeyImage resolves a Spent result against the store's own synced set, not the
         // queried set, so the spent txo needs to be reachable that way too.
@@ -62,26 +66,6 @@ public class TxOutStoreWatermarkTest {
                         .setSpentAt(10)
                         .setTimestamp(UnsignedLong.MAX_VALUE.longValue())
                         .build())
-                .build();
-
-        Set<OwnedTxOut> queried = new HashSet<>(Arrays.asList(spentTxOut, unspentTxOut));
-        store.updateTxOutsSpentState(queried, response);
-
-        verify(spentTxOut, never()).setKnownToBeUnspentBlockCount(any());
-        verify(unspentTxOut).setKnownToBeUnspentBlockCount(UnsignedLong.fromLongBits(50));
-    }
-
-    @Test
-    public void updateTxOutsSpentState_watermarksAnExplicitNotSpentResult() throws Exception {
-        TxOutStore store = new TxOutStore(null);
-
-        byte[] notSpentKeyImageBytes = {3};
-        OwnedTxOut notSpentTxOut = mock(OwnedTxOut.class);
-        when(notSpentTxOut.getKeyImage()).thenReturn(KeyImage.fromBytes(notSpentKeyImageBytes));
-
-        Ledger.CheckKeyImagesResponse response = Ledger.CheckKeyImagesResponse.newBuilder()
-                .setNumBlocks(75)
-                .setGlobalTxoCount(200)
                 .addResults(Ledger.KeyImageResult.newBuilder()
                         .setKeyImage(MobileCoinAPI.KeyImage.newBuilder()
                                 .setData(ByteString.copyFrom(notSpentKeyImageBytes)).build())
@@ -89,8 +73,12 @@ public class TxOutStoreWatermarkTest {
                         .build())
                 .build();
 
-        store.updateTxOutsSpentState(new HashSet<>(Arrays.asList(notSpentTxOut)), response);
+        Set<OwnedTxOut> queried =
+                new HashSet<>(Arrays.asList(spentTxOut, notSpentTxOut, omittedTxOut));
+        store.updateTxOutsSpentState(queried, response);
 
-        verify(notSpentTxOut).setKnownToBeUnspentBlockCount(UnsignedLong.fromLongBits(75));
+        verify(notSpentTxOut).setKnownToBeUnspentBlockCount(UnsignedLong.fromLongBits(50));
+        verify(spentTxOut, never()).setKnownToBeUnspentBlockCount(any());
+        verify(omittedTxOut, never()).setKnownToBeUnspentBlockCount(any());
     }
 }
