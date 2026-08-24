@@ -42,11 +42,8 @@ public class OwnedTxOut implements Parcelable {
     private final Date receivedBlockTimestamp;
     private Date spentBlockTimestamp;
     private UnsignedLong spentBlockIndex;
-    // Highest block count fog-ledger has confirmed this key image unspent through.
-    // Scopes the next key-image scan to start_block; null means never checked.
-    // Not parcelled: Parcel has no per-object length prefix, so a field added here would
-    // misread trailing sibling bytes for every OwnedTxOut but the last in a cached blob.
-    // Resetting to null on process restart is always safe, it just forces one full scan.
+    // Highest block count fog-ledger confirmed this key image unspent through, null if never.
+    // Out of the parcel so a blob cached by another SDK version stays readable.
     @Nullable
     private UnsignedLong knownToBeUnspentBlockCount;
 

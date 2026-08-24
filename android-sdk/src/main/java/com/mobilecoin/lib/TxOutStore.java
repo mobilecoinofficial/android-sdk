@@ -346,8 +346,8 @@ class TxOutStore implements Parcelable {
             );
         }
 
-        // Only a returned NotSpent result licenses skipping blocks. The unspent-through
-        // guarantee is attached to the result, so an omitted one keeps the full scan.
+        // Only a returned NotSpent result licenses skipping blocks, since the proto attaches
+        // its unspent-through guarantee to a result rather than to a missing one.
         UnsignedLong unspentThroughBlockCount = UnsignedLong.fromLongBits(keyImagesResponse.getNumBlocks());
         for (OwnedTxOut txOut : queriedTxOuts) {
             if (notSpentKeyImages.contains(txOut.getKeyImage())) {
