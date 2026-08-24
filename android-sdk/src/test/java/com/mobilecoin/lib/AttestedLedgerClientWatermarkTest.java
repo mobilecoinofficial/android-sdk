@@ -34,16 +34,15 @@ public class AttestedLedgerClientWatermarkTest {
 
     @Test
     public void checkUtxoKeyImages_scopesEachQueryToThatTxOutsWatermark() throws Exception {
+        // Real watermark accessors, so an accessor that stopped storing the value fails here.
         byte[] watermarkedKeyImage = {1};
-        OwnedTxOut watermarked = mock(OwnedTxOut.class);
-        when(watermarked.getKeyImage()).thenReturn(KeyImage.fromBytes(watermarkedKeyImage));
-        when(watermarked.getKnownToBeUnspentBlockCount())
-                .thenReturn(UnsignedLong.fromLongBits(50));
+        OwnedTxOut watermarked = mock(OwnedTxOut.class, CALLS_REAL_METHODS);
+        doReturn(KeyImage.fromBytes(watermarkedKeyImage)).when(watermarked).getKeyImage();
+        watermarked.setKnownToBeUnspentBlockCount(UnsignedLong.fromLongBits(50));
 
         byte[] neverCheckedKeyImage = {2};
-        OwnedTxOut neverChecked = mock(OwnedTxOut.class);
-        when(neverChecked.getKeyImage()).thenReturn(KeyImage.fromBytes(neverCheckedKeyImage));
-        when(neverChecked.getKnownToBeUnspentBlockCount()).thenReturn(null);
+        OwnedTxOut neverChecked = mock(OwnedTxOut.class, CALLS_REAL_METHODS);
+        doReturn(KeyImage.fromBytes(neverCheckedKeyImage)).when(neverChecked).getKeyImage();
 
         FogKeyImageService keyImageService = mock(FogKeyImageService.class);
         when(keyImageService.checkKeyImages(any())).thenReturn(Attest.Message.getDefaultInstance());
