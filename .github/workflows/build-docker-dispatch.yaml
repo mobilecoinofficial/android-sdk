@@ -1,7 +1,17 @@
 name: Publish Build Docker Image
 
 on:
+  # Rebuild whenever the image definition changes, so the published image
+  # cannot drift from docker/Dockerfile.
+  push:
+    branches:
+      - master
+    paths:
+      - 'docker/**'
   workflow_dispatch: {}
+
+permissions:
+  contents: read
 
 jobs:
   build_and_publish_docker:
@@ -18,7 +28,9 @@ jobs:
         tags: |
           ${{ github.ref_name }}
           type=sha
+        # Only master moves :latest, which is the tag the publish job pulls.
+        # A dispatch from a branch still gets its own branch and sha tags.
         flavor: |
-          latest=true
+          latest=${{ github.ref_name == 'master' }}
         password: ${{ secrets.DOCKERHUB_TOKEN }}
         username: ${{ secrets.DOCKERHUB_USERNAME }}

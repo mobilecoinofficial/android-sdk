@@ -45,6 +45,13 @@ deployLocal: setup
 		android-build:android-gradle \
 		gradle publishToMavenLocal
 
+# What publishing actually is. CI runs this directly inside the builder
+# container, so the steps stay defined in one place.
+publishDirect:
+	gradle clean
+	gradle assemble
+	gradle publish
+
 publish: setup
 # Without MAVEN_USER the credentials come from local.properties, so publishing
 # from a workstation works the same way.
@@ -53,7 +60,7 @@ publish: setup
 			-i \
 			-v $(pwd):/home/gradle/ \
 			-w /home/gradle/ android-build:android-gradle \
-			bash -c 'gradle clean && gradle assemble && gradle publish'; \
+			make publishDirect; \
 	else \
 		echo "Running CI Publish"; \
 		docker run \
@@ -62,7 +69,7 @@ publish: setup
 			-e MAVEN_USER \
 			-e MAVEN_PASSWORD \
 			-w /home/gradle/ android-build:android-gradle \
-			bash -c 'gradle clean && gradle assemble && gradle publish'; \
+			make publishDirect; \
 	fi
 
 bash: setup
