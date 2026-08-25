@@ -23,7 +23,7 @@ jobs:
       with:
         dockerfile: docker/Dockerfile
         context: docker/
-        images: mobilecoin/android-sdk-builder
+        images: mobilecoin/android-sdk
         tags: |
           ${{ github.ref_name }}
           type=sha

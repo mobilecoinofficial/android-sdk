@@ -18,7 +18,7 @@ jobs:
     runs-on: mco-dev-large-x64
     timeout-minutes: 60
     container:
-      image: mobilecoin/android-sdk-builder:latest
+      image: mobilecoin/android-sdk:latest
 
     steps:
       - name: Checkout
