@@ -44,6 +44,14 @@ jobs:
           # curl reads the credentials from a config on stdin, which keeps them
           # off the process command line and, unlike a netrc file, does not
           # truncate a value containing a space.
+          # A curl config is parsed line by line, so a newline in a value would
+          # end the quoted string and let the rest be read as further options.
+          case "${MAVEN_USER}${MAVEN_PASSWORD}" in
+            *[$'\n\r']*)
+              echo "A Cloudsmith credential contains a newline, refusing to use it"
+              exit 1
+              ;;
+          esac
           escape() { printf '%s' "$1" | sed 's/[\\"]/\\&/g'; }
           probe=https://maven.cloudsmith.io/mobilecoin/mobilecoin/com/mobilecoin/android-sdk/maven-metadata.xml
           code=$(printf 'user = "%s:%s"\n' "$(escape "${MAVEN_USER}")" "$(escape "${MAVEN_PASSWORD}")" \
