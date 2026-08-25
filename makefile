@@ -46,19 +46,18 @@ deployLocal: setup
 		gradle publishToMavenLocal
 
 publish: setup
-# Check if we are in the CircleCI environment
-# If not in CI env then use local.properties values to publish
-# May not need this but it allows publishing from local if needed
+# Without MAVEN_USER the credentials come from local.properties, so publishing
+# from a workstation works the same way.
 	@if [ -z "${MAVEN_USER}" ]; then \
 		docker run \
-			-it \
+			-i \
 			-v $(pwd):/home/gradle/ \
 			-w /home/gradle/ android-build:android-gradle \
 			bash -c 'gradle clean && gradle assemble && gradle publish'; \
 	else \
 		echo "Running CI Publish"; \
 		docker run \
-			-it \
+			-i \
 			-v $(pwd):/home/gradle/ \
 			-e MAVEN_USER \
 			-e MAVEN_PASSWORD \

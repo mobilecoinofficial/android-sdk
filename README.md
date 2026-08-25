@@ -1,6 +1,6 @@
 ![MobileCoin logo](https://raw.githubusercontent.com/mobilecoinofficial/mobilecoin/master/img/mobilecoin_logo.png)
 
-# Android SDK [![CircleCI](https://img.shields.io/circleci/build/gh/mobilecoinofficial/android-sdk?token=eaa920ba2ba6916857aec7ef3c1a9d217a128717)](https://circleci.com/gh/mobilecoinofficial/android-sdk/tree/master) [![Documentation](https://img.shields.io/badge/docs-latest-blue)](https://mobilecoinofficial.github.io/android-sdk/)
+# Android SDK [![sdk-tests](https://github.com/mobilecoinofficial/android-sdk/actions/workflows/tests.yaml/badge.svg)](https://github.com/mobilecoinofficial/android-sdk/actions/workflows/tests.yaml) [![Documentation](https://img.shields.io/badge/docs-latest-blue)](https://mobilecoinofficial.github.io/android-sdk/)
 
 MobileCoin is a privacy-preserving payments network designed for use on mobile devices.
 
