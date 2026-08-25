@@ -32,43 +32,6 @@ jobs:
             echo "tag ${GITHUB_REF_NAME} would publish version ${version}"
             exit 1
           fi
-      # Proves the credentials are accepted for read. Cloudsmith can scope read
-      # and write separately, so this rules out a dead credential in seconds
-      # without proving the publish itself will be authorised.
-      - name: Check Cloudsmith accepts the credentials
-        shell: bash
-        env:
-          MAVEN_USER: ${{ secrets.MAVEN_USER }}
-          MAVEN_PASSWORD: ${{ secrets.MAVEN_PASSWORD }}
-        run: |
-          # curl reads the credentials from a config on stdin, which keeps them
-          # off the process command line and, unlike a netrc file, does not
-          # truncate a value containing a space.
-          # A curl config is parsed line by line, so a newline in a value would
-          # end the quoted string and let the rest be read as further options.
-          case "${MAVEN_USER}${MAVEN_PASSWORD}" in
-            *[$'\n\r']*)
-              echo "A Cloudsmith credential contains a newline, refusing to use it"
-              exit 1
-              ;;
-          esac
-          escape() { printf '%s' "$1" | sed 's/[\\"]/\\&/g'; }
-          probe=https://maven.cloudsmith.io/mobilecoin/mobilecoin/com/mobilecoin/android-sdk/maven-metadata.xml
-          code=$(printf 'user = "%s:%s"\n' "$(escape "${MAVEN_USER}")" "$(escape "${MAVEN_PASSWORD}")" \
-            | curl -sS -K - --retry 3 --retry-connrefused --max-time 30 \
-              -o /dev/null -w '%{http_code}' "${probe}") || code=000
-          case "${code}" in
-            # The probe path is version independent and known to exist, so a 404
-            # here means Cloudsmith is hiding it from us, not that it is missing.
-            401|403|404)
-              echo "Cloudsmith rejected the publish credentials, HTTP ${code}"
-              exit 1
-              ;;
-            2*) ;;
-            # Anything else is Cloudsmith being unwell, not a bad credential.
-            # Let the real publish decide rather than failing the release here.
-            *) echo "Could not reach Cloudsmith to check credentials, HTTP ${code}" ;;
-          esac
       - name: Build and Publish the SDK
         shell: bash
         env:

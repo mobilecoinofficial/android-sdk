@@ -45,8 +45,6 @@ deployLocal: setup
 		android-build:android-gradle \
 		gradle publishToMavenLocal
 
-# What publishing actually is. CI runs this directly inside the builder
-# container, so the steps stay defined in one place.
 publishDirect:
 	gradle clean
 	gradle assemble
