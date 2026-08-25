@@ -10,12 +10,13 @@ permissions:
   contents: read
 
 concurrency:
-  group: publish-android-sdk
+  group: publish-android-sdk-${{ github.ref }}
   cancel-in-progress: false
 
 jobs:
   build_publish:
     runs-on: mco-dev-large-x64
+    timeout-minutes: 60
     container:
       image: mobilecoin/android-sdk-builder:latest
 
@@ -40,21 +41,22 @@ jobs:
           MAVEN_USER: ${{ secrets.MAVEN_USER }}
           MAVEN_PASSWORD: ${{ secrets.MAVEN_PASSWORD }}
         run: |
-          # A netrc file keeps the password off the process command line.
-          netrc=$(mktemp)
-          trap 'rm -f "${netrc}"' EXIT
-          umask 077
-          printf 'machine maven.cloudsmith.io login %s password %s\n' \
-            "${MAVEN_USER}" "${MAVEN_PASSWORD}" > "${netrc}"
+          # curl reads the credentials from a config on stdin, which keeps them
+          # off the process command line and, unlike a netrc file, does not
+          # truncate a value containing a space.
+          escape() { printf '%s' "$1" | sed 's/[\\"]/\\&/g'; }
           probe=https://maven.cloudsmith.io/mobilecoin/mobilecoin/com/mobilecoin/android-sdk/maven-metadata.xml
-          code=$(curl -sS --netrc-file "${netrc}" --retry 3 --retry-connrefused \
-            --max-time 30 -o /dev/null -w '%{http_code}' "${probe}") || code=000
+          code=$(printf 'user = "%s:%s"\n' "$(escape "${MAVEN_USER}")" "$(escape "${MAVEN_PASSWORD}")" \
+            | curl -sS -K - --retry 3 --retry-connrefused --max-time 30 \
+              -o /dev/null -w '%{http_code}' "${probe}") || code=000
           case "${code}" in
-            401|403)
+            # The probe path is version independent and known to exist, so a 404
+            # here means Cloudsmith is hiding it from us, not that it is missing.
+            401|403|404)
               echo "Cloudsmith rejected the publish credentials, HTTP ${code}"
               exit 1
               ;;
-            200) ;;
+            2*) ;;
             # Anything else is Cloudsmith being unwell, not a bad credential.
             # Let the real publish decide rather than failing the release here.
             *) echo "Could not reach Cloudsmith to check credentials, HTTP ${code}" ;;

@@ -31,6 +31,6 @@ jobs:
         # Only master moves :latest, which is the tag the publish job pulls.
         # A dispatch from a branch still gets its own branch and sha tags.
         flavor: |
-          latest=${{ github.ref_name == 'master' }}
+          latest=${{ github.ref_name == github.event.repository.default_branch }}
         password: ${{ secrets.DOCKERHUB_TOKEN }}
         username: ${{ secrets.DOCKERHUB_USERNAME }}

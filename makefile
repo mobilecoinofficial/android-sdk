@@ -4,7 +4,7 @@ pwd=$(shell pwd)
 #default local maven deployment path
 maven_repo=$(HOME)/.m2
 
-.PHONY : build tests dockerImage clean deployLocal bash setup all
+.PHONY : build tests dockerImage clean deployLocal bash setup all publish publishDirect
 
 build: setup
 	docker run \
