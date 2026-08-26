@@ -22,6 +22,11 @@ import java.math.BigInteger;
 @RunWith(AndroidJUnit4.class)
 public class TxOutContextsTest {
 
+    /**
+     * Arbitrary. These tests assert relationships between keys rather than any
+     * particular key, so the seed's value carries no meaning — it is fixed
+     * only so that a failure can be re-run.
+     */
     private static final byte[] SEED = new byte[] {103, 111, 116, 111, 32, 104, 116, 116, 112,
             115, 58, 47, 47, 98, 117, 121, 46, 109, 111, 98, 105, 108, 101, 99, 111, 105, 110,
             46, 99, 111, 109, 0};
