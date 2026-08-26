@@ -4,7 +4,6 @@ gradle :android-sdk:assembleGrpcDebugAndroidTest
 
 gcloud config set project android-sdk-exper
 gcloud auth activate-service-account \
-    circleci@android-sdk-exper.iam.gserviceaccount.com \
     --key-file=/home/gradle/service-key.json --project=android-sdk-exper
 
 

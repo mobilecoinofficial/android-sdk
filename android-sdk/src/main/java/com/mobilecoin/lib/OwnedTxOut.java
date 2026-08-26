@@ -42,6 +42,10 @@ public class OwnedTxOut implements Parcelable {
     private final Date receivedBlockTimestamp;
     private Date spentBlockTimestamp;
     private UnsignedLong spentBlockIndex;
+    // Highest block count fog-ledger confirmed this key image unspent through, null if never.
+    // Out of the parcel so a blob cached by another SDK version stays readable.
+    @Nullable
+    private UnsignedLong knownToBeUnspentBlockCount;
 
     private final TxOutMemo cachedTxOutMemo;
 
@@ -138,6 +142,7 @@ public class OwnedTxOut implements Parcelable {
         this.receivedBlockTimestamp = original.receivedBlockTimestamp;
         this.spentBlockTimestamp = original.spentBlockTimestamp;
         this.spentBlockIndex = original.spentBlockIndex;
+        this.knownToBeUnspentBlockCount = original.knownToBeUnspentBlockCount;
         this.cachedTxOutMemo = original.cachedTxOutMemo;
         this.amount = original.amount;
         this.subaddressIndex = original.subaddressIndex;
@@ -245,6 +250,15 @@ public class OwnedTxOut implements Parcelable {
         this.spentBlockTimestamp = spentBlockTimestamp;
     }
 
+    @Nullable
+    synchronized UnsignedLong getKnownToBeUnspentBlockCount() {
+        return knownToBeUnspentBlockCount;
+    }
+
+    synchronized void setKnownToBeUnspentBlockCount(@NonNull UnsignedLong knownToBeUnspentBlockCount) {
+        this.knownToBeUnspentBlockCount = knownToBeUnspentBlockCount;
+    }
+
     @NonNull
     UnsignedLong getTxOutGlobalIndex() {
         return txOutGlobalIndex;
@@ -267,6 +281,7 @@ public class OwnedTxOut implements Parcelable {
                Objects.equals(this.receivedBlockTimestamp, that.receivedBlockTimestamp) &&
                Objects.equals(this.spentBlockTimestamp, that.spentBlockTimestamp) &&
                Objects.equals(this.spentBlockIndex, that.spentBlockIndex) &&
+               // knownToBeUnspentBlockCount is a scan-optimization hint, not part of identity.
                Objects.equals(this.amount, that.amount) &&
                Objects.equals(this.txOutPublicKey, that.txOutPublicKey) &&
                Objects.equals(this.txOutTargetKey, that.txOutTargetKey) &&

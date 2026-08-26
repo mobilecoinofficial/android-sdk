@@ -312,9 +312,14 @@ class TxOutStore implements Parcelable {
       return decommissionedIngestInvocationIds.contains(seed.getIngestInvocationId());
     }
 
-    void updateTxOutsSpentState(Ledger.CheckKeyImagesResponse keyImagesResponse) throws InvalidFogResponse {
+    void updateTxOutsSpentState(
+            @NonNull Set<OwnedTxOut> queriedTxOuts,
+            Ledger.CheckKeyImagesResponse keyImagesResponse
+    ) throws InvalidFogResponse {
+        Set<KeyImage> notSpentKeyImages = new HashSet<>();
         for (Ledger.KeyImageResult result : keyImagesResponse.getResultsList()) {
             if (result.getKeyImageResultCode() == Ledger.KeyImageResultCode.NotSpent_VALUE) {
+                notSpentKeyImages.add(KeyImage.fromBytes(result.getKeyImage().getData().toByteArray()));
                 continue;
             }
 
@@ -340,6 +345,16 @@ class TxOutStore implements Parcelable {
                     Objects.requireNonNull(utxo.getSpentBlockIndex()).toString())
             );
         }
+
+        // Only a returned NotSpent result licenses skipping blocks, since the proto attaches
+        // its unspent-through guarantee to a result rather than to a missing one.
+        UnsignedLong unspentThroughBlockCount = UnsignedLong.fromLongBits(keyImagesResponse.getNumBlocks());
+        for (OwnedTxOut txOut : queriedTxOuts) {
+            if (notSpentKeyImages.contains(txOut.getKeyImage())) {
+                txOut.setKnownToBeUnspentBlockCount(unspentThroughBlockCount);
+            }
+        }
+
         synchronized (this) {
             ledgerTotalTxCount = UnsignedLong.fromLongBits(keyImagesResponse.getGlobalTxoCount());
             ledgerBlockIndex = UnsignedLong.fromLongBits(keyImagesResponse.getNumBlocks())
@@ -352,7 +367,7 @@ class TxOutStore implements Parcelable {
         Logger.i(TAG, "Checking unspent TXOs key images");
         Set<OwnedTxOut> txOuts = getUnspentTxOuts();
         Ledger.CheckKeyImagesResponse response = ledgerClient.checkUtxoKeyImages(txOuts);
-        updateTxOutsSpentState(response);
+        updateTxOutsSpentState(txOuts, response);
     }
 
     /**
