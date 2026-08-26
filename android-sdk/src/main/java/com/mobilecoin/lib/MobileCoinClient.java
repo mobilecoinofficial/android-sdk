@@ -804,6 +804,158 @@ public final class MobileCoinClient implements MobileCoinAccountClient, MobileCo
         );
     }
 
+    /**
+     * Derives the seed the {@link TransactionBuilder} runs on from {@code rng}.
+     *
+     * <p>The builder gets its own stream rather than the caller's: this takes
+     * the first {@link ChaCha20Rng#SEED_SIZE_BYTES} bytes off {@code rng} and
+     * seeds the builder with those. Ring selection then consumes the caller's
+     * stream afterwards, so it cannot move the outputs. Anything reproducing
+     * the outputs for a given caller seed has to make this same hop, which is
+     * why it lives in one place.
+     */
+    @NonNull
+    private static byte[] newBuilderSeed(@NonNull final Rng rng) {
+        return rng.nextBytes(ChaCha20Rng.SEED_SIZE_BYTES);
+    }
+
+    /**
+     * The fog reports needed to build outputs to {@code recipient} and to this
+     * account's own change address.
+     *
+     * <p>Which of these resolve decides whether each output draws a real fog
+     * hint or a fake one, and those consume different amounts of randomness,
+     * so both paths have to ask for the same set.
+     */
+    @NonNull
+    private HashSet<FogUri> reportUrisFor(@NonNull final PublicAddress recipient)
+            throws FogReportException {
+        HashSet<FogUri> reportUris = new HashSet<>();
+        try {
+            if (recipient.hasFogInfo()) {
+                reportUris.add(new FogUri(recipient.getFogReportUri()));
+            }
+            reportUris.add(new FogUri(getAccountKey().getFogReportUri()));
+        } catch (InvalidUriException exception) {
+            FogReportException reportException = new FogReportException("Invalid Fog Report " +
+                    "Uri in the public address");
+            Util.logException(TAG, reportException);
+            throw reportException;
+        }
+        return reportUris;
+    }
+
+    /**
+     * Adds the payload and change outputs to {@code txBuilder}.
+     *
+     * <p>Every draw the builder makes from its RNG happens here, in this
+     * order, so a given seed always yields the same two outputs. Both
+     * {@link #prepareTransaction} and
+     * {@link #getTxOutContexts(PublicAddress, Amount, Amount, TxOutMemoBuilder, Rng)} route
+     * through this method rather than adding outputs themselves, so the keys
+     * one derives cannot drift from the keys the other builds.
+     *
+     * <p>Amounts do not influence the keys: nothing between the two draws
+     * consumes randomness. The recipient does, because the fog hint drawn
+     * ahead of each output's private key differs for an address with a fog
+     * report and one without.
+     *
+     * @param change the remainder returning to the sender. Callers deriving
+     *               keys without inputs have no remainder to report and may
+     *               pass zero.
+     */
+    @NonNull
+    private TxOutContexts addOutputs(
+            @NonNull final TransactionBuilder txBuilder,
+            @NonNull final Amount amount,
+            @NonNull final PublicAddress recipient,
+            @NonNull final Amount change,
+            @Nullable final byte[] confirmationNumberOut
+    ) throws TransactionBuilderException, NetworkException, AttestationException {
+        final TxOutContext payloadTxOutContext =
+                txBuilder.addOutput(amount, recipient, confirmationNumberOut);
+
+        final TxOutContext changeTxOutContext;
+        if (blockchainClient.getOrFetchNetworkBlockVersion() < 1) {
+            changeTxOutContext = txBuilder.addOutput(change, accountKey.getPublicAddress(), null);
+        } else {
+            changeTxOutContext = txBuilder.addChangeOutput(change, accountKey, null);
+        }
+
+        return new TxOutContexts(payloadTxOutContext, changeTxOutContext);
+    }
+
+    /**
+     * Derives the payload and change outputs a transaction from {@code rng}
+     * would produce, without selecting inputs or building one.
+     *
+     * <p>Intended for learning a TxOut public key before the transaction
+     * exists — for instance to tell a third party which output to expect.
+     * Passing the same {@code rng} seed to
+     * {@link #prepareTransaction(PublicAddress, Amount, List, Amount, TxOutMemoBuilder, Rng)}
+     * later yields the same two keys, because both route through
+     * {@link #addOutputs} and nothing between the builder's draws depends on
+     * the inputs.
+     *
+     * <p>No balance is needed: inputs are what require funds, and none are
+     * added. A synced {@link TxOutStore} is needed, for the block index the
+     * fog reports are validated against. Fog reports are fetched, so this
+     * makes network calls and can fail like any other fog operation.
+     *
+     * <p>{@code amount} and {@code fee} do not affect the keys — no draw
+     * happens between them — but they are still what the built transaction
+     * should carry, and the memo builder must match for the same reason.
+     *
+     * @param recipient        who the payload output is for. Whether this
+     *                         address carries fog info changes the keys.
+     * @param amount           the payload amount the transaction will send.
+     * @param fee              the fee the transaction will pay.
+     * @param txOutMemoBuilder the memo builder the transaction will use.
+     * @param rng              the same RNG the transaction will be built with.
+     */
+    @NonNull
+    public TxOutContexts getTxOutContexts(
+            @NonNull final PublicAddress recipient,
+            @NonNull final Amount amount,
+            @NonNull final Amount fee,
+            @NonNull final TxOutMemoBuilder txOutMemoBuilder,
+            @NonNull final Rng rng
+    ) throws InvalidFogResponse, AttestationException, NetworkException,
+            TransactionBuilderException, FogReportException {
+        Logger.i(TAG, "GetTxOutContexts call", null,
+                "recipient:", recipient,
+                "amount:", amount,
+                "fee:", fee);
+        if (!amount.getTokenId().equals(fee.getTokenId())) {
+            throw new IllegalArgumentException("Mixed token type transactions not supported");
+        }
+
+        final byte[] rngSeed = newBuilderSeed(rng);
+        final UnsignedLong tombstoneBlockIndex = txOutStore.getCurrentBlockIndex()
+                .add(UnsignedLong.fromLongBits(DEFAULT_NEW_TX_BLOCK_ATTEMPTS));
+        final FogReportResponses fogReportResponses = fogReportsManager.fetchReports(
+                reportUrisFor(recipient), tombstoneBlockIndex, clientConfig.report);
+        final FogResolver fogResolver = new FogResolver(fogReportResponses,
+                clientConfig.report.getTrustedIdentities());
+
+        final TransactionBuilder txBuilder = new TransactionBuilder(
+                fogResolver,
+                txOutMemoBuilder,
+                blockchainClient.getOrFetchNetworkBlockVersion(),
+                amount.getTokenId(),
+                fee,
+                rngSeed
+        );
+        txBuilder.setFee(fee);
+        txBuilder.setTombstoneBlockIndex(tombstoneBlockIndex);
+
+        // Zero: with no inputs there is no remainder to return. The change
+        // key does not depend on the amount, only on where it is sent.
+        final Amount change = new Amount(BigInteger.ZERO, amount.getTokenId());
+
+        return addOutputs(txBuilder, amount, recipient, change, null);
+    }
+
     @NonNull
     PendingTransaction prepareTransaction(
         @NonNull final PublicAddress recipient,
@@ -821,22 +973,11 @@ public final class MobileCoinClient implements MobileCoinAccountClient, MobileCo
         if(!amount.getTokenId().equals(fee.getTokenId())) {
             throw new IllegalArgumentException("Mixed token type transactions not supported");
         }
-        final byte[] rngSeed = rng.nextBytes(ChaCha20Rng.SEED_SIZE_BYTES);
+        final byte[] rngSeed = newBuilderSeed(rng);
         UnsignedLong blockIndex = txOutStore.getCurrentBlockIndex();
         UnsignedLong tombstoneBlockIndex = blockIndex
                 .add(UnsignedLong.fromLongBits(DEFAULT_NEW_TX_BLOCK_ATTEMPTS));
-        HashSet<FogUri> reportUris = new HashSet<>();
-        try {
-            if (recipient.hasFogInfo()) {
-                reportUris.add(new FogUri(recipient.getFogReportUri()));
-            }
-            reportUris.add(new FogUri(getAccountKey().getFogReportUri()));
-        } catch (InvalidUriException exception) {
-            FogReportException reportException = new FogReportException("Invalid Fog Report " +
-                    "Uri in the public address");
-            Util.logException(TAG, reportException);
-            throw reportException;
-        }
+        HashSet<FogUri> reportUris = reportUrisFor(recipient);
         // fetch reports and rings in parallel
         long startTime = System.currentTimeMillis();
         Task<FogReportResponses, Exception> fetchReportsTask =
@@ -948,23 +1089,15 @@ public final class MobileCoinClient implements MobileCoinAccountClient, MobileCo
             );
         }
         byte[] confirmationNumberOut = new byte[Receipt.CONFIRMATION_NUMBER_LENGTH];
-        final TxOutContext payloadTxOutContext = txBuilder.addOutput(
-                amount,
-                recipient,
-                confirmationNumberOut
-        );
-        TxOut pendingTxo = payloadTxOutContext.getTxOut();
 
         Amount finalAmount = amount.add(fee);
-
         Amount change = totalAmount.subtract(finalAmount);
-        TxOutContext changeTxOutContext;
-        if(blockchainClient.getOrFetchNetworkBlockVersion() < 1) {
-            changeTxOutContext = txBuilder.addOutput(change, accountKey.getPublicAddress(), null);
-        }
-        else {
-            changeTxOutContext = txBuilder.addChangeOutput(change, accountKey, null);
-        }
+
+        final TxOutContexts txOutContexts =
+                addOutputs(txBuilder, amount, recipient, change, confirmationNumberOut);
+        final TxOutContext payloadTxOutContext = txOutContexts.getPayload();
+        final TxOutContext changeTxOutContext = txOutContexts.getChange();
+        TxOut pendingTxo = payloadTxOutContext.getTxOut();
 
         Transaction transaction = txBuilder.build();
         MaskedAmount pendingMaskedAmount = pendingTxo.getMaskedAmount();
