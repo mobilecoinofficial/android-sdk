@@ -51,24 +51,14 @@ publishDirect:
 	gradle publish
 
 publish: setup
-# Without MAVEN_USER the credentials come from local.properties, so publishing
-# from a workstation works the same way.
-	@if [ -z "${MAVEN_USER}" ]; then \
-		docker run \
-			-i \
-			-v $(pwd):/home/gradle/ \
-			-w /home/gradle/ android-build:android-gradle \
-			make publishDirect; \
-	else \
-		echo "Running CI Publish"; \
-		docker run \
-			-i \
-			-v $(pwd):/home/gradle/ \
-			-e MAVEN_USER \
-			-e MAVEN_PASSWORD \
-			-w /home/gradle/ android-build:android-gradle \
-			make publishDirect; \
-	fi
+# Docker omits an unset variable, so the same target serves CI and a workstation.
+	docker run \
+		-i \
+		-v $(pwd):/home/gradle/ \
+		-e MAVEN_USER \
+		-e MAVEN_PASSWORD \
+		-w /home/gradle/ android-build:android-gradle \
+		make publishDirect
 
 bash: setup
 	docker run \
