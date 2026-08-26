@@ -901,38 +901,30 @@ public final class MobileCoinClient implements MobileCoinAccountClient, MobileCo
      * {@link #addOutputs} and nothing between the builder's draws depends on
      * the inputs.
      *
+     * <p>Takes only what a key depends on. A TxOut public key is
+     * {@code r * D}: {@code r} comes from {@code rng} and the order of the
+     * builder's draws, {@code D} from the recipient's subaddress. The builder
+     * draws exactly twice per output — for the fog hint and for {@code r} —
+     * and everything after that is handed the key rather than the RNG, so
+     * amounts, fees and memos reach neither. They are not parameters; the
+     * values used internally give the same keys any real transaction would.
+     *
      * <p>No balance is needed: inputs are what require funds, and none are
      * added. A synced {@link TxOutStore} is needed, for the block index the
      * fog reports are validated against. Fog reports are fetched, so this
      * makes network calls and can fail like any other fog operation.
      *
-     * <p>{@code amount} and {@code fee} do not affect the keys — no draw
-     * happens between them — but they are still what the built transaction
-     * should carry, and the memo builder must match for the same reason.
-     *
-     * @param recipient        who the payload output is for. Whether this
-     *                         address carries fog info changes the keys.
-     * @param amount           the payload amount the transaction will send.
-     * @param fee              the fee the transaction will pay.
-     * @param txOutMemoBuilder the memo builder the transaction will use.
-     * @param rng              the same RNG the transaction will be built with.
+     * @param recipient who the payload output is for. Whether this address
+     *                  carries fog info changes the keys.
+     * @param rng       the same RNG the transaction will be built with.
      */
     @NonNull
     public TxOutContexts getTxOutContexts(
             @NonNull final PublicAddress recipient,
-            @NonNull final Amount amount,
-            @NonNull final Amount fee,
-            @NonNull final TxOutMemoBuilder txOutMemoBuilder,
             @NonNull final Rng rng
     ) throws InvalidFogResponse, AttestationException, NetworkException,
             TransactionBuilderException, FogReportException {
-        Logger.i(TAG, "GetTxOutContexts call", null,
-                "recipient:", recipient,
-                "amount:", amount,
-                "fee:", fee);
-        if (!amount.getTokenId().equals(fee.getTokenId())) {
-            throw new IllegalArgumentException("Mixed token type transactions not supported");
-        }
+        Logger.i(TAG, "GetTxOutContexts call", null, "recipient:", recipient);
 
         final byte[] rngSeed = newBuilderSeed(rng);
         final UnsignedLong tombstoneBlockIndex = txOutStore.getCurrentBlockIndex()
@@ -947,22 +939,23 @@ public final class MobileCoinClient implements MobileCoinAccountClient, MobileCo
         // version and branch on another.
         final int blockVersion = blockchainClient.getOrFetchNetworkBlockVersion();
 
+        // No amount reaches a draw, so zero gives the same keys as any real
+        // transaction. Both outputs share a token id so the builder's
+        // mixed-token check cannot trip on values that describe no real
+        // transaction anyway.
+        final Amount zero = new Amount(BigInteger.ZERO, TokenId.MOB);
+
         final TransactionBuilder txBuilder = new TransactionBuilder(
                 fogResolver,
-                txOutMemoBuilder,
+                TxOutMemoBuilder.createDefaultRTHMemoBuilder(),
                 blockVersion,
-                amount.getTokenId(),
-                fee,
+                TokenId.MOB,
+                zero,
                 rngSeed
         );
-        txBuilder.setFee(fee);
         txBuilder.setTombstoneBlockIndex(tombstoneBlockIndex);
 
-        // Zero: with no inputs there is no remainder to return. The change
-        // key does not depend on the amount, only on where it is sent.
-        final Amount change = new Amount(BigInteger.ZERO, amount.getTokenId());
-
-        return addOutputs(txBuilder, amount, recipient, change, blockVersion, null);
+        return addOutputs(txBuilder, zero, recipient, zero, blockVersion, null);
     }
 
     @NonNull
