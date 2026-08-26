@@ -6,15 +6,26 @@ on:
       - 'v*'
   workflow_dispatch:
 
+permissions:
+  contents: read
+
+concurrency:
+  group: publish-android-sdk-${{ github.ref }}
+  cancel-in-progress: false
+
 jobs:
   build_publish:
-    runs-on: mco-dev-small-x64
+    runs-on: mco-dev-large-x64
+    timeout-minutes: 60
+    container:
+      image: mobilecoin/android-sdk:latest
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: mobilecoinofficial/gh-actions/checkout@v0
       - name: Check the tag matches the version being published
         if: startsWith(github.ref, 'refs/tags/v')
+        shell: bash
         run: |
           version=$(sed -n "s/^version '\(.*\)'/\1/p" android-sdk/publish.gradle)
           if [ "${GITHUB_REF_NAME#v}" != "${version}" ]; then
@@ -22,9 +33,9 @@ jobs:
             exit 1
           fi
       - name: Build and Publish the SDK
+        shell: bash
         env:
           MAVEN_USER: ${{ secrets.MAVEN_USER }}
           MAVEN_PASSWORD: ${{ secrets.MAVEN_PASSWORD }}
-        working-directory: ./
         run: |
-          make publish
+          make publishDirect

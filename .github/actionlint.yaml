@@ -1,0 +1,4 @@
+self-hosted-runner:
+  labels:
+  - mco-dev-large-x64
+  - mco-dev-small-x64
