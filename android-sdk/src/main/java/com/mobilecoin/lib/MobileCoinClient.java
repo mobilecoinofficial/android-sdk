@@ -837,8 +837,11 @@ public final class MobileCoinClient implements MobileCoinAccountClient, MobileCo
             }
             reportUris.add(new FogUri(getAccountKey().getFogReportUri()));
         } catch (InvalidUriException exception) {
-            FogReportException reportException = new FogReportException("Invalid Fog Report " +
-                    "Uri in the public address");
+            // Either address can carry the bad uri, so name both rather than
+            // blaming the recipient, and keep the cause: it says which.
+            FogReportException reportException = new FogReportException(
+                    "Invalid Fog Report Uri in the recipient or account public address",
+                    exception);
             Util.logException(TAG, reportException);
             throw reportException;
         }
@@ -870,13 +873,14 @@ public final class MobileCoinClient implements MobileCoinAccountClient, MobileCo
             @NonNull final Amount amount,
             @NonNull final PublicAddress recipient,
             @NonNull final Amount change,
+            final int blockVersion,
             @Nullable final byte[] confirmationNumberOut
-    ) throws TransactionBuilderException, NetworkException, AttestationException {
+    ) throws TransactionBuilderException {
         final TxOutContext payloadTxOutContext =
                 txBuilder.addOutput(amount, recipient, confirmationNumberOut);
 
         final TxOutContext changeTxOutContext;
-        if (blockchainClient.getOrFetchNetworkBlockVersion() < 1) {
+        if (blockVersion < 1) {
             changeTxOutContext = txBuilder.addOutput(change, accountKey.getPublicAddress(), null);
         } else {
             changeTxOutContext = txBuilder.addChangeOutput(change, accountKey, null);
@@ -938,10 +942,15 @@ public final class MobileCoinClient implements MobileCoinAccountClient, MobileCo
         final FogResolver fogResolver = new FogResolver(fogReportResponses,
                 clientConfig.report.getTrustedIdentities());
 
+        // Fetched once and reused below: a refresh between constructing the
+        // builder and choosing the change output would build for one block
+        // version and branch on another.
+        final int blockVersion = blockchainClient.getOrFetchNetworkBlockVersion();
+
         final TransactionBuilder txBuilder = new TransactionBuilder(
                 fogResolver,
                 txOutMemoBuilder,
-                blockchainClient.getOrFetchNetworkBlockVersion(),
+                blockVersion,
                 amount.getTokenId(),
                 fee,
                 rngSeed
@@ -953,7 +962,7 @@ public final class MobileCoinClient implements MobileCoinAccountClient, MobileCo
         // key does not depend on the amount, only on where it is sent.
         final Amount change = new Amount(BigInteger.ZERO, amount.getTokenId());
 
-        return addOutputs(txBuilder, amount, recipient, change, null);
+        return addOutputs(txBuilder, amount, recipient, change, blockVersion, null);
     }
 
     @NonNull
@@ -1056,10 +1065,11 @@ public final class MobileCoinClient implements MobileCoinAccountClient, MobileCo
         FogResolver fogResolver = new FogResolver(fogReportResponses,
                 clientConfig.report.getTrustedIdentities());
 
+        final int blockVersion = blockchainClient.getOrFetchNetworkBlockVersion();
         TransactionBuilder txBuilder = new TransactionBuilder(
                 fogResolver,
                 txOutMemoBuilder,
-                blockchainClient.getOrFetchNetworkBlockVersion(),
+                blockVersion,
                 amount.getTokenId(),
                 fee,
                 rngSeed
@@ -1094,7 +1104,8 @@ public final class MobileCoinClient implements MobileCoinAccountClient, MobileCo
         Amount change = totalAmount.subtract(finalAmount);
 
         final TxOutContexts txOutContexts =
-                addOutputs(txBuilder, amount, recipient, change, confirmationNumberOut);
+                addOutputs(txBuilder, amount, recipient, change, blockVersion,
+                        confirmationNumberOut);
         final TxOutContext payloadTxOutContext = txOutContexts.getPayload();
         final TxOutContext changeTxOutContext = txOutContexts.getChange();
         TxOut pendingTxo = payloadTxOutContext.getTxOut();

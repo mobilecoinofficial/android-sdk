@@ -31,6 +31,11 @@ public class TxOutContextsTest {
             115, 58, 47, 47, 98, 117, 121, 46, 109, 111, 98, 105, 108, 101, 99, 111, 105, 110,
             46, 99, 111, 109, 0};
 
+    /** A second arbitrary seed, differing from {@link #SEED} in one byte. */
+    private static final byte[] OTHER_SEED = new byte[] {103, 111, 116, 111, 32, 104, 116, 116,
+            112, 115, 58, 47, 47, 98, 117, 121, 46, 109, 111, 98, 105, 108, 101, 99, 111, 105,
+            110, 46, 99, 111, 109, 1};
+
     @Test
     public void testDerivedKeysMatchTheBuiltTransaction() throws Exception {
         final ChaCha20Rng rng = ChaCha20Rng.fromSeed(SEED);
@@ -104,7 +109,7 @@ public class TxOutContextsTest {
                 ChaCha20Rng.fromSeed(SEED));
         final TxOutContexts second = client.getTxOutContexts(recipient, amountToSend, fee,
                 TxOutMemoBuilder.createSenderAndDestinationRTHMemoBuilder(client.getAccountKey()),
-                ChaCha20Rng.withRandomSeed());
+                ChaCha20Rng.fromSeed(OTHER_SEED));
 
         assertNotEquals(
                 first.getPayload().getTxOutPublicKey(),

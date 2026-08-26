@@ -5,11 +5,11 @@ import androidx.annotation.NonNull;
 /**
  * The payload and change outputs a transaction's RNG seed produces.
  * <p>
- * Returned on its own by
+ * Returned by
  * {@link MobileCoinClient#getTxOutContexts(PublicAddress, Amount, Amount, TxOutMemoBuilder, Rng)},
  * which derives the outputs without selecting inputs or building a
- * transaction, and carried inside {@link PendingTransaction} when a
- * transaction is actually built.
+ * transaction. {@link PendingTransaction} exposes the same two contexts
+ * separately once a transaction has been built.
  */
 public final class TxOutContexts {
 
