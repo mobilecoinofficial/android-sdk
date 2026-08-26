@@ -5,6 +5,8 @@ import static org.junit.Assert.assertNotEquals;
 
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 
+import com.mobilecoin.lib.util.Hex;
+
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -151,6 +153,32 @@ public class TxOutContextsTest {
         assertEquals(
                 fromSmall.getChange().getTxOutPublicKey(),
                 fromLarge.getChange().getTxOutPublicKey());
+    }
+
+    /**
+     * The seed a {@link TransactionBuilder} runs on is derived from the
+     * caller's RNG, and the two platforms derive it differently: this takes
+     * {@code nextBytes(32)}, where MobileCoin-Swift takes four {@code next()}
+     * UInt64s reduced into {@code Data}. Both should yield the same 32 bytes
+     * off the same stream, because {@code next_u64} combines two u32 words as
+     * {@code w[i+1] << 32 | w[i]} and its little-endian bytes are exactly what
+     * {@code fill_bytes} writes for those words.
+     * <p>
+     * Nothing else in the derivation is platform-specific — the builder's own
+     * stream and {@code add_output} are the same Rust through FFI — so this
+     * hop is the only place Android and iOS can disagree about a TxOut public
+     * key. {@code SeedableRngUnitTests.testBuilderSeedIsPlatformIndependent}
+     * in MobileCoin-Swift asserts the same seed against these same bytes; the
+     * two must be changed together or not at all.
+     */
+    @Test
+    public void testBuilderSeedIsPlatformIndependent() {
+        final byte[] builderSeed =
+                ChaCha20Rng.fromSeed(SEED).nextBytes(ChaCha20Rng.SEED_SIZE_BYTES);
+
+        assertEquals(
+                "7606151ea291727acfbea41cc1e71d57b1e219e3aeb8accfa3a9bcbc190bc3f5",
+                Hex.toString(builderSeed));
     }
 
     /**
