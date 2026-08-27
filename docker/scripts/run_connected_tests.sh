@@ -26,9 +26,12 @@ report_results() {
         echo "No JUnit results under gs://$results"
         return
     fi
+    # GitHub Actions renders ANSI, so paint the failures red — the XML is
+    # mostly passing testcases and the failures are what anyone is looking for.
     echo "$xml" | while read -r file; do
         echo "--- $file"
-        gcloud storage cat "$file"
+        gcloud storage cat "$file" \
+            | sed $'s/<failure/\033[31m<failure/; s#</failure>#</failure>\033[0m#'
     done
 }
 

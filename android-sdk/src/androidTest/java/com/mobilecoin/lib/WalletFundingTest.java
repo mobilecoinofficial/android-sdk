@@ -2,22 +2,21 @@ package com.mobilecoin.lib;
 
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 
-import java.math.BigInteger;
-
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.util.Map;
 
 /**
- * Reports what every configured test wallet holds, and fails if any is empty.
+ * Names the test wallets that need MOB, and fails if there are any.
  * <p>
- * This is a diagnostic, not a behavioural test. The suite spends real balance
- * and {@link TestKeysManager} rotates through the accounts, so a drained
- * wallet surfaces as {@code InsufficientFundsException} in whichever test
- * happened to draw it — naming neither the wallet nor the token. Rather than
- * track that per test, this asks every wallet directly.
+ * The suite spends real MOB and {@link TestKeysManager} rotates through the
+ * accounts, so a drained wallet surfaces as {@code InsufficientFundsException}
+ * in whichever test happened to draw it — naming neither the wallet nor the
+ * token. Rather than track that per test, this asks every wallet directly.
  * <p>
  * It runs with the rest of the suite rather than only after a failure: a
  * second Test Lab matrix is a second test execution against a daily quota,
@@ -31,61 +30,41 @@ import java.util.Map;
 @RunWith(AndroidJUnit4.class)
 public class WalletFundingTest {
 
+    private static final BigInteger PICO_MOB_PER_MOB = BigInteger.TEN.pow(12);
+
     /**
      * MOB each wallet needs, in picoMOB. The suite spends MOB and nothing
      * else: the largest single transfer is 52398457942 picoMOB, and
      * {@code test_fragmented_account} pays twenty fees on top. This is
      * roughly double that, so a wallet at the line still finishes a run.
      */
-    private static final BigInteger MINIMUM_MOB = BigInteger.valueOf(100_000_000_000L);
+    private static final BigInteger MINIMUM = BigInteger.valueOf(100_000_000_000L);
 
     @Test
     public void allTestWalletsAreFunded() {
-        final StringBuilder report = new StringBuilder("Test wallets on ")
-                .append(Environment.CURRENT_TEST_ENV)
-                .append(" (each needs at least ").append(MINIMUM_MOB)
-                .append(" picoMOB):");
-        int underfunded = 0;
+        final StringBuilder needsMob = new StringBuilder();
 
         // A full rotation lands the shared index back where it started, so
         // running this does not shift which account any other test draws.
         for (int i = 0; i < TestKeysManager.getTotalTestKeysCount(); i++) {
             final AccountKey accountKey = TestKeysManager.getNextAccountKey();
-            final Wallet wallet = read(accountKey);
-            if (wallet.mob.compareTo(MINIMUM_MOB) < 0) {
-                underfunded++;
+            final BigInteger mob = mobBalanceOf(accountKey);
+            if (mob != null && mob.compareTo(MINIMUM) >= 0) {
+                continue;
             }
-            report.append("\n  account[").append(i).append("] ")
-                    .append(addressOf(accountKey))
-                    .append("\n    holds ").append(wallet.balances)
-                    .append(wallet.mob.compareTo(MINIMUM_MOB) < 0 ? "  <-- SEND MOB HERE" : "");
+            needsMob.append("\n  ").append(addressOf(accountKey))
+                    .append("\n    has ")
+                    .append(mob == null ? "an unreadable balance" : asMob(mob) + " MOB");
         }
 
-        Assert.assertEquals(
-                report.append("\n\n").append(underfunded)
-                        .append(" wallet(s) need MOB.").toString(),
-                0,
-                underfunded);
-    }
-
-    /** A wallet's MOB balance, and every balance it holds for the report. */
-    private static final class Wallet {
-        private final BigInteger mob;
-        private final String balances;
-
-        private Wallet(final BigInteger mob, final String balances) {
-            this.mob = mob;
-            this.balances = balances;
+        if (needsMob.length() > 0) {
+            Assert.fail("Test wallets on " + Environment.CURRENT_TEST_ENV
+                    + " below " + asMob(MINIMUM) + " MOB. Send MOB to:" + needsMob);
         }
     }
 
-    /**
-     * What {@code accountKey} holds. MOB is called out separately because it
-     * is the only token the suite spends, so a wallet rich in anything else
-     * is still unusable. A token missing from the listing holds nothing — the
-     * balance map only covers tokens the account has outputs for.
-     */
-    private static Wallet read(final AccountKey accountKey) {
+    /** The wallet's MOB balance in picoMOB, or null if it could not be read. */
+    private static BigInteger mobBalanceOf(final AccountKey accountKey) {
         final TestFogConfig fogConfig = Environment.getTestFogConfig();
         MobileCoinClient client = null;
         try {
@@ -99,35 +78,31 @@ public class WalletFundingTest {
             client.setConsensusBasicAuthorization(
                     fogConfig.getUsername(), fogConfig.getPassword());
 
-            BigInteger mob = BigInteger.ZERO;
-            final StringBuilder held = new StringBuilder();
             for (final Map.Entry<TokenId, Balance> balance : client.getBalances().entrySet()) {
-                final BigInteger value = balance.getValue().getValue();
                 if (TokenId.MOB.equals(balance.getKey())) {
-                    mob = value;
+                    return balance.getValue().getValue();
                 }
-                if (value.signum() == 0) {
-                    continue;
-                }
-                if (held.length() > 0) {
-                    held.append(", ");
-                }
-                held.append(balance.getKey().getName()).append(' ').append(value);
             }
-            // Output count separates "send MOB" from "the MOB is there but in
-            // too many pieces to assemble a transaction from".
-            held.append(held.length() > 0 ? "" : "nothing, in any token")
-                    .append(" across ").append(client.getUnspentTxOuts(TokenId.MOB).size())
-                    .append(" MOB output(s)");
-            return new Wallet(mob, held.toString());
+            // No MOB entry at all means no MOB outputs.
+            return BigInteger.ZERO;
         } catch (final Exception exception) {
             // One unreachable wallet must not hide the rest of the report.
-            return new Wallet(BigInteger.ZERO, "<unknown: " + exception + ">");
+            return null;
         } finally {
             if (client != null) {
                 client.shutdown();
             }
         }
+    }
+
+    private static String asMob(final BigInteger picoMob) {
+        if (picoMob.signum() == 0) {
+            return "0";
+        }
+        return new BigDecimal(picoMob)
+                .divide(new BigDecimal(PICO_MOB_PER_MOB))
+                .stripTrailingZeros()
+                .toPlainString();
     }
 
     private static String addressOf(final AccountKey accountKey) {
