@@ -10,6 +10,7 @@ import com.mobilecoin.lib.network.TransportProtocol;
 import com.mobilecoin.lib.network.services.http.Requester.HttpRequester;
 
 import org.junit.Assert;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -17,6 +18,10 @@ import java.math.BigInteger;
 
 @RunWith(AndroidJUnit4.class)
 public class MobileCoinClientWithHttpRequesterTest {
+
+    /** Names the wallet to fund when a test fails for want of funds. */
+    @Rule
+    public final FundingDiagnosticRule fundingDiagnostic = new FundingDiagnosticRule();
 
     // Tests RestConsensusClientService, RestFogMerkleProofService, RestFogReportService,
     // and RestFogUntrustedService.

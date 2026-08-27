@@ -5,12 +5,17 @@ import static org.junit.Assert.assertEquals;
 
 import com.mobilecoin.lib.log.Logger;
 
+import org.junit.Rule;
 import org.junit.Test;
 
 import java.math.BigInteger;
 import java.util.Arrays;
 
 public class OnetimeKeysTest {
+
+    /** Names the wallet to fund when a test fails for want of funds. */
+    @Rule
+    public final FundingDiagnosticRule fundingDiagnostic = new FundingDiagnosticRule();
 
     @Test
     public void testTxOutPublicKeyGeneration() throws Exception {

@@ -8,6 +8,7 @@ import com.mobilecoin.lib.exceptions.InvalidUriException;
 import com.mobilecoin.lib.log.Logger;
 
 import org.junit.Assert;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -25,6 +26,11 @@ import java.util.concurrent.TimeUnit;
 
 @RunWith(AndroidJUnit4.class)
 public class ParallelExecutionTest {
+
+    /** Names the wallet to fund when a test fails for want of funds. */
+    @Rule
+    public final FundingDiagnosticRule fundingDiagnostic = new FundingDiagnosticRule();
+
     private static final String TAG = MobileCoinClient.class.toString();
     private static final int TASKS_TO_TEST = 10;
     private static final Amount AMOUNT_TO_SEND = Amount.ofMOB(BigInteger.TEN);

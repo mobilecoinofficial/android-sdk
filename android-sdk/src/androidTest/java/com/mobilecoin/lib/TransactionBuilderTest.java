@@ -8,6 +8,7 @@ import androidx.test.ext.junit.runners.AndroidJUnit4;
 
 import com.mobilecoin.lib.util.Hex;
 
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -15,6 +16,10 @@ import java.math.BigInteger;
 
 @RunWith(AndroidJUnit4.class)
 public class TransactionBuilderTest {
+
+    /** Names the wallet to fund when a test fails for want of funds. */
+    @Rule
+    public final FundingDiagnosticRule fundingDiagnostic = new FundingDiagnosticRule();
 
     @Test
     public void testReproducibleTransactions() throws Exception {

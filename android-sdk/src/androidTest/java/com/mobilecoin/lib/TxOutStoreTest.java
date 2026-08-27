@@ -19,6 +19,7 @@ import com.mobilecoin.lib.exceptions.InvalidFogResponse;
 import com.mobilecoin.lib.network.uri.FogUri;
 
 import org.junit.Assert;
+import org.junit.Rule;
 import org.junit.Test;
 
 import java.math.BigInteger;
@@ -38,6 +39,11 @@ import fog_view.View;
 import kex_rng.KexRng;
 
 public class TxOutStoreTest {
+
+    /** Names the wallet to fund when a test fails for want of funds. */
+    @Rule
+    public final FundingDiagnosticRule fundingDiagnostic = new FundingDiagnosticRule();
+
     private final TestFogConfig fogConfig = Environment.getTestFogConfig();
 
     @Test

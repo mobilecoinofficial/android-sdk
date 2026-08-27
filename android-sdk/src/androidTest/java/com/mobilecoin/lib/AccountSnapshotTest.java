@@ -9,11 +9,16 @@ import static org.junit.Assert.assertNull;
 
 import com.mobilecoin.lib.log.Logger;
 
+import org.junit.Rule;
 import org.junit.Test;
 
 import java.math.BigInteger;
 
 public class AccountSnapshotTest {
+
+    /** Names the wallet to fund when a test fails for want of funds. */
+    @Rule
+    public final FundingDiagnosticRule fundingDiagnostic = new FundingDiagnosticRule();
 
     @Test
     public void account_snapshot_integration_test() throws Exception {

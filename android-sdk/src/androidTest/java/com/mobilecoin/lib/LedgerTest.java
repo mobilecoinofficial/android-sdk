@@ -10,6 +10,7 @@ import com.mobilecoin.lib.exceptions.NetworkException;
 import com.mobilecoin.lib.network.uri.FogUri;
 
 import org.junit.Assert;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -21,6 +22,11 @@ import fog_view.View;
 
 @RunWith(AndroidJUnit4.class)
 public class LedgerTest {
+
+    /** Names the wallet to fund when a test fails for want of funds. */
+    @Rule
+    public final FundingDiagnosticRule fundingDiagnostic = new FundingDiagnosticRule();
+
     private static final String TAG = MobileCoinClient.class.toString();
     private final TestFogConfig fogConfig = Environment.getTestFogConfig();
 

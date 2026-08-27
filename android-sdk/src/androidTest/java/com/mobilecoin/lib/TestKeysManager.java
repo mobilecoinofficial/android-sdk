@@ -2,17 +2,46 @@
 
 package com.mobilecoin.lib;
 
+import androidx.annotation.NonNull;
 import androidx.test.platform.app.InstrumentationRegistry;
 
 import com.mobilecoin.lib.util.Hex;
 
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.Scanner;
 
 class TestKeysManager {
     private static final int DEFAULT_ACCOUNT_INDEX = 0;
     private static int currentAccountIndex = 0;
+
+    /**
+     * Accounts handed out since {@link #forgetIssuedKeys()}, by their index in
+     * the configured list.
+     * <p>
+     * {@link #getNextAccountKey()} rotates, so which account a test runs
+     * against depends on how many ran before it and is not recoverable from a
+     * failure. See {@link FundingDiagnosticRule}.
+     */
+    private static final Map<Integer, AccountKey> issuedKeys = new LinkedHashMap<>();
+
+    static void forgetIssuedKeys() {
+        issuedKeys.clear();
+    }
+
+    @NonNull
+    static Map<Integer, AccountKey> getIssuedKeys() {
+        return Collections.unmodifiableMap(issuedKeys);
+    }
+
+    @NonNull
+    private static AccountKey recordIssued(final int index, @NonNull final AccountKey key) {
+        issuedKeys.put(index, key);
+        return key;
+    }
 
     private static final String testNetMnemonics[] =
             loadTestStrings(com.mobilecoin.lib.test.R.raw.test_net_mnemonics);
@@ -53,13 +82,14 @@ class TestKeysManager {
                     currentAccountIndex = 0;
                 }
                 try {
-                    return AccountKey.fromMnemonicPhrase(
-                            testNetMnemonics[currentAccountIndex++],
+                    final int index = currentAccountIndex++;
+                    return recordIssued(index, AccountKey.fromMnemonicPhrase(
+                            testNetMnemonics[index],
                             DEFAULT_ACCOUNT_INDEX,
                             fogConfig.getFogUri(),
                             fogConfig.getFogReportId(),
                             fogConfig.getFogAuthoritySpki()
-                    );
+                    ));
                 } catch (Exception exception) {
                     throw new IllegalStateException("Bug: All test keys must be valid");
                 }
@@ -69,12 +99,13 @@ class TestKeysManager {
                     currentAccountIndex = 0;
                 }
                 try {
-                    return AccountKey.fromRootEntropy(
-                            Hex.toByteArray(devNetRootEntropies[currentAccountIndex++]),
+                    final int index = currentAccountIndex++;
+                    return recordIssued(index, AccountKey.fromRootEntropy(
+                            Hex.toByteArray(devNetRootEntropies[index]),
                             fogConfig.getFogUri(),
                             fogConfig.getFogReportId(),
                             fogConfig.getFogAuthoritySpki()
-                    );
+                    ));
                 } catch (Exception exception) {
                     throw new IllegalStateException("Bug: All test keys must be valid. \"" +
                             devNetRootEntropies[currentAccountIndex - 1] + "\", " +
@@ -85,13 +116,14 @@ class TestKeysManager {
                     currentAccountIndex = 0;
                 }
                 try {
-                    return AccountKey.fromMnemonicPhrase(
-                            devNetMnemonics[currentAccountIndex++],
+                    final int index = currentAccountIndex++;
+                    return recordIssued(index, AccountKey.fromMnemonicPhrase(
+                            devNetMnemonics[index],
                             DEFAULT_ACCOUNT_INDEX,
                             fogConfig.getFogUri(),
                             fogConfig.getFogReportId(),
                             fogConfig.getFogAuthoritySpki()
-                    );
+                    ));
                 } catch (Exception exception) {
                     throw new IllegalStateException("Bug: All test keys must be valid");
                 }
