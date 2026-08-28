@@ -9,7 +9,6 @@ import com.mobilecoin.lib.util.Hex;
 
 import java.io.InputStream;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Scanner;
@@ -29,17 +28,29 @@ class TestKeysManager {
     private static final Map<Integer, AccountKey> issuedKeys = new LinkedHashMap<>();
 
     static void forgetIssuedKeys() {
-        issuedKeys.clear();
+        synchronized (issuedKeys) {
+            issuedKeys.clear();
+        }
     }
 
+    /**
+     * A snapshot, not a view: {@link FundingDiagnosticRule} builds a client per
+     * entry while it reports, and a draw landing during that would otherwise
+     * throw a {@code ConcurrentModificationException} in place of the failure
+     * being diagnosed.
+     */
     @NonNull
     static Map<Integer, AccountKey> getIssuedKeys() {
-        return Collections.unmodifiableMap(issuedKeys);
+        synchronized (issuedKeys) {
+            return new LinkedHashMap<>(issuedKeys);
+        }
     }
 
     @NonNull
     private static AccountKey recordIssued(final int index, @NonNull final AccountKey key) {
-        issuedKeys.put(index, key);
+        synchronized (issuedKeys) {
+            issuedKeys.put(index, key);
+        }
         return key;
     }
 
