@@ -120,9 +120,6 @@ public class FundingDiagnosticRule implements TestRule {
 
     /** Every token the suite spends is quoted in the same twelve decimals. */
     private static String asAmount(final BigInteger value) {
-        if (value.signum() == 0) {
-            return "0";
-        }
         return new BigDecimal(value)
                 .divide(new BigDecimal(PICO_MOB_PER_MOB))
                 .stripTrailingZeros()
