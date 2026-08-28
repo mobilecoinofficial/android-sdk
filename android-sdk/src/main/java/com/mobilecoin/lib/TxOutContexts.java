@@ -6,7 +6,7 @@ import androidx.annotation.NonNull;
  * The payload and change outputs a transaction's RNG seed produces.
  * <p>
  * Returned by
- * {@link MobileCoinClient#getTxOutContexts(PublicAddress, Amount, Amount, TxOutMemoBuilder, Rng)},
+ * {@link MobileCoinClient#getTxOutContexts(PublicAddress, byte[])},
  * which derives the outputs without selecting inputs or building a
  * transaction. {@link PendingTransaction} exposes the same two contexts
  * separately once a transaction has been built.

@@ -857,7 +857,7 @@ public final class MobileCoinClient implements MobileCoinAccountClient, MobileCo
      * <p>Every draw the builder makes from its RNG happens here, in this
      * order, so a given seed always yields the same two outputs. Both
      * {@link #prepareTransaction} and
-     * {@link #getTxOutContexts(PublicAddress, Amount, Amount, TxOutMemoBuilder, Rng)} route
+     * {@link #getTxOutContexts(PublicAddress, byte[])} route
      * through this method rather than adding outputs themselves, so the keys
      * one derives cannot drift from the keys the other builds.
      *
