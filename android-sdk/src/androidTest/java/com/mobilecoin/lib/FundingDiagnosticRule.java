@@ -50,8 +50,10 @@ public class FundingDiagnosticRule implements TestRule {
                     if (!causedByInsufficientFunds(failure)) {
                         throw failure;
                     }
-                    throw new AssertionError(
-                            failure.getMessage() + "\n\n" + walletsToFund(), failure);
+                    final String said = failure.getMessage() != null
+                            ? failure.getMessage()
+                            : failure.toString();
+                    throw new AssertionError(said + "\n\n" + walletsToFund(), failure);
                 }
             }
         };
