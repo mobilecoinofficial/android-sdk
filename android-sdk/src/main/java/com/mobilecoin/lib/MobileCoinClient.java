@@ -934,6 +934,33 @@ public final class MobileCoinClient implements MobileCoinAccountClient, MobileCo
             TransactionBuilderException, FogReportException {
         Logger.i(TAG, "GetTxOutContexts call", null, "recipient:", recipient);
 
+        // Fetched once and passed down: a refresh between constructing the
+        // builder and choosing the change output would build for one block
+        // version and branch on another.
+        return getTxOutContexts(
+                recipient,
+                rngSeed,
+                blockchainClient.getOrFetchNetworkBlockVersion(),
+                TokenId.MOB);
+    }
+
+    /**
+     * The derivation, with the two values the public entry point supplies from
+     * the network and a constant.
+     *
+     * <p>Exists so tests can vary them. Neither reaches a draw — the builder
+     * draws for the fog hint and for {@code r} and nothing between them looks
+     * at either — and {@code TxOutContextsTest} pins that.
+     */
+    @VisibleForTesting
+    @NonNull
+    TxOutContexts getTxOutContexts(
+            @NonNull final PublicAddress recipient,
+            @NonNull final byte[] rngSeed,
+            final int blockVersion,
+            @NonNull final TokenId tokenId
+    ) throws InvalidFogResponse, AttestationException, NetworkException,
+            TransactionBuilderException, FogReportException {
         // The same hop prepareTransaction makes, on a fresh stream, so the two
         // reach the same builder seed from the same caller seed.
         final byte[] builderSeed = newBuilderSeed(ChaCha20Rng.fromSeed(rngSeed));
@@ -944,22 +971,17 @@ public final class MobileCoinClient implements MobileCoinAccountClient, MobileCo
         final FogResolver fogResolver = new FogResolver(fogReportResponses,
                 clientConfig.report.getTrustedIdentities());
 
-        // Fetched once and reused below: a refresh between constructing the
-        // builder and choosing the change output would build for one block
-        // version and branch on another.
-        final int blockVersion = blockchainClient.getOrFetchNetworkBlockVersion();
-
         // No amount reaches a draw, so zero gives the same keys as any real
         // transaction. Both outputs share a token id so the builder's
         // mixed-token check cannot trip on values that describe no real
         // transaction anyway.
-        final Amount zero = new Amount(BigInteger.ZERO, TokenId.MOB);
+        final Amount zero = new Amount(BigInteger.ZERO, tokenId);
 
         final TransactionBuilder txBuilder = new TransactionBuilder(
                 fogResolver,
                 TxOutMemoBuilder.createDefaultRTHMemoBuilder(),
                 blockVersion,
-                TokenId.MOB,
+                tokenId,
                 zero,
                 builderSeed
         );

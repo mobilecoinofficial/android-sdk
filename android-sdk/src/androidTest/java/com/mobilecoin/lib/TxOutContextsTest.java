@@ -87,6 +87,57 @@ public class TxOutContextsTest {
                 second.getChange().getTxOutPublicKey());
     }
 
+    /**
+     * The token id is a constant in the public entry point, so a caller
+     * deriving for a non-MOB transaction runs the builder with a token id the
+     * real send will not use. This pins that it makes no difference.
+     *
+     * <p>Both sides run at block version two, the first version accepting a
+     * token id other than MOB — below that the non-MOB build is rejected
+     * outright rather than producing keys to compare.
+     */
+    @Test
+    public void testTokenIdDoesNotMoveTheKeys() throws Exception {
+        final MobileCoinClient client = MobileCoinClientBuilder.newBuilder().build();
+        final PublicAddress recipient = TestKeysManager.getNextAccountKey().getPublicAddress();
+
+        final TxOutContexts inMob =
+                client.getTxOutContexts(recipient, SEED, 2, TokenId.MOB);
+        final TxOutContexts inMobUsd =
+                client.getTxOutContexts(recipient, SEED, 2, TokenId.from(UnsignedLong.ONE));
+
+        assertEquals(
+                inMob.getPayload().getTxOutPublicKey(),
+                inMobUsd.getPayload().getTxOutPublicKey());
+        assertEquals(
+                inMob.getChange().getTxOutPublicKey(),
+                inMobUsd.getChange().getTxOutPublicKey());
+    }
+
+    /**
+     * The derivation reads the network's block version when it runs, and the
+     * send reads it again later. If the network advanced in between the two
+     * would build at different versions, so this pins that the version does
+     * not move the keys and a caller need not derive and send close together.
+     */
+    @Test
+    public void testBlockVersionDoesNotMoveTheKeys() throws Exception {
+        final MobileCoinClient client = MobileCoinClientBuilder.newBuilder().build();
+        final PublicAddress recipient = TestKeysManager.getNextAccountKey().getPublicAddress();
+
+        final TxOutContexts atOne =
+                client.getTxOutContexts(recipient, SEED, 1, TokenId.MOB);
+        final TxOutContexts atTwo =
+                client.getTxOutContexts(recipient, SEED, 2, TokenId.MOB);
+
+        assertEquals(
+                atOne.getPayload().getTxOutPublicKey(),
+                atTwo.getPayload().getTxOutPublicKey());
+        assertEquals(
+                atOne.getChange().getTxOutPublicKey(),
+                atTwo.getChange().getTxOutPublicKey());
+    }
+
     @Test
     public void testDifferentSeedsDeriveDifferentKeys() throws Exception {
         final MobileCoinClient client = MobileCoinClientBuilder.newBuilder().build();
