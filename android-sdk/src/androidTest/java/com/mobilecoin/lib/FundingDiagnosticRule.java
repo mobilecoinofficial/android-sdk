@@ -22,10 +22,10 @@ import java.util.Map;
  * the token is not recoverable, which is why this reports balances rather
  * than only addresses.
  * <p>
- * It reads those balances inside the failure, on a client the test has
- * already built and synced, so a passing run pays nothing at all. Sweeping
- * every wallet up front costs about 20s each on every run, green ones
- * included; this costs that only for the accounts a failing test drew.
+ * It reads those balances inside the failure, so a passing run pays nothing
+ * at all. Sweeping every wallet up front costs about 20s each on every run,
+ * green ones included; this pays that only for the one to three accounts a
+ * failing test drew, on a client built for the occasion.
  * <p>
  * The report is folded into the failure message rather than logged. Firebase
  * Test Lab's JUnit results carry a {@code failure} element and no
