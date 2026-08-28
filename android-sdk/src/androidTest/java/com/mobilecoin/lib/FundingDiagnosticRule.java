@@ -104,7 +104,7 @@ public class FundingDiagnosticRule implements TestRule {
                 if (held.length() > 0) {
                     held.append(", ");
                 }
-                held.append(asAmount(balance.getValue().getValue()))
+                held.append(asAmount(balance.getKey(), balance.getValue().getValue()))
                         .append(' ').append(balance.getKey().getName());
             }
             return held.length() > 0 ? held.toString() : "nothing, in any token";
@@ -118,8 +118,16 @@ public class FundingDiagnosticRule implements TestRule {
         }
     }
 
-    /** Every token the suite spends is quoted in the same twelve decimals. */
-    private static String asAmount(final BigInteger value) {
+    /**
+     * MOB in whole coin, every other token in its smallest unit. Decimals are
+     * per-token and the SDK carries none of them — MOB is twelve, eUSD is six —
+     * so anything but MOB is quoted raw rather than guessed at, which would
+     * otherwise print a funded eUSD wallet as drained.
+     */
+    private static String asAmount(final TokenId tokenId, final BigInteger value) {
+        if (!TokenId.MOB.equals(tokenId)) {
+            return value.toString();
+        }
         return new BigDecimal(value)
                 .divide(new BigDecimal(PICO_MOB_PER_MOB))
                 .stripTrailingZeros()
