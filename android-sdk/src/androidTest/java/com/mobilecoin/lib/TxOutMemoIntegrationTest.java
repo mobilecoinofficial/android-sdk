@@ -12,7 +12,6 @@ import com.mobilecoin.api.MobileCoinAPI;
 import com.mobilecoin.lib.util.Hex;
 
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mockito;
@@ -22,11 +21,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @RunWith(AndroidJUnit4.class)
-public class TxOutMemoIntegrationTest {
-
-    /** Names the wallet to fund when a test fails for want of funds. */
-    @Rule
-    public final FundingDiagnosticRule fundingDiagnostic = new FundingDiagnosticRule();
+public class TxOutMemoIntegrationTest extends FundedTest {
 
     private static final int MEMO_BLOCK_VERSION = 1;
 

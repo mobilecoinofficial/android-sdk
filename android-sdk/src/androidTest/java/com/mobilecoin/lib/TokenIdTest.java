@@ -15,7 +15,6 @@ import androidx.test.ext.junit.runners.AndroidJUnit4;
 
 import com.mobilecoin.lib.exceptions.InvalidTransactionException;
 
-import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -25,11 +24,7 @@ import java.util.Map;
 import java.util.Set;
 
 @RunWith(AndroidJUnit4.class)
-public class TokenIdTest {
-
-    /** Names the wallet to fund when a test fails for want of funds. */
-    @Rule
-    public final FundingDiagnosticRule fundingDiagnostic = new FundingDiagnosticRule();
+public class TokenIdTest extends FundedTest {
 
 /*
  ********************************************************************

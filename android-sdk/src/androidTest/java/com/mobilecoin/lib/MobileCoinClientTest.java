@@ -47,11 +47,7 @@ import java.util.stream.Collectors;
  */
 
 @RunWith(AndroidJUnit4.class)
-public class MobileCoinClientTest {
-
-    /** Names the wallet to fund when a test fails for want of funds. */
-    @Rule
-    public final FundingDiagnosticRule fundingDiagnostic = new FundingDiagnosticRule();
+public class MobileCoinClientTest extends FundedTest {
 
     private static final String TAG = MobileCoinClient.class.toString();
     private static final String wrongTrustRootBase64 = "MIIDdzCCAl" +

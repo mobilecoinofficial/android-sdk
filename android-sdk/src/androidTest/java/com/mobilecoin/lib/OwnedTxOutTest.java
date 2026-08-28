@@ -17,7 +17,6 @@ import com.mobilecoin.lib.util.Hex;
 
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
@@ -31,11 +30,7 @@ import java.util.stream.Collectors;
 import fog_view.View.TxOutRecord;
 
 @RunWith(JUnit4.class)
-public class OwnedTxOutTest {
-
-    /** Names the wallet to fund when a test fails for want of funds. */
-    @Rule
-    public final FundingDiagnosticRule fundingDiagnostic = new FundingDiagnosticRule();
+public class OwnedTxOutTest extends FundedTest {
 
   private static final String TAG = OwnedTxOutTest.class.getSimpleName();
 
