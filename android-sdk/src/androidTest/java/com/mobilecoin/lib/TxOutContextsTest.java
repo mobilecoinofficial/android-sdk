@@ -73,8 +73,6 @@ public class TxOutContextsTest {
     public void testSameSeedDerivesTheSameKeys() throws Exception {
         final ChaCha20Rng rng = ChaCha20Rng.fromSeed(SEED);
         final MobileCoinClient client = MobileCoinClientBuilder.newBuilder().build();
-        final Amount amountToSend = Amount.ofMOB(BigInteger.valueOf(52398457942L));
-        final Amount fee = client.estimateTotalFee(amountToSend);
         final PublicAddress recipient = TestKeysManager.getNextAccountKey().getPublicAddress();
 
         rng.setWordPos(BigInteger.ZERO);
@@ -93,8 +91,6 @@ public class TxOutContextsTest {
     @Test
     public void testDifferentSeedsDeriveDifferentKeys() throws Exception {
         final MobileCoinClient client = MobileCoinClientBuilder.newBuilder().build();
-        final Amount amountToSend = Amount.ofMOB(BigInteger.valueOf(52398457942L));
-        final Amount fee = client.estimateTotalFee(amountToSend);
         final PublicAddress recipient = TestKeysManager.getNextAccountKey().getPublicAddress();
 
         final TxOutContexts first = client.getTxOutContexts(recipient, ChaCha20Rng.fromSeed(SEED));
@@ -139,8 +135,6 @@ public class TxOutContextsTest {
     public void testRecipientChangesThePayloadKey() throws Exception {
         final ChaCha20Rng rng = ChaCha20Rng.fromSeed(SEED);
         final MobileCoinClient client = MobileCoinClientBuilder.newBuilder().build();
-        final Amount amountToSend = Amount.ofMOB(BigInteger.valueOf(52398457942L));
-        final Amount fee = client.estimateTotalFee(amountToSend);
 
         rng.setWordPos(BigInteger.ZERO);
         final TxOutContexts toRecipient = client.getTxOutContexts(TestKeysManager.getNextAccountKey().getPublicAddress(), rng);
