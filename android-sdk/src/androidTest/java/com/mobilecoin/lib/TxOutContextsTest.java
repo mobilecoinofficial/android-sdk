@@ -147,6 +147,10 @@ public class TxOutContextsTest {
         assertNotEquals(
                 first.getPayload().getTxOutPublicKey(),
                 second.getPayload().getTxOutPublicKey());
+        // The change output draws off the same stream, so it moves too.
+        assertNotEquals(
+                first.getChange().getTxOutPublicKey(),
+                second.getChange().getTxOutPublicKey());
     }
 
     /**
