@@ -68,11 +68,14 @@ public class FundingDiagnosticRule implements TestRule {
 
         // Every account the test drew, balance and all. The one to fund is the
         // one sitting at nothing, so there is no need to guess at how each was
-        // used — a recipient that never spends reads as funded either way.
+        // used — a recipient that never spends reads as funded either way. The
+        // index is the account's position in the write-only mnemonics secret,
+        // which an address in the log cannot otherwise be traced back to.
         message.append(" This test drew:");
-        for (final AccountKey accountKey : issued.values()) {
-            message.append("\n  ").append(addressOf(accountKey))
-                    .append("\n    holds ").append(balancesOf(accountKey));
+        for (final Map.Entry<Integer, AccountKey> drawn : issued.entrySet()) {
+            message.append("\n  account ").append(drawn.getKey()).append(": ")
+                    .append(addressOf(drawn.getValue()))
+                    .append("\n    holds ").append(balancesOf(drawn.getValue()));
         }
         return message.toString();
     }
