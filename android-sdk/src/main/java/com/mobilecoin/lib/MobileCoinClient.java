@@ -823,9 +823,12 @@ public final class MobileCoinClient implements MobileCoinAccountClient, MobileCo
      * The fog reports needed to build outputs to {@code recipient} and to this
      * account's own change address.
      *
-     * <p>Which of these resolve decides whether each output draws a real fog
-     * hint or a fake one, and those consume different amounts of randomness,
-     * so both paths have to ask for the same set.
+     * <p>Both paths ask for the same set so fog resolves the same way, not
+     * because the keys depend on it. Whether an output draws a real fog hint
+     * or a fake one follows from whether the recipient carries fog info, not
+     * from which reports resolve, and the pubkey a report yields is spent on
+     * the hint's contents rather than on the RNG — so {@code r}, the draw
+     * immediately after, is unaffected either way.
      */
     @NonNull
     private HashSet<FogUri> reportUrisFor(@NonNull final PublicAddress recipient)
@@ -895,11 +898,16 @@ public final class MobileCoinClient implements MobileCoinAccountClient, MobileCo
      *
      * <p>Intended for learning a TxOut public key before the transaction
      * exists — for instance to tell a third party which output to expect.
-     * Passing the same {@code rng} seed to
+     *
+     * <p>Takes the seed rather than an {@link Rng} on purpose.
      * {@link #prepareTransaction(PublicAddress, Amount, List, Amount, TxOutMemoBuilder, Rng)}
-     * later yields the same two keys, because both route through
-     * {@link #addOutputs} and nothing between the builder's draws depends on
-     * the inputs.
+     * derives the builder's seed by consuming bytes from the RNG it is given,
+     * so handing one instance to both calls would advance it in between and
+     * derive two different builder seeds — the transaction would carry keys
+     * other than the ones reported here, with nothing failing on either side.
+     * Build with {@code ChaCha20Rng.fromSeed(rngSeed)} on this same seed and
+     * the keys match, because both route through {@link #addOutputs} and
+     * nothing between the builder's draws depends on the inputs.
      *
      * <p>Takes only what a key depends on. A TxOut public key is
      * {@code r * D}: {@code r} comes from {@code rng} and the order of the
@@ -916,17 +924,19 @@ public final class MobileCoinClient implements MobileCoinAccountClient, MobileCo
      *
      * @param recipient who the payload output is for. Whether this address
      *                  carries fog info changes the keys.
-     * @param rng       the same RNG the transaction will be built with.
+     * @param rngSeed   the seed the transaction will be built from.
      */
     @NonNull
     public TxOutContexts getTxOutContexts(
             @NonNull final PublicAddress recipient,
-            @NonNull final Rng rng
+            @NonNull final byte[] rngSeed
     ) throws InvalidFogResponse, AttestationException, NetworkException,
             TransactionBuilderException, FogReportException {
         Logger.i(TAG, "GetTxOutContexts call", null, "recipient:", recipient);
 
-        final byte[] rngSeed = newBuilderSeed(rng);
+        // The same hop prepareTransaction makes, on a fresh stream, so the two
+        // reach the same builder seed from the same caller seed.
+        final byte[] builderSeed = newBuilderSeed(ChaCha20Rng.fromSeed(rngSeed));
         final UnsignedLong tombstoneBlockIndex = txOutStore.getCurrentBlockIndex()
                 .add(UnsignedLong.fromLongBits(DEFAULT_NEW_TX_BLOCK_ATTEMPTS));
         final FogReportResponses fogReportResponses = fogReportsManager.fetchReports(
@@ -951,7 +961,7 @@ public final class MobileCoinClient implements MobileCoinAccountClient, MobileCo
                 blockVersion,
                 TokenId.MOB,
                 zero,
-                rngSeed
+                builderSeed
         );
         txBuilder.setTombstoneBlockIndex(tombstoneBlockIndex);
 

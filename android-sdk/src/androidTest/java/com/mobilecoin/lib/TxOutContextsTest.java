@@ -40,22 +40,22 @@ public class TxOutContextsTest {
 
     @Test
     public void testDerivedKeysMatchTheBuiltTransaction() throws Exception {
-        final ChaCha20Rng rng = ChaCha20Rng.fromSeed(SEED);
         final MobileCoinClient client = MobileCoinClientBuilder.newBuilder().build();
         final Amount amountToSend = Amount.ofMOB(BigInteger.valueOf(52398457942L));
         final Amount fee = client.estimateTotalFee(amountToSend);
         final PublicAddress recipient = TestKeysManager.getNextAccountKey().getPublicAddress();
 
-        rng.setWordPos(BigInteger.ZERO);
-        final TxOutContexts derived = client.getTxOutContexts(recipient, rng);
+        // One seed, two fresh streams — the contract a caller actually has.
+        // No rewind between them: the derivation takes the seed rather than an
+        // Rng precisely so nothing has to be wound back.
+        final TxOutContexts derived = client.getTxOutContexts(recipient, SEED);
 
-        rng.setWordPos(BigInteger.ZERO);
         final PendingTransaction built = client.prepareTransaction(
                 recipient,
                 amountToSend,
                 fee,
                 TxOutMemoBuilder.createSenderAndDestinationRTHMemoBuilder(client.getAccountKey()),
-                rng
+                ChaCha20Rng.fromSeed(SEED)
         );
 
         assertEquals(
@@ -71,16 +71,13 @@ public class TxOutContextsTest {
 
     @Test
     public void testSameSeedDerivesTheSameKeys() throws Exception {
-        final ChaCha20Rng rng = ChaCha20Rng.fromSeed(SEED);
         final MobileCoinClient client = MobileCoinClientBuilder.newBuilder().build();
         final Amount amountToSend = Amount.ofMOB(BigInteger.valueOf(52398457942L));
         final Amount fee = client.estimateTotalFee(amountToSend);
         final PublicAddress recipient = TestKeysManager.getNextAccountKey().getPublicAddress();
 
-        rng.setWordPos(BigInteger.ZERO);
-        final TxOutContexts first = client.getTxOutContexts(recipient, rng);
-        rng.setWordPos(BigInteger.ZERO);
-        final TxOutContexts second = client.getTxOutContexts(recipient, rng);
+        final TxOutContexts first = client.getTxOutContexts(recipient, SEED);
+        final TxOutContexts second = client.getTxOutContexts(recipient, SEED);
 
         assertEquals(
                 first.getPayload().getTxOutPublicKey(),
@@ -97,8 +94,8 @@ public class TxOutContextsTest {
         final Amount fee = client.estimateTotalFee(amountToSend);
         final PublicAddress recipient = TestKeysManager.getNextAccountKey().getPublicAddress();
 
-        final TxOutContexts first = client.getTxOutContexts(recipient, ChaCha20Rng.fromSeed(SEED));
-        final TxOutContexts second = client.getTxOutContexts(recipient, ChaCha20Rng.fromSeed(OTHER_SEED));
+        final TxOutContexts first = client.getTxOutContexts(recipient, SEED);
+        final TxOutContexts second = client.getTxOutContexts(recipient, OTHER_SEED);
 
         assertNotEquals(
                 first.getPayload().getTxOutPublicKey(),
@@ -137,15 +134,12 @@ public class TxOutContextsTest {
      */
     @Test
     public void testRecipientChangesThePayloadKey() throws Exception {
-        final ChaCha20Rng rng = ChaCha20Rng.fromSeed(SEED);
         final MobileCoinClient client = MobileCoinClientBuilder.newBuilder().build();
         final Amount amountToSend = Amount.ofMOB(BigInteger.valueOf(52398457942L));
         final Amount fee = client.estimateTotalFee(amountToSend);
 
-        rng.setWordPos(BigInteger.ZERO);
-        final TxOutContexts toRecipient = client.getTxOutContexts(TestKeysManager.getNextAccountKey().getPublicAddress(), rng);
-        rng.setWordPos(BigInteger.ZERO);
-        final TxOutContexts toSelf = client.getTxOutContexts(client.getAccountKey().getPublicAddress(), rng);
+        final TxOutContexts toRecipient = client.getTxOutContexts(TestKeysManager.getNextAccountKey().getPublicAddress(), SEED);
+        final TxOutContexts toSelf = client.getTxOutContexts(client.getAccountKey().getPublicAddress(), SEED);
 
         assertNotEquals(
                 toRecipient.getPayload().getTxOutPublicKey(),
