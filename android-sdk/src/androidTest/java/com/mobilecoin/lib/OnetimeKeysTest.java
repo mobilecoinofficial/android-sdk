@@ -10,7 +10,7 @@ import org.junit.Test;
 import java.math.BigInteger;
 import java.util.Arrays;
 
-public class OnetimeKeysTest {
+public class OnetimeKeysTest extends FundedTest {
 
     @Test
     public void testTxOutPublicKeyGeneration() throws Exception {

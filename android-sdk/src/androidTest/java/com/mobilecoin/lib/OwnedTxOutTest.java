@@ -30,7 +30,7 @@ import java.util.stream.Collectors;
 import fog_view.View.TxOutRecord;
 
 @RunWith(JUnit4.class)
-public class OwnedTxOutTest {
+public class OwnedTxOutTest extends FundedTest {
 
   private static final String TAG = OwnedTxOutTest.class.getSimpleName();
 
