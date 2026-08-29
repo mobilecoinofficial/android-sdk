@@ -13,7 +13,7 @@ import org.junit.Test;
 
 import java.math.BigInteger;
 
-public class AccountSnapshotTest {
+public class AccountSnapshotTest extends FundedTest {
 
     @Test
     public void account_snapshot_integration_test() throws Exception {

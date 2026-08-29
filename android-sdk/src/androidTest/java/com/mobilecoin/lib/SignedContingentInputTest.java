@@ -15,7 +15,7 @@ import java.math.BigInteger;
 import java.util.Map;
 
 @RunWith(AndroidJUnit4.class)
-public class SignedContingentInputTest {
+public class SignedContingentInputTest extends FundedTest {
 
 
     private static final TokenId eUSD = TokenId.from(UnsignedLong.fromLongBits(8192));

@@ -37,7 +37,8 @@ import fog_ledger.Ledger;
 import fog_view.View;
 import kex_rng.KexRng;
 
-public class TxOutStoreTest {
+public class TxOutStoreTest extends FundedTest {
+
     private final TestFogConfig fogConfig = Environment.getTestFogConfig();
 
     @Test

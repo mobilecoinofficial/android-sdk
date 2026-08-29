@@ -24,7 +24,7 @@ import java.util.Map;
 import java.util.Set;
 
 @RunWith(AndroidJUnit4.class)
-public class TokenIdTest {
+public class TokenIdTest extends FundedTest {
 
 /*
  ********************************************************************

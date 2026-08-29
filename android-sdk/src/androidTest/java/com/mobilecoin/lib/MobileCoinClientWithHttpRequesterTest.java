@@ -16,7 +16,7 @@ import org.junit.runner.RunWith;
 import java.math.BigInteger;
 
 @RunWith(AndroidJUnit4.class)
-public class MobileCoinClientWithHttpRequesterTest {
+public class MobileCoinClientWithHttpRequesterTest extends FundedTest {
 
     // Tests RestConsensusClientService, RestFogMerkleProofService, RestFogReportService,
     // and RestFogUntrustedService.

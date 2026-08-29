@@ -14,7 +14,7 @@ import org.junit.runner.RunWith;
 import java.math.BigInteger;
 
 @RunWith(AndroidJUnit4.class)
-public class TransactionBuilderTest {
+public class TransactionBuilderTest extends FundedTest {
 
     @Test
     public void testReproducibleTransactions() throws Exception {

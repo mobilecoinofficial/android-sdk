@@ -21,7 +21,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @RunWith(AndroidJUnit4.class)
-public class TxOutMemoIntegrationTest {
+public class TxOutMemoIntegrationTest extends FundedTest {
 
     private static final int MEMO_BLOCK_VERSION = 1;
 
