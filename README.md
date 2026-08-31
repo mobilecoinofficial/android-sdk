@@ -99,6 +99,25 @@ Run **`gradle cAT`** to run the tests on the physically connected device or an e
 
 \**Tests require a connected Android device or a running emulator as most of the tests use features of the android itself and cannot be run on the host OS without emulation.*
 
+### Test wallets
+
+The instrumented tests spend real balance. `TestKeysManager` hands out a fixed set of network-specific accounts, injected in CI from the `TEST_NET_MNEMONICS` and `DEV_NET_*` secrets, and nothing replenishes them. They drain as the suite runs.
+
+Accounts are handed out by a rotating index, so which account a test uses depends on how many built a client before it, and it changes whenever tests are added or reordered. Funding the wallet that failed last time is not a durable fix.
+
+When a test fails in a way a drained account produces, `FundingDiagnosticRule` appends the addresses and per-token balances of the accounts that test drew to the failure message:
+
+```
+Wallet trouble on TEST_NET. This test drew:
+  2hWLwBrWAnoFAkatWtiXNbtmuZUNNrcQiAsWGfetuV5i2PfQ441LPZ7w2NuVfMURv…
+    holds 0.000000003056 MOB
+  t5Tx8WUudopcPAhaTRFcX3UL1wmA3FQtSYJt1cyj7GTYErsN5TRMQKBiTp8CnBsRR…
+    holds 62.233557890746 MOB
+```
+
+It fires on `InsufficientFundsException` and on `ContainsSpentKeyImage`. The second one is not obviously a funding failure. A wallet down to a single output has it spent by the first transaction in a loop, then prepares the next against a view that has not yet seen the change and re-selects the output it just spent. The balances are what separate that from a genuine double spend.
+
+The report rides in the failure message rather than a log line, because Firebase Test Lab's JUnit results carry a `failure` element and no `system-out`. `docker/scripts/run_connected_tests.sh` pulls those results back and prints them to the CI console, which otherwise reports only a pass/fail count.
 
 ## Usage
 
