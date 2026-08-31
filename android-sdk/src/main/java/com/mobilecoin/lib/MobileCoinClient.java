@@ -162,7 +162,8 @@ public final class MobileCoinClient implements MobileCoinAccountClient, MobileCo
         this.untrustedClient = new FogUntrustedClient(RandomLoadBalancer.create(normalizedFogUri),
             clientConfig.fogLedger, transportProtocol);
         this.txOutStore = createTxOutStore(accountKey);
-        scopeHttpAuthorization(transportProtocol, normalizedFogUri, normalizedConsensusUris);
+        scopeHttpAuthorization(transportProtocol, accountKey, normalizedFogUri,
+                normalizedConsensusUris);
         this.fogReportsManager = new FogReportsManager(transportProtocol);
         // add client provided log adapter
         LogAdapter logAdapter = clientConfig.logAdapter;
@@ -209,12 +210,19 @@ public final class MobileCoinClient implements MobileCoinAccountClient, MobileCo
      * host the counterparty chose. It shares the caller's {@link Requester}, so without this the
      * credentials would be sent there too.
      * <p>
+     * The account's own fog report host is included: it comes from the caller's own
+     * {@link AccountKey}, not from a counterparty, and {@link #reportUrisFor} fetches it on every
+     * send. It is frequently a different host from the fog view/ledger uri, so leaving it out
+     * would strip the header from the caller's own report fetches.
+     * <p>
      * Only the SDK's own {@link HttpRequester} can be scoped. A caller-supplied {@link Requester}
      * that attaches its own credentials must do its own host checking.
      */
-    private static void scopeHttpAuthorization(@Nullable TransportProtocol transportProtocol,
-                                               @NonNull FogUri fogUri,
-                                               @NonNull List<MobileCoinUri> consensusUris) {
+    @VisibleForTesting
+    static void scopeHttpAuthorization(@Nullable TransportProtocol transportProtocol,
+                                       @NonNull AccountKey accountKey,
+                                       @NonNull FogUri fogUri,
+                                       @NonNull List<MobileCoinUri> consensusUris) {
         if (null == transportProtocol) {
             return;
         }
@@ -224,6 +232,10 @@ public final class MobileCoinClient implements MobileCoinAccountClient, MobileCo
         }
         Set<String> hosts = new HashSet<>();
         hosts.add(fogUri.getUri().getHost());
+        Uri ownReportUri = accountKey.getFogReportUri();
+        if (null != ownReportUri) {
+            hosts.add(ownReportUri.getHost());
+        }
         for (MobileCoinUri consensusUri : consensusUris) {
             hosts.add(consensusUri.getUri().getHost());
         }
