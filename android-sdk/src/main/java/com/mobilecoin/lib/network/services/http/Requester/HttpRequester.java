@@ -94,10 +94,14 @@ public class HttpRequester implements Requester {
                                     @NonNull Map<String, String> headers,
                                     @NonNull byte[] body,
                                     @NonNull String contentType) throws IOException {
+        // Copy: the caller's map outlives this request (RestClient reuses one per service uri),
+        // so writing credentials into it would leave them there for every later request.
+        Map<String, String> requestHeaders = new HashMap<>(headers);
         if (isAuthorizedHost(uri)) {
-            headers.put(HEADER_AUTHORIZATION_KEY, credentials);
+            requestHeaders.put(HEADER_AUTHORIZATION_KEY, credentials);
         }
-        HttpURLConnection connection = createConnection(httpMethod, uri, headers, body, contentType);
+        HttpURLConnection connection =
+                createConnection(httpMethod, uri, requestHeaders, body, contentType);
         ByteArrayOutputStream byteArrayOutputStream = parseResponse(connection);
         int responseCode = connection.getResponseCode();
         return new HttpResponse() {

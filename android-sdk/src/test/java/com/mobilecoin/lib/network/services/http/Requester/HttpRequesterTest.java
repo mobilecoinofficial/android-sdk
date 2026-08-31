@@ -19,6 +19,7 @@ import androidx.annotation.NonNull;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
@@ -131,19 +132,22 @@ public class HttpRequesterTest {
         when(connection.getInputStream()).thenReturn(new ByteArrayInputStream(response));
         spy.addAuthorizedHosts(Collections.singleton(CONFIGURED_HOST));
 
-        // When the configured host is contacted
-        Map<String, String> configuredHostHeaders = new HashMap<>();
-        spy.httpRequest(METHOD_NAME, uriWithHost(CONFIGURED_HOST), configuredHostHeaders,
-                new byte[]{ }, "");
+        // When the configured host is contacted, and then a host taken from a counterparty's
+        // fog report url
+        Map<String, String> callerHeaders = new HashMap<>();
+        spy.httpRequest(METHOD_NAME, uriWithHost(CONFIGURED_HOST), callerHeaders, new byte[]{ }, "");
+        spy.httpRequest(METHOD_NAME, uriWithHost(COUNTERPARTY_HOST), callerHeaders, new byte[]{ },
+                "");
 
-        // And when a host taken from a counterparty's fog report url is contacted
-        Map<String, String> counterpartyHostHeaders = new HashMap<>();
-        spy.httpRequest(METHOD_NAME, uriWithHost(COUNTERPARTY_HOST), counterpartyHostHeaders,
-                new byte[]{ }, "");
+        // Then only the request to the configured host carries the credentials
+        ArgumentCaptor<Map<String, String>> sentHeaders = ArgumentCaptor.forClass(Map.class);
+        verify(spy, times(2))
+                .createConnection(any(), any(), sentHeaders.capture(), any(), any());
+        assertTrue(sentHeaders.getAllValues().get(0).containsKey(AUTHORIZATION_KEY));
+        assertFalse(sentHeaders.getAllValues().get(1).containsKey(AUTHORIZATION_KEY));
 
-        // Then only the configured host receives the credentials
-        assertTrue(configuredHostHeaders.containsKey(AUTHORIZATION_KEY));
-        assertFalse(counterpartyHostHeaders.containsKey(AUTHORIZATION_KEY));
+        // And the caller's own map is never written to, so credentials cannot outlive the request
+        assertFalse(callerHeaders.containsKey(AUTHORIZATION_KEY));
     }
 
     @NonNull
