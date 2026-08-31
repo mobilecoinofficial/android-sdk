@@ -3,6 +3,9 @@
 package com.mobilecoin.lib;
 
 import com.mobilecoin.lib.exceptions.InsufficientFundsException;
+import com.mobilecoin.lib.exceptions.InvalidTransactionException;
+
+import consensus_common.ConsensusCommon;
 
 import org.junit.rules.TestRule;
 import org.junit.runner.Description;
@@ -13,14 +16,16 @@ import java.math.BigInteger;
 import java.util.Map;
 
 /**
- * Names the wallet to fund when a test fails for want of funds.
+ * Names the wallet behind a failure a drained account would produce.
  * <p>
  * The suite spends real balance and {@link TestKeysManager} rotates through
  * the configured accounts, so which one a given test drew is not recoverable
  * from the failure alone — and the answer shifts as tests are added or
- * reordered. {@link InsufficientFundsException} carries no state either, so
- * the token is not recoverable, which is why this reports balances rather
- * than only addresses.
+ * reordered, which has caught this suite out twice. {@link
+ * InsufficientFundsException} carries no state either, so the token is not
+ * recoverable, which is why this reports balances rather than only
+ * addresses. Those balances are also what separate a starved wallet from a
+ * genuine double spend; see {@link #looksLikeStarvedWallet}.
  * <p>
  * It reads those balances inside the failure, so a passing run pays nothing
  * at all. Sweeping every wallet up front costs about 20s each on every run,
@@ -47,7 +52,7 @@ public class FundingDiagnosticRule implements TestRule {
                 try {
                     base.evaluate();
                 } catch (final Throwable failure) {
-                    if (!causedByInsufficientFunds(failure)) {
+                    if (!looksLikeStarvedWallet(failure)) {
                         throw failure;
                     }
                     final String said = failure.getMessage() != null
@@ -60,7 +65,7 @@ public class FundingDiagnosticRule implements TestRule {
     }
 
     private static String walletsToFund() {
-        final StringBuilder message = new StringBuilder("Out of funds on ")
+        final StringBuilder message = new StringBuilder("Wallet trouble on ")
                 .append(Environment.CURRENT_TEST_ENV).append('.');
 
         final Map<Integer, AccountKey> issued = TestKeysManager.getIssuedKeys();
@@ -147,9 +152,26 @@ public class FundingDiagnosticRule implements TestRule {
         }
     }
 
-    private static boolean causedByInsufficientFunds(final Throwable failure) {
+    /**
+     * Whether {@code failure} is the kind a drained wallet produces.
+     *
+     * <p>{@link InsufficientFundsException} is the honest one. A wallet down
+     * to a single output also reports {@code ContainsSpentKeyImage}: a test
+     * that spends in a loop consumes that output, prepares the next
+     * transaction against a view that has not yet seen the change, and
+     * re-selects the output it just spent. Consensus rejects it for the spent
+     * key image, so the funding problem arrives wearing the wrong name — and
+     * the balances below tell the two apart. Healthy balances mean it really
+     * is a double spend.
+     */
+    private static boolean looksLikeStarvedWallet(final Throwable failure) {
         for (Throwable t = failure; t != null; t = t.getCause()) {
             if (t instanceof InsufficientFundsException) {
+                return true;
+            }
+            if (t instanceof InvalidTransactionException
+                    && ((InvalidTransactionException) t).getResult()
+                    == ConsensusCommon.ProposeTxResult.ContainsSpentKeyImage) {
                 return true;
             }
         }
