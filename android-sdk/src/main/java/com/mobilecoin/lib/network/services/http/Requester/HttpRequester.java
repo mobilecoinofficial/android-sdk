@@ -14,10 +14,14 @@ import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * HttpRequester class is used to make a HTTP request and returns the response.
@@ -25,12 +29,49 @@ import java.util.Set;
 
 public class HttpRequester implements Requester {
     private static final String HEADER_CONTENT_TYPE_KEY = "Content-Type";
+    private static final String HEADER_AUTHORIZATION_KEY = "Authorization";
     private final String credentials;
+    private final Set<String> authorizedHosts =
+            Collections.newSetFromMap(new ConcurrentHashMap<String, Boolean>());
 
     public HttpRequester(String username, String password) {
         byte credentialBytes[] = (username + ":" + password).getBytes(StandardCharsets.ISO_8859_1);
         this.credentials = "Basic " + android.util.Base64.encodeToString(credentialBytes, 0);
         password = null;
+    }
+
+    /**
+     * Restricts the {@code Authorization} header to the given hosts.
+     * <p>
+     * Not every host this requester is asked to contact is one the caller configured. Fog report
+     * URLs are taken from the recipient's public address, so a counterparty chooses that host.
+     * {@link com.mobilecoin.lib.MobileCoinClient} calls this with its configured fog and consensus
+     * hosts so that credentials are never sent to a host the counterparty picked.
+     * <p>
+     * Hosts accumulate rather than replace, so one requester may be shared across clients.
+     *
+     * @param hosts hostnames (no scheme, no port) that may receive the credentials
+     */
+    public void addAuthorizedHosts(@NonNull Collection<String> hosts) {
+        for (String host : hosts) {
+            if (host != null && !host.isEmpty()) {
+                authorizedHosts.add(host.toLowerCase(Locale.ROOT));
+            }
+        }
+    }
+
+    /**
+     * ponytail: an un-scoped requester still authenticates to every host, so that callers who
+     * never build a MobileCoinClient keep working. No counterparty-supplied URL can reach such a
+     * requester -- report URLs only flow through MobileCoinClient, which always scopes it.
+     * Tighten to deny-by-default if that stops being true.
+     */
+    private boolean isAuthorizedHost(@NonNull Uri uri) {
+        if (authorizedHosts.isEmpty()) {
+            return true;
+        }
+        String host = uri.getHost();
+        return host != null && authorizedHosts.contains(host.toLowerCase(Locale.ROOT));
     }
 
     /**
@@ -53,7 +94,9 @@ public class HttpRequester implements Requester {
                                     @NonNull Map<String, String> headers,
                                     @NonNull byte[] body,
                                     @NonNull String contentType) throws IOException {
-        headers.put("Authorization", credentials);
+        if (isAuthorizedHost(uri)) {
+            headers.put(HEADER_AUTHORIZATION_KEY, credentials);
+        }
         HttpURLConnection connection = createConnection(httpMethod, uri, headers, body, contentType);
         ByteArrayOutputStream byteArrayOutputStream = parseResponse(connection);
         int responseCode = connection.getResponseCode();

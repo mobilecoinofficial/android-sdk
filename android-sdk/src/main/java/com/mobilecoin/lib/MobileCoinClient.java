@@ -28,6 +28,8 @@ import com.mobilecoin.lib.log.LogAdapter;
 import com.mobilecoin.lib.log.Logger;
 import com.mobilecoin.lib.network.NetworkResult;
 import com.mobilecoin.lib.network.TransportProtocol;
+import com.mobilecoin.lib.network.services.http.Requester.HttpRequester;
+import com.mobilecoin.lib.network.services.http.Requester.Requester;
 import com.mobilecoin.lib.network.uri.ConsensusUri;
 import com.mobilecoin.lib.network.uri.FogUri;
 import com.mobilecoin.lib.network.uri.MobileCoinUri;
@@ -160,6 +162,7 @@ public final class MobileCoinClient implements MobileCoinAccountClient, MobileCo
         this.untrustedClient = new FogUntrustedClient(RandomLoadBalancer.create(normalizedFogUri),
             clientConfig.fogLedger, transportProtocol);
         this.txOutStore = createTxOutStore(accountKey);
+        scopeHttpAuthorization(transportProtocol, normalizedFogUri, normalizedConsensusUris);
         this.fogReportsManager = new FogReportsManager(transportProtocol);
         // add client provided log adapter
         LogAdapter logAdapter = clientConfig.logAdapter;
@@ -197,6 +200,34 @@ public final class MobileCoinClient implements MobileCoinAccountClient, MobileCo
     @NonNull
     FogUntrustedClient getUntrustedClient() {
         return untrustedClient;
+    }
+
+    /**
+     * Limits the HTTP {@code Authorization} header to the hosts this client was configured with.
+     * <p>
+     * Fog report URLs come from the recipient's public address, so {@link ReportClient} contacts a
+     * host the counterparty chose. It shares the caller's {@link Requester}, so without this the
+     * credentials would be sent there too.
+     * <p>
+     * Only the SDK's own {@link HttpRequester} can be scoped. A caller-supplied {@link Requester}
+     * that attaches its own credentials must do its own host checking.
+     */
+    private static void scopeHttpAuthorization(@Nullable TransportProtocol transportProtocol,
+                                               @NonNull FogUri fogUri,
+                                               @NonNull List<MobileCoinUri> consensusUris) {
+        if (null == transportProtocol) {
+            return;
+        }
+        Requester requester = transportProtocol.getHttpRequester();
+        if (!(requester instanceof HttpRequester)) {
+            return;
+        }
+        Set<String> hosts = new HashSet<>();
+        hosts.add(fogUri.getUri().getHost());
+        for (MobileCoinUri consensusUri : consensusUris) {
+            hosts.add(consensusUri.getUri().getHost());
+        }
+        ((HttpRequester) requester).addAuthorizedHosts(hosts);
     }
 
     private List<MobileCoinUri> createNormalizedConsensusUris(List<Uri> consensusUris)
