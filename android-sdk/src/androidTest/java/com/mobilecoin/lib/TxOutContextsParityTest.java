@@ -24,16 +24,29 @@ import org.junit.runner.RunWith;
  * fees, memos, token id, block version. This covers the one thing those
  * cannot: that the other platform agrees.
  *
- * <p>Every input here is shared with the Swift test. A deliberate change moves
- * the constants on both sides in the same change; edited on one side alone,
- * the vector proves nothing.
+ * <p>Every input that reaches a key is shared with the Swift test: the seed,
+ * the two serialized identities, the block version and the token id. A
+ * deliberate change moves the constants on both sides in the same change;
+ * edited on one side alone, the vector proves nothing.
  *
- * <p>The two sides reach their fog reports differently — Swift resolves a
- * canned report offline, this fetches TestNet live — because only Swift has a
- * seam below fog resolution. That is deliberate and is not a gap: the report's
- * contents change which key the hint is encrypted to, never how many draws
- * encrypting it takes, so the draw that produces {@code r} lands in the same
- * place either way. If that ever stops holding, this test is what says so.
+ * <p>Two inputs are not shared, and neither reaches a draw. The two sides
+ * reach their fog reports differently — Swift resolves a canned report
+ * offline, this fetches TestNet live — because only Swift has a seam below fog
+ * resolution. That is deliberate and is not a gap: the report's contents
+ * change which key the hint is encrypted to, never how many draws encrypting
+ * it takes, so the draw that produces {@code r} lands in the same place either
+ * way. The tombstone block index differs for the same reason — this derives it
+ * from the live chain tip, Swift takes a fixture's — and it reaches a key even
+ * less directly: it decides whether a report is fresh enough to resolve at
+ * all, and is imposed on the builder after both draws. An index nothing can
+ * satisfy fails resolution outright rather than quietly moving a draw.
+ *
+ * <p>Two paths the vector does not compare. Block version is pinned to 1, so
+ * the {@code blockVersion < 1} branch that sends change through
+ * {@code addOutput} rather than {@code addChangeOutput} is never run on either
+ * side. Both identities carry fog, so the fake-hint path a recipient without
+ * fog takes is never run either. A platform divergence in either would pass
+ * here unseen.
  */
 @RunWith(AndroidJUnit4.class)
 public class TxOutContextsParityTest {
@@ -79,9 +92,11 @@ public class TxOutContextsParityTest {
 
     /**
      * Block version and token id are pinned rather than read from the network,
-     * so the vector does not move when the network does. Both are covered as
-     * irrelevant to the keys by {@link TxOutContextsTest}; pinning them here
-     * only keeps this test asserting one thing.
+     * so neither can move the vector when the network moves. Both are covered
+     * as irrelevant to the keys by {@link TxOutContextsTest}; pinning them here
+     * only keeps this test asserting one thing. The tombstone block index is
+     * still read from the live chain — there is no entry point that takes it —
+     * which the class comment covers.
      */
     @Test
     public void testSeedDerivesTheKeysSwiftDerives() throws Exception {
