@@ -162,10 +162,15 @@ public class TxOutContextsTest {
      * {@code w[i+1] << 32 | w[i]} and its little-endian bytes are exactly what
      * {@code fill_bytes} writes for those words.
      * <p>
-     * Nothing else in the derivation is platform-specific — the builder's own
-     * stream and {@code add_output} are the same Rust through FFI — so this
-     * hop is the only place Android and iOS can disagree about a TxOut public
-     * key. {@code SeedableRngUnitTests.testBuilderSeedIsPlatformIndependent}
+     * The builder's own stream and {@code add_output} are the same Rust
+     * through FFI, so this hop is the only place the two platforms can
+     * disagree about the bytes a builder is seeded with. It is not the only
+     * place they can disagree about a TxOut public key: the order outputs are
+     * added in, the branch that chooses {@code addChangeOutput} over
+     * {@code addOutput}, and whether a client makes this hop at all are each
+     * written separately in Java and in Swift. {@link TxOutContextsParityTest}
+     * is what compares those.
+     * {@code SeedableRngUnitTests.testBuilderSeedIsPlatformIndependent}
      * in MobileCoin-Swift asserts the same seed against these same bytes; the
      * two must be changed together or not at all.
      */
