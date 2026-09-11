@@ -35,11 +35,15 @@ import org.junit.runner.RunWith;
  * resolution. That is deliberate and is not a gap: the report's contents
  * change which key the hint is encrypted to, never how many draws encrypting
  * it takes, so the draw that produces {@code r} lands in the same place either
- * way. The tombstone block index differs for the same reason — this derives it
- * from the live chain tip, Swift takes a fixture's — and it reaches a key even
- * less directly: it decides whether a report is fresh enough to resolve at
- * all, and is imposed on the builder after both draws. An index nothing can
- * satisfy fails resolution outright rather than quietly moving a draw.
+ * way. The tombstone block index is the other: a constant on each side, but a
+ * different one. {@code getTxOutContexts} derives it from
+ * {@link TxOutStore#getCurrentBlockIndex()}, which holds
+ * {@link UnsignedLong#ZERO} until a refresh this test never runs — and no
+ * {@code StorageAdapter} is supplied, so no cached store is restored either —
+ * leaving it at a fixed {@code 0 + 50}. It only decides whether a report is
+ * fresh enough to resolve at all, and is imposed on the builder after both
+ * draws; an index nothing can satisfy fails resolution outright rather than
+ * quietly moving a draw.
  *
  * <p>Two paths the vector does not compare. Block version is pinned to 1, so
  * the {@code blockVersion < 1} branch that sends change through
@@ -94,9 +98,9 @@ public class TxOutContextsParityTest {
      * Block version and token id are pinned rather than read from the network,
      * so neither can move the vector when the network moves. Both are covered
      * as irrelevant to the keys by {@link TxOutContextsTest}; pinning them here
-     * only keeps this test asserting one thing. The tombstone block index is
-     * still read from the live chain — there is no entry point that takes it —
-     * which the class comment covers.
+     * only keeps this test asserting one thing. No entry point takes the
+     * tombstone block index, but nothing here moves it either — see the class
+     * comment.
      */
     @Test
     public void testSeedDerivesTheKeysSwiftDerives() throws Exception {
