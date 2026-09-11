@@ -108,7 +108,7 @@ public class TxOutContextsParityTest {
                 PublicAddress.fromBytes(Base64.decode(RECIPIENT_B64, Base64.DEFAULT));
 
         final MobileCoinClient client =
-                MobileCoinClientBuilder.newBuilder().setAccountKey(accountKey).build();
+                MobileCoinClientBuilder.newBuilder(accountKey).build();
 
         final TxOutContexts derived =
                 client.getTxOutContexts(recipient, SEED, 1, TokenId.MOB);
