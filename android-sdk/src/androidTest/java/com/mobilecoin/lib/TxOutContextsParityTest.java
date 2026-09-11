@@ -56,14 +56,12 @@ import org.junit.runner.RunWith;
 public class TxOutContextsParityTest {
 
     /**
-     * Arbitrary, and fixed only so both platforms draw from the same stream.
-     * 32 bytes: 31 of ASCII and a trailing zero. The same bytes as
-     * {@code TxOutContextsTest}'s seed, so a divergence between the two tests
-     * is a divergence in the derivation rather than in the input.
+     * Arbitrary, and fixed only so both platforms draw from the same stream:
+     * 32 bytes, 31 of ASCII and a trailing zero. Referenced from
+     * {@link TxOutContextsTest} rather than copied, so the two tests cannot
+     * drift onto different seeds and leave this vector asserting nothing.
      */
-    private static final byte[] SEED = new byte[] {103, 111, 116, 111, 32, 104, 116, 116, 112,
-            115, 58, 47, 47, 98, 117, 121, 46, 109, 111, 98, 105, 108, 101, 99, 111, 105, 110,
-            46, 99, 111, 109, 0};
+    private static final byte[] SEED = TxOutContextsTest.SEED;
 
     /**
      * Serialized {@code AccountKey} and {@code PublicAddress} protobufs, the
