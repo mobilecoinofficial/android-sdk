@@ -24,6 +24,28 @@ public final class MobileCoinClientBuilder {
     return new MobileCoinClientBuilder(fogConfig);
   }
 
+  /**
+   * Returns a {@link MobileCoinClientBuilder} for {@code accountKey}, with the
+   * same defaults as {@link #newBuilder()} but without drawing a test account.
+   *
+   * <p>{@link #newBuilder()} takes the next key from {@link TestKeysManager} in
+   * its constructor, which both advances the rotation and records the key as
+   * issued. A caller that supplies its own account with {@link #setAccountKey}
+   * afterwards discards that draw, shifting which account every later test
+   * receives and naming an unused wallet in {@link FundingDiagnosticRule}'s
+   * report. Tests that bring their own key should start here instead.
+   */
+  public static MobileCoinClientBuilder newBuilder(AccountKey accountKey) {
+    TestFogConfig fogConfig = TestFogConfig.getFogConfig(Environment.CURRENT_TEST_ENV);
+    return new MobileCoinClientBuilder(accountKey,
+            fogConfig.getFogUri(),
+            fogConfig.getConsensusUris(),
+            fogConfig.getClientConfig(),
+            fogConfig.getUsername(),
+            fogConfig.getPassword(),
+            fogConfig.getTransportProtocol());
+  }
+
   private MobileCoinClientBuilder(TestFogConfig testFogConfig) {
     this(TestKeysManager.getNextAccountKey(),
             testFogConfig.getFogUri(),
@@ -50,8 +72,22 @@ public final class MobileCoinClientBuilder {
     this.transportProtocol = transportProtocol;
   }
 
+  /**
+   * Applies {@code testFogConfig}'s endpoints and credentials to this builder.
+   *
+   * <p>Mutates, like every other setter here. It used to return a fresh
+   * builder, which discarded every field already set — a preceding
+   * {@link #setAccountKey} was silently dropped — and drew another key from
+   * {@link TestKeysManager} on the way.
+   */
   public MobileCoinClientBuilder setTestFogConfig(TestFogConfig testFogConfig) {
-    return new MobileCoinClientBuilder(testFogConfig);
+    this.fogUri = testFogConfig.getFogUri();
+    this.consensusUris = testFogConfig.getConsensusUris();
+    this.clientConfig = testFogConfig.getClientConfig();
+    this.username = testFogConfig.getUsername();
+    this.password = testFogConfig.getPassword();
+    this.transportProtocol = testFogConfig.getTransportProtocol();
+    return this;
   }
 
   public MobileCoinClientBuilder setAccountKey(AccountKey accountKey) {
