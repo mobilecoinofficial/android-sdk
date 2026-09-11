@@ -44,8 +44,8 @@ public class TxOutStoreTest extends FundedTest {
     @Test
     public void test_serialize_roundtrip() throws Exception {
         AccountKey accountKey = TestKeysManager.getNextAccountKey();
-        MobileCoinClient mobileCoinClient = MobileCoinClientBuilder.newBuilder()
-            .setAccountKey(accountKey).build();
+        MobileCoinClient mobileCoinClient =
+            MobileCoinClientBuilder.newBuilder(accountKey).build();
         TxOutStore store = new TxOutStore(accountKey);
         store.refresh(
                 mobileCoinClient.viewClient,

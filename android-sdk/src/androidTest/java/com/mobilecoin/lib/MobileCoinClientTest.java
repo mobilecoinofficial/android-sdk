@@ -159,8 +159,8 @@ public class MobileCoinClientTest extends FundedTest {
         ClientConfig clientConfig = fogConfig.getClientConfig();
         // change fog verifier to make balance call fail
         clientConfig.fogView = clientConfig.consensus;
-        MobileCoinClient mobileCoinClient = MobileCoinClientBuilder.newBuilder()
-                .setAccountKey(TestKeysManager.getNextAccountKey())
+        MobileCoinClient mobileCoinClient =
+                MobileCoinClientBuilder.newBuilder(TestKeysManager.getNextAccountKey())
                 .setTestFogConfig(fogConfig)
                 .build();
         try {
@@ -182,8 +182,8 @@ public class MobileCoinClientTest extends FundedTest {
         byte[] certificateBytes = Base64.decode(wrongTrustRootBase64, Base64.DEFAULT);
         Set<X509Certificate> certs = Util.makeCertificatesFromData(certificateBytes);
         clientConfig.fogView.withTrustRoots(certs);
-        MobileCoinClient mobileCoinClient = MobileCoinClientBuilder.newBuilder()
-                .setAccountKey(TestKeysManager.getNextAccountKey())
+        MobileCoinClient mobileCoinClient =
+                MobileCoinClientBuilder.newBuilder(TestKeysManager.getNextAccountKey())
                 .setTestFogConfig(fogConfig)
                 .build();
         try {
@@ -261,8 +261,8 @@ public class MobileCoinClientTest extends FundedTest {
     public void test_fragmented_account() throws Exception {
 
         final AccountKey coinSourceKey = TestKeysManager.getNextAccountKey();
-        final MobileCoinClient coinSourceClient = MobileCoinClientBuilder.newBuilder()
-            .setAccountKey(coinSourceKey).build();
+        final MobileCoinClient coinSourceClient =
+            MobileCoinClientBuilder.newBuilder(coinSourceKey).build();
 
         final int FRAGMENTS_TO_TEST = 20;
         final Amount MINIMUM_TX_FEE = coinSourceClient.getOrFetchMinimumTxFee(TokenId.MOB);
@@ -277,7 +277,7 @@ public class MobileCoinClientTest extends FundedTest {
         );
 
         MobileCoinClient fragmentedClient =
-            MobileCoinClientBuilder.newBuilder().setAccountKey(fragmentedAccount).build();
+            MobileCoinClientBuilder.newBuilder(fragmentedAccount).build();
 
         // 2a. Send small denomination TxOuts to the test account
         for (int i = 0; i < FRAGMENTS_TO_TEST; ++i) {
