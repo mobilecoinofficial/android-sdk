@@ -4,6 +4,27 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [6.1.6] - 2026-10-26
+
+### Changed
+- Bump `protobuf-javalite` from 3.22.0 to 3.25.8, which carries the fix for
+  [CVE-2024-7254](https://nvd.nist.gov/vuln/detail/cve-2024-7254) (unbounded
+  recursion on nested unknown groups, fixed in 3.25.5). The SDK's published POM
+  declared 3.22.0 directly, so consumers resolved the vulnerable runtime. The
+  pin also outranks the 3.22.3 that `grpc-protobuf-lite` 1.55.1 declares: ours
+  stays a depth-1 dependency, which wins under Maven's nearest-first, and 3.25.8
+  is the higher version under Gradle.
+- The same `versions.gradle` entry applies to `protoc`, so the AAR's generated
+  protobuf classes are now produced by protoc 25.8 instead of 22.0. The gencode
+  is compatible. Presence for a singular message field moves from a null check 
+  to an explicit hasbit.
+
+### Upgrading
+No code changes are *required* to upgrade from 6.1.5 to 6.1.6. Consumers that
+pin or force `protobuf-javalite` below 3.25.5 must raise it to pick up the fix.
+protobuf's support policy also expects the runtime to be at least the gencode
+version, now 3.25.8.
+
 ## [6.1.5] - 2026-8-28
 
 ### Added
